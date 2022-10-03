@@ -18,8 +18,12 @@ _V = TypeVar("_V", bound="_ThrottleWatchdog.State")
 
 
 class _ThrottleWatchdog(Generic[_K, _V]):
+    """Throttling-prevention strategy. Tracks throttle metrics in BEA API responses."""
+
     @dataclass
     class Response:
+        """BEA API response with throttle-specific info."""
+
         #: Time the response was received and processed.
         time: datetime
 
@@ -34,6 +38,8 @@ class _ThrottleWatchdog(Generic[_K, _V]):
 
     @dataclass(repr=False)
     class State:
+        """BEA API throttle state."""
+
         #: BEA API key associated with the state.
         api_key: str
 
@@ -50,13 +56,13 @@ class _ThrottleWatchdog(Generic[_K, _V]):
             self.pop()
             return sum([r.is_error for r in self.responses])
 
-        def pop(self) -> None:
-            """Remove all responses older than 60 seconds."""
-            while (
-                self.responses
-                and (self.youngest.time - self.oldest.time).total_seconds() > 60.0
-            ):
-                self.responses.popleft()
+        @property
+        def is_throttled(self) -> bool:
+            """Are requests with the API key likely to be throttled?"""
+            throttled = self.errors_per_minute >= _API.MAX_ERRORS_PER_MINUTE
+            throttled |= self.requests_per_minute >= _API.MAX_REQUESTS_PER_MINUTE
+            throttled |= self.volume_per_minute >= _API.MAX_VOLUME_PER_MINUTE
+            return throttled
 
         @property
         def next_valid_request_dt(self) -> float:
@@ -67,10 +73,7 @@ class _ThrottleWatchdog(Generic[_K, _V]):
             if not self.responses:
                 return 0.0
             dt = self.youngest.retry_after
-            throttled = self.errors_per_minute >= _API.MAX_ERRORS_PER_MINUTE
-            throttled |= self.requests_per_minute >= _API.MAX_REQUESTS_PER_MINUTE
-            throttled |= self.volume_per_minute >= _API.MAX_VOLUME_PER_MINUTE
-            if throttled:
+            if self.is_throttled:
                 dt = max(
                     dt, 60 - (self.youngest.time - self.oldest.time).total_seconds()
                 )
@@ -80,6 +83,14 @@ class _ThrottleWatchdog(Generic[_K, _V]):
         def oldest(self) -> "_ThrottleWatchdog.Response":
             """Return the oldest BEA API response formatted for throttle-specific info."""
             return self.responses[0]
+
+        def pop(self) -> None:
+            """Remove all responses older than 60 seconds."""
+            while (
+                self.responses
+                and (self.youngest.time - self.oldest.time).total_seconds() > 60.0
+            ):
+                self.responses.popleft()
 
         @property
         def requests_per_minute(self) -> int:
@@ -153,6 +164,8 @@ class _ThrottleWatchdog(Generic[_K, _V]):
 
 
 class _DatasetAPI(ABC):
+    """Interface for BEA Dataset APIs."""
+
     @classmethod
     @property
     @abstractmethod
@@ -166,12 +179,14 @@ class _DatasetAPI(ABC):
 
     @classmethod
     def get_parameter_list(cls, /, *, api_key: None | str = None) -> pd.DataFrame:
+        """Return the list of parameters associated with the dataset API."""
         return _API.get_parameter_list(cls.DATASET, api_key=api_key)
 
     @classmethod
     def get_parameter_values(
         cls, param: str, /, *, api_key: None | str = None
     ) -> pd.DataFrame:
+        """Return all possible parameter values associated with the dataset API."""
         return _API.get_parameter_values(cls.DATASET, param, api_key=api_key)
 
 
