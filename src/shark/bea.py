@@ -1,9 +1,20 @@
 """BEA API.
 
+This implementation of the BEA API returns tables with normalized column names
+and appropriately-casted dtypes. Throttling-prevention is handled internally,
+sleeping for estimated quantities in an attempt to avoid server-side
+rate-limiting.
+
 Examples:
-    Getting GDP by industry for specific years.
+    Listing parameters for GDP by industry.
     >>> import shark
-    >>> shark.bea.apii.gdp_by_industry.get(year=[1995, 1996])
+    >>> shark.bea.api.gdp_by_industry.get_parameter_list()
+
+    Listing possible parameter values.
+    >>> shark.bea.api.gdp_by_industry.get_parameter_values("year")
+
+    Getting GDP by industry for specific years.
+    >>> shark.bea.api.gdp_by_industry.get(year=[1995, 1996])
 
 """
 
@@ -24,6 +35,7 @@ requests_cache.install_cache("bea_api", ignored_parameters=["UserId", "ResultFor
 
 _K = TypeVar("_K", bound=str)
 _V = TypeVar("_V", bound="_ThrottleWatchdog.State")
+_YEAR = int | str
 
 
 class _ThrottleWatchdog(Generic[_K, _V]):
@@ -208,7 +220,7 @@ class _GDPByIndustry(_DatasetAPI):
         cls,
         table_id: str | Sequence[str] = "ALL",
         freq: Literal["A", "Q", "A,Q"] = "Q",
-        year: str | Sequence[str] = "ALL",
+        year: _YEAR | Sequence[_YEAR] = "ALL",
         industry: str | Sequence[str] = "ALL",
         *,
         api_key: None | str = None,
@@ -329,6 +341,17 @@ class _API:
     def get_parameter_values(
         cls, dataset: str, param: str, /, *, api_key: None | str = None
     ) -> pd.DataFrame:
+        """Get potential values for a dataset's parameter.
+
+        Args:
+            dataset: Dataset API to inspect. See meth:`get_dataset_list` for
+                list of datasets.
+            param: Dataset API's parameter to inspect.
+
+        Returns:
+            Dataframe describing the dataset's parameter values.
+
+        """
         params = {
             "Method": "GetParameterValues",
             "DatasetName": dataset,
