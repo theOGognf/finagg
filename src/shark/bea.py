@@ -1,3 +1,12 @@
+"""BEA API.
+
+Examples:
+    Getting GDP by industry for specific years.
+    >>> import shark
+    >>> shark.bea.apii.gdp_by_industry.get(year=[1995, 1996])
+
+"""
+
 import json
 import os
 import time
@@ -5,7 +14,7 @@ from abc import ABC, abstractmethod
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import ClassVar, Generic, Literal, TypeVar
+from typing import ClassVar, Generic, Literal, Sequence, TypeVar
 
 import pandas as pd
 import requests
@@ -20,7 +29,7 @@ _V = TypeVar("_V", bound="_ThrottleWatchdog.State")
 class _ThrottleWatchdog(Generic[_K, _V]):
     """Throttling-prevention strategy. Tracks throttle metrics in BEA API responses."""
 
-    @dataclass
+    @dataclass(frozen=True)
     class Response:
         """BEA API response with throttle-specific info."""
 
@@ -59,9 +68,9 @@ class _ThrottleWatchdog(Generic[_K, _V]):
         @property
         def is_throttled(self) -> bool:
             """Are requests with the API key likely to be throttled?"""
-            throttled = self.errors_per_minute >= _API.MAX_ERRORS_PER_MINUTE
-            throttled |= self.requests_per_minute >= _API.MAX_REQUESTS_PER_MINUTE
-            throttled |= self.volume_per_minute >= _API.MAX_VOLUME_PER_MINUTE
+            throttled = self.errors_per_minute >= _API.max_errors_per_minute
+            throttled |= self.requests_per_minute >= _API.max_requests_per_minute
+            throttled |= self.volume_per_minute >= _API.max_volume_per_minute
             return throttled
 
         @property
@@ -170,12 +179,12 @@ class _DatasetAPI(ABC):
     @property
     @abstractmethod
     def DATASET(cls) -> str:
-        ...
+        """Dataset APIs must define this class var."""
 
     @classmethod
     @abstractmethod
     def get(cls, *, api_key: None | str = None) -> pd.DataFrame:
-        ...
+        """Main dataset API method."""
 
     @classmethod
     def get_parameter_list(cls, /, *, api_key: None | str = None) -> pd.DataFrame:
@@ -191,17 +200,70 @@ class _DatasetAPI(ABC):
 
 
 class _GDPByIndustry(_DatasetAPI):
+    #: BEA dataset API key.
     DATASET: ClassVar[str] = "GdpByIndustry"
 
+    @classmethod
     def get(
-        self,
-        table_id: str = "ALL",
-        freq: Literal["A", "Q"] = "Q",
-        industry: str = "ALL",
+        cls,
+        table_id: str | Sequence[str] = "ALL",
+        freq: Literal["A", "Q", "A,Q"] = "Q",
+        year: str | Sequence[str] = "ALL",
+        industry: str | Sequence[str] = "ALL",
         *,
         api_key: None | str = None,
     ) -> pd.DataFrame:
-        _API.get()
+        """Get GDP by industry.
+
+        Args:
+            table_id: IDs associated with GDP value type. Use :meth:`get_parameter_values`
+                to see possible values.
+            freq: Data frequency to return. `"Q"` for quarterly, `"A"` for annually.
+            year: Years to return.
+            industry: IDs associated with industries. Use :meth:`get_parameter_values`
+                to see possible values.
+
+        Returns:
+            Dataframe with normalized column names and true dtypes.
+
+        """
+        params = {
+            "Method": "GetData",
+            "DatasetName": cls.DATASET,
+            "TableID": table_id,
+            "Frequency": freq,
+            "Year": year,
+            "Industry": industry,
+        }
+        (results,) = _API.get(params, api_key=api_key)
+        results = results["Data"]
+        return (
+            pd.DataFrame(results)
+            .rename(
+                columns={
+                    "TableID": "table_id",
+                    "Frequency": "freq",
+                    "Year": "year",
+                    "Quarter": "quarter",
+                    "Industry": "industry",
+                    "IndustrYDescription": "industry_description",
+                    "DataValue": "value",
+                    "NoteRef": "note_ref",
+                }
+            )
+            .astype(
+                {
+                    "table_id": "int16",
+                    "freq": "category",
+                    "year": "int16",
+                    "quarter": "category",
+                    "industry": "category",
+                    "industry_description": "object",
+                    "value": "float32",
+                    "note_ref": "object",
+                }
+            )
+        )
 
 
 class _API:
@@ -209,24 +271,30 @@ class _API:
     gdp_by_industry: ClassVar[type[_GDPByIndustry]] = _GDPByIndustry
 
     #: Max allowed BEA API errors per minute.
-    MAX_ERRORS_PER_MINUTE: ClassVar[int] = 30
+    max_errors_per_minute: ClassVar[int] = 30
 
     #: Max allowed BEA API requests per minute.
-    MAX_REQUESTS_PER_MINUTE: ClassVar[int] = 100
+    max_requests_per_minute: ClassVar[int] = 100
 
     #: Max allowed BEA API response size (in MB) per minute.
-    MAX_VOLUME_PER_MINUTE: ClassVar[int] = 100e6
+    max_volume_per_minute: ClassVar[int] = 100e6
 
     #: Throttling-prevention strategy. Tracks throttling metrics for each API key.
     throttle_watchdog: ClassVar[_ThrottleWatchdog] = _ThrottleWatchdog()
 
     #: BEA API URL.
-    URL: ClassVar[str] = "https://apps.bea.gov/api/data"
+    url: ClassVar[str] = "https://apps.bea.gov/api/data"
 
     @classmethod
     def get(
-        cls, params: dict, results_key: str, /, *, api_key: None | str = None
-    ) -> pd.DataFrame:
+        cls,
+        params: dict,
+        /,
+        *,
+        api_key: None | str = None,
+        results_key: None | str = None,
+        return_type: None | type[pd.DataFrame] = None,
+    ) -> list[dict] | pd.DataFrame:
         api_key = api_key or os.environ.get("BEA_API_KEY", None)
         if not api_key:
             raise RuntimeError(
@@ -236,10 +304,14 @@ class _API:
             )
         time.sleep(cls.throttle_watchdog[api_key].next_valid_request_dt)
         params.update({"UserID": api_key, "ResultFormat": "JSON"})
-        response = requests.get(cls.URL, params=params)
+        response = requests.get(cls.url, params=params)
         cls.throttle_watchdog.update(api_key, response)
-        results = json.loads(response.content)["BEAAPI"]["Results"][results_key]
-        return pd.DataFrame(results)
+        results = json.loads(response.content)["BEAAPI"]["Results"]
+        if results_key:
+            results = results[results_key]
+        if return_type:
+            return return_type(results)
+        return results
 
     @classmethod
     def get_parameter_list(
@@ -249,7 +321,9 @@ class _API:
             "Method": "GetParameterList",
             "DatasetName": dataset,
         }
-        return cls.get(params, "Parameter", api_key=api_key)
+        return cls.get(
+            params, api_key=api_key, results_key="Parameter", return_type=pd.DataFrame
+        )
 
     @classmethod
     def get_parameter_values(
@@ -260,7 +334,9 @@ class _API:
             "DatasetName": dataset,
             "ParameterName": param,
         }
-        return cls.get(params, "ParamValue", api_key=api_key)
+        return cls.get(
+            params, api_key=api_key, results_key="ParamValue", return_type=pd.DataFrame
+        )
 
 
 #: Public-facing BEA API.
