@@ -6,8 +6,11 @@ sleeping for estimated quantities in an attempt to avoid server-side
 rate-limiting.
 
 Examples:
-    Listing parameters for GDP by industry.
+    List datasets.
     >>> import shark
+    >>> shark.bea.api.get_dataset_list()
+
+    Listing parameters for GDP by industry.
     >>> shark.bea.api.gdp_by_industry.get_parameter_list()
 
     Listing possible parameter values.
@@ -33,12 +36,14 @@ import requests_cache
 
 requests_cache.install_cache("bea_api", ignored_parameters=["UserId", "ResultFormat"])
 
-_K = TypeVar("_K", bound=str)
-_V = TypeVar("_V", bound="_ThrottleWatchdog.State")
+_API_KEY = TypeVar("_API_KEY", bound=str)
+_THROTTLE_WATCHDOG_STATE = TypeVar(
+    "_THROTTLE_WATCHDOG_STATE", bound="_ThrottleWatchdog.State"
+)
 _YEAR = int | str
 
 
-class _ThrottleWatchdog(Generic[_K, _V]):
+class _ThrottleWatchdog(Generic[_API_KEY, _THROTTLE_WATCHDOG_STATE]):
     """Throttling-prevention strategy. Tracks throttle metrics in BEA API responses."""
 
     @dataclass(frozen=True)
@@ -396,6 +401,19 @@ class _API:
         results_key: None | str = None,
         return_type: None | type[pd.DataFrame] = None,
     ) -> list[dict] | pd.DataFrame:
+        """Main get method used by dataset APIs.
+
+        Handles throttle watchdog state updates, API key validation,
+        and common formatting/parameters between API methods.
+
+        Args:
+            params: Params specific to the API method.
+
+        Returns:
+            A list of result dictionaries or a dataframe, depending
+            on the dataset.
+
+        """
         api_key = api_key or os.environ.get("BEA_API_KEY", None)
         if not api_key:
             raise RuntimeError(
@@ -415,9 +433,29 @@ class _API:
         return results
 
     @classmethod
+    def get_dataset_list(cls, /, *, api_key: None | str = None) -> pd.DataFrame:
+        """Return a list of datasets provided by the BEA API."""
+        params = {
+            "Method": "GetDatasetList",
+        }
+        return cls.get(
+            params, api_key=api_key, results_key="Dataset", return_type=pd.DataFrame
+        )
+
+    @classmethod
     def get_parameter_list(
         cls, dataset: str, /, *, api_key: None | str = None
     ) -> pd.DataFrame:
+        """Get a dataset's list of parameters.
+
+        Args:
+            dataset: Dataset API to inspect. See meth:`get_dataset_list` for a
+                list of datasets.
+
+        Returns:
+            Dataframe listing the dataset's parameters.
+
+        """
         params = {
             "Method": "GetParameterList",
             "DatasetName": dataset,
