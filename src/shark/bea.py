@@ -212,7 +212,14 @@ class _DatasetAPI(ABC):
 
 
 class _GDPByIndustry(_DatasetAPI):
-    #: BEA dataset API key.
+    """GDP (a single summary statistic) for each industry.
+
+    Data provided by this API is considered coarse/high-level.
+    See `_InputOutput` for more granular/low-level industry data.
+
+    """
+
+    #: BEA dataset API name.
     DATASET: ClassVar[str] = "GdpByIndustry"
 
     @classmethod
@@ -278,9 +285,91 @@ class _GDPByIndustry(_DatasetAPI):
         )
 
 
+class _InputOutput(_DatasetAPI):
+    """Specific input-output statistics for each industry.
+
+    Data provided by this API is considered granular/low-level.
+    See `_GDPByIndustry` for more coarse/high-level industry data.
+
+    Data is provided for different "rows" and "columns" where:
+        - a row is an industry and
+        - a column is a statistic associated with that industry
+
+    Columns are divided by column codes. Each industry of similar
+    type has the same set of column codes that provide input-output
+    statistics for that industry.
+
+    """
+
+    #: BEA dataset API name.
+    DATASET: ClassVar[str] = "InputOutput"
+
+    @classmethod
+    def get(
+        cls,
+        table_id: str | Sequence[str] = "ALL",
+        year: _YEAR | Sequence[_YEAR] = "ALL",
+        *,
+        api_key: None | str = None,
+    ) -> pd.DataFrame:
+        """Get input-output statistics by industry.
+
+        Args:
+            table_id: IDs associated with input-output stats. Use :meth:`get_parameter_values`
+                to see possible values.
+            year: Years to return.
+
+        Returns:
+            Dataframe with normalized column names and true dtypes.
+
+        """
+        params = {
+            "Method": "GetData",
+            "DatasetName": cls.DATASET,
+            "TableID": table_id,
+            "Year": year,
+        }
+        (results,) = _API.get(params, api_key=api_key)
+        results = results["Data"]
+        return (
+            pd.DataFrame(results)
+            .rename(
+                columns={
+                    "TableID": "table_id",
+                    "Year": "year",
+                    "RowCode": "row_code",
+                    "RowDescr": "row_description",
+                    "RowType": "row_type",
+                    "ColCode": "col_code",
+                    "ColDescr": "col_description",
+                    "ColType": "col_type",
+                    "DataValue": "value",
+                    "NoteRef": "note_ref",
+                }
+            )
+            .astype(
+                {
+                    "table_id": "int16",
+                    "year": "int16",
+                    "row_code": "category",
+                    "row_description": "object",
+                    "row_type": "category",
+                    "col_code": "category",
+                    "col_description": "object",
+                    "col_type": "category",
+                    "value": "float32",
+                    "note_ref": "object",
+                }
+            )
+        )
+
+
 class _API:
     #: "GdpByIndustry" dataset API.
     gdp_by_industry: ClassVar[type[_GDPByIndustry]] = _GDPByIndustry
+
+    #: "InputOutput" dataset API.
+    input_output: ClassVar[type[_InputOutput]] = _InputOutput
 
     #: Max allowed BEA API errors per minute.
     max_errors_per_minute: ClassVar[int] = 30
@@ -322,7 +411,7 @@ class _API:
         if results_key:
             results = results[results_key]
         if return_type:
-            return return_type(results)
+            results = return_type(results)
         return results
 
     @classmethod
