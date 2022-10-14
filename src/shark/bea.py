@@ -369,7 +369,86 @@ class _InputOutput(_DatasetAPI):
         )
 
 
+class _NIPA(_DatasetAPI):
+    """National income and product accounts.
+
+    Details high-level US economic details in several
+    metrics.
+
+    """
+
+    #: BEA dataset API name.
+    DATASET: ClassVar[str] = "NIPA"
+
+    @classmethod
+    def get(
+        cls,
+        table_id: str,
+        freq: Literal["A", "Q", "A,Q"] = "Q",
+        year: _YEAR | Sequence[_YEAR] = "ALL",
+        *,
+        api_key: None | str = None,
+    ) -> pd.DataFrame:
+        """Get US income and product accounts by metric.
+
+        Args:
+            table_id: IDs associated with metric of concern.
+                Use :meth:`get_parameter_values` to see possible values.
+            freq: Data frequency to return. `"Q"` for quarterly, `"A"` for annually.
+            year: Years to return.
+
+        Returns:
+            Dataframe with normalized column names and true dtypes.
+
+        """
+        params = {
+            "Method": "GetData",
+            "DatasetName": cls.DATASET,
+            "TableName": table_id,
+            "Year": year,
+            "Frequency": freq,
+        }
+        results = _API.get(params, api_key=api_key)
+        results = results["Data"]
+        results = pd.DataFrame(results)
+        results[["Year", "Quarter"]] = results["TimePeriod"].str.split(
+            "Q", n=1, expand=True
+        )
+        results["Quarter"] = "Q" + results["Quarter"].astype(str)
+        results.drop(["TimePeriod", "NoteRef"], axis=1, inplace=True)
+        results = results.rename(
+            columns={
+                "TableName": "table_id",
+                "SeriesCode": "series_code",
+                "LineNumber": "line",
+                "LineDescription": "line_description",
+                "Year": "year",
+                "Quarter": "quarter",
+                "METRIC_NAME": "metric",
+                "CL_UNIT": "units",
+                "UNIT_MULT": "e",
+                "DataValue": "value",
+            }
+        ).astype(
+            {
+                "table_id": "category",
+                "series_code": "category",
+                "line": "int16",
+                "line_description": "object",
+                "year": "int16",
+                "quarter": "category",
+                "metric": "category",
+                "units": "category",
+                "e": "int16",
+                "value": "float32",
+            }
+        )
+        return results
+
+
 class _API:
+    """Collection of BEA APIs."""
+
     #: "GdpByIndustry" dataset API.
     gdp_by_industry: ClassVar[type[_GDPByIndustry]] = _GDPByIndustry
 
@@ -384,6 +463,9 @@ class _API:
 
     #: Max allowed BEA API response size (in MB) per minute.
     max_volume_per_minute: ClassVar[int] = 100e6
+
+    #: "NIPA" dataset API.
+    nipa: ClassVar[type[_NIPA]] = _NIPA
 
     #: Throttling-prevention strategy. Tracks throttling metrics for each API key.
     throttle_watchdog: ClassVar[_ThrottleWatchdog] = _ThrottleWatchdog()
