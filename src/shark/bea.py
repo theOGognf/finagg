@@ -520,6 +520,9 @@ class _NIPA(_DatasetAPI):
 class _API:
     """Collection of BEA APIs."""
 
+    #: Throttling-prevention strategy. Tracks throttling metrics for each API key.
+    _throttle_watchdog: ClassVar[_ThrottleWatchdog] = _ThrottleWatchdog()
+
     #: "FixedAssets" dataset API.
     fixed_assets: ClassVar[type[_FixedAssets]] = _FixedAssets
 
@@ -540,9 +543,6 @@ class _API:
 
     #: "NIPA" dataset API.
     nipa: ClassVar[type[_NIPA]] = _NIPA
-
-    #: Throttling-prevention strategy. Tracks throttling metrics for each API key.
-    throttle_watchdog: ClassVar[_ThrottleWatchdog] = _ThrottleWatchdog()
 
     #: BEA API URL.
     url: ClassVar[str] = "https://apps.bea.gov/api/data"
@@ -589,10 +589,10 @@ class _API:
                 "Pass the API key to the API directly, or "
                 "set the `BEA_API_KEY` environment variable."
             )
-        time.sleep(cls.throttle_watchdog[api_key].next_valid_request_dt)
+        time.sleep(cls._throttle_watchdog[api_key].next_valid_request_dt)
         params.update({"UserID": api_key, "ResultFormat": "JSON"})
         response = requests.get(cls.url, params=params)
-        cls.throttle_watchdog.update(api_key, response)
+        cls._throttle_watchdog.update(api_key, response)
         response.raise_for_status()
         content = json.loads(response.content)["BEAAPI"]
         if "Error" in content:
