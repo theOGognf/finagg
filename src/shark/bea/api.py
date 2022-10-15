@@ -200,7 +200,7 @@ class _ThrottleWatchdog(Generic[_API_KEY, _THROTTLE_WATCHDOG_STATE]):
         return self.states[api_key].update(response)
 
 
-class _DatasetAPI(ABC):
+class _Dataset(ABC):
     """Interface for BEA Dataset APIs."""
 
     @classmethod
@@ -227,7 +227,7 @@ class _DatasetAPI(ABC):
         return _API.get_parameter_values(cls.DATASET, param, api_key=api_key)
 
 
-class _FixedAssets(_DatasetAPI):
+class _FixedAssets(_Dataset):
     """US fixed assets (assets for long-term use).
 
     Details low-level US economic details.
@@ -241,8 +241,8 @@ class _FixedAssets(_DatasetAPI):
     @classmethod
     def get(
         cls,
-        table_id: str,
-        year: _YEAR | Sequence[_YEAR] = "X",
+        table_id: str | Sequence[str] = "ALL",
+        year: _YEAR | Sequence[_YEAR] = "ALL",
         *,
         api_key: None | str = None,
     ) -> pd.DataFrame:
@@ -257,47 +257,55 @@ class _FixedAssets(_DatasetAPI):
             Dataframe with normalized column names and true dtypes.
 
         """
-        params = {
-            "Method": "GetData",
-            "DatasetName": cls.DATASET,
-            "TableName": table_id,
-            "Year": year,
-        }
-        results = _API.get(params, api_key=api_key)
-        results = results["Data"]
-        results = (
-            pd.DataFrame(results)
-            .rename(
-                columns={
-                    "TableName": "table_id",
-                    "SeriesCode": "series_code",
-                    "LineNumber": "line",
-                    "LineDescription": "line_description",
-                    "TimePeriod": "year",
-                    "METRIC_NAME": "metric",
-                    "CL_UNIT": "units",
-                    "UNIT_MULT": "e",
-                    "DataValue": "value",
-                }
+        if table_id == "ALL":
+            table_id = cls.get_parameter_values("TableName")["TableName"].to_list()
+        elif isinstance(table_id, str):
+            table_id = [table_id]
+
+        results = []
+        for tid in table_id:
+            params = {
+                "Method": "GetData",
+                "DatasetName": cls.DATASET,
+                "TableName": tid,
+                "Year": year,
+            }
+            df = _API.get(params, api_key=api_key)
+            df = df["Data"]
+            df = (
+                pd.DataFrame(df)
+                .rename(
+                    columns={
+                        "TableName": "table_id",
+                        "SeriesCode": "series_code",
+                        "LineNumber": "line",
+                        "LineDescription": "line_description",
+                        "TimePeriod": "year",
+                        "METRIC_NAME": "metric",
+                        "CL_UNIT": "units",
+                        "UNIT_MULT": "e",
+                        "DataValue": "value",
+                    }
+                )
+                .astype(
+                    {
+                        "table_id": "category",
+                        "series_code": "category",
+                        "line": "int16",
+                        "line_description": "object",
+                        "year": "int16",
+                        "metric": "category",
+                        "units": "category",
+                        "e": "int16",
+                    }
+                )
             )
-            .astype(
-                {
-                    "table_id": "category",
-                    "series_code": "category",
-                    "line": "int16",
-                    "line_description": "object",
-                    "year": "int16",
-                    "metric": "category",
-                    "units": "category",
-                    "e": "int16",
-                }
-            )
-        )
-        results["value"] = results["value"].str.replace(",", "").astype("float32")
-        return results
+            df["value"] = df["value"].str.replace(",", "").astype("float32")
+            results.append(df)
+        return pd.concat(results)
 
 
-class _GDPByIndustry(_DatasetAPI):
+class _GDPByIndustry(_Dataset):
     """GDP (a single summary statistic) for each industry.
 
     Data provided by this API is considered coarse/high-level.
@@ -371,7 +379,7 @@ class _GDPByIndustry(_DatasetAPI):
         )
 
 
-class _InputOutput(_DatasetAPI):
+class _InputOutput(_Dataset):
     """Specific input-output statistics for each industry.
 
     Data provided by this API is considered granular/low-level.
@@ -450,7 +458,7 @@ class _InputOutput(_DatasetAPI):
         )
 
 
-class _NIPA(_DatasetAPI):
+class _NIPA(_Dataset):
     """National income and product accounts.
 
     Details high-level US economic details in several
@@ -464,7 +472,7 @@ class _NIPA(_DatasetAPI):
     @classmethod
     def get(
         cls,
-        table_id: str,
+        table_id: str | Sequence[str] = "ALL",
         freq: Literal["A", "Q", "A,Q"] = "Q",
         year: _YEAR | Sequence[_YEAR] = "ALL",
         *,
@@ -482,49 +490,55 @@ class _NIPA(_DatasetAPI):
             Dataframe with normalized column names and true dtypes.
 
         """
-        params = {
-            "Method": "GetData",
-            "DatasetName": cls.DATASET,
-            "TableName": table_id,
-            "Year": year,
-            "Frequency": freq,
-        }
-        results = _API.get(params, api_key=api_key)
-        results = results["Data"]
-        results = pd.DataFrame(results)
-        results[["Year", "Quarter"]] = results["TimePeriod"].str.split(
-            "Q", n=1, expand=True
-        )
-        results["Quarter"] = "Q" + results["Quarter"].astype(str)
-        results.drop(["TimePeriod", "NoteRef"], axis=1, inplace=True)
-        results = results.rename(
-            columns={
-                "TableName": "table_id",
-                "SeriesCode": "series_code",
-                "LineNumber": "line",
-                "LineDescription": "line_description",
-                "Year": "year",
-                "Quarter": "quarter",
-                "METRIC_NAME": "metric",
-                "CL_UNIT": "units",
-                "UNIT_MULT": "e",
-                "DataValue": "value",
+        if table_id == "ALL":
+            table_id = cls.get_parameter_values("TableName")["TableName"].to_list()
+        elif isinstance(table_id, str):
+            table_id = [table_id]
+
+        results = []
+        for tid in table_id:
+            params = {
+                "Method": "GetData",
+                "DatasetName": cls.DATASET,
+                "TableName": tid,
+                "Year": year,
+                "Frequency": freq,
             }
-        ).astype(
-            {
-                "table_id": "category",
-                "series_code": "category",
-                "line": "int16",
-                "line_description": "object",
-                "year": "int16",
-                "quarter": "category",
-                "metric": "category",
-                "units": "category",
-                "e": "int16",
-                "value": "float32",
-            }
-        )
-        return results
+            df = _API.get(params, api_key=api_key)
+            df = df["Data"]
+            df = pd.DataFrame(df)
+            df[["Year", "Quarter"]] = df["TimePeriod"].str.split("Q", n=1, expand=True)
+            df["Quarter"] = "Q" + df["Quarter"].astype(str)
+            df.drop(["TimePeriod", "NoteRef"], axis=1, inplace=True)
+            df = df.rename(
+                columns={
+                    "TableName": "table_id",
+                    "SeriesCode": "series_code",
+                    "LineNumber": "line",
+                    "LineDescription": "line_description",
+                    "Year": "year",
+                    "Quarter": "quarter",
+                    "METRIC_NAME": "metric",
+                    "CL_UNIT": "units",
+                    "UNIT_MULT": "e",
+                    "DataValue": "value",
+                }
+            ).astype(
+                {
+                    "table_id": "category",
+                    "series_code": "category",
+                    "line": "int16",
+                    "line_description": "object",
+                    "year": "int16",
+                    "quarter": "category",
+                    "metric": "category",
+                    "units": "category",
+                    "e": "int16",
+                    "value": "float32",
+                }
+            )
+            results.append(df)
+        return pd.concat(results)
 
 
 class _API:
