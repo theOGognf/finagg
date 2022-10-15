@@ -29,7 +29,7 @@ import time
 from abc import ABC, abstractmethod
 from collections import deque
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import ClassVar, Generic, Literal, Sequence, TypeVar
 
 import pandas as pd
@@ -44,7 +44,11 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-requests_cache.install_cache("bea_api", ignored_parameters=["UserId", "ResultFormat"])
+requests_cache.install_cache(
+    "bea_api",
+    ignored_parameters=["UserId", "ResultFormat"],
+    expire_after=timedelta(weeks=1),
+)
 
 
 _API_KEY = TypeVar("_API_KEY", bound=str)
