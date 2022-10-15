@@ -22,7 +22,9 @@ Examples:
 """
 
 import json
+import logging
 import os
+import sys
 import time
 from abc import ABC, abstractmethod
 from collections import deque
@@ -33,6 +35,14 @@ from typing import ClassVar, Generic, Literal, Sequence, TypeVar
 import pandas as pd
 import requests
 import requests_cache
+
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter(
+    "%(asctime)s | %(levelname)s | shark.bea.api - %(message)s"
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 requests_cache.install_cache("bea_api", ignored_parameters=["UserId", "ResultFormat"])
 
@@ -589,7 +599,13 @@ class _API:
                 "Pass the API key to the API directly, or "
                 "set the `BEA_API_KEY` environment variable."
             )
-        time.sleep(cls._throttle_watchdog[api_key].next_valid_request_dt)
+        next_valid_request_dt = cls._throttle_watchdog[api_key].next_valid_request_dt
+        if next_valid_request_dt > 0:
+            logger.warning(
+                f"API key ending in `{api_key[-4:]}` may be throttled. "
+                f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
+            )
+        time.sleep(next_valid_request_dt)
         params.update({"UserID": api_key, "ResultFormat": "JSON"})
         response = requests.get(cls.url, params=params)
         cls._throttle_watchdog.update(api_key, response)
