@@ -216,6 +216,76 @@ class _DatasetAPI(ABC):
         return _API.get_parameter_values(cls.DATASET, param, api_key=api_key)
 
 
+class _FixedAssets(_DatasetAPI):
+    """US fixed assets (assets for long-term use).
+
+    Details low-level US economic details.
+    See `_GDPByIndustry` for more coarse/high-level industry data.
+
+    """
+
+    #: BEA dataset API name.
+    DATASET: ClassVar[str] = "FixedAssets"
+
+    @classmethod
+    def get(
+        cls,
+        table_id: str,
+        year: _YEAR | Sequence[_YEAR] = "X",
+        *,
+        api_key: None | str = None,
+    ) -> pd.DataFrame:
+        """Get US fixed assets by asset and year.
+
+        Args:
+            table_id: IDs associated with assets of concern.
+                Use :meth:`get_parameter_values` to see possible values.
+            year: Years to return.
+
+        Returns:
+            Dataframe with normalized column names and true dtypes.
+
+        """
+        params = {
+            "Method": "GetData",
+            "DatasetName": cls.DATASET,
+            "TableName": table_id,
+            "Year": year,
+        }
+        results = _API.get(params, api_key=api_key)
+        results = results["Data"]
+        results = (
+            pd.DataFrame(results)
+            .rename(
+                columns={
+                    "TableName": "table_id",
+                    "SeriesCode": "series_code",
+                    "LineNumber": "line",
+                    "LineDescription": "line_description",
+                    "TimePeriod": "year",
+                    "METRIC_NAME": "metric",
+                    "CL_UNIT": "units",
+                    "UNIT_MULT": "e",
+                    "DataValue": "value",
+                }
+            )
+            .astype(
+                {
+                    "table_id": "category",
+                    "series_code": "category",
+                    "line": "int16",
+                    "line_description": "object",
+                    "year": "int16",
+                    "metric": "category",
+                    "units": "category",
+                    "e": "int16",
+                }
+            )
+        )
+        results["value"] = results["value"].str.replace(",", "").astype("float32")
+        return results
+
+
 class _GDPByIndustry(_DatasetAPI):
     """GDP (a single summary statistic) for each industry.
 
@@ -449,6 +519,9 @@ class _NIPA(_DatasetAPI):
 class _API:
     """Collection of BEA APIs."""
 
+    #: "FixedAssets" dataset API.
+    fixed_assets: ClassVar[type[_FixedAssets]] = _FixedAssets
+
     #: "GdpByIndustry" dataset API.
     gdp_by_industry: ClassVar[type[_GDPByIndustry]] = _GDPByIndustry
 
@@ -472,6 +545,14 @@ class _API:
 
     #: BEA API URL.
     url: ClassVar[str] = "https://apps.bea.gov/api/data"
+
+    @classmethod
+    def _api_error_as_response(cls, error: dict) -> requests.Response:
+        """Convert an API error to a :class:`requests.Response` object."""
+        response = requests.Response()
+        response.status_code = int(error.pop("APIErrorCode"))
+        response._content = json.dumps(error)
+        return response
 
     @classmethod
     def get(
@@ -507,7 +588,12 @@ class _API:
         params.update({"UserID": api_key, "ResultFormat": "JSON"})
         response = requests.get(cls.url, params=params)
         cls.throttle_watchdog.update(api_key, response)
-        results = json.loads(response.content)["BEAAPI"]["Results"]
+        response.raise_for_status()
+        content = json.loads(response.content)["BEAAPI"]
+        if "Error" in content:
+            error = cls._api_error_as_response(content["Error"])
+            raise requests.RequestException(response.request, error, error.content)
+        results = content["Results"]
         if results_key:
             results = results[results_key]
         if return_type:
