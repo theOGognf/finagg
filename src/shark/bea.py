@@ -36,6 +36,7 @@ import requests_cache
 
 requests_cache.install_cache("bea_api", ignored_parameters=["UserId", "ResultFormat"])
 
+
 _API_KEY = TypeVar("_API_KEY", bound=str)
 _THROTTLE_WATCHDOG_STATE = TypeVar(
     "_THROTTLE_WATCHDOG_STATE", bound="_ThrottleWatchdog.State"
@@ -576,6 +577,10 @@ class _API:
             A list of result dictionaries or a dataframe, depending
             on the dataset.
 
+        Raises:
+            RuntimeError: If no BEA API key is passed or found.
+            BEAAPIException: If a BEA API error occurs.
+
         """
         api_key = api_key or os.environ.get("BEA_API_KEY", None)
         if not api_key:
@@ -592,7 +597,7 @@ class _API:
         content = json.loads(response.content)["BEAAPI"]
         if "Error" in content:
             error = cls._api_error_as_response(content["Error"])
-            raise requests.RequestException(response.request, error, error.content)
+            raise BEAAPIError(response.request, error, error.content)
         results = content["Results"]
         if results_key:
             results = results[results_key]
@@ -659,3 +664,7 @@ class _API:
 
 #: Public-facing BEA API.
 api = _API
+
+
+class BEAAPIError(requests.RequestException):
+    """Custom exception for BEA API errors."""
