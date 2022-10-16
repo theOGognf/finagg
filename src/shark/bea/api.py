@@ -24,6 +24,7 @@ Examples:
 import json
 import logging
 import os
+import pathlib
 import sys
 import time
 from abc import ABC, abstractmethod
@@ -44,8 +45,17 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+_API_CACHE_PATH = os.environ.get(
+    "BEA_API_CACHE_PATH",
+    pathlib.Path(__file__).resolve().parent.parent.parent.parent
+    / "data"
+    / "bea_api_cache",
+)
+_API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
+_API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+
 requests_cache.install_cache(
-    "bea_api",
+    _API_CACHE_PATH,
     ignored_parameters=["UserId", "ResultFormat"],
     expire_after=timedelta(weeks=1),
 )
@@ -211,7 +221,7 @@ class _Dataset(ABC):
     @property
     @abstractmethod
     def DATASET(cls) -> str:
-        """Dataset APIs must define this class var."""
+        """Dataset API name."""
 
     @classmethod
     @abstractmethod
@@ -278,6 +288,7 @@ class _FixedAssets(_Dataset):
             df = df["Data"]
             df = (
                 pd.DataFrame(df)
+                .drop("NoteRef", axis=1)
                 .rename(
                     columns={
                         "TableName": "table_id",
@@ -550,6 +561,9 @@ class _API:
 
     #: Throttling-prevention strategy. Tracks throttling metrics for each API key.
     _throttle_watchdog: ClassVar[_ThrottleWatchdog] = _ThrottleWatchdog()
+
+    #: Path to BEA API requests cache.
+    cache_path: ClassVar[str] = str(_API_CACHE_PATH)
 
     #: "FixedAssets" dataset API.
     fixed_assets: ClassVar[type[_FixedAssets]] = _FixedAssets
