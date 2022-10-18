@@ -367,6 +367,7 @@ class _GDPByIndustry(_Dataset):
         results = results["Data"]
         return (
             pd.DataFrame(results)
+            .drop("NoteRef", axis=1)
             .rename(
                 columns={
                     "TableID": "table_id",
@@ -376,7 +377,6 @@ class _GDPByIndustry(_Dataset):
                     "Industry": "industry",
                     "IndustrYDescription": "industry_description",
                     "DataValue": "value",
-                    "NoteRef": "note_ref",
                 }
             )
             .astype(
@@ -388,7 +388,6 @@ class _GDPByIndustry(_Dataset):
                     "industry": "category",
                     "industry_description": "object",
                     "value": "float32",
-                    "note_ref": "object",
                 }
             )
         )
@@ -442,6 +441,7 @@ class _InputOutput(_Dataset):
         results = results["Data"]
         return (
             pd.DataFrame(results)
+            .drop("NoteRef", axis=1)
             .rename(
                 columns={
                     "TableID": "table_id",
@@ -453,7 +453,6 @@ class _InputOutput(_Dataset):
                     "ColDescr": "col_description",
                     "ColType": "col_type",
                     "DataValue": "value",
-                    "NoteRef": "note_ref",
                 }
             )
             .astype(
@@ -467,7 +466,6 @@ class _InputOutput(_Dataset):
                     "col_description": "object",
                     "col_type": "category",
                     "value": "float32",
-                    "note_ref": "object",
                 }
             )
         )
