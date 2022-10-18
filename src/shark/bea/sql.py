@@ -8,6 +8,7 @@ from sqlalchemy import Column, Float, Integer, MetaData, String, Table, create_e
 _SQL_DB_PATH = (
     pathlib.Path(__file__).resolve().parent.parent.parent.parent / "data" / "bea.sqlite"
 )
+
 _SQL_DB_URL = os.environ.get(
     "BEA_SQL_DB_URL",
     f"sqlite:///{_SQL_DB_PATH}",
@@ -15,7 +16,6 @@ _SQL_DB_URL = os.environ.get(
 
 #: SQLAlchemy engine used for all operations.
 engine = create_engine(_SQL_DB_URL)
-
 
 #: SQLAlchemy metadata used by all datasets.
 metadata = MetaData()
