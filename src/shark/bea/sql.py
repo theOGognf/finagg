@@ -38,7 +38,7 @@ fixed_assets = Table(
 gdp_by_industry = Table(
     "gdp_by_industry",
     metadata,
-    Column("table_id", String, primary_key=True),
+    Column("table_id", Integer, primary_key=True),
     Column("freq", String),
     Column("year", Integer, primary_key=True),
     Column("quarter", String, primary_key=True),
@@ -50,7 +50,7 @@ gdp_by_industry = Table(
 input_output = Table(
     "input_output",
     metadata,
-    Column("table_id", String, primary_key=True),
+    Column("table_id", Integer, primary_key=True),
     Column("year", Integer, primary_key=True),
     Column("row_code", String, primary_key=True),
     Column("row_description", String),
