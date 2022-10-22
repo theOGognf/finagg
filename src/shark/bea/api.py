@@ -57,7 +57,7 @@ _API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
 requests_cache.install_cache(
     _API_CACHE_PATH,
     ignored_parameters=["UserId", "ResultFormat"],
-    expire_after=timedelta(weeks=1),
+    expire_after=timedelta(days=1),
 )
 
 
@@ -220,7 +220,7 @@ class _Dataset(ABC):
     @classmethod
     @property
     @abstractmethod
-    def DATASET(cls) -> str:
+    def name(cls) -> str:
         """Dataset API name."""
 
     @classmethod
@@ -231,14 +231,14 @@ class _Dataset(ABC):
     @classmethod
     def get_parameter_list(cls, /, *, api_key: None | str = None) -> pd.DataFrame:
         """Return the list of parameters associated with the dataset API."""
-        return _API.get_parameter_list(cls.DATASET, api_key=api_key)
+        return _API.get_parameter_list(cls.name, api_key=api_key)
 
     @classmethod
     def get_parameter_values(
         cls, param: str, /, *, api_key: None | str = None
     ) -> pd.DataFrame:
         """Return all possible parameter values associated with the dataset API."""
-        return _API.get_parameter_values(cls.DATASET, param, api_key=api_key)
+        return _API.get_parameter_values(cls.name, param, api_key=api_key)
 
 
 class _FixedAssets(_Dataset):
@@ -250,7 +250,7 @@ class _FixedAssets(_Dataset):
     """
 
     #: BEA dataset API name.
-    DATASET: ClassVar[str] = "FixedAssets"
+    name: ClassVar[str] = "FixedAssets"
 
     @classmethod
     def get(
@@ -280,7 +280,7 @@ class _FixedAssets(_Dataset):
         for tid in table_id:
             params = {
                 "Method": "GetData",
-                "DatasetName": cls.DATASET,
+                "DatasetName": cls.name,
                 "TableName": tid,
                 "Year": year,
             }
@@ -329,7 +329,7 @@ class _GDPByIndustry(_Dataset):
     """
 
     #: BEA dataset API name.
-    DATASET: ClassVar[str] = "GdpByIndustry"
+    name: ClassVar[str] = "GdpByIndustry"
 
     @classmethod
     def get(
@@ -357,7 +357,7 @@ class _GDPByIndustry(_Dataset):
         """
         params = {
             "Method": "GetData",
-            "DatasetName": cls.DATASET,
+            "DatasetName": cls.name,
             "TableID": table_id,
             "Frequency": freq,
             "Year": year,
@@ -413,7 +413,7 @@ class _InputOutput(_Dataset):
     """
 
     #: BEA dataset API name.
-    DATASET: ClassVar[str] = "InputOutput"
+    name: ClassVar[str] = "InputOutput"
 
     @classmethod
     def get(
@@ -436,7 +436,7 @@ class _InputOutput(_Dataset):
         """
         params = {
             "Method": "GetData",
-            "DatasetName": cls.DATASET,
+            "DatasetName": cls.name,
             "TableID": table_id,
             "Year": year,
         }
@@ -483,7 +483,7 @@ class _NIPA(_Dataset):
     """
 
     #: BEA dataset API name.
-    DATASET: ClassVar[str] = "NIPA"
+    name: ClassVar[str] = "NIPA"
 
     @classmethod
     def get(
@@ -515,7 +515,7 @@ class _NIPA(_Dataset):
         for tid in table_id:
             params = {
                 "Method": "GetData",
-                "DatasetName": cls.DATASET,
+                "DatasetName": cls.name,
                 "TableName": tid,
                 "Year": year,
                 "Frequency": freq,
