@@ -363,33 +363,36 @@ class _GDPByIndustry(_Dataset):
             "Year": year,
             "Industry": industry,
         }
-        (results,) = _API.get(params, api_key=api_key)
-        results = results["Data"]
-        return (
-            pd.DataFrame(results)
-            .drop("NoteRef", axis=1)
-            .rename(
-                columns={
-                    "TableID": "table_id",
-                    "Frequency": "freq",
-                    "Year": "year",
-                    "Quarter": "quarter",
-                    "Industry": "industry",
-                    "IndustrYDescription": "industry_description",
-                    "DataValue": "value",
-                }
-            )
-            .astype(
-                {
-                    "table_id": "int16",
-                    "freq": "category",
-                    "year": "int16",
-                    "quarter": "category",
-                    "industry": "category",
-                    "industry_description": "object",
-                    "value": "float32",
-                }
-            )
+        (df,) = _API.get(params, api_key=api_key)
+        df = df["Data"]
+        df = pd.DataFrame(df)
+
+        def _roman_to_int(item: str) -> int:
+            _map = {"I": 1, "II": 2, "III": 3, "IV": 4}
+            return _map[item]
+
+        df["Quarter"] = df["Quarter"].apply(_roman_to_int)
+        df.drop("NoteRef", axis=1, inplace=True)
+        return df.rename(
+            columns={
+                "TableID": "table_id",
+                "Frequency": "freq",
+                "Year": "year",
+                "Quarter": "quarter",
+                "Industry": "industry",
+                "IndustrYDescription": "industry_description",
+                "DataValue": "value",
+            }
+        ).astype(
+            {
+                "table_id": "int16",
+                "freq": "category",
+                "year": "int16",
+                "quarter": "category",
+                "industry": "category",
+                "industry_description": "object",
+                "value": "float32",
+            }
         )
 
 
@@ -521,7 +524,7 @@ class _NIPA(_Dataset):
             df = df["Data"]
             df = pd.DataFrame(df)
             df[["Year", "Quarter"]] = df["TimePeriod"].str.split("Q", n=1, expand=True)
-            df["Quarter"] = "Q" + df["Quarter"].astype(str)
+            df["Quarter"] = df["Quarter"].astype(int)
             df.drop(["TimePeriod", "NoteRef"], axis=1, inplace=True)
             df = df.rename(
                 columns={
@@ -543,13 +546,13 @@ class _NIPA(_Dataset):
                     "line": "int16",
                     "line_description": "object",
                     "year": "int16",
-                    "quarter": "category",
+                    "quarter": "int16",
                     "metric": "category",
                     "units": "category",
                     "e": "int16",
-                    "value": "float32",
                 }
             )
+            df["value"] = df["value"].str.replace(",", "").astype("float32")
             results.append(df)
         return pd.concat(results)
 
