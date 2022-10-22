@@ -127,7 +127,7 @@ class _Tickers(_Dataset):
 
 
 class _API:
-    """Collection of SEC APIs."""
+    """Collection of SEC EDGAR APIs."""
 
     #: Mapping of (uppercase) tickers to SEC CIK strings.
     _tickers_to_cik: ClassVar[dict[str, str]] = {}
@@ -160,6 +160,16 @@ class _API:
 
     @classmethod
     def get(cls, url: str, /, *, user_agent: None | str = None) -> requests.Response:
+        """SEC EDGAR API request helper.
+
+        Args:
+            url: Complete URL to get from.
+            user_agent: Required user agent header declaration to avoid errors.
+
+        Returns:
+            Successful responses.
+
+        """
         user_agent = user_agent or os.environ.get("SEC_API_USER_AGENT", None)
         if not user_agent:
             raise RuntimeError(
