@@ -81,19 +81,63 @@ class _CompanyConcept(_Dataset):
             raise ValueError("Must provide a `cik` or a `ticker`")
 
         if ticker:
-            cik = str(_API.cik_lookup(ticker))
+            cik = str(_API.get_cik(ticker))
 
-        cik = cik.zfill(10)
+        cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik, taxonomy=taxonomy, tag=tag)
         response = _API.get(url, user_agent=user_agent)
         content = json.loads(response.content)
-        df = pd.DataFrame(content["units"][units])
-        return df.rename(columns={"val": "value"})
+        return pd.DataFrame(content["units"][units])
 
 
 class _CompanyFacts(_Dataset):
+    """Get all XBRL disclosures from a single company (CIK)."""
+
     #: API URL.
-    url: ClassVar[str] = "https://data.sec.gov/api/xbrl/companyfacts/CIK{}.json"
+    url: ClassVar[str] = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
+
+    @classmethod
+    def get(
+        cls,
+        /,
+        *,
+        cik: None | str = None,
+        ticker: None | str = None,
+        user_agent: None | str = None,
+    ) -> pd.DataFrame:
+        """Return all XBRL disclosures from a single company (CIK).
+
+        Args:
+            cik: Company SEC CIK. Mutually exclusive with `ticker`.
+            ticker: Company ticker. Mutually exclusive with `cik`.
+            user_agent: Self-declared bot header.
+
+        Returns:
+            Dataframe with normalized column names.
+
+        """
+        if bool(cik) == bool(ticker):
+            raise ValueError("Must provide a `cik` or a `ticker`")
+
+        if ticker:
+            cik = str(_API.get_cik(ticker))
+
+        cik = str(cik).zfill(10)
+        url = cls.url.format(cik=cik)
+        response = _API.get(url, user_agent=user_agent)
+        content = json.loads(response.content)["facts"]
+        results = []
+        for taxonomy, tag_dict in content.items():
+            for tag, data in tag_dict.items():
+                for col, rows in data["units"].items():
+                    df = pd.DataFrame(rows)
+                    df["taxonomy"] = taxonomy
+                    df["tag"] = tag
+                    df["label"] = data["label"]
+                    df["description"] = data["description"]
+                    df["units"] = col
+                    results.append(df)
+        return pd.concat(results)
 
 
 class _Frames(_Dataset):
@@ -149,16 +193,6 @@ class _API:
     tickers: ClassVar[type[_Tickers]] = _Tickers
 
     @classmethod
-    def cik_lookup(cls, ticker: str, /, *, user_agent: None | str = None) -> str:
-        """Return a ticker's SEC CIK."""
-        if not cls._tickers_to_cik:
-            response = cls.get(_Tickers.url, user_agent=user_agent)
-            content: dict[str, dict[str, str]] = json.loads(response.content)
-            for _, items in content.items():
-                cls._tickers_to_cik[items["ticker"]] = items["cik_str"]
-        return cls._tickers_to_cik[ticker.upper()]
-
-    @classmethod
     def get(cls, url: str, /, *, user_agent: None | str = None) -> requests.Response:
         """SEC EDGAR API request helper.
 
@@ -180,6 +214,16 @@ class _API:
         response = requests.get(url, headers={"User-Agent": user_agent})
         response.raise_for_status()
         return response
+
+    @classmethod
+    def get_cik(cls, ticker: str, /, *, user_agent: None | str = None) -> str:
+        """Return a ticker's SEC CIK."""
+        if not cls._tickers_to_cik:
+            response = cls.get(_Tickers.url, user_agent=user_agent)
+            content: dict[str, dict[str, str]] = json.loads(response.content)
+            for _, items in content.items():
+                cls._tickers_to_cik[items["ticker"]] = items["cik_str"]
+        return cls._tickers_to_cik[ticker.upper()]
 
 
 #: Public-facing SEC API.
