@@ -11,6 +11,8 @@ import pandas as pd
 import requests
 import requests_cache
 
+from ..utils import snake_case
+
 _API_CACHE_PATH = os.environ.get(
     "SEC_API_CACHE_PATH",
     pathlib.Path(__file__).resolve().parent.parent.parent.parent
@@ -27,9 +29,11 @@ requests_cache.install_cache(
 
 
 class _Dataset(ABC):
+    """Abstract SEC EDGAR API."""
+
     @classmethod
     @abstractmethod
-    def get(cls, *, api_key: None | str = None) -> pd.DataFrame:
+    def get(cls, *, api_key: None | str = None) -> dict | pd.DataFrame:
         """Main dataset API method."""
 
     @classmethod
@@ -87,7 +91,16 @@ class _CompanyConcept(_Dataset):
         url = cls.url.format(cik=cik, taxonomy=taxonomy, tag=tag)
         response = _API.get(url, user_agent=user_agent)
         content = json.loads(response.content)
-        return pd.DataFrame(content["units"][units])
+        units = content.pop("units")
+        results = []
+        for unit, data in units.items():
+            df = pd.DataFrame(data)
+            df["units"] = unit
+            results.append(df)
+        results = pd.concat(results)
+        for k, v in content.items():
+            results[k] = v
+        return results.rename(columns={"entityName": "entity", "val": "value"})
 
 
 class _CompanyFacts(_Dataset):
@@ -125,9 +138,10 @@ class _CompanyFacts(_Dataset):
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik)
         response = _API.get(url, user_agent=user_agent)
-        content = json.loads(response.content)["facts"]
+        content = json.loads(response.content)
+        facts = content.pop("facts")
         results = []
-        for taxonomy, tag_dict in content.items():
+        for taxonomy, tag_dict in facts.items():
             for tag, data in tag_dict.items():
                 for col, rows in data["units"].items():
                     df = pd.DataFrame(rows)
@@ -137,15 +151,124 @@ class _CompanyFacts(_Dataset):
                     df["description"] = data["description"]
                     df["units"] = col
                     results.append(df)
-        return pd.concat(results)
+        results = pd.concat(results)
+        for k, v in content.items():
+            results[k] = v
+        return results.rename(
+            columns={"entityName": "entity", "uom": "units", "val": "value"}
+        )
 
 
 class _Frames(_Dataset):
-    ...
+    """Get one fact for each reporting entity that most closely fits
+    the calendrical period requested.
+
+    """
+
+    #: API URL.
+    url: ClassVar[str] = (
+        "https://data.sec.gov/api/xbrl"
+        "/frames"
+        "/{taxonomy}/{tag}/{units}/CY{year}Q{quarter}I.json"
+    )
+
+    @classmethod
+    def get(
+        cls,
+        tag: str,
+        year: int | str,
+        quarter: int | str,
+        /,
+        *,
+        taxonomy: str = "us-gaap",
+        units: str = "USD",
+        user_agent: None | str = None,
+    ) -> pd.DataFrame:
+        """Get one fact for each reporting entity that most closely fits
+        the calendrical period requested.
+
+        Args:
+            tag: Valid tag within the given `taxonomy`.
+            year: Year to retrieve.
+            quarter: Quarter to retrieve.
+            taxonomy: Valid SEC EDGAR taxonomy.
+                See https://www.sec.gov/info/edgar/edgartaxonomies.shtml for taxonomies.
+            units: Current to view results in.
+            user_agent: Self-declared bot header.
+
+        Returns:
+            Dataframe with slightly improved column names.
+
+        """
+        url = cls.url.format(
+            taxonomy=taxonomy, tag=tag, units=units, year=year, quarter=quarter
+        )
+        response = _API.get(url, user_agent=user_agent)
+        content = json.loads(response.content)
+        data = content.pop("data")
+        df = pd.DataFrame(data)
+        for k, v in content.items():
+            df[k] = v
+        return df.rename(
+            columns={
+                "ccp": "frame",
+                "entityName": "entity",
+                "uom": "units",
+                "val": "value",
+            }
+        )
 
 
 class _Submissions(_Dataset):
-    ...
+    """Get an entity's metadata and current filing history."""
+
+    #: API URL.
+    url: ClassVar[str] = "https://data.sec.gov/submissions/CIK{cik}.json"
+
+    @classmethod
+    def get(
+        cls,
+        /,
+        *,
+        cik: None | str = None,
+        ticker: None | str = None,
+        user_agent: None | str = None,
+    ) -> dict:
+        """Return all recent filings from a single company (CIK).
+
+        Args:
+            cik: Company SEC CIK. Mutually exclusive with `ticker`.
+            ticker: Company ticker. Mutually exclusive with `cik`.
+            user_agent: Self-declared bot header.
+
+        Returns:
+            Metadata and a filings dataframe with normalized column names.
+
+        """
+        if bool(cik) == bool(ticker):
+            raise ValueError("Must provide a `cik` or a `ticker`")
+
+        if ticker:
+            cik = str(_API.get_cik(ticker))
+
+        cik = str(cik).zfill(10)
+        url = cls.url.format(cik=cik)
+        response = _API.get(url, user_agent=user_agent)
+        content = json.loads(response.content)
+        recent_filings = content.pop("filings")["recent"]
+        df = pd.DataFrame(recent_filings)
+        df.columns = map(snake_case, df.columns)
+        df.rename(columns={"accession_number": "accn"})
+        metadata = {snake_case(k): v for k, v in content.items()}
+        mailing_address = metadata["addresses"]["mailing"]
+        business_address = metadata["addresses"]["business"]
+        metadata["addresses"]["mailing"] = {
+            snake_case(k): v for k, v in mailing_address.items()
+        }
+        metadata["addresses"]["business"] = {
+            snake_case(k): v for k, v in business_address.items()
+        }
+        return {"metadata": metadata, "filings": df}
 
 
 class _Tickers(_Dataset):
@@ -182,8 +305,11 @@ class _API:
     #: Get the full history of a company's concept (taxonomy and tag).
     company_concept: ClassVar[type[_CompanyConcept]] = _CompanyConcept
 
+    #: Get all XBRL disclosures from a single company (CIK).
     company_facts: ClassVar[type[_CompanyFacts]] = _CompanyFacts
 
+    #: Get one fact for each reporting entity that most closely fits
+    #: the calendrical period requested.
     frames: ClassVar[type[_Frames]] = _Frames
 
     submissions: ClassVar[type[_Submissions]] = _Submissions
