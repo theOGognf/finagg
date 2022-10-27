@@ -217,6 +217,12 @@ class _ThrottleWatchdog(Generic[_API_KEY, _THROTTLE_WATCHDOG_STATE]):
 class _Dataset(ABC):
     """Interface for BEA Dataset APIs."""
 
+    def __init__(self) -> None:
+        raise RuntimeError(
+            "Instantiating a BEA API directly is not allowed. "
+            "Use one of the getter methods instead."
+        )
+
     @classmethod
     @property
     @abstractmethod
@@ -589,6 +595,12 @@ class _API:
 
     #: BEA API URL.
     url: ClassVar[str] = "https://apps.bea.gov/api/data"
+
+    def __init__(self) -> None:
+        raise RuntimeError(
+            "Instantiating a BEA API directly is not allowed. "
+            "Use one of the getter methods instead."
+        )
 
     @classmethod
     def _api_error_as_response(cls, error: dict) -> requests.Response:
