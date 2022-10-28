@@ -31,7 +31,7 @@ requests_cache.install_cache(
 class _Dataset(ABC):
     """Abstract SEC EDGAR API."""
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(
             "Instantiating an SEC API directly is not allowed. "
             "Use the `get` method instead."
@@ -324,7 +324,7 @@ class _API:
     #: an individual ticker's SEC CIK.
     tickers: ClassVar[type[_Tickers]] = _Tickers
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(
             "Instantiating an SEC API directly is not allowed. "
             "Use the `get` method instead."
