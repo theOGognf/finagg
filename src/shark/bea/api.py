@@ -99,7 +99,14 @@ class _ThrottleWatchdog(Generic[_API_KEY, _THROTTLE_WATCHDOG_STATE]):
 
         def __repr__(self) -> str:
             """Return a string representation of the state."""
-            return f"<{self.__class__.__qualname__}(api_key={self.api_key}, errors_per_minute={self.errors_per_minute}, requests_per_minute={self.requests_per_minute}, volume_per_minute={self.volume_per_minute})>"
+            return (
+                f"<{self.__class__.__qualname__}("
+                f"api_key={self.api_key}, "
+                f"errors_per_minute={self.errors_per_minute}, "
+                f"requests_per_minute={self.requests_per_minute}, "
+                f"volume_per_minute={self.volume_per_minute}"
+                ")>"
+            )
 
         @property
         def errors_per_minute(self) -> int:
