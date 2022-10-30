@@ -173,7 +173,7 @@ class _Dataset(ABC):
 
     @classmethod
     @abstractmethod
-    def get(cls, *, api_key: None | str = None) -> dict | pd.DataFrame:
+    def get(cls, *, user_agent: None | str = None) -> dict | pd.DataFrame:
         """Main dataset API method."""
 
     @classmethod
