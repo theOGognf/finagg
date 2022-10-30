@@ -60,7 +60,25 @@ class _DJIA(_Dataset):
         soup = BeautifulSoup(response.text, "html.parser")
         tbl = soup.find("table", {"class": "wikitable"})
         (df,) = pd.read_html(str(tbl))
-        return pd.DataFrame(df)
+        df = pd.DataFrame(df)
+
+        def _percent_to_fraction(item: str) -> float:
+            value, _ = item.split("%")
+            return float(value) / 100
+
+        df.drop("Notes", axis=1, inplace=True)
+        df = df.rename(
+            columns={
+                "Company": "company",
+                "Exchange": "exchange",
+                "Symbol": "ticker",
+                "Industry": "industry",
+                "Date added": "added",
+                "Index weighting": "weight",
+            }
+        )
+        df["weight"] = df["weight"].apply(_percent_to_fraction)
+        return df
 
 
 class _Nasdaq100(_Dataset):
@@ -76,7 +94,15 @@ class _Nasdaq100(_Dataset):
         soup = BeautifulSoup(response.text, "html.parser")
         tbl = soup.find_all("table", {"class": "wikitable"})[3]
         (df,) = pd.read_html(str(tbl))
-        return pd.DataFrame(df)
+        df = pd.DataFrame(df)
+        return df.rename(
+            columns={
+                "Company": "company",
+                "Ticker": "ticker",
+                "GICS Sector": "industry",
+                "GICS Sub-Industry": "sub_industry",
+            }
+        )
 
 
 class _SP500(_Dataset):
@@ -92,7 +118,20 @@ class _SP500(_Dataset):
         soup = BeautifulSoup(response.text, "html.parser")
         tbl = soup.find("table", {"class": "wikitable"})
         (df,) = pd.read_html(str(tbl))
-        return pd.DataFrame(df)
+        df = pd.DataFrame(df)
+        df.drop("SEC filings", axis=1, inplace=True)
+        return df.rename(
+            columns={
+                "Symbol": "ticker",
+                "Security": "company",
+                "GICS Sector": "industry",
+                "GICS Sub-Industry": "sub_industry",
+                "Headquarters Location": "headquarters",
+                "Date first added": "added",
+                "CIK": "cik",
+                "Founded": "founded",
+            }
+        )
 
 
 class _API:
