@@ -12,6 +12,9 @@ def scrape(
 ) -> dict[str, int]:
     """Scrape popular indices ticker data from the tickers API.
 
+    ALL TABLES ARE DROPPED PRIOR TO SCRAPING!
+    Scraped data is loaded into local tickers SQL tables.
+
     Args:
         djia: Whether to scrape DJIA tickers.
         sp500: Whether to scrape S&P 500 tickers.
@@ -32,7 +35,7 @@ def scrape(
     metadata.create_all(engine)
 
     with engine.connect() as conn:
-        indices_to_inserts = {}
+        indices_to_inserts = {"djia": 0, "sp500": 0, "nasdaq100": 0}
         if djia:
             df = api.djia.get()
             indices_to_inserts["djia"] = len(df.index)

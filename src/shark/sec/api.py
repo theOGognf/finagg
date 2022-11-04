@@ -1,4 +1,9 @@
-"""SEC EDGAR API."""
+"""SEC EDGAR API.
+
+See the official SEC EDGAR API page for more info:
+    https://www.sec.gov/edgar/sec-api-documentation
+
+"""
 
 import json
 import logging
@@ -35,7 +40,7 @@ _API_CACHE_PATH = os.environ.get(
 _API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
 _API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-requests_cache.install_cache(
+session = requests_cache.CachedSession(
     _API_CACHE_PATH,
     expire_after=timedelta(days=1),
 )
@@ -498,7 +503,7 @@ class _API:
                 f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
             )
         time.sleep(next_valid_request_dt)
-        response = requests.get(url, headers={"User-Agent": user_agent})
+        response = session.get(url, headers={"User-Agent": user_agent})
         cls._throttle_watchdog.update(user_agent, response)
         response.raise_for_status()
         return response

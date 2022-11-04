@@ -5,6 +5,9 @@ and appropriately-casted dtypes. Throttling-prevention is handled internally,
 sleeping for estimated quantities in an attempt to avoid server-side
 rate-limiting.
 
+See the official BEA API user guide for more info:
+    https://apps.bea.gov/api/_pdf/bea_web_service_api_user_guide.pdf
+
 Examples:
     List datasets.
     >>> import shark
@@ -31,6 +34,7 @@ from abc import ABC, abstractmethod
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from functools import cache
 from typing import ClassVar, Generic, Literal, Sequence, TypeVar
 
 import pandas as pd
@@ -54,7 +58,7 @@ _API_CACHE_PATH = os.environ.get(
 _API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
 _API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-requests_cache.install_cache(
+session = requests_cache.CachedSession(
     _API_CACHE_PATH,
     ignored_parameters=["UserId", "ResultFormat"],
     expire_after=timedelta(days=1),
@@ -659,7 +663,7 @@ class _API:
             )
         time.sleep(next_valid_request_dt)
         params.update({"UserID": api_key, "ResultFormat": "JSON"})
-        response = requests.get(cls.url, params=params)
+        response = session.get(cls.url, params=params)
         cls._throttle_watchdog.update(api_key, response)
         response.raise_for_status()
         content = json.loads(response.content)["BEAAPI"]
@@ -674,6 +678,7 @@ class _API:
         return results
 
     @classmethod
+    @cache
     def get_dataset_list(cls, /, *, api_key: None | str = None) -> pd.DataFrame:
         """Return a list of datasets provided by the BEA API."""
         params = {
@@ -684,6 +689,7 @@ class _API:
         )
 
     @classmethod
+    @cache
     def get_parameter_list(
         cls, dataset: str, /, *, api_key: None | str = None
     ) -> pd.DataFrame:
@@ -706,6 +712,7 @@ class _API:
         )
 
     @classmethod
+    @cache
     def get_parameter_values(
         cls, dataset: str, param: str, /, *, api_key: None | str = None
     ) -> pd.DataFrame:

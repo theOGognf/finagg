@@ -43,7 +43,7 @@ def scrape(
 ) -> dict[str, int]:
     """Scrape company XBRL disclosures from the SEC API.
 
-    ALL ROWS ARE DROPPED PRIOR TO SCRAPING!
+    ALL TABLES ARE DROPPED PRIOR TO SCRAPING!
     Scraped data is loaded into local SEC SQL tables.
 
     You can specify concepts by specifying tag-taxonomy

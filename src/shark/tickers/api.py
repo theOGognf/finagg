@@ -4,6 +4,7 @@ import os
 import pathlib
 from abc import ABC, abstractmethod
 from datetime import timedelta
+from functools import cache
 from typing import ClassVar, Type
 
 import pandas as pd
@@ -20,7 +21,7 @@ _API_CACHE_PATH = os.environ.get(
 _API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
 _API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-requests_cache.install_cache(
+session = requests_cache.CachedSession(
     _API_CACHE_PATH,
     expire_after=timedelta(weeks=1),
 )
@@ -60,6 +61,7 @@ class _DJIA(_Dataset):
     url: ClassVar[str] = "https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average"
 
     @classmethod
+    @cache
     def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
         """Get a dataframe containing data on the tickers in the DJIA."""
         response = _API.get(cls.url, user_agent=user_agent)
@@ -94,6 +96,7 @@ class _Nasdaq100(_Dataset):
     url: ClassVar[str] = "https://en.wikipedia.org/wiki/Nasdaq-100"
 
     @classmethod
+    @cache
     def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
         """Get a dataframe containing data on the tickers in the Nasdaq 100."""
         response = _API.get(cls.url, user_agent=user_agent)
@@ -118,6 +121,7 @@ class _SP500(_Dataset):
     url: ClassVar[str] = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 
     @classmethod
+    @cache
     def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
         """Get a dataframe containing data on the tickers in the S&P 500."""
         response = _API.get(cls.url, user_agent=user_agent)
@@ -177,11 +181,12 @@ class _API:
                 "Pass your user agent declaration to the API directly, or "
                 "set the `TICKERS_API_USER_AGENT` environment variable."
             )
-        response = requests.get(url, headers={"User-Agent": user_agent})
+        response = session.get(url, headers={"User-Agent": user_agent})
         response.raise_for_status()
         return response
 
     @classmethod
+    @cache
     def get_ticker_set(cls, *, user_agent: None | str = None) -> set[str]:
         """Get the set of tickers from all the indices."""
         tickers = set()
