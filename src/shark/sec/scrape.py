@@ -5,7 +5,8 @@ from typing import Callable
 import pandas as pd
 
 from .api import api
-from .sql import engine, metadata, tags
+from .sql import engine, metadata
+from .sql import tags as tags_table
 
 _TRANSFORMER = Callable[
     [
@@ -35,12 +36,19 @@ def get_unique_10q(df: pd.DataFrame, /, *, units: str = "USD") -> pd.DataFrame:
 def scrape(
     tickers: str | list[str],
     concepts: None | list[tuple[str, str]] = None,
+    tags: None | list[str] = None,
+    taxonomy: None | str = None,
     transformer: None | _TRANSFORMER = get_unique_10q,
 ) -> dict[str, int]:
     """Scrape company XBRL disclosures from the SEC API.
 
     ALL ROWS ARE DROPPED PRIOR TO SCRAPING!
     Scraped data is loaded into local SEC SQL tables.
+
+    You can specify concepts by specifying tag-taxonomy
+    pairs with the `concepts` arg or by specifying
+    many tags with one taxonomy using the `tags` and
+    `taxonomy` args.
 
     Dataframes can optionally be transformed by the callable
     `transformer` prior to being inserted into
@@ -51,6 +59,10 @@ def scrape(
         tickers: Company tickers to scrape.
         concepts: Taxonomy-tag pairs to scrape. If `None`,
             scrape all concepts.
+        tags: Tags to scrape. Mutually exclusive with the
+            `concepts` arg.
+        taxonomy: Taxonomy to scrape with `tags`. Mutually
+            exclusive with the `concepts` arg.
         transformer: Dataframe transformer callable.
             Called immediately prior to inserting the dataframe
             into the local SEC SQL table.
@@ -67,6 +79,16 @@ def scrape(
     if isinstance(tickers, str):
         tickers = [tickers]
 
+    if tags and taxonomy:
+        if concepts:
+            raise ValueError(
+                "The `concepts` and `tags` + `taxonomy` " "args are mutually exclusive."
+            )
+
+        concepts = []
+        for tag in tags:
+            concepts.append([taxonomy, tag])
+
     if not transformer:
         transformer = lambda x: x
 
@@ -80,7 +102,7 @@ def scrape(
                 df = api.company_facts.get(ticker=ticker)
                 df = transformer(df)
                 tickers_to_inserts[ticker] = len(df.index)
-                conn.execute(tags.insert(), df.to_dict(orient="records"))
+                conn.execute(tags_table.insert(), df.to_dict(orient="records"))
 
             else:
                 tickers_to_inserts[ticker] = 0
@@ -88,5 +110,5 @@ def scrape(
                     df = api.company_concept.get(tag, taxonomy=taxonomy, ticker=ticker)
                     df = transformer(df)
                     tickers_to_inserts[ticker] += len(df.index)
-                    conn.execute(tags.insert(), df.to_dict(orient="records"))
+                    conn.execute(tags_table.insert(), df.to_dict(orient="records"))
     return tickers_to_inserts

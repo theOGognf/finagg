@@ -41,6 +41,12 @@ class _Dataset(ABC):
         """Main dataset API method."""
 
     @classmethod
+    def get_ticker_list(cls, *, user_agent: None | str = None) -> list[str]:
+        """List the tickers in the index."""
+        df = cls.get(user_agent=user_agent)
+        return df["ticker"].tolist()
+
+    @classmethod
     @property
     @abstractmethod
     def url(cls) -> str:
@@ -138,13 +144,13 @@ class _API:
     """Collection of ticker APIs."""
 
     #: The Dow Jones Industrial Average.
-    djia: ClassVar[Type] = _DJIA
+    djia: ClassVar[Type[_DJIA]] = _DJIA
 
     #: The Nasdaq Composite 100.
-    nasdaq100: ClassVar[Type] = _Nasdaq100
+    nasdaq100: ClassVar[Type[_Nasdaq100]] = _Nasdaq100
 
     #: The Standard and Poor's 500.
-    sp500: ClassVar[Type] = _SP500
+    sp500: ClassVar[Type[_SP500]] = _SP500
 
     def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(
@@ -174,6 +180,15 @@ class _API:
         response = requests.get(url, headers={"User-Agent": user_agent})
         response.raise_for_status()
         return response
+
+    @classmethod
+    def get_ticker_set(cls, *, user_agent: None | str = None) -> set[str]:
+        """Get the set of tickers from all the indices."""
+        tickers = set()
+        tickers.update(cls.djia.get_ticker_list(user_agent=user_agent))
+        tickers.update(cls.nasdaq100.get_ticker_list(user_agent=user_agent))
+        tickers.update(cls.sp500.get_ticker_list(user_agent=user_agent))
+        return tickers
 
 
 #: Public-facing tickers API.
