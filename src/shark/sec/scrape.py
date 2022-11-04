@@ -4,6 +4,7 @@ from typing import Callable
 
 import pandas as pd
 
+from ..tickers import api as tickers_api
 from .api import api
 from .sql import engine, metadata
 from .sql import tags as tags_table
@@ -78,6 +79,20 @@ def scrape(
     """
     if isinstance(tickers, str):
         tickers = [tickers]
+
+    updates = set()
+    tickers = set(tickers)
+    for ticker in tickers:
+        match ticker.upper():
+            case "DJIA":
+                updates.update(tickers_api.djia.get_ticker_list())
+
+            case "NASDAQ100":
+                updates.update(tickers_api.nasdaq100.get_ticker_list())
+
+            case "SP500":
+                updates.update(tickers_api.sp500.get_ticker_list())
+    tickers |= updates
 
     if tags and taxonomy:
         if concepts:
