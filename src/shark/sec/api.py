@@ -5,7 +5,6 @@ See the official SEC EDGAR API page for more info:
 
 """
 
-import json
 import logging
 import os
 import pathlib
@@ -235,7 +234,7 @@ class _CompanyConcept(_Dataset):
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik, taxonomy=taxonomy, tag=tag)
         response = _API.get(url, user_agent=user_agent)
-        content = json.loads(response.content)
+        content = response.json()
         units = content.pop("units")
         results = []
         for unit, data in units.items():
@@ -283,7 +282,7 @@ class _CompanyFacts(_Dataset):
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik)
         response = _API.get(url, user_agent=user_agent)
-        content = json.loads(response.content)
+        content = response.json()
         facts = content.pop("facts")
         results = []
         for taxonomy, tag_dict in facts.items():
@@ -349,7 +348,7 @@ class _Frames(_Dataset):
             taxonomy=taxonomy, tag=tag, units=units, year=year, quarter=quarter
         )
         response = _API.get(url, user_agent=user_agent)
-        content = json.loads(response.content)
+        content = response.json()
         data = content.pop("data")
         df = pd.DataFrame(data)
         for k, v in content.items():
@@ -399,7 +398,7 @@ class _Submissions(_Dataset):
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik)
         response = _API.get(url, user_agent=user_agent)
-        content = json.loads(response.content)
+        content = response.json()
         recent_filings = content.pop("filings")["recent"]
         df = pd.DataFrame(recent_filings)
         df.columns = map(snake_case, df.columns)
@@ -433,7 +432,7 @@ class _Tickers(_Dataset):
 
         """
         response = _API.get(cls.url, user_agent=user_agent)
-        content: dict[str, dict[str, str]] = json.loads(response.content)
+        content: dict[str, dict[str, str]] = response.json()
         df = pd.DataFrame([items for _, items in content.items()])
         return df.rename(columns={"cik_str": "cik"})
 
@@ -513,7 +512,7 @@ class _API:
         """Return a ticker's SEC CIK."""
         if not cls._tickers_to_cik:
             response = cls.get(_Tickers.url, user_agent=user_agent)
-            content: dict[str, dict[str, str]] = json.loads(response.content)
+            content: dict[str, dict[str, str]] = response.json()
             for _, items in content.items():
                 cls._tickers_to_cik[items["ticker"]] = items["cik_str"]
         return cls._tickers_to_cik[ticker.upper()]

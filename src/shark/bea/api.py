@@ -666,7 +666,7 @@ class _API:
         response = session.get(cls.url, params=params)
         cls._throttle_watchdog.update(api_key, response)
         response.raise_for_status()
-        content = json.loads(response.content)["BEAAPI"]
+        content = response.json()["BEAAPI"]
         if "Error" in content:
             error = cls._api_error_as_response(content["Error"])
             raise BEAAPIError(response.request, error, error.content)
