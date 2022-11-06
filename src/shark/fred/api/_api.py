@@ -25,7 +25,7 @@ session = requests_cache.CachedSession(
 )
 
 
-class _Dataset(ABC):
+class Dataset(ABC):
     """Abstract FRED API."""
 
     def __init__(self, *args, **kwargs) -> None:
@@ -56,6 +56,7 @@ def get(url: str, params: dict, /, *, api_key: None | str = None) -> requests.Re
             "set the `FRED_API_KEY` environment variable."
         )
     params.update({"api_key": api_key, "file_type": "json"})
+    params = {k: v for k, v in params.items() if v is not None}
     response = session.get(url, params=params)
     response.raise_for_status()
     return response

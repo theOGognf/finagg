@@ -1,3 +1,4 @@
 """FRED top-level interface."""
 
-from .category import _Category as category
+from .category import category
+from .release import release

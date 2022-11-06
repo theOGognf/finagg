@@ -5,7 +5,7 @@ import pathlib
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from functools import cache
-from typing import ClassVar, Type
+from typing import ClassVar
 
 import pandas as pd
 import requests
@@ -147,14 +147,17 @@ class _SP500(_Dataset):
 class _API:
     """Collection of ticker APIs."""
 
+    #: Path to tickers API requests cache.
+    cache_path: ClassVar[str] = str(_API_CACHE_PATH)
+
     #: The Dow Jones Industrial Average.
-    djia: ClassVar[Type[_DJIA]] = _DJIA
+    djia: ClassVar[type[_DJIA]] = _DJIA
 
     #: The Nasdaq Composite 100.
-    nasdaq100: ClassVar[Type[_Nasdaq100]] = _Nasdaq100
+    nasdaq100: ClassVar[type[_Nasdaq100]] = _Nasdaq100
 
     #: The Standard and Poor's 500.
-    sp500: ClassVar[Type[_SP500]] = _SP500
+    sp500: ClassVar[type[_SP500]] = _SP500
 
     def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(
