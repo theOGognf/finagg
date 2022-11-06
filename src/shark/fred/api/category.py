@@ -2,180 +2,227 @@ from typing import ClassVar
 
 import pandas as pd
 
-from ._api import Dataset, get
+from ._api import Dataset, get, pformat
 
 
 class _Children(Dataset):
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/category/children"
+    endpoint: ClassVar[str] = "category/children"
 
     @classmethod
     def get(
         cls,
         category_id: int = 0,
         *,
-        realtime_start: str = "9999-12-31",
-        realtime_end: str = "9999-12-31",
-        api_key: None | str = None
+        realtime_start: None | str = None,
+        realtime_end: None | str = None,
+        api_key: None | str = None,
     ) -> pd.DataFrame:
-        params = {
-            "category_id": category_id,
-            "realtime_start": realtime_start,
-            "realtime_end": realtime_end,
-        }
-        response = get(cls.url, params, api_key=api_key)
-        return response
+        params = pformat(category_id, realtime_start, realtime_end, api_key)
+        data = get(cls.url, params).json()
+        data = data["categories"]
+        return pd.DataFrame(data)
 
 
 class _Related(Dataset):
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/category/related"
+
+    #: FRED API endpoint name.
+    endpoint: ClassVar[str] = "category/related"
 
     @classmethod
     def get(
         cls,
         category_id: int = 0,
         *,
-        realtime_start: str = "9999-12-31",
-        realtime_end: str = "9999-12-31",
-        api_key: None | str = None
+        realtime_start: None | str = None,
+        realtime_end: None | str = None,
+        api_key: None | str = None,
     ) -> pd.DataFrame:
-        params = {
-            "category_id": category_id,
-            "realtime_start": realtime_start,
-            "realtime_end": realtime_end,
-        }
-        response = get(cls.url, params, api_key=api_key)
-        return response
+        params = pformat(category_id, realtime_start, realtime_end, api_key)
+        data = get(cls.url, params).json()
+        data = data["categories"]
+        return pd.DataFrame(data)
 
 
 class _Series(Dataset):
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/category/series"
+    endpoint: ClassVar[str] = "category/series"
 
     @classmethod
     def get(
         cls,
         category_id: int = 0,
         *,
-        realtime_start: str = "9999-12-31",
-        realtime_end: str = "9999-12-31",
-        limit: int = 1000,
-        offset: int = 0,
-        order_by: str = "series_id",
-        sort_order: str = "asc",
+        realtime_start: None | str = None,
+        realtime_end: None | str = None,
+        limit: None | int = 1000,
+        offset: None | int = 0,
+        order_by: None | str = "series_id",
+        sort_order: None | str = "asc",
         filter_variable: None | str = None,
         filter_value: None | str = None,
         tag_names: None | str = None,
         exclude_tag_names: None | str = None,
-        api_key: None | str = None
+        api_key: None | str = None,
     ) -> pd.DataFrame:
-        params = {
-            "category_id": category_id,
-            "realtime_start": realtime_start,
-            "realtime_end": realtime_end,
-            "limit": limit,
-            "offset": offset,
-            "order_by": order_by,
-            "sort_order": sort_order,
-            "filter_variable": filter_variable,
-            "fitler_value": filter_value,
-            "tag_names": tag_names,
-            "exclude_tag_names": exclude_tag_names,
-        }
-        response = get(cls.url, params, api_key=api_key)
-        return response
+        params = pformat(
+            category_id,
+            realtime_start,
+            realtime_end,
+            limit,
+            offset,
+            order_by,
+            sort_order,
+            filter_variable,
+            filter_value,
+            tag_names,
+            exclude_tag_names,
+            api_key,
+        )
+        data = get(cls.url, params).json()
+        data = data["seriess"]
+        return pd.DataFrame(data)
 
 
 class _Tags(Dataset):
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/category/tags"
+    endpoint: ClassVar[str] = "category/tags"
 
     @classmethod
     def get(
         cls,
         category_id: int = 0,
         *,
-        realtime_start: str = "9999-12-31",
-        realtime_end: str = "9999-12-31",
-        limit: int = 1000,
-        offset: int = 0,
-        order_by: str = "series_id",
-        sort_order: str = "asc",
+        realtime_start: None | str = None,
+        realtime_end: None | str = None,
+        limit: None | int = 1000,
+        offset: None | int = 0,
+        order_by: None | str = "series_id",
+        sort_order: None | str = "asc",
         tag_names: None | str = None,
         tag_group_id: None | str = None,
         search_text: None | str = None,
-        api_key: None | str = None
+        api_key: None | str = None,
     ) -> pd.DataFrame:
-        params = {
-            "category_id": category_id,
-            "realtime_start": realtime_start,
-            "realtime_end": realtime_end,
-            "limit": limit,
-            "offset": offset,
-            "order_by": order_by,
-            "sort_order": sort_order,
-            "tag_names": tag_names,
-            "tag_group_id": tag_group_id,
-            "search_text": search_text,
-        }
-        response = get(cls.url, params, api_key=api_key)
-        return response
+        params = pformat(
+            category_id,
+            realtime_start,
+            realtime_end,
+            limit,
+            offset,
+            order_by,
+            sort_order,
+            tag_names,
+            tag_group_id,
+            search_text,
+            api_key,
+        )
+        data = get(cls.url, params).json()
+        data = data["tags"]
+        return pd.DataFrame(data)
 
 
 class _RelatedTags(Dataset):
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/category/related_tags"
+    #: FRED API endpoint name.
+    endpoint: ClassVar[str] = "category/related_tags"
 
     @classmethod
     def get(
         cls,
-        category_id: int = 0,
+        category_id: int,
+        /,
         *,
-        realtime_start: str = "9999-12-31",
-        realtime_end: str = "9999-12-31",
-        limit: int = 1000,
-        offset: int = 0,
-        order_by: str = "series_id",
-        sort_order: str = "asc",
+        realtime_start: None | str = None,
+        realtime_end: None | str = None,
+        limit: None | int = 1000,
+        offset: None | int = 0,
+        order_by: None | str = "series_id",
+        sort_order: None | str = "asc",
         tag_names: None | str = None,
         exclude_tag_names: None | str = None,
         search_text: None | str = None,
         tag_group_id: None | str = None,
-        api_key: None | str = None
+        api_key: None | str = None,
     ) -> pd.DataFrame:
-        params = {
-            "category_id": category_id,
-            "realtime_start": realtime_start,
-            "realtime_end": realtime_end,
-            "limit": limit,
-            "offset": offset,
-            "order_by": order_by,
-            "sort_order": sort_order,
-            "tag_names": tag_names,
-            "exclude_tag_names": exclude_tag_names,
-            "search_text": search_text,
-            "tag_group_id": tag_group_id,
-        }
-        response = get(cls.url, params, api_key=api_key)
-        return response
+        """Get tags related to a category.
+
+        Args:
+            category_id:
+            realtime_start:
+            realtime_end:
+            limit:
+            offset:
+            order_by:
+            sort_order:
+            tag_names:
+            exclude_tag_names:
+            search_text:
+            tag_group_id:
+            api_key: Optional FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        """
+        params = pformat(
+            category_id,
+            realtime_start,
+            realtime_end,
+            limit,
+            offset,
+            order_by,
+            sort_order,
+            tag_names,
+            exclude_tag_names,
+            search_text,
+            tag_group_id,
+            api_key,
+        )
+        data = get(cls.url, params).json()
+        data = data["tags"]
+        return pd.DataFrame(data)
 
 
 class _Category(Dataset):
-    """Collection of `fred/category` APIs."""
+    """Collection of `fred/category` APIs.
 
+    See the related FRED API documentation at:
+        https://fred.stlouisfed.org/docs/api/fred/category.html
+
+    """
+
+    #: Get the children of a category.
     children: ClassVar[type[_Children]] = _Children
 
+    #: FRED API endpoint name.
+    endpoint: ClassVar[str] = "category"
+
+    #: Get categories related to a category.
     related: ClassVar[type[_Related]] = _Related
 
+    #: Get tags related to a category.
     related_tags: ClassVar[type[_RelatedTags]] = _RelatedTags
 
+    #: Get a category's series.
     series: ClassVar[type[_Series]] = _Series
 
+    #: Get a category's tags.
     tags: ClassVar[type[_Tags]] = _Tags
-
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/category"
 
     @classmethod
     def get(cls, category_id: int = 0, *, api_key: None | str = None) -> pd.DataFrame:
-        params = {"category_id": category_id}
-        response = get(cls.url, params, api_key=api_key)
-        return response
+        """Get a category's details.
+
+        Args:
+            category_id: The category's ID. Use the
+                `category/children` API to explore categories.
+            api_key: Optional FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            Dataframe of category details.
+
+        """
+        params = pformat(category_id, api_key)
+        data = get(cls.url, params).json()
+        data = data["categories"]
+        return pd.DataFrame(data)
 
 
+#: Public-facing fred/category API.
 category = _Category

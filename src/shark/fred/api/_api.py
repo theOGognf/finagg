@@ -1,9 +1,11 @@
 """Abstract FRED API definition."""
 
+import inspect
 import os
 import pathlib
 from abc import ABC, abstractmethod
 from datetime import timedelta
+from typing import Any
 
 import pandas as pd
 import requests
@@ -35,20 +37,55 @@ class Dataset(ABC):
         )
 
     @classmethod
+    @property
+    @abstractmethod
+    def endpoint(cls) -> str:
+        """Request API URL endpoint after the base URL."""
+
+    @classmethod
     @abstractmethod
     def get(cls, *, api_key: None | str = None) -> pd.DataFrame:
         """Main dataset API method."""
 
     @classmethod
     @property
-    @abstractmethod
     def url(cls) -> str:
-        """Request API URL."""
+        """Full request API URL."""
+        return f"https://api.stlouisfed.org/fred/{cls.endpoint}"
 
 
-def get(url: str, params: dict, /, *, api_key: None | str = None) -> requests.Response:
-    """Main API get function used by all `_Dataset` classes."""
-    api_key = api_key or os.environ.get("FRED_API_KEY", None)
+def pformat(*_) -> dict[str, Any]:
+    """FRED API parameter formatting.
+
+    A little bit of magic to format parameters passed
+    to the `Dataset.get` method being called. Since
+    the FRED API uses PEP 8 -style parameters, we can
+    easily inspect the current method being called and format
+    the parameters/args for the request.
+
+    Really try to limit magic done in the project, but this
+    makes the functions so much easier to implement and
+    more maintainable (assuming the FRED API style doesn't change much).
+    Credit to https://stackoverflow.com/a/65927265.
+
+    Args:
+        *_: No usage. Exists so linters don't complain.
+
+    Returns:
+        Mapping of request parameter name to their value.
+
+    """
+    frame = inspect.currentframe().f_back
+    keys, _, _, values = inspect.getargvalues(frame)
+    params = {k: values[k] for k in keys if k != "cls"}
+    for k in ("realtime_start", "realtime_end"):
+        if k in params:
+            match params[k]:
+                case 0:
+                    params[k] = "1776-07-04"
+                case 1:
+                    params[k] = "9999-12-31"
+    api_key = params.pop("api_key") or os.environ.get("FRED_API_KEY", None)
     if not api_key:
         raise RuntimeError(
             "No FRED API key found. "
@@ -57,6 +94,11 @@ def get(url: str, params: dict, /, *, api_key: None | str = None) -> requests.Re
         )
     params.update({"api_key": api_key, "file_type": "json"})
     params = {k: v for k, v in params.items() if v is not None}
+    return params
+
+
+def get(url: str, params: dict, /) -> requests.Response:
+    """Main API get function used by all `Dataset.get` methods."""
     response = session.get(url, params=params)
     response.raise_for_status()
     return response

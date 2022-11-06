@@ -628,9 +628,7 @@ class _API:
         /,
         *,
         api_key: None | str = None,
-        results_key: None | str = None,
-        return_type: None | type[pd.DataFrame] = None,
-    ) -> list[dict] | pd.DataFrame:
+    ) -> list[dict]:
         """Main get method used by dataset APIs.
 
         Handles throttle watchdog state updates, API key validation,
@@ -640,8 +638,7 @@ class _API:
             params: Params specific to the API method.
 
         Returns:
-            A list of result dictionaries or a dataframe, depending
-            on the dataset.
+            A list of result dictionaries.
 
         Raises:
             RuntimeError: If no BEA API key is passed or found.
@@ -670,12 +667,7 @@ class _API:
         if "Error" in content:
             error = cls._api_error_as_response(content["Error"])
             raise BEAAPIError(response.request, error, error.content)
-        results = content["Results"]
-        if results_key:
-            results = results[results_key]
-        if return_type:
-            results = return_type(results)
-        return results
+        return content["Results"]
 
     @classmethod
     @cache
@@ -684,9 +676,8 @@ class _API:
         params = {
             "Method": "GetDatasetList",
         }
-        return cls.get(
-            params, api_key=api_key, results_key="Dataset", return_type=pd.DataFrame
-        )
+        results = cls.get(params, api_key=api_key)["Dataset"]
+        return pd.DataFrame(results)
 
     @classmethod
     @cache
@@ -707,9 +698,8 @@ class _API:
             "Method": "GetParameterList",
             "DatasetName": dataset,
         }
-        return cls.get(
-            params, api_key=api_key, results_key="Parameter", return_type=pd.DataFrame
-        )
+        results = cls.get(params, api_key=api_key)["Parameter"]
+        return pd.DataFrame(results)
 
     @classmethod
     @cache
@@ -732,9 +722,8 @@ class _API:
             "DatasetName": dataset,
             "ParameterName": param,
         }
-        return cls.get(
-            params, api_key=api_key, results_key="ParamValue", return_type=pd.DataFrame
-        )
+        results = cls.get(params, api_key=api_key)["ParamValue"]
+        return pd.DataFrame(results)
 
 
 #: Public-facing BEA API.
