@@ -155,6 +155,8 @@ class _Series(Dataset):
 
     endpoint: ClassVar[str] = "series"
 
+    observations: ClassVar[type[_Observations]] = _Observations
+
     release: ClassVar[type[_Release]] = _Release
 
     search: ClassVar[type[_Search]] = _Search

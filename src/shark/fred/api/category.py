@@ -6,6 +6,9 @@ from ._api import Dataset, get, pformat
 
 
 class _Children(Dataset):
+    """Get all child categories for a specific parent category."""
+
+    #: FRED API endpoint name.
     endpoint: ClassVar[str] = "category/children"
 
     @classmethod
@@ -83,24 +86,67 @@ class _Series(Dataset):
 
 
 class _Tags(Dataset):
+    """Get a category's tags."""
+
+    #: FRED API endpoint name.
     endpoint: ClassVar[str] = "category/tags"
 
     @classmethod
     def get(
         cls,
-        category_id: int = 0,
+        category_id: int,
+        /,
         *,
         realtime_start: None | str = None,
         realtime_end: None | str = None,
-        limit: None | int = 1000,
-        offset: None | int = 0,
-        order_by: None | str = "series_id",
-        sort_order: None | str = "asc",
         tag_names: None | str = None,
         tag_group_id: None | str = None,
         search_text: None | str = None,
+        limit: None | int = 1000,
+        offset: None | int = 0,
+        order_by: None | str = "series_count",
+        sort_order: None | str = "asc",
         api_key: None | str = None,
     ) -> pd.DataFrame:
+        """Get data for a category's tags.
+
+        Args:
+            category_id: The category's ID. Use the
+                `category/children` API to explore categories.
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            tag_names: Filtering of tag names to include in the results.
+            tag_group_id: A tag group ID to filter tags by.
+                Options include:
+                    - 'freq' = frequency
+                    - 'gen' = general or concept
+                    - 'geo' = geography
+                    - 'geot' = geography type
+                    - 'rls' = release
+                    - 'seas' = seasonal adjustment
+                    - 'src' = source
+            search_text: The words to find matching tags with.
+            limit: Maximum number of results to return.
+            offset: Result start offset.
+            order_by: Variable to order results by.
+                Options include:
+                    - 'series_count'
+                    - 'popularity'
+                    - 'created'
+                    - 'name'
+                    - 'group_id'
+            sort_order: Sort results in ascending ('asc') or
+                descending ('desc') order.
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            A dataframe containing data for a category's tags
+            according to the given parameters.
+
+        """
         params = pformat(
             category_id,
             realtime_start,
@@ -120,6 +166,8 @@ class _Tags(Dataset):
 
 
 class _RelatedTags(Dataset):
+    """Get data for tags related to a category."""
+
     #: FRED API endpoint name.
     endpoint: ClassVar[str] = "category/related_tags"
 
@@ -131,46 +179,68 @@ class _RelatedTags(Dataset):
         *,
         realtime_start: None | str = None,
         realtime_end: None | str = None,
+        tag_names: None | str | list[str] = None,
+        exclude_tag_names: None | str = None,
+        tag_group_id: None | str = None,
+        search_text: None | str = None,
         limit: None | int = 1000,
         offset: None | int = 0,
-        order_by: None | str = "series_id",
+        order_by: None | str = "series_count",
         sort_order: None | str = "asc",
-        tag_names: None | str = None,
-        exclude_tag_names: None | str = None,
-        search_text: None | str = None,
-        tag_group_id: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
-        """Get tags related to a category.
+        """Get data for tags related to a category.
 
         Args:
-            category_id:
-            realtime_start:
-            realtime_end:
-            limit:
-            offset:
-            order_by:
-            sort_order:
-            tag_names:
-            exclude_tag_names:
-            search_text:
-            tag_group_id:
-            api_key: Optional FRED API key. Pulled from the `FRED_API_KEY`
+            category_id: The category's ID. Use the
+                `category/children` API to explore categories.
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            tag_names: Find tags related to these tags.
+            exclude_tag_names: Find tags unrelated to these tags.
+            tag_group_id: A tag group ID to filter tags by.
+                Options include:
+                    - 'freq' = frequency
+                    - 'gen' = general or concept
+                    - 'geo' = geography
+                    - 'geot' = geography type
+                    - 'rls' = release
+                    - 'seas' = seasonal adjustment
+                    - 'src' = source
+            search_text: The words to find matching tags with.
+            limit: Maximum number of results to return.
+            offset: Result start offset.
+            order_by: Variable to order results by.
+                Options include:
+                    - 'series_count'
+                    - 'popularity'
+                    - 'created'
+                    - 'name'
+                    - 'group_id'
+            sort_order: Sort results in ascending ('asc') or
+                descending ('desc') order.
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
                 environment variable if left `None`.
+
+        Returns:
+            A dataframe containing data for tags related to a category
+            according to the given parameters.
 
         """
         params = pformat(
             category_id,
             realtime_start,
             realtime_end,
+            tag_names,
+            exclude_tag_names,
+            tag_group_id,
+            search_text,
             limit,
             offset,
             order_by,
             sort_order,
-            tag_names,
-            exclude_tag_names,
-            search_text,
-            tag_group_id,
             api_key,
         )
         data = get(cls.url, params).json()
@@ -211,7 +281,7 @@ class _Category(Dataset):
         Args:
             category_id: The category's ID. Use the
                 `category/children` API to explore categories.
-            api_key: Optional FRED API key. Pulled from the `FRED_API_KEY`
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
                 environment variable if left `None`.
 
         Returns:

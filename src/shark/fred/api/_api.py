@@ -68,6 +68,9 @@ def pformat(*_) -> dict[str, Any]:
     more maintainable (assuming the FRED API style doesn't change much).
     Credit to https://stackoverflow.com/a/65927265.
 
+    Beyond the magic, this function handles additional formatting
+    that the FRED API is expecting.
+
     Args:
         *_: No usage. Exists so linters don't complain.
 
@@ -77,7 +80,7 @@ def pformat(*_) -> dict[str, Any]:
     """
     frame = inspect.currentframe().f_back
     keys, _, _, values = inspect.getargvalues(frame)
-    params = {k: values[k] for k in keys if k != "cls"}
+    params = {k: values[k] for k in keys if k != "cls" and values[k] is not None}
     for k in ("realtime_start", "realtime_end"):
         if k in params:
             match params[k]:
@@ -85,7 +88,23 @@ def pformat(*_) -> dict[str, Any]:
                     params[k] = "1776-07-04"
                 case 1:
                     params[k] = "9999-12-31"
-    api_key = params.pop("api_key") or os.environ.get("FRED_API_KEY", None)
+
+    for k in ("exclude_tag_names", "tag_names"):
+        if k in params:
+            v = params[k]
+            if isinstance(v, str):
+                v = [v]
+            v = ";".join(v)
+            params[k] = v
+
+    if "vintage_dates" in params:
+        v = params[k]
+        if isinstance(v, str):
+            v = [v]
+        v = ",".join(v)
+        params[k] = v
+
+    api_key = params.pop("api_key", None) or os.environ.get("FRED_API_KEY", None)
     if not api_key:
         raise RuntimeError(
             "No FRED API key found. "
@@ -93,7 +112,6 @@ def pformat(*_) -> dict[str, Any]:
             "set the `FRED_API_KEY` environment variable."
         )
     params.update({"api_key": api_key, "file_type": "json"})
-    params = {k: v for k, v in params.items() if v is not None}
     return params
 
 
