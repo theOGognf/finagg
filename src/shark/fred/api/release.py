@@ -164,6 +164,9 @@ class _ReleaseDates(Dataset):
     ) -> pd.DataFrame:
         """Get data on release dates for a particular release of economic data.
 
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/release_dates.html
+
         Args:
             release_id: The ID for a release.
             realtime_start: Start date for fetching results
@@ -202,7 +205,7 @@ class _ReleaseDates(Dataset):
 
 
 class _Series(Dataset):
-    """"""
+    """Get data on the series related to a release of economic data."""
 
     #: FRED API endpoint name.
     endpoint: ClassVar[str] = "release/series"
@@ -210,7 +213,8 @@ class _Series(Dataset):
     @classmethod
     def get(
         cls,
-        release_id: int = 0,
+        release_id: int,
+        /,
         *,
         realtime_start: None | str = None,
         realtime_end: None | str = None,
@@ -220,23 +224,68 @@ class _Series(Dataset):
         sort_order: None | str = "asc",
         filter_variable: None | str = None,
         filter_value: None | str = None,
-        tag_names: None | str = None,
-        exclude_tag_names: None | str = None,
+        tag_names: None | str | list[str] = None,
+        exclude_tag_names: None | str | list[str] = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
+        """Get data on the series related to a release of economic data.
+
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/release_series.html
+
+        Args:
+            release_id: The ID for a release.
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            limit: Maximum number of results to return.
+            offset: Result start offset.
+            order_by: Variable to order results by.
+                Options include:
+                    - "series_id"
+                    - "title"
+                    - "units"
+                    - "frequency"
+                    - "seasonal_adjustment"
+                    - "realtime_start"
+                    - "realtime_end"
+                    - "last_updated"
+                    - "observation_start"
+                    - "observation_end"
+                    - "popularity"
+                    - "group_popularity"
+            sort_order: Sort results in ascending ("asc") or
+                descending ("desc") order.
+            filter_variable: The attribute (or column) to filter results by.
+                Options include:
+                    - "frequency"
+                    - "units"
+                    - "seasonal_adjustment"
+            filter_value: The value of `filter_variable` to filter results
+                by.
+            tag_names: Find tags related to these tags.
+            exclude_tag_names: Exclude tags related to these tags.
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            A dataframe containing series data for a release.
+
+        """
         params = pformat(
-            release_id,
-            realtime_start,
-            realtime_end,
-            limit,
-            offset,
-            order_by,
-            sort_order,
-            filter_variable,
-            filter_value,
-            tag_names,
-            exclude_tag_names,
-            api_key,
+            release_id=release_id,
+            realtime_start=realtime_start,
+            realtime_end=realtime_end,
+            limit=limit,
+            offset=offset,
+            order_by=order_by,
+            sort_order=sort_order,
+            filter_variable=filter_variable,
+            filter_value=filter_value,
+            tag_names=tag_names,
+            exclude_tag_names=exclude_tag_names,
+            api_key=api_key,
         )
         data = get(cls.url, params).json()
         data = data["seriess"]
@@ -244,17 +293,39 @@ class _Series(Dataset):
 
 
 class _Sources(Dataset):
+    """Get sources related to an economic release."""
+
+    #: FRED API endpoint name.
     endpoint: ClassVar[str] = "release/sources"
 
     @classmethod
     def get(
         cls,
-        release_id: int = 0,
+        release_id: int,
+        /,
         *,
         realtime_start: None | str = None,
         realtime_end: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
+        """Get sources related to an economic release.
+
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/release_sources.html
+
+        Args:
+            release_id:
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            A dataframe containing sources related to an economic release.
+
+        """
         params = pformat(release_id, realtime_start, realtime_end, api_key)
         data = get(cls.url, params).json()
         data = data["sources"]
@@ -379,6 +450,7 @@ class _Release(Dataset):
 
     tags: ClassVar[type[_Tags]] = _Tags
 
+    #: FRED API endpoint name.
     endpoint: ClassVar[str] = "release"
 
     @classmethod

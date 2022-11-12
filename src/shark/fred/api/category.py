@@ -124,8 +124,8 @@ class _Series(Dataset):
         sort_order: None | str = "asc",
         filter_variable: None | str = None,
         filter_value: None | str = None,
-        tag_names: None | str = None,
-        exclude_tag_names: None | str = None,
+        tag_names: None | str | list[str] = None,
+        exclude_tag_names: None | str | list[str] = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get series within a category.
@@ -201,7 +201,7 @@ class _Tags(Dataset):
         *,
         realtime_start: None | str = None,
         realtime_end: None | str = None,
-        tag_names: None | str = None,
+        tag_names: None | str | list[str] = None,
         tag_group_id: None | str = None,
         search_text: None | str = None,
         limit: None | int = 1000,
@@ -285,7 +285,7 @@ class _RelatedTags(Dataset):
         realtime_start: None | str = None,
         realtime_end: None | str = None,
         tag_names: None | str | list[str] = None,
-        exclude_tag_names: None | str = None,
+        exclude_tag_names: None | str | list[str] = None,
         tag_group_id: None | str = None,
         search_text: None | str = None,
         limit: None | int = 1000,
