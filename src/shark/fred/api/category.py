@@ -1,3 +1,10 @@
+"""The "fred/category" API.
+
+See the official FRED API docs for more info:
+    https://fred.stlouisfed.org/docs/api/fred/
+
+"""
+
 from typing import ClassVar
 
 import pandas as pd
@@ -20,13 +27,38 @@ class _Children(Dataset):
         realtime_end: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
-        params = pformat(category_id, realtime_start, realtime_end, api_key)
+        """Get all child categories for a specific parent category.
+
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/category_children.html
+
+        Args:
+            category_id: The category's ID. Use the
+                "category/children" API to explore categories.
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            A dataframe containing data for a category's children.
+
+        """
+        params = pformat(
+            category_id=category_id,
+            realtime_start=realtime_start,
+            realtime_end=realtime_end,
+            api_key=api_key,
+        )
         data = get(cls.url, params).json()
         data = data["categories"]
         return pd.DataFrame(data)
 
 
 class _Related(Dataset):
+    """Get categories related to a category."""
 
     #: FRED API endpoint name.
     endpoint: ClassVar[str] = "category/related"
@@ -41,6 +73,26 @@ class _Related(Dataset):
         realtime_end: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
+        """Get categories related to a category.
+
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/category_related.html
+
+        Args:
+            category_id: The category's ID. Use the
+                "category/children" API to explore categories.
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            A dataframe containing data for categories
+            related to the given category.
+
+        """
         params = pformat(
             category_id=category_id,
             realtime_start=realtime_start,
@@ -78,9 +130,12 @@ class _Series(Dataset):
     ) -> pd.DataFrame:
         """Get series within a category.
 
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/category_series.html
+
         Args:
             category_id: The category's ID. Use the
-                `category/children` API to explore categories.
+                "category/children" API to explore categories.
             realtime_start: Start date for fetching results
                 according to their publication date.
             realtime_end: End date for fetching results according
@@ -157,9 +212,12 @@ class _Tags(Dataset):
     ) -> pd.DataFrame:
         """Get data for a category's tags.
 
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/category_tags.html
+
         Args:
             category_id: The category's ID. Use the
-                `category/children` API to explore categories.
+                "category/children" API to explore categories.
             realtime_start: Start date for fetching results
                 according to their publication date.
             realtime_end: End date for fetching results according
@@ -238,9 +296,12 @@ class _RelatedTags(Dataset):
     ) -> pd.DataFrame:
         """Get data for tags related to a category.
 
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/category_related.html
+
         Args:
             category_id: The category's ID. Use the
-                `category/children` API to explore categories.
+                "category/children" API to explore categories.
             realtime_start: Start date for fetching results
                 according to their publication date.
             realtime_end: End date for fetching results according
@@ -303,22 +364,22 @@ class _Category(Dataset):
 
     """
 
-    #: Get the children of a category.
+    #: "category/children" FRED API. Get the children of a category.
     children: ClassVar[type[_Children]] = _Children
 
     #: FRED API endpoint name.
     endpoint: ClassVar[str] = "category"
 
-    #: Get categories related to a category.
+    #: "category/related" FRED API. Get categories related to a category.
     related: ClassVar[type[_Related]] = _Related
 
-    #: Get tags related to a category.
+    #: "category/related_tags" FRED API. Get tags related to a category.
     related_tags: ClassVar[type[_RelatedTags]] = _RelatedTags
 
-    #: Get a category's series.
+    #: "category/series" FRED API. Get a category's series.
     series: ClassVar[type[_Series]] = _Series
 
-    #: Get a category's tags.
+    #: "category/tags" FRED API. Get a category's tags.
     tags: ClassVar[type[_Tags]] = _Tags
 
     @classmethod
@@ -327,7 +388,7 @@ class _Category(Dataset):
 
         Args:
             category_id: The category's ID. Use the
-                `category/children` API to explore categories.
+                "category/children" API to explore categories.
             api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
                 environment variable if left `None`.
 
@@ -341,5 +402,5 @@ class _Category(Dataset):
         return pd.DataFrame(data)
 
 
-#: Public-facing fred/category API.
+#: Public-facing "fred/category" API.
 category = _Category
