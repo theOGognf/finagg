@@ -1,6 +1,5 @@
 """Abstract FRED API definition."""
 
-import inspect
 import os
 import pathlib
 from abc import ABC, abstractmethod
@@ -54,65 +53,49 @@ class Dataset(ABC):
         return f"https://api.stlouisfed.org/fred/{cls.endpoint}"
 
 
-def pformat(*_) -> dict[str, Any]:
+def pformat(**kwargs) -> dict[str, Any]:
     """FRED API parameter formatting.
 
-    A little bit of magic to format parameters passed
-    to the `Dataset.get` method being called. Since
-    the FRED API uses PEP 8 -style parameters, we can
-    easily inspect the current method being called and format
-    the parameters/args for the request.
-
-    Really try to limit magic done in the project, but this
-    makes the functions so much easier to implement and
-    more maintainable (assuming the FRED API style doesn't change much).
-    Credit to https://stackoverflow.com/a/65927265.
-
-    Beyond the magic, this function handles additional formatting
-    that the FRED API is expecting.
-
     Args:
-        *_: No usage. Exists so linters don't complain.
+        **kwargs: All possible FRED API parameters.
 
     Returns:
         Mapping of request parameter name to their value.
 
     """
-    frame = inspect.currentframe().f_back
-    keys, _, _, values = inspect.getargvalues(frame)
-    params = {k: values[k] for k in keys if k != "cls" and values[k] is not None}
+    kwargs = {k: v for k, v in kwargs.items() if v is not None}
     for k in ("realtime_start", "realtime_end"):
-        if k in params:
-            match params[k]:
+        if k in kwargs:
+            match kwargs[k]:
                 case 0:
-                    params[k] = "1776-07-04"
+                    kwargs[k] = "1776-07-04"
                 case 1:
-                    params[k] = "9999-12-31"
+                    kwargs[k] = "9999-12-31"
 
     for k in ("exclude_tag_names", "tag_names"):
-        if k in params:
-            v = params[k]
+        if k in kwargs:
+            v = kwargs[k]
             if isinstance(v, str):
                 v = [v]
             v = ";".join(v)
-            params[k] = v
+            kwargs[k] = v
 
-    if "vintage_dates" in params:
-        v = params[k]
+    if "vintage_dates" in kwargs:
+        v = kwargs[k]
         if isinstance(v, str):
             v = [v]
         v = ",".join(v)
-        params[k] = v
+        kwargs[k] = v
 
-    api_key = params.pop("api_key", None) or os.environ.get("FRED_API_KEY", None)
+    api_key = kwargs.pop("api_key", None) or os.environ.get("FRED_API_KEY", None)
     if not api_key:
         raise RuntimeError(
             "No FRED API key found. "
             "Pass the API key to the API directly, or "
             "set the `FRED_API_KEY` environment variable."
         )
-    params.update({"api_key": api_key, "file_type": "json"})
-    return params
+    kwargs.update({"api_key": api_key, "file_type": "json"})
+    return kwargs
 
 
 def get(url: str, params: dict, /) -> requests.Response:
