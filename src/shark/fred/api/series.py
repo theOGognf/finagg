@@ -5,6 +5,7 @@ See the official FRED API docs for more info:
 
 """
 
+from functools import cache
 from typing import ClassVar
 
 import pandas as pd
@@ -15,10 +16,11 @@ from ._api import Dataset, get, pformat
 class _Categories(Dataset):
     """Get the categories for an economic data series."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "series/categories"
+    #: FRED API URL.
+    url: ClassVar[str] = "https://api.stlouisfed.org/fred/series/categories"
 
     @classmethod
+    @cache
     def get(
         cls,
         series_id: str,
@@ -60,8 +62,8 @@ class _Categories(Dataset):
 class _Observations(Dataset):
     """Get the observations or data values for an economic data series."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "series/observations"
+    #: FRED API URL.
+    url: ClassVar[str] = "https://api.stlouisfed.org/fred/series/observations"
 
     @classmethod
     def get(
@@ -177,8 +179,8 @@ class _Observations(Dataset):
 class _Release(Dataset):
     """Get the release for an economic data series."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "series/release"
+    #: FRED API URL.
+    url: ClassVar[str] = "https://api.stlouisfed.org/fred/series/release"
 
     @classmethod
     def get(
@@ -228,7 +230,7 @@ class _SearchTags(Dataset):
 
 
 class _Search(Dataset):
-    endpoint: ClassVar[str] = "series/search"
+    url: ClassVar[str] = "https://api.stlouisfed.org/fred/series/search"
 
     @classmethod
     def get(
@@ -285,7 +287,7 @@ class _Series(Dataset):
 
     categories: ClassVar[type[_Categories]] = _Categories
 
-    endpoint: ClassVar[str] = "series"
+    url: ClassVar[str] = "https://api.stlouisfed.org/fred/series"
 
     observations: ClassVar[type[_Observations]] = _Observations
 

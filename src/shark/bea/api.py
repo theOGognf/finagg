@@ -59,7 +59,7 @@ _API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
 _API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 session = requests_cache.CachedSession(
-    _API_CACHE_PATH,
+    str(_API_CACHE_PATH),
     ignored_parameters=["UserId", "ResultFormat"],
     expire_after=timedelta(days=1),
 )
@@ -228,6 +228,9 @@ class _ThrottleWatchdog(Generic[_API_KEY, _THROTTLE_WATCHDOG_STATE]):
 class _Dataset(ABC):
     """Interface for BEA Dataset APIs."""
 
+    #: Request API URL.
+    name: ClassVar[str]
+
     def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(
             "Instantiating a BEA API directly is not allowed. "
@@ -235,14 +238,8 @@ class _Dataset(ABC):
         )
 
     @classmethod
-    @property
     @abstractmethod
-    def name(cls) -> str:
-        """Dataset API name."""
-
-    @classmethod
-    @abstractmethod
-    def get(cls, *, api_key: None | str = None) -> pd.DataFrame:
+    def get(cls, *args, **kwargs) -> pd.DataFrame:
         """Main dataset API method."""
 
     @classmethod
@@ -267,7 +264,7 @@ class _FixedAssets(_Dataset):
     """
 
     #: BEA dataset API name.
-    name: ClassVar[str] = "FixedAssets"
+    name = "FixedAssets"
 
     @classmethod
     def get(
@@ -301,10 +298,10 @@ class _FixedAssets(_Dataset):
                 "TableName": tid,
                 "Year": year,
             }
-            df = _API.get(params, api_key=api_key)
-            df = df["Data"]
+            results_data = _API.get(params, api_key=api_key)
+            data = results_data["Data"]
             df = (
-                pd.DataFrame(df)
+                pd.DataFrame(data)
                 .drop("NoteRef", axis=1)
                 .rename(
                     columns={
@@ -346,7 +343,7 @@ class _GDPByIndustry(_Dataset):
     """
 
     #: BEA dataset API name.
-    name: ClassVar[str] = "GdpByIndustry"
+    name = "GdpByIndustry"
 
     @classmethod
     def get(
@@ -380,9 +377,9 @@ class _GDPByIndustry(_Dataset):
             "Year": year,
             "Industry": industry,
         }
-        (df,) = _API.get(params, api_key=api_key)
-        df = df["Data"]
-        df = pd.DataFrame(df)
+        (results_data,) = _API.get(params, api_key=api_key)
+        data = results_data["Data"]  # type: ignore
+        df = pd.DataFrame(data)
 
         def _roman_to_int(item: str) -> int:
             _map = {"I": 1, "II": 2, "III": 3, "IV": 4}
@@ -430,7 +427,7 @@ class _InputOutput(_Dataset):
     """
 
     #: BEA dataset API name.
-    name: ClassVar[str] = "InputOutput"
+    name = "InputOutput"
 
     @classmethod
     def get(
@@ -457,10 +454,10 @@ class _InputOutput(_Dataset):
             "TableID": table_id,
             "Year": year,
         }
-        (results,) = _API.get(params, api_key=api_key)
-        results = results["Data"]
+        (results_data,) = _API.get(params, api_key=api_key)
+        data = results_data["Data"]  # type: ignore
         return (
-            pd.DataFrame(results)
+            pd.DataFrame(data)
             .drop("NoteRef", axis=1)
             .rename(
                 columns={
@@ -500,7 +497,7 @@ class _NIPA(_Dataset):
     """
 
     #: BEA dataset API name.
-    name: ClassVar[str] = "NIPA"
+    name = "NIPA"
 
     @classmethod
     def get(
@@ -537,9 +534,9 @@ class _NIPA(_Dataset):
                 "Year": year,
                 "Frequency": freq,
             }
-            df = _API.get(params, api_key=api_key)
-            df = df["Data"]
-            df = pd.DataFrame(df)
+            results_data = _API.get(params, api_key=api_key)
+            data = results_data["Data"]
+            df = pd.DataFrame(data)
             df[["Year", "Quarter"]] = df["TimePeriod"].str.split("Q", n=1, expand=True)
             df["Quarter"] = df["Quarter"].astype(int)
             df.drop(["TimePeriod", "NoteRef"], axis=1, inplace=True)
@@ -581,31 +578,31 @@ class _API:
     _throttle_watchdog: ClassVar[_ThrottleWatchdog] = _ThrottleWatchdog()
 
     #: Path to BEA API requests cache.
-    cache_path: ClassVar[str] = str(_API_CACHE_PATH)
+    cache_path = str(_API_CACHE_PATH)
 
     #: "FixedAssets" dataset API.
-    fixed_assets: ClassVar[type[_FixedAssets]] = _FixedAssets
+    fixed_assets = _FixedAssets
 
     #: "GdpByIndustry" dataset API.
-    gdp_by_industry: ClassVar[type[_GDPByIndustry]] = _GDPByIndustry
+    gdp_by_industry = _GDPByIndustry
 
     #: "InputOutput" dataset API.
-    input_output: ClassVar[type[_InputOutput]] = _InputOutput
+    input_output = _InputOutput
 
     #: Max allowed BEA API errors per minute.
-    max_errors_per_minute: ClassVar[int] = 30
+    max_errors_per_minute = 30
 
     #: Max allowed BEA API requests per minute.
-    max_requests_per_minute: ClassVar[int] = 100
+    max_requests_per_minute = 100
 
     #: Max allowed BEA API response size (in MB) per minute.
-    max_volume_per_minute: ClassVar[int] = 100e6
+    max_volume_per_minute = 100e6
 
     #: "NIPA" dataset API.
-    nipa: ClassVar[type[_NIPA]] = _NIPA
+    nipa = _NIPA
 
     #: BEA API URL.
-    url: ClassVar[str] = "https://apps.bea.gov/api/data"
+    url = "https://apps.bea.gov/api/data"
 
     def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(
@@ -618,7 +615,7 @@ class _API:
         """Convert an API error to a :class:`requests.Response` object."""
         response = requests.Response()
         response.status_code = int(error.pop("APIErrorCode"))
-        response._content = json.dumps(error)
+        response._content = json.dumps(error).encode("utf-8")
         return response
 
     @classmethod
@@ -628,7 +625,7 @@ class _API:
         /,
         *,
         api_key: None | str = None,
-    ) -> list[dict]:
+    ) -> dict[str, list[dict]]:
         """Main get method used by dataset APIs.
 
         Handles throttle watchdog state updates, API key validation,
@@ -667,7 +664,7 @@ class _API:
         if "Error" in content:
             error = cls._api_error_as_response(content["Error"])
             raise BEAAPIError(response.request, error, error.content)
-        return content["Results"]
+        return content["Results"]  # type: ignore
 
     @classmethod
     @cache

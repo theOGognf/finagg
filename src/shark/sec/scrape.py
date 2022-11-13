@@ -81,8 +81,8 @@ def scrape(
         tickers = [tickers]
 
     updates = set()
-    tickers = set(tickers)
-    for ticker in tickers:
+    unique_tickers = set(tickers)
+    for ticker in unique_tickers:
         match ticker.upper():
             case "DJIA":
                 updates.update(tickers_api.djia.get_ticker_list())
@@ -92,7 +92,7 @@ def scrape(
 
             case "SP500":
                 updates.update(tickers_api.sp500.get_ticker_list())
-    tickers |= updates
+    unique_tickers |= updates
 
     if tags and taxonomy:
         if concepts:
@@ -102,7 +102,7 @@ def scrape(
 
         concepts = []
         for tag in tags:
-            concepts.append([taxonomy, tag])
+            concepts.append((taxonomy, tag))
 
     if not transformer:
         transformer = lambda x: x
@@ -112,7 +112,7 @@ def scrape(
 
     with engine.connect() as conn:
         tickers_to_inserts = {}
-        for ticker in tickers:
+        for ticker in unique_tickers:
             if concepts is None:
                 df = api.company_facts.get(ticker=ticker)
                 df = transformer(df)

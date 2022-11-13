@@ -5,7 +5,7 @@ See the official FRED API docs for more info:
 
 """
 
-from typing import ClassVar
+from functools import cache
 
 import pandas as pd
 
@@ -15,10 +15,11 @@ from ._api import Dataset, get
 class _Children(Dataset):
     """Get all child categories for a specific parent category."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "category/children"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/category/children"
 
     @classmethod
+    @cache
     def get(
         cls,
         category_id: int = 0,
@@ -60,10 +61,11 @@ class _Children(Dataset):
 class _Related(Dataset):
     """Get categories related to a category."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "category/related"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/category/related"
 
     @classmethod
+    @cache
     def get(
         cls,
         category_id: int,
@@ -107,8 +109,8 @@ class _Related(Dataset):
 class _Series(Dataset):
     """Get data for series within a category."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "category/series"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/category/series"
 
     @classmethod
     def get(
@@ -190,8 +192,8 @@ class _Series(Dataset):
 class _Tags(Dataset):
     """Get a category's tags."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "category/tags"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/category/tags"
 
     @classmethod
     def get(
@@ -273,8 +275,8 @@ class _Tags(Dataset):
 class _RelatedTags(Dataset):
     """Get data for tags related to a category."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "category/related_tags"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/category/related_tags"
 
     @classmethod
     def get(
@@ -365,24 +367,25 @@ class _Category(Dataset):
     """
 
     #: "category/children" FRED API. Get the children of a category.
-    children: ClassVar[type[_Children]] = _Children
-
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "category"
+    children = _Children
 
     #: "category/related" FRED API. Get categories related to a category.
-    related: ClassVar[type[_Related]] = _Related
+    related = _Related
 
     #: "category/related_tags" FRED API. Get tags related to a category.
-    related_tags: ClassVar[type[_RelatedTags]] = _RelatedTags
+    related_tags = _RelatedTags
 
     #: "category/series" FRED API. Get a category's series.
-    series: ClassVar[type[_Series]] = _Series
+    series = _Series
 
     #: "category/tags" FRED API. Get a category's tags.
-    tags: ClassVar[type[_Tags]] = _Tags
+    tags = _Tags
+
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/category"
 
     @classmethod
+    @cache
     def get(cls, category_id: int = 0, *, api_key: None | str = None) -> pd.DataFrame:
         """Get a category's details.
 

@@ -4,7 +4,7 @@ import os
 import pathlib
 from abc import ABC, abstractmethod
 from datetime import timedelta
-from typing import Any
+from typing import Any, ClassVar
 
 import pandas as pd
 import requests
@@ -20,7 +20,7 @@ _API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
 _API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 session = requests_cache.CachedSession(
-    _API_CACHE_PATH,
+    str(_API_CACHE_PATH),
     ignored_parameters=["api_key", "file_type"],
     expire_after=timedelta(days=1),
 )
@@ -29,6 +29,9 @@ session = requests_cache.CachedSession(
 class Dataset(ABC):
     """Abstract FRED API."""
 
+    #: Request API URL endpoint after the base URL.
+    url: ClassVar[str]
+
     def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(
             "Instantiating a FRED API directly is not allowed. "
@@ -36,21 +39,9 @@ class Dataset(ABC):
         )
 
     @classmethod
-    @property
     @abstractmethod
-    def endpoint(cls) -> str:
-        """Request API URL endpoint after the base URL."""
-
-    @classmethod
-    @abstractmethod
-    def get(cls, *, api_key: None | str = None) -> pd.DataFrame:
+    def get(cls, *args, **kwargs) -> pd.DataFrame:
         """Main dataset API method."""
-
-    @classmethod
-    @property
-    def url(cls) -> str:
-        """Full request API URL."""
-        return f"https://api.stlouisfed.org/fred/{cls.endpoint}"
 
 
 def get(url: str, /, **kwargs) -> requests.Response:

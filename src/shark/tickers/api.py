@@ -22,13 +22,16 @@ _API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
 _API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 session = requests_cache.CachedSession(
-    _API_CACHE_PATH,
+    str(_API_CACHE_PATH),
     expire_after=timedelta(weeks=1),
 )
 
 
 class _Dataset(ABC):
     """Abstract ticlers API."""
+
+    #: Request API URL.
+    url: ClassVar[str]
 
     def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(
@@ -38,7 +41,7 @@ class _Dataset(ABC):
 
     @classmethod
     @abstractmethod
-    def get(cls, *, user_agent: None | str = None) -> dict | pd.DataFrame:
+    def get(cls, *args, **kwargs) -> dict | pd.DataFrame:
         """Main dataset API method."""
 
     @classmethod
@@ -47,18 +50,12 @@ class _Dataset(ABC):
         df = cls.get(user_agent=user_agent)
         return df["ticker"].tolist()
 
-    @classmethod
-    @property
-    @abstractmethod
-    def url(cls) -> str:
-        """Request API URL."""
-
 
 class _DJIA(_Dataset):
     """List all companies currently in the DJIA."""
 
     #: API URL.
-    url: ClassVar[str] = "https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average"
+    url = "https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average"
 
     @classmethod
     @cache
@@ -93,7 +90,7 @@ class _Nasdaq100(_Dataset):
     """List all companies currently in the Nasdaq 100."""
 
     #: API URL.
-    url: ClassVar[str] = "https://en.wikipedia.org/wiki/Nasdaq-100"
+    url = "https://en.wikipedia.org/wiki/Nasdaq-100"
 
     @classmethod
     @cache
@@ -118,7 +115,7 @@ class _SP500(_Dataset):
     """List all companies currently in the S&P 500."""
 
     #: API URL.
-    url: ClassVar[str] = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+    url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 
     @classmethod
     @cache
@@ -148,16 +145,16 @@ class _API:
     """Collection of ticker APIs."""
 
     #: Path to tickers API requests cache.
-    cache_path: ClassVar[str] = str(_API_CACHE_PATH)
+    cache_path = str(_API_CACHE_PATH)
 
     #: The Dow Jones Industrial Average.
-    djia: ClassVar[type[_DJIA]] = _DJIA
+    djia = _DJIA
 
     #: The Nasdaq Composite 100.
-    nasdaq100: ClassVar[type[_Nasdaq100]] = _Nasdaq100
+    nasdaq100 = _Nasdaq100
 
     #: The Standard and Poor's 500.
-    sp500: ClassVar[type[_SP500]] = _SP500
+    sp500 = _SP500
 
     def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(

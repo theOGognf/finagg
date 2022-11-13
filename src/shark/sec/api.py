@@ -40,7 +40,7 @@ _API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
 _API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 session = requests_cache.CachedSession(
-    _API_CACHE_PATH,
+    str(_API_CACHE_PATH),
     expire_after=timedelta(days=1),
 )
 
@@ -169,6 +169,9 @@ class _ThrottleWatchdog(Generic[_USER_AGENT, _THROTTLE_WATCHDOG_STATE]):
 class _Dataset(ABC):
     """Abstract SEC EDGAR API."""
 
+    #: Request API URL.
+    url: ClassVar[str]
+
     def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(
             "Instantiating an SEC API directly is not allowed. "
@@ -177,21 +180,15 @@ class _Dataset(ABC):
 
     @classmethod
     @abstractmethod
-    def get(cls, *, user_agent: None | str = None) -> dict | pd.DataFrame:
+    def get(cls, *args, **kwargs) -> dict | pd.DataFrame:
         """Main dataset API method."""
-
-    @classmethod
-    @property
-    @abstractmethod
-    def url(cls) -> str:
-        """Request API URL."""
 
 
 class _CompanyConcept(_Dataset):
     """Get the full history of a company's concept (taxonomy and tag)."""
 
     #: API URL.
-    url: ClassVar[str] = (
+    url = (
         "https://data.sec.gov/api/xbrl"
         "/companyconcept"
         "/CIK{cik}/{taxonomy}/{tag}.json"
@@ -236,12 +233,12 @@ class _CompanyConcept(_Dataset):
         response = _API.get(url, user_agent=user_agent)
         content = response.json()
         units = content.pop("units")
-        results = []
-        for unit, data in units.items():
+        results_list = []
+        for unit, data in units.items():  # type: ignore
             df = pd.DataFrame(data)
             df["units"] = unit
-            results.append(df)
-        results = pd.concat(results)
+            results_list.append(df)
+        results = pd.concat(results_list)
         for k, v in content.items():
             results[k] = v
         return results.rename(columns={"entityName": "entity", "val": "value"})
@@ -251,7 +248,7 @@ class _CompanyFacts(_Dataset):
     """Get all XBRL disclosures from a single company (CIK)."""
 
     #: API URL.
-    url: ClassVar[str] = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
+    url = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 
     @classmethod
     def get(
@@ -284,7 +281,7 @@ class _CompanyFacts(_Dataset):
         response = _API.get(url, user_agent=user_agent)
         content = response.json()
         facts = content.pop("facts")
-        results = []
+        results_list = []
         for taxonomy, tag_dict in facts.items():
             for tag, data in tag_dict.items():
                 for col, rows in data["units"].items():
@@ -294,8 +291,8 @@ class _CompanyFacts(_Dataset):
                     df["label"] = data["label"]
                     df["description"] = data["description"]
                     df["units"] = col
-                    results.append(df)
-        results = pd.concat(results)
+                    results_list.append(df)
+        results = pd.concat(results_list)
         for k, v in content.items():
             results[k] = v
         return results.rename(
@@ -310,7 +307,7 @@ class _Frames(_Dataset):
     """
 
     #: API URL.
-    url: ClassVar[str] = (
+    url = (
         "https://data.sec.gov/api/xbrl"
         "/frames"
         "/{taxonomy}/{tag}/{units}/CY{year}Q{quarter}I.json"
@@ -367,7 +364,7 @@ class _Submissions(_Dataset):
     """Get an entity's metadata and current filing history."""
 
     #: API URL.
-    url: ClassVar[str] = "https://data.sec.gov/submissions/CIK{cik}.json"
+    url = "https://data.sec.gov/submissions/CIK{cik}.json"
 
     @classmethod
     def get(
@@ -401,7 +398,7 @@ class _Submissions(_Dataset):
         content = response.json()
         recent_filings = content.pop("filings")["recent"]
         df = pd.DataFrame(recent_filings)
-        df.columns = map(snake_case, df.columns)
+        df.columns = map(snake_case, df.columns)  # type: ignore
         df.rename(columns={"accession_number": "accn"})
         metadata = {snake_case(k): v for k, v in content.items()}
         mailing_address = metadata["addresses"]["mailing"]
@@ -419,7 +416,7 @@ class _Tickers(_Dataset):
     """Simple dataset to get the table of all SEC CIKs for all tickers."""
 
     #: API URL.
-    url: ClassVar[str] = "https://www.sec.gov/files/company_tickers.json"
+    url = "https://www.sec.gov/files/company_tickers.json"
 
     @classmethod
     def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
@@ -447,28 +444,28 @@ class _API:
     _tickers_to_cik: ClassVar[dict[str, str]] = {}
 
     #: Path to SEC API requests cache.
-    cache_path: ClassVar[str] = str(_API_CACHE_PATH)
+    cache_path = str(_API_CACHE_PATH)
 
     #: Get the full history of a company's concept (taxonomy and tag).
-    company_concept: ClassVar[type[_CompanyConcept]] = _CompanyConcept
+    company_concept = _CompanyConcept
 
     #: Get all XBRL disclosures from a single company (CIK).
-    company_facts: ClassVar[type[_CompanyFacts]] = _CompanyFacts
+    company_facts = _CompanyFacts
 
     #: Get one fact for each reporting entity that most closely fits
     #: the calendrical period requested.
-    frames: ClassVar[type[_Frames]] = _Frames
+    frames = _Frames
 
     #: Max allowed requests per second before your user agent
     #: gets throttled.
-    max_requests_per_second: ClassVar[int] = 10
+    max_requests_per_second = 10
 
     #: Get a company's metadata and recent submissions.
-    submissions: ClassVar[type[_Submissions]] = _Submissions
+    submissions = _Submissions
 
     #: Used to get all SEC ticker data as opposed to
     #: an individual ticker's SEC CIK.
-    tickers: ClassVar[type[_Tickers]] = _Tickers
+    tickers = _Tickers
 
     def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(

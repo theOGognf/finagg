@@ -5,6 +5,7 @@ See the official FRED API docs for more info:
 
 """
 
+from functools import cache
 from typing import ClassVar
 
 import pandas as pd
@@ -15,10 +16,11 @@ from ._api import Dataset, get
 class _ReleasesDates(Dataset):
     """Get release dates for all releases of economic data."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "releases/dates"
+    #: FRED API URL.
+    url: ClassVar[str] = "https://api.stlouisfed.org/fred/releases/dates"
 
     @classmethod
+    @cache
     def get(
         cls,
         *,
@@ -79,12 +81,13 @@ class _Releases(Dataset):
     """Get all releases of economic data."""
 
     #: "releases/dates" FRED API. Get dates for releases of economic data.
-    dates: ClassVar[type[_ReleasesDates]] = _ReleasesDates
+    dates = _ReleasesDates
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "releases"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/releases"
 
     @classmethod
+    @cache
     def get(
         cls,
         *,
@@ -142,10 +145,11 @@ class _Releases(Dataset):
 class _ReleaseDates(Dataset):
     """Get data on release dates for a particular release of economic data."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "release/dates"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/release/dates"
 
     @classmethod
+    @cache
     def get(
         cls,
         release_id: int,
@@ -201,8 +205,8 @@ class _ReleaseDates(Dataset):
 class _Series(Dataset):
     """Get data on the series related to a release of economic data."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "release/series"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/release/series"
 
     @classmethod
     def get(
@@ -289,10 +293,11 @@ class _Series(Dataset):
 class _Sources(Dataset):
     """Get sources related to an economic release."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "release/sources"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/release/sources"
 
     @classmethod
+    @cache
     def get(
         cls,
         release_id: int,
@@ -334,8 +339,8 @@ class _Sources(Dataset):
 class _Tags(Dataset):
     """Get tags for an economic release."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "release/tags"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/release/tags"
 
     @classmethod
     def get(
@@ -416,8 +421,8 @@ class _Tags(Dataset):
 class _RelatedTags(Dataset):
     """Get tags related to an economic release."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "release/related_tags"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/release/related_tags"
 
     @classmethod
     def get(
@@ -501,10 +506,11 @@ class _RelatedTags(Dataset):
 class _Tables(Dataset):
     """Get release tables for a given economic release."""
 
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "release/tables"
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/release/tables"
 
     @classmethod
+    @cache
     def get(
         cls,
         release_id: int,
@@ -550,27 +556,28 @@ class _Release(Dataset):
     """Collection of `fred/release` APIs."""
 
     #: "release/dates" FRED API. Get economic release dates.
-    dates: ClassVar[type[_ReleaseDates]] = _ReleaseDates
-
-    #: FRED API endpoint name.
-    endpoint: ClassVar[str] = "release"
+    dates = _ReleaseDates
 
     #: "release/related_tags" FRED API. Get tags related to an economic release.
-    related_tags: ClassVar[type[_RelatedTags]] = _RelatedTags
+    related_tags = _RelatedTags
 
     #: "release/series" FRED API. Get the series of an economic release.
-    series: ClassVar[type[_Series]] = _Series
+    series = _Series
 
     #: "release/sources" FRED API. Get the sources for an economic release.
-    sources: ClassVar[type[_Sources]] = _Sources
+    sources = _Sources
 
     #: "release/tables" FRED API. Get the tables of an economic release.
-    tables: ClassVar[type[_Tables]] = _Tables
+    tables = _Tables
 
     #: "release/tags" FRED API. Get tags of an economic release.
-    tags: ClassVar[type[_Tags]] = _Tags
+    tags = _Tags
+
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/release"
 
     @classmethod
+    @cache
     def get(
         cls,
         release_id: int,
