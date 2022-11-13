@@ -53,6 +53,24 @@ class Dataset(ABC):
         return f"https://api.stlouisfed.org/fred/{cls.endpoint}"
 
 
+def get(url: str, /, **kwargs) -> requests.Response:
+    """Main API get function used by all `Dataset.get` methods.
+
+    Also formats FRED API parameters for convenience.
+
+    Args:
+        url: Request URL.
+        **kwargs: Mapping of request parameter name to their value.
+
+    Returns:
+        A valid FRED API response.
+
+    """
+    response = session.get(url, params=pformat(**kwargs))
+    response.raise_for_status()
+    return response
+
+
 def pformat(**kwargs) -> dict[str, Any]:
     """FRED API parameter formatting.
 
@@ -64,12 +82,12 @@ def pformat(**kwargs) -> dict[str, Any]:
 
     """
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
-    for k in ("realtime_start", "realtime_end"):
+    for k in ("observation_start", "observation_end", "realtime_start", "realtime_end"):
         if k in kwargs:
             match kwargs[k]:
                 case 0:
                     kwargs[k] = "1776-07-04"
-                case 1:
+                case -1:
                     kwargs[k] = "9999-12-31"
 
     for k in ("exclude_tag_names", "tag_names"):
@@ -77,15 +95,25 @@ def pformat(**kwargs) -> dict[str, Any]:
             v = kwargs[k]
             if isinstance(v, str):
                 v = [v]
-            v = ";".join(v)
-            kwargs[k] = v
+            kwargs[k] = ";".join(v)
 
-    if "vintage_dates" in kwargs:
+    for k in ("include_observation_values", "include_release_dates_with_no_data"):
+        if k in kwargs:
+            kwargs[k] = "true" if kwargs[k] else "false"
+
+    if "search_text" in kwargs:
+        k = "search_text"
         v = kwargs[k]
         if isinstance(v, str):
             v = [v]
-        v = ",".join(v)
-        kwargs[k] = v
+        kwargs[k] = "+".join(v)
+
+    if "vintage_dates" in kwargs:
+        k = "vintage_dates"
+        v = kwargs[k]
+        if isinstance(v, str):
+            v = [v]
+        kwargs[k] = ",".join(v)
 
     api_key = kwargs.pop("api_key", None) or os.environ.get("FRED_API_KEY", None)
     if not api_key:
@@ -96,10 +124,3 @@ def pformat(**kwargs) -> dict[str, Any]:
         )
     kwargs.update({"api_key": api_key, "file_type": "json"})
     return kwargs
-
-
-def get(url: str, params: dict, /) -> requests.Response:
-    """Main API get function used by all `Dataset.get` methods."""
-    response = session.get(url, params=params)
-    response.raise_for_status()
-    return response

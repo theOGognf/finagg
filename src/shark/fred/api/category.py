@@ -9,7 +9,7 @@ from typing import ClassVar
 
 import pandas as pd
 
-from ._api import Dataset, get, pformat
+from ._api import Dataset, get
 
 
 class _Children(Dataset):
@@ -23,8 +23,8 @@ class _Children(Dataset):
         cls,
         category_id: int = 0,
         *,
-        realtime_start: None | str = None,
-        realtime_end: None | str = None,
+        realtime_start: None | int | str = None,
+        realtime_end: None | int | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all child categories for a specific parent category.
@@ -46,13 +46,13 @@ class _Children(Dataset):
             A dataframe containing data for a category's children.
 
         """
-        params = pformat(
+        data = get(
+            cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
             api_key=api_key,
-        )
-        data = get(cls.url, params).json()
+        ).json()
         data = data["categories"]
         return pd.DataFrame(data)
 
@@ -69,8 +69,8 @@ class _Related(Dataset):
         category_id: int,
         /,
         *,
-        realtime_start: None | str = None,
-        realtime_end: None | str = None,
+        realtime_start: None | int | str = None,
+        realtime_end: None | int | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get categories related to a category.
@@ -93,13 +93,13 @@ class _Related(Dataset):
             related to the given category.
 
         """
-        params = pformat(
+        data = get(
+            cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
             api_key=api_key,
-        )
-        data = get(cls.url, params).json()
+        ).json()
         data = data["categories"]
         return pd.DataFrame(data)
 
@@ -116,8 +116,8 @@ class _Series(Dataset):
         category_id: int,
         /,
         *,
-        realtime_start: None | str = None,
-        realtime_end: None | str = None,
+        realtime_start: None | int | str = None,
+        realtime_end: None | int | str = None,
         limit: None | int = 1000,
         offset: None | int = 0,
         order_by: None | str = "series_id",
@@ -168,7 +168,8 @@ class _Series(Dataset):
             according to the given parameters.
 
         """
-        params = pformat(
+        data = get(
+            cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -181,8 +182,7 @@ class _Series(Dataset):
             tag_names=tag_names,
             exclude_tag_names=exclude_tag_names,
             api_key=api_key,
-        )
-        data = get(cls.url, params).json()
+        ).json()
         data = data["seriess"]
         return pd.DataFrame(data)
 
@@ -199,11 +199,11 @@ class _Tags(Dataset):
         category_id: int,
         /,
         *,
-        realtime_start: None | str = None,
-        realtime_end: None | str = None,
+        realtime_start: None | int | str = None,
+        realtime_end: None | int | str = None,
         tag_names: None | str | list[str] = None,
         tag_group_id: None | str = None,
-        search_text: None | str = None,
+        search_text: None | str | list[str] = None,
         limit: None | int = 1000,
         offset: None | int = 0,
         order_by: None | str = "series_count",
@@ -252,7 +252,8 @@ class _Tags(Dataset):
             according to the given parameters.
 
         """
-        params = pformat(
+        data = get(
+            cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -264,8 +265,7 @@ class _Tags(Dataset):
             tag_group_id=tag_group_id,
             search_text=search_text,
             api_key=api_key,
-        )
-        data = get(cls.url, params).json()
+        ).json()
         data = data["tags"]
         return pd.DataFrame(data)
 
@@ -282,12 +282,12 @@ class _RelatedTags(Dataset):
         category_id: int,
         /,
         *,
-        realtime_start: None | str = None,
-        realtime_end: None | str = None,
+        realtime_start: None | int | str = None,
+        realtime_end: None | int | str = None,
         tag_names: None | str | list[str] = None,
         exclude_tag_names: None | str | list[str] = None,
         tag_group_id: None | str = None,
-        search_text: None | str = None,
+        search_text: None | str | list[str] = None,
         limit: None | int = 1000,
         offset: None | int = 0,
         order_by: None | str = "series_count",
@@ -297,7 +297,7 @@ class _RelatedTags(Dataset):
         """Get data for tags related to a category.
 
         See the related FRED API documentation at:
-            https://fred.stlouisfed.org/docs/api/fred/category_related.html
+            https://fred.stlouisfed.org/docs/api/fred/category_related_tags.html
 
         Args:
             category_id: The category's ID. Use the
@@ -337,7 +337,8 @@ class _RelatedTags(Dataset):
             according to the given parameters.
 
         """
-        params = pformat(
+        data = get(
+            cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -350,8 +351,7 @@ class _RelatedTags(Dataset):
             order_by=order_by,
             sort_order=sort_order,
             api_key=api_key,
-        )
-        data = get(cls.url, params).json()
+        ).json()
         data = data["tags"]
         return pd.DataFrame(data)
 
@@ -396,8 +396,7 @@ class _Category(Dataset):
             Dataframe of category details.
 
         """
-        params = pformat(category_id=category_id, api_key=api_key)
-        data = get(cls.url, params).json()
+        data = get(cls.url, category_id=category_id, api_key=api_key).json()
         data = data["categories"]
         return pd.DataFrame(data)
 
