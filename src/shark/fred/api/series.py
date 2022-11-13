@@ -6,7 +6,6 @@ See the official FRED API docs for more info:
 """
 
 from functools import cache
-from typing import ClassVar
 
 import pandas as pd
 
@@ -17,7 +16,7 @@ class _Categories(Dataset):
     """Get the categories for an economic data series."""
 
     #: FRED API URL.
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/series/categories"
+    url = "https://api.stlouisfed.org/fred/series/categories"
 
     @classmethod
     @cache
@@ -63,7 +62,7 @@ class _Observations(Dataset):
     """Get the observations or data values for an economic data series."""
 
     #: FRED API URL.
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/series/observations"
+    url = "https://api.stlouisfed.org/fred/series/observations"
 
     @classmethod
     def get(
@@ -180,7 +179,7 @@ class _Release(Dataset):
     """Get the release for an economic data series."""
 
     #: FRED API URL.
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/series/release"
+    url = "https://api.stlouisfed.org/fred/series/release"
 
     @classmethod
     def get(
@@ -230,7 +229,7 @@ class _SearchTags(Dataset):
 
 
 class _Search(Dataset):
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/series/search"
+    url = "https://api.stlouisfed.org/fred/series/search"
 
     @classmethod
     def get(
@@ -285,15 +284,15 @@ class _VintageDates(Dataset):
 
 class _Series(Dataset):
 
-    categories: ClassVar[type[_Categories]] = _Categories
+    categories = _Categories
 
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/series"
+    observations = _Observations
 
-    observations: ClassVar[type[_Observations]] = _Observations
+    release = _Release
 
-    release: ClassVar[type[_Release]] = _Release
+    search = _Search
 
-    search: ClassVar[type[_Search]] = _Search
+    url = "https://api.stlouisfed.org/fred/series"
 
     @classmethod
     def get(

@@ -6,7 +6,6 @@ See the official FRED API docs for more info:
 """
 
 from functools import cache
-from typing import ClassVar
 
 import pandas as pd
 
@@ -17,7 +16,7 @@ class _ReleasesDates(Dataset):
     """Get release dates for all releases of economic data."""
 
     #: FRED API URL.
-    url: ClassVar[str] = "https://api.stlouisfed.org/fred/releases/dates"
+    url = "https://api.stlouisfed.org/fred/releases/dates"
 
     @classmethod
     @cache
