@@ -222,15 +222,183 @@ class _Release(Dataset):
 
 
 class _SearchRelatedTags(Dataset):
-    ...
+    """Get the related tags for a series search."""
+
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/series/search/related_tags"
+
+    @classmethod
+    def get(
+        cls,
+        series_search_text: None | str | list[str],
+        /,
+        *,
+        realtime_start: None | int | str = None,
+        realtime_end: None | int | str = None,
+        tag_names: None | str | list[str] = None,
+        exclude_tag_names: None | str | list[str] = None,
+        tag_group_id: None | str = None,
+        tag_search_text: None | str | list[str] = None,
+        limit: None | int = 1000,
+        offset: None | int = 0,
+        order_by: None | str = None,
+        sort_order: None | str = None,
+        api_key: None | str = None,
+    ) -> pd.DataFrame:
+        """Get the related tags for a series search.
+
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/series_search_tags.html
+
+        Args:
+            series_search_text: The words to match against economic data series.
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            tag_names: Tag names to only include in the response.
+            exclude_tag_names: Tag names that series match none of.
+            tag_group_id: A tag group ID to filter tags by type.
+                Options include:
+                    - "freq" = frequency
+                    - "gen" = general or concept
+                    - "geo" = geography
+                    - "geot" = geography type
+                    - "rls" = release
+                    - "seas" = seasonal adjustment
+                    - "src" = source
+            tag_search_text: The words to find matching tags with.
+            limit: Maximum number of results to return.
+            offset: Result start offset.
+            order_by: Order results by values of the specified attribute.
+                Options include:
+                    - "series_count"
+                    - "popularity"
+                    - "created"
+                    - "name"
+                    - "group_id"
+            sort_order: Sort results in ascending ("asc") or descending ("desc")
+                order for the attribute values specified by `order_by`.
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            A dataframe containing related FRED tags for a series search.
+            The dataframe can have results optionally filtered by the FRED
+            servers according to the method's args.
+
+        """
+        data = get(
+            cls.url,
+            series_search_text=series_search_text,
+            realtime_start=realtime_start,
+            realtime_end=realtime_end,
+            tag_names=tag_names,
+            exclude_tag_names=exclude_tag_names,
+            tag_group_id=tag_group_id,
+            tag_search_text=tag_search_text,
+            limit=limit,
+            offset=offset,
+            order_by=order_by,
+            sort_order=sort_order,
+            api_key=api_key,
+        ).json()
+        data = data["seriess"]
+        return pd.DataFrame(data)
 
 
 class _SearchTags(Dataset):
-    ...
+    """Get the tags for a series search."""
+
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/series/search/tags"
+
+    @classmethod
+    def get(
+        cls,
+        series_search_text: None | str | list[str],
+        /,
+        *,
+        realtime_start: None | int | str = None,
+        realtime_end: None | int | str = None,
+        tag_names: None | str | list[str] = None,
+        tag_group_id: None | str = None,
+        tag_search_text: None | str | list[str] = None,
+        limit: None | int = 1000,
+        offset: None | int = 0,
+        order_by: None | str = None,
+        sort_order: None | str = None,
+        api_key: None | str = None,
+    ) -> pd.DataFrame:
+        """Get the tags for a series search.
+
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/series_search_tags.html
+
+        Args:
+            series_search_text: The words to match against economic data series.
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            tag_names: Tag names to only include in the response.
+            tag_group_id: A tag group ID to filter tags by type.
+                Options include:
+                    - "freq" = frequency
+                    - "gen" = general or concept
+                    - "geo" = geography
+                    - "geot" = geography type
+                    - "rls" = release
+                    - "seas" = seasonal adjustment
+                    - "src" = source
+            tag_search_text: The words to find matching tags with.
+            limit: Maximum number of results to return.
+            offset: Result start offset.
+            order_by: Order results by values of the specified attribute.
+                Options include:
+                    - "series_count"
+                    - "popularity"
+                    - "created"
+                    - "name"
+                    - "group_id"
+            sort_order: Sort results in ascending ("asc") or descending ("desc")
+                order for the attribute values specified by `order_by`.
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            A dataframe containing FRED tags for a series search.
+            The dataframe can have results optionally filtered by the FRED
+            servers according to the method's args.
+
+        """
+        data = get(
+            cls.url,
+            series_search_text=series_search_text,
+            realtime_start=realtime_start,
+            realtime_end=realtime_end,
+            tag_names=tag_names,
+            tag_group_id=tag_group_id,
+            tag_search_text=tag_search_text,
+            limit=limit,
+            offset=offset,
+            order_by=order_by,
+            sort_order=sort_order,
+            api_key=api_key,
+        ).json()
+        data = data["seriess"]
+        return pd.DataFrame(data)
 
 
 class _Search(Dataset):
     """Get economic data series that match search text."""
+
+    #: "series/search/related_tags" FRED API. Get the related tags for a
+    #: series search.
+    related_tags = _SearchRelatedTags
+
+    #: "series/search/tags" FRED API. Get the tags for a series search.
+    tags = _SearchTags
 
     #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series/search"
@@ -505,6 +673,7 @@ class _VintageDates(Dataset):
         """
         data = get(
             cls.url,
+            series_id=series_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
             limit=limit,

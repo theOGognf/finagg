@@ -92,12 +92,12 @@ def pformat(**kwargs) -> dict[str, Any]:
         if k in kwargs:
             kwargs[k] = "true" if kwargs[k] else "false"
 
-    if "search_text" in kwargs:
-        k = "search_text"
-        v = kwargs[k]
-        if isinstance(v, str):
-            v = [v]
-        kwargs[k] = "+".join(v)
+    for k in ("search_text", "series_search_text", "tag_search_text"):
+        if k in kwargs:
+            v = kwargs[k]
+            if isinstance(v, str):
+                v = [v]
+            kwargs[k] = "+".join(v)
 
     if "vintage_dates" in kwargs:
         k = "vintage_dates"
