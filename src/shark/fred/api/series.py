@@ -732,7 +732,7 @@ class _Series(Dataset):
             https://fred.stlouisfed.org/docs/api/fred/series_updates.html
 
         Args:
-            series_id:
+            series_id: The ID for a series.
             realtime_start: Start date for fetching results
                 according to their publication date.
             realtime_end: End date for fetching results according
