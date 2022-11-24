@@ -12,7 +12,7 @@ import requests_cache
 
 _API_CACHE_PATH = os.environ.get(
     "FRED_API_CACHE_PATH",
-    pathlib.Path(__file__).resolve().parent.parent.parent.parent
+    pathlib.Path(__file__).resolve().parent.parent.parent.parent.parent
     / "data"
     / "fred_api_cache",
 )
