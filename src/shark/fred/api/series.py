@@ -9,7 +9,7 @@ from functools import cache
 
 import pandas as pd
 
-from ._api import Dataset, get, pformat
+from ._api import Dataset, get
 
 
 class _Categories(Dataset):
@@ -182,6 +182,7 @@ class _Release(Dataset):
     url = "https://api.stlouisfed.org/fred/series/release"
 
     @classmethod
+    @cache
     def get(
         cls,
         series_id: str,
@@ -229,6 +230,9 @@ class _SearchTags(Dataset):
 
 
 class _Search(Dataset):
+    """Get economic data series that match search text."""
+
+    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series/search"
 
     @classmethod
@@ -243,56 +247,305 @@ class _Search(Dataset):
         limit: None | int = 1000,
         offset: None | int = 0,
         order_by: None | str = None,
-        sort_order: None | str = "asc",
+        sort_order: None | str = None,
         filter_variable: None | str = None,
         filter_value: None | str = None,
         tag_names: None | str | list[str] = None,
         exclude_tag_names: None | str | list[str] = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
-        params = pformat(
-            search_text,
-            search_type,
-            realtime_start,
-            realtime_end,
-            limit,
-            offset,
-            order_by,
-            sort_order,
-            filter_variable,
-            filter_value,
-            tag_names,
-            exclude_tag_names,
-            api_key,
-        )
-        data = get(cls.url, params).json()
+        """Get economic data series that match search text.
+
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/series_search.html
+
+        Args:
+            search_text: The words to match against economic data series.
+            search_type: Determines the type of search to perform.
+                Options include:
+                    - "full_text" = search series attributes, units, frequency,
+                        and tags by parsing words into stems.
+                    - "series_id" = performs a substring search on series IDs.
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            limit: Maximum number of results to return.
+            offset: Result start offset.
+            order_by: Order results by values of the specified attribute.
+                Options include:
+                    - "search_rank"
+                    - "series_id"
+                    - "title"
+                    - "units"
+                    - "frequency"
+                    - "seasonal_adjustment"
+                    - "realtime_start"
+                    - "realtime_end"
+                    - "last_updated"
+                    - "observation_start"
+                    - "observation_end"
+                    - "popularity"
+                    - "group_popularity"
+            sort_order: Sort results in ascending ("asc") or descending ("desc")
+                order for the attribute values specified by `order_by`.
+            filter_variable: The attribute to filter results by.
+                Options include:
+                    - "frequency"
+                    - "units"
+                    - "seasonal_adjustment"
+            filter_value: The value of the `filter_variable` attribute to filter
+                results by.
+            tag_names: List of tag names that series match all of.
+            exclude_tag_names: List of tag names that series match none of.
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            A dataframe containing data on series matching the search.
+
+        """
+        data = get(
+            cls.url,
+            search_text=search_text,
+            search_type=search_type,
+            realtime_start=realtime_start,
+            realtime_end=realtime_end,
+            limit=limit,
+            offset=offset,
+            order_by=order_by,
+            sort_order=sort_order,
+            filter_variable=filter_variable,
+            filter_value=filter_value,
+            tag_names=tag_names,
+            exclude_tag_names=exclude_tag_names,
+            api_key=api_key,
+        ).json()
         data = data["seriess"]
         return pd.DataFrame(data)
 
 
 class _Tags(Dataset):
-    ...
+    """Get FRED tags for a series."""
+
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/series/tags"
+
+    @classmethod
+    @cache
+    def get(
+        cls,
+        series_id: str,
+        /,
+        *,
+        realtime_start: None | int | str = None,
+        realtime_end: None | int | str = None,
+        order_by: None | str = None,
+        sort_order: None | str = None,
+        api_key: None | str = None,
+    ) -> pd.DataFrame:
+        """Get the FRED tags for a series.
+
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/series_tags.html
+
+        Args:
+            series_id: The ID for a series.
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            order_by: Order results by values of the specified attribute.
+                Options include:
+                    - "series_count"
+                    - "popularity"
+                    - "created"
+                    - "name"
+                    - "group_id"
+            sort_order: Sort results in ascending ("asc") or descending ("desc")
+                order for the attribute values specified by `order_by`.
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            A dataframe containing data on FRED tags for series.
+
+        """
+        data = get(
+            cls.url,
+            series_id=series_id,
+            realtime_start=realtime_start,
+            realtime_end=realtime_end,
+            order_by=order_by,
+            sort_order=sort_order,
+            api_key=api_key,
+        ).json()
+        data = data["seriess"]
+        return pd.DataFrame(data)
 
 
 class _Updates(Dataset):
-    ...
+    """Get economic data series sorted by when observations
+    were updated on the FRED server.
+
+    """
+
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/series/updates"
+
+    @classmethod
+    @cache
+    def get(
+        cls,
+        *,
+        realtime_start: None | int | str = None,
+        realtime_end: None | int | str = None,
+        limit: None | int = 1000,
+        offset: None | int = 0,
+        filter_value: None | str = "all",
+        start_time: None | str = None,
+        end_time: None | str = None,
+        api_key: None | str = None,
+    ) -> pd.DataFrame:
+        """Get economic data series sorted by when observations
+        were updated on the FRED server.
+
+        Results are limited to series updated within the last two
+        weeks.
+
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/series_updates.html
+
+        Args:
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            limit: Maximum number of results to return.
+            offset: Result start offset.
+            filter_value: Limit results by geographic type of economic data
+                series.
+                Options include:
+                    - "macro" = limit results to macroeconomic data series
+                    - "regional" = limit results to series for parts of the US
+                    - "all" = does not filter results
+            start_time: Start time for limiting results for a time range.
+                Can filter down to minutes. Expects format "YYYMMDDHhmm".
+            end_time: Start time for limiting results for a time range.
+                Can filter down to minutes. Expects format "YYYMMDDHhmm".
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            A dataframe containing info on recently updated economic
+            data series.
+
+        """
+        data = get(
+            cls.url,
+            realtime_start=realtime_start,
+            realtime_end=realtime_end,
+            limit=limit,
+            offset=offset,
+            filter_value=filter_value,
+            start_time=start_time,
+            end_time=end_time,
+            api_key=api_key,
+        ).json()
+        data = data["seriess"]
+        return pd.DataFrame(data)
 
 
 class _VintageDates(Dataset):
-    ...
+    """Get the dates in history when a series' data values were revised
+    or new data values were released.
+
+    """
+
+    #: FRED API URL.
+    url = "https://api.stlouisfed.org/fred/series/vintage_dates"
+
+    @classmethod
+    @cache
+    def get(
+        cls,
+        series_id: str,
+        /,
+        *,
+        realtime_start: None | int | str = None,
+        realtime_end: None | int | str = None,
+        limit: None | int = 10000,
+        offset: None | int = 0,
+        sort_order: None | str = "all",
+        api_key: None | str = None,
+    ) -> pd.DataFrame:
+        """Get the dates in history when a series' data values were revised
+        or new data values were released.
+
+        Vintage dates are the release dates for a series excluding release dates
+        when the data for the series did not change.
+
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/series_vintagedates.html
+
+        Args:
+            series_id: The ID for a series.
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            limit: Maximum number of results to return.
+            offset: Result start offset.
+            sort_order: Sort results in ascending ("asc") or descending ("desc")
+                `vintage_date` order.
+
+        Returns:
+            A dataframe containing dates on vintage release dates for a series.
+
+        """
+        data = get(
+            cls.url,
+            realtime_start=realtime_start,
+            realtime_end=realtime_end,
+            limit=limit,
+            offset=offset,
+            sort_order=sort_order,
+            api_key=api_key,
+        ).json()
+        data = data["seriess"]
+        return pd.DataFrame(data)
 
 
 class _Series(Dataset):
+    """Get an economic data series."""
 
+    #: "series/categories" FRED API. Get the categories for
+    #: an economic data series.
     categories = _Categories
 
+    #: "series/observations" FRED API. Get the observations or
+    #: data values for an economic data series.
     observations = _Observations
 
+    #: "series/release" FRED API. Get the release for an economic data series.
     release = _Release
 
+    #: "series/search" FRED API. Get economic data series that match search text.
     search = _Search
 
+    #: "series/tags" FRED API. Get FRED tags for a series.
+    tags = _Tags
+
+    #: "series/updates" FRED API. Get economic data series sorted by
+    #: when observations were updated on the FRED server.
+    updates = _Updates
+
+    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series"
+
+    #: "series/vintage_dates" FRED API. Get the dates in history when a
+    #: a series' data values were revised or new data values were released.
+    vintage_dates = _VintageDates
 
     @classmethod
     def get(
@@ -304,8 +557,31 @@ class _Series(Dataset):
         realtime_end: None | int | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
-        params = pformat(series_id, realtime_start, realtime_end, api_key)
-        data = get(cls.url, params).json()
+        """Get an economic data series.
+
+        See the related FRED API documentation at:
+            https://fred.stlouisfed.org/docs/api/fred/series_updates.html
+
+        Args:
+            series_id:
+            realtime_start: Start date for fetching results
+                according to their publication date.
+            realtime_end: End date for fetching results according
+                to their publication date.
+            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
+                environment variable if left `None`.
+
+        Returns:
+            A dataframe containing info on an economic data series.
+
+        """
+        data = get(
+            cls.url,
+            series_id=series_id,
+            realtime_start=realtime_start,
+            realtime_end=realtime_end,
+            api_key=api_key,
+        ).json()
         data = data["seriess"]
         return pd.DataFrame(data)
 
