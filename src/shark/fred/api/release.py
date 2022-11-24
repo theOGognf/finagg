@@ -94,8 +94,8 @@ class _Releases(Dataset):
         realtime_end: None | int | str = None,
         limit: None | int = 1000,
         offset: None | int = 0,
-        order_by: None | str = "release_id",
-        sort_order: None | str = "asc",
+        order_by: None | str = None,
+        sort_order: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all releases of economic data.
@@ -158,7 +158,7 @@ class _ReleaseDates(Dataset):
         realtime_end: None | int | str = None,
         limit: None | int = 10000,
         offset: None | int = 0,
-        sort_order: None | str = "asc",
+        sort_order: None | str = None,
         include_release_dates_with_no_data: None | bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
@@ -217,8 +217,8 @@ class _Series(Dataset):
         realtime_end: None | int | str = None,
         limit: None | int = 1000,
         offset: None | int = 0,
-        order_by: None | str = "series_id",
-        sort_order: None | str = "asc",
+        order_by: None | str = None,
+        sort_order: None | str = None,
         filter_variable: None | str = None,
         filter_value: None | str = None,
         tag_names: None | str | list[str] = None,
@@ -354,8 +354,8 @@ class _Tags(Dataset):
         search_text: None | str | list[str] = None,
         limit: None | int = 1000,
         offset: None | int = 0,
-        order_by: None | str = "series_count",
-        sort_order: None | str = "asc",
+        order_by: None | str = None,
+        sort_order: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get tags for an economic release.
@@ -437,8 +437,8 @@ class _RelatedTags(Dataset):
         search_text: None | str | list[str] = None,
         limit: None | int = 1000,
         offset: None | int = 0,
-        order_by: None | str = "series_count",
-        sort_order: None | str = "asc",
+        order_by: None | str = None,
+        sort_order: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data for tags related to an economic release.

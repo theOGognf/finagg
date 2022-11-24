@@ -122,8 +122,8 @@ class _Series(Dataset):
         realtime_end: None | int | str = None,
         limit: None | int = 1000,
         offset: None | int = 0,
-        order_by: None | str = "series_id",
-        sort_order: None | str = "asc",
+        order_by: None | str = None,
+        sort_order: None | str = None,
         filter_variable: None | str = None,
         filter_value: None | str = None,
         tag_names: None | str | list[str] = None,
@@ -208,8 +208,8 @@ class _Tags(Dataset):
         search_text: None | str | list[str] = None,
         limit: None | int = 1000,
         offset: None | int = 0,
-        order_by: None | str = "series_count",
-        sort_order: None | str = "asc",
+        order_by: None | str = None,
+        sort_order: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data for a category's tags.
@@ -292,8 +292,8 @@ class _RelatedTags(Dataset):
         search_text: None | str | list[str] = None,
         limit: None | int = 1000,
         offset: None | int = 0,
-        order_by: None | str = "series_count",
-        sort_order: None | str = "asc",
+        order_by: None | str = None,
+        sort_order: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data for tags related to a category.

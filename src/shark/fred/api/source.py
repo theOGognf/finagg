@@ -29,8 +29,8 @@ class _Releases(Dataset):
         realtime_end: None | int | str = None,
         limit: None | int = 1000,
         offset: None | int = 0,
-        order_by: None | str = "release_id",
-        sort_order: None | str = "asc",
+        order_by: None | str = None,
+        sort_order: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all releases for a source of economic data.

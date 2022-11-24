@@ -74,7 +74,7 @@ class _Observations(Dataset):
         realtime_end: None | int | str = None,
         limit: None | int = 100000,
         offset: None | int = 0,
-        sort_order: None | str = "asc",
+        sort_order: None | str = None,
         observation_start: None | int | str = None,
         observation_end: None | int | str = None,
         units: None | str = "lin",
@@ -570,7 +570,7 @@ class _Updates(Dataset):
         realtime_end: None | int | str = None,
         limit: None | int = 1000,
         offset: None | int = 0,
-        filter_value: None | str = "all",
+        filter_value: None | str = None,
         start_time: None | str = None,
         end_time: None | str = None,
         api_key: None | str = None,
@@ -644,7 +644,7 @@ class _VintageDates(Dataset):
         realtime_end: None | int | str = None,
         limit: None | int = 10000,
         offset: None | int = 0,
-        sort_order: None | str = "all",
+        sort_order: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the dates in history when a series' data values were revised
