@@ -36,6 +36,8 @@ def get_unique_10q(df: pd.DataFrame, /, *, units: str = "USD") -> pd.DataFrame:
 
 def scrape(
     tickers: str | list[str],
+    /,
+    *,
     concepts: None | list[tuple[str, str]] = None,
     tags: None | list[str] = None,
     taxonomy: None | str = None,

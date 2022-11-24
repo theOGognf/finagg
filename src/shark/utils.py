@@ -1,7 +1,13 @@
+"""Generic utils used by subpackages."""
+
+import os
+import pathlib
+import platform
 import re
+import subprocess
 
 
-def CamelCase(s: str) -> str:
+def CamelCase(s: str, /) -> str:
     """Convert a string to CamelCase.
 
     Credit:
@@ -18,7 +24,7 @@ def CamelCase(s: str) -> str:
     return "".join(word.title() for word in s.split("_"))
 
 
-def join_with(s: str | list[str], delim: str) -> str:
+def join_with(s: str | list[str], /, delim: str) -> str:
     """Join a sequence of strings with the delimiter `delim`.
 
     Examples:
@@ -34,7 +40,59 @@ def join_with(s: str | list[str], delim: str) -> str:
     return delim.join(s)
 
 
-def snake_case(s: str) -> str:
+def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> None:
+    """Set the value of the environment variable `name` to `value`.
+
+    The environment variable is permanently set in the environment
+    and in the current process.
+
+    Args:
+        name: Environment variable name.
+        value: Environment variable value.
+        exist_ok: Whether it's okay if an environment variable of the
+            same name already exists. If `True`, it will be overwritten.
+
+    Raises:
+        RuntimeError:
+            - If `exist_ok` is `False` and an environment variable
+                of the same name already exists
+            - If the environment variable couldn't be set.
+
+    """
+    if not exist_ok and name in os.environ:
+        raise RuntimeError(
+            f"The env variable `{name}` already exists. "
+            "Set `exist_ok` to `True` to overwrite it."
+        )
+
+    os.environ[name] = value
+    match platform.system():
+        case "Linux" | "Mac":
+            home = pathlib.Path.home()
+            env_files = (".bashrc", ".bash_profile", ".profile")
+            for f in env_files:
+                p = home / f
+                if pathlib.Path.exists(p):
+                    with open(p, "a") as f:
+                        f.write(f"export {name}={value}\n")
+
+                    with open(p, "r") as f:
+                        eof = f.readlines()[-1]
+                        if f"export {name}={value}" not in eof:
+                            continue
+
+                    subprocess.run(["source", str(p)])
+                    return
+            raise RuntimeError(
+                f"Unable to set `{name}` in {env_files}. "
+                "Try manually setting the environment variable yourself."
+            )
+
+        case "Windows":
+            subprocess.run(["setx", name, value])
+
+
+def snake_case(s: str, /) -> str:
     """Convert a string to snake_case.
 
     Credit:

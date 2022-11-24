@@ -142,7 +142,7 @@ class _Sources(Dataset):
         limit: None | int = 1000,
         offset: None | int = 0,
         order_by: None | str = None,
-        sort_order: None | str = "all",
+        sort_order: None | str = None,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all sources of economic data.

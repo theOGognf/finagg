@@ -8,7 +8,7 @@ from .sql import sp500 as sp500_table
 
 
 def scrape(
-    djia: bool = True, sp500: bool = True, nasdaq100: bool = True
+    *, djia: bool = True, sp500: bool = True, nasdaq100: bool = True
 ) -> dict[str, int]:
     """Scrape popular indices ticker data from the tickers API.
 
