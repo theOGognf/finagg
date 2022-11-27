@@ -5,7 +5,7 @@ from .sql import engine, metadata
 from .sql import series as series_table
 
 
-def scrape(series_ids: str | list[str], /, **kwargs) -> dict[str, int]:
+def scrape(series_ids: str | list[str], /) -> dict[str, int]:
     """Scrape FRED economic series observation data
     from the FRED API.
 
@@ -18,7 +18,6 @@ def scrape(series_ids: str | list[str], /, **kwargs) -> dict[str, int]:
 
     Args:
         series_ids: FRED economic series IDs to scrape.
-        **kwargs: Additional options for the "fred/series/observations" API.
 
     Returns:
         A dictionary mapping series IDs to number of rows scraped
@@ -35,7 +34,10 @@ def scrape(series_ids: str | list[str], /, **kwargs) -> dict[str, int]:
         series_to_inserts = {}
         for series_id in series_ids:
             df = api.series.observations.get(
-                series_id, realtime_start=0, realtime_end=-1, output_type=4, **kwargs
+                series_id,
+                realtime_start=0,
+                realtime_end=-1,
+                output_type=4,
             )
             series_to_inserts[series_id] = len(df.index)
             conn.execute(series_table.insert(), df.to_dict(orient="records"))

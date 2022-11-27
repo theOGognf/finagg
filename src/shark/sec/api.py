@@ -24,6 +24,7 @@ from requests_cache import CachedResponse
 from ..utils import snake_case
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter(
     "%(asctime)s | %(levelname)s | shark.sec.api - %(message)s"

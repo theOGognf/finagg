@@ -40,7 +40,7 @@ def join_with(s: str | list[str], /, delim: str) -> str:
     return delim.join(s)
 
 
-def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> None:
+def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:
     """Set the value of the environment variable `name` to `value`.
 
     The environment variable is permanently set in the environment
@@ -82,7 +82,7 @@ def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> None:
                             continue
 
                     subprocess.run(["source", str(p)])
-                    return
+                    return p
             raise RuntimeError(
                 f"Unable to set `{name}` in {env_files}. "
                 "Try manually setting the environment variable yourself."

@@ -43,6 +43,7 @@ import requests_cache
 from requests_cache import CachedResponse
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter(
     "%(asctime)s | %(levelname)s | shark.bea.api - %(message)s"

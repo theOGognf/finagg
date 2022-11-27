@@ -172,7 +172,9 @@ class _Observations(Dataset):
             api_key=api_key,
         ).json()
         data = data["observations"]
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        df["series_id"] = series_id
+        return df
 
 
 class _Release(Dataset):
