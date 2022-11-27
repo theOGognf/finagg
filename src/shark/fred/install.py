@@ -4,17 +4,18 @@ from ..utils import setenv
 from .scrape import scrape
 
 
-def install(series_id: None | str | list[str] = None) -> None:
-    """Set the `FRED_API_KEY` environment variable and scrape economic
-    series data (if provided).
+def install(init_db: bool = True) -> None:
+    """Set the `FRED_API_KEY` environment variable and
+    optionally initialize local SQL tables with
+    popular economic data.
 
     Args:
-        series_id: Economic series IDs to scrape. Defaults to `None`
-            to skip scraping.
+        init_db: Whether to initialize local SQL tables
+            with popular economic data.
 
     Returns:
-        Mapping of series IDs to values scraped for them. Empty if
-        no series are scraped.
+        Mapping of economic series IDs to rows scraped
+        for them. Empty if no economic data is scraped.
 
     """
     api_key = input(
@@ -26,5 +27,18 @@ def install(series_id: None | str | list[str] = None) -> None:
     if not api_key:
         raise RuntimeError("An empty FRED API key was given.")
     setenv("FRED_API_KEY", api_key)
-    if series_id is not None:
-        scrape(series_id)
+    if init_db:
+        scrape(
+            [
+                "CPIAUCNS",  # Consumer price index
+                "CSUSHPINSA",  # S&P/Case-Shiller national home price index
+                "FEDFUNDSRATE",  # Federal funds interest rate
+                "GDP",  # Gross domestic product
+                "GDPC1",  # Real gross domestic product
+                "GS10",  # 10-Year treasury yield
+                "MICH",  # University of Michigan: inflation expectation
+                "UMCSENT",  # University of Michigan: consumer sentiment
+                "UNRATE",  # Unemployment rate
+                "WALCL",  # US assets, total assets (less eliminations from consolidation)
+            ]
+        )
