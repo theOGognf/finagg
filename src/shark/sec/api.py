@@ -517,3 +517,55 @@ class _API:
 
 #: Public-facing SEC API.
 api = _API
+
+
+if __name__ == "__main__":
+    import shark
+
+    truth_mapping = {
+        "Total Liab": "Liabilities",
+        "Total Stockholder Equity": "StockholdersEquity",
+        "Total Assets": "Assets",
+        "Other Current Assets": "OtherAssetsCurrent",
+        "Retained Earnings": "RetainedEarningsAccumulatedDeficit",
+        "Other Liab": "OtherLiabilitiesNoncurrent",
+        "Other Assets": "OtherAssetsNoncurrent",
+        "Property Plant Equipment": "PropertyPlantAndEquipmentNet",
+        "Total Current Assets": "AssetsCurrent",
+        "Inventory": "InventoryNet",
+        "Accounts Payable": "AccountsPayableCurrent",
+        "Net Income": "NetIncomeLoss",
+        "Operating Income": "OperatingIncomeLoss",
+        "Current Accounts Receivable": "AccountsReceivableNetCurrent",
+        "Dividends": "PaymentsOfDividends",
+        "Depreciation": "Depreciation",
+        "Repurchase Of Stock": "PaymentsForRepurchaseOfCommonStock",
+        "Operating Expense": "OperatingExpenses",
+        "Earnings Per Share": "EarningsPerShareBasic",
+        "Total Cashflows From Financing Activities": "NetCashProvidedByUsedInFinancingActivities",
+        "Total Cashflows From Operating Activities": "NetCashProvidedByUsedInOperatingActivities",
+        "Total Cashflows From Investing Activities": "NetCashProvidedByUsedInInvestingActivities",
+        "Revenue": "Revenues",
+        "Gross Profit": "GrossProfit",
+        "Research and Development": "ResearchAndDevelopmentExpense",
+    }
+
+    import yfinance as yf
+
+    aapl = yf.Ticker("AAPL")
+    balance_sheet_items = list(aapl.quarterly_cashflow.index)
+
+    tickers = shark.tickers.api.sp500.get_ticker_list()
+    tags = None
+    for ticker in tickers:
+        try:
+            df = api.company_concept.get("EarningsPerShareBasic", ticker=ticker)
+            print(len(df.index))
+        except Exception as e:
+            print(ticker, e)
+    print(tags)
+    # tags = list(df["tag"].unique())
+    # for item in balance_sheet_items:
+    #     matches = difflib.get_close_matches(item, tags, cutoff=0.3, n=50)
+    #     d = {item: matches}
+    #     print(json.dumps(d, indent=4))
