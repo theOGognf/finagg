@@ -31,7 +31,17 @@ class FiscalDelta:
 
 @dataclass
 class FiscalFrame:
-    """A year and quarter pair."""
+    """A year and quarter pair.
+
+    Examples:
+        Getting quarter differences between frames.
+        >>> import shark
+        >>> df = shark.sec.api.company_concept.get("AssetsCurrent", ticker="AAPL")
+        >>> frames: pd.Series = df["fy"].astype(int).astype(str) + df["fp"].astype(str)
+        >>> frames = frames.apply(lambda row: FiscalFrame.fromstr(row))
+        >>> frames = frames.diff(periods=1).dropna().astype(int)
+
+    """
 
     #: Fiscal year
     year: int
