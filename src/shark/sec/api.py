@@ -437,6 +437,9 @@ class _Tickers(_Dataset):
 class _API:
     """Collection of SEC EDGAR APIs."""
 
+    #: Count of warnings to limit log spam.
+    _throttle_warnings = 0
+
     #: Throttling-prevention strategy. Tracks throttling metrics for each API key.
     _throttle_watchdog: ClassVar[_ThrottleWatchdog] = _ThrottleWatchdog()
 
@@ -493,11 +496,12 @@ class _API:
                 "set the `SEC_API_USER_AGENT` environment variable."
             )
         next_valid_request_dt = cls._throttle_watchdog[user_agent].next_valid_request_dt
-        if next_valid_request_dt > 0:
+        if next_valid_request_dt > 0 and not cls._throttle_warnings:
             logger.warning(
                 f"User agent `{user_agent}` may be throttled. "
                 f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
             )
+            cls._throttle_warnings += 1
         time.sleep(next_valid_request_dt)
         response = session.get(url, headers={"User-Agent": user_agent})
         cls._throttle_watchdog.update(user_agent, response)

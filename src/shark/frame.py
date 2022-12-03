@@ -5,6 +5,25 @@ from dataclasses import dataclass
 from typing import Union
 
 
+def is_valid_fiscal_seq(seq: list[int]) -> bool:
+    """Determine if the sequence of fiscal
+    quarter differences is continuous.
+
+    Args:
+        seq: Sequence of integers.
+
+    Returns:
+        Whether the sequence is valid.
+
+    """
+    valid = {(1, 1, 2), (1, 2, 1), (2, 1, 1), (1, 1), (2, 1), (1, 2)}
+    for i in range(len(seq) - 1):
+        subseq = tuple(seq[i : i + 3])
+        if subseq not in valid:
+            return False
+    return True
+
+
 @dataclass
 class FiscalDelta:
     """A displacement of `FiscalFrame`."""
@@ -40,6 +59,7 @@ class FiscalFrame:
         >>> frames: pd.Series = df["fy"].astype(int).astype(str) + df["fp"].astype(str)
         >>> frames = frames.apply(lambda row: FiscalFrame.fromstr(row))
         >>> frames = frames.diff(periods=1).dropna().astype(int)
+        >>> is_valid_fiscal_seq(frames.tolist())
 
     """
 

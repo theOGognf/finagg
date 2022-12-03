@@ -26,26 +26,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def is_valid_fiscal_seq(seq: list[int]) -> bool:
-    """Determine if the sequence of fiscal
-    quarter differences is continuous.
-
-    Args:
-        seq: Sequence of integers.
-
-    Returns:
-        Whether the sequence is valid.
-
-    """
-    valid = {(1, 1, 2), (1, 2, 1), (2, 1, 1), (1, 1), (2, 1), (1, 2)}
-    for i in range(len(seq) - 1):
-        subseq = tuple(seq[i : i + 3])
-        if subseq not in valid:
-            return False
-    return True
-
-
-def get_valid_concept(
+def _get_valid_concept(
     ticker: str, tag: str, taxonomy: str, units: str, /
 ) -> None | pd.DataFrame:
     """Return a filtered dataframe if it's valid.
@@ -73,12 +54,20 @@ def get_valid_concept(
         return None
 
 
-def search(args: tuple[str, dict[str, str]]) -> tuple[str, str, None | pd.DataFrame]:
-    ticker, concept = args
-    tag = concept["tag"]
-    taxonomy = concept["taxonomy"]
-    units = concept["units"]
-    return ticker, tag, get_valid_concept(ticker, tag, taxonomy, units)
+def _search(params: dict[str, str]) -> dict:
+    """Wrapper for `_get_valid_concept` to enable dispatching
+    to `multiprocessing.Pool.imap`.
+
+    """
+    ticker = params["ticker"]
+    tag = params["tag"]
+    taxonomy = params["taxonomy"]
+    units = params["units"]
+    return {
+        "ticker": ticker,
+        "tag": tag,
+        "result": _get_valid_concept(ticker, tag, taxonomy, units),
+    }
 
 
 def install(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
@@ -134,13 +123,16 @@ def install(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
                     tickers_to_inserts[ticker] = 0
                     tickers_to_dfs[ticker] = []
                     for concept in concepts:
+                        search = concept.copy()
+                        search["ticker"] = ticker
                         tags_to_misses[concept["tag"]] = 0
-                        searches.append([ticker, concept])
+                        searches.append(search)
 
-                for ticker, tag, df in pool.imap_unordered(search, searches):
+                for output in pool.imap_unordered(_search, searches):
+                    ticker = output["ticker"]
+                    tag = output["tag"]
+                    df = output["result"]
                     if df is None:
-                        if ticker not in skipped_tickers:
-                            logger.info(f"Skipping {ticker} due to missing data")
                         skipped_tickers.add(ticker)
                         tags_to_misses[tag] += 1
                         continue
