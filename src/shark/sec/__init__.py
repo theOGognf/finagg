@@ -1,4 +1,4 @@
 """SEC top-level interface."""
 
-from . import sql
+from . import features, sql
 from .api import api

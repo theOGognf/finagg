@@ -1,1 +1,3 @@
-from . import api
+"""FRED top-level interface."""
+
+from . import api, features
