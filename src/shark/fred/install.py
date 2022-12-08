@@ -5,6 +5,7 @@ import os
 import sys
 
 from ..utils import setenv
+from .features import EconomicFeatures
 from .scrape import scrape
 
 logger = logging.getLogger(__name__)
@@ -45,18 +46,5 @@ def install(init_db: bool = True) -> None:
     else:
         logger.info("FRED API key already exists in env")
     if init_db:
-        c = scrape(
-            [
-                "CPIAUCNS",  # Consumer price index
-                "CSUSHPINSA",  # S&P/Case-Shiller national home price index
-                "FEDFUNDS",  # Federal funds interest rate
-                "GDP",  # Gross domestic product
-                "GDPC1",  # Real gross domestic product
-                "GS10",  # 10-Year treasury yield
-                "MICH",  # University of Michigan: inflation expectation
-                "UMCSENT",  # University of Michigan: consumer sentiment
-                "UNRATE",  # Unemployment rate
-                "WALCL",  # US assets, total assets (less eliminations from consolidation)
-            ]
-        )
+        c = scrape(EconomicFeatures.series_ids)
         logger.info(f"{sum(c.values())} rows written")

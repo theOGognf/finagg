@@ -1,8 +1,11 @@
 """Features from FRED sources."""
 
 import pandas as pd
+from sqlalchemy.sql import and_
 
 from . import api
+from .sql import engine
+from .sql import series as series_table
 
 
 class EconomicFeatures:
@@ -65,4 +68,32 @@ class EconomicFeatures:
     def from_sql(
         cls, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
-        ...
+        """Get economic features from local FRED SQL tables.
+
+        Not all data series are published at the same rate or
+        time. Missing rows for less-frequent economic series
+        are forward filled.
+
+        Args:
+            start: The start date of the observation period.
+                Defaults to the first recorded date.
+            end: The end date of the observation period.
+                Defaults to the last recorded date.
+
+        Returns:
+            Economic data series dataframe with each series
+            as a separate column. Sorted by date.
+
+        """
+        with engine.connect() as conn:
+            stmt = series_table.c.series_id.in_(cls.series_ids)
+            if start:
+                stmt = and_(stmt, series_table.c.date >= start)
+            if end:
+                stmt = and_(stmt, series_table.c.date <= end)
+            df = pd.DataFrame(conn.execute(series_table.select(stmt)))
+        return (
+            df.pivot(index="date", values="value", columns="series_id")
+            .fillna(method="ffill")
+            .dropna()
+        )
