@@ -58,12 +58,7 @@ class EconomicFeatures:
             )
             dfs.append(df)
         dfs = pd.concat(dfs)
-        return (
-            dfs.pivot(index="date", values="value", columns="series_id")
-            .sort_index()
-            .fillna(method="ffill")
-            .dropna()
-        )
+        return cls._normalize(df)
 
     @classmethod
     def from_sql(
@@ -93,9 +88,21 @@ class EconomicFeatures:
             if end:
                 stmt = and_(stmt, series_table.c.date <= end)
             df = pd.DataFrame(conn.execute(series_table.select(stmt)))
-        return (
+        return cls._normalize(df)
+
+    @classmethod
+    def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
+        """Normalize economic features columns."""
+        df = (
             df.pivot(index="date", values="value", columns="series_id")
-            .sort_index()
             .fillna(method="ffill")
             .dropna()
+            .sort_index()
         )
+        columns = ["CPIAUCNS", "CSUSHPINSA", "GDP", "GDPC1", "UMCSENT", "WALCL"]
+        df[columns] = 100.0 * df[columns].pct_change()
+        return df.dropna()
+
+
+#: Public-facing API.
+economic_features = EconomicFeatures

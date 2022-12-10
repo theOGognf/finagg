@@ -83,9 +83,9 @@ class QuarterlyFeatures:
         dfs = pd.concat(dfs)
         return (
             dfs.pivot(index="filed", values="value", columns="tag")
-            .sort_index()
             .fillna(method="ffill")
             .dropna()
+            .sort_index()
         )
 
     @classmethod
@@ -122,7 +122,15 @@ class QuarterlyFeatures:
             df = pd.DataFrame(conn.execute(tags_table.select(stmt)))
         return (
             df.pivot(index="filed", values="value", columns="tag")
-            .sort_index()
             .fillna(method="ffill")
             .dropna()
+            .sort_index()
         )
+
+    @classmethod
+    def normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
+        """Normalize quarterly features columns."""
+
+
+#: Public-facing API.
+quarterly_features = QuarterlyFeatures
