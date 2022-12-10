@@ -1,31 +1,10 @@
 """Scrape the SEC API and store into local SQL tables."""
 
-import pandas as pd
-
 from ..tickers import api as tickers_api
 from .api import api
+from .features import get_unique_10q
 from .sql import engine, metadata
 from .sql import tags as tags_table
-
-
-def get_unique_10q(df: pd.DataFrame, /, *, units: str = "USD") -> pd.DataFrame:
-    """Get all unique rows as determined by the
-    accession number (`accn`) and tag for each quarter.
-
-    Args:
-        df: Dataframe without unique rows.
-        units: Only keep rows with units `units` if not `None`.
-
-    Returns:
-        Dataframe with unique rows.
-
-    """
-
-    df = df[
-        (df["form"] == "10-Q") & (df["units"] == units) & (df["fp"].str.startswith("Q"))
-    ]
-    df = df.drop_duplicates(["accn", "tag"])
-    return df.sort_values("filed")
 
 
 def scrape(

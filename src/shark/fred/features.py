@@ -60,6 +60,7 @@ class EconomicFeatures:
         dfs = pd.concat(dfs)
         return (
             dfs.pivot(index="date", values="value", columns="series_id")
+            .sort_index()
             .fillna(method="ffill")
             .dropna()
         )
@@ -94,6 +95,7 @@ class EconomicFeatures:
             df = pd.DataFrame(conn.execute(series_table.select(stmt)))
         return (
             df.pivot(index="date", values="value", columns="series_id")
+            .sort_index()
             .fillna(method="ffill")
             .dropna()
         )

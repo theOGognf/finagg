@@ -12,7 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from ..tickers import api as tickers_api
 from ..utils import setenv
 from .api import api
-from .scrape import get_unique_10q
+from .features import get_unique_10q
 from .sql import engine, metadata
 from .sql import tags as tags_table
 
