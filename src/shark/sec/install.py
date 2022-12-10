@@ -12,7 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from ..tickers import api as tickers_api
 from ..utils import setenv
 from .api import api
-from .features import get_unique_10q
+from .features import QuarterlyFeatures, get_unique_10q
 from .sql import engine, metadata
 from .sql import tags as tags_table
 
@@ -99,19 +99,7 @@ def install(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
         metadata.create_all(engine)
 
         tickers = tickers_api.get_ticker_set()
-        concepts = [
-            {"tag": "AssetsCurrent", "taxonomy": "us-gaap", "units": "USD"},
-            {
-                "tag": "EarningsPerShareBasic",
-                "taxonomy": "us-gaap",
-                "units": "USD/shares",
-            },
-            {"tag": "InventoryNet", "taxonomy": "us-gaap", "units": "USD"},
-            {"tag": "LiabilitiesCurrent", "taxonomy": "us-gaap", "units": "USD"},
-            {"tag": "NetIncomeLoss", "taxonomy": "us-gaap", "units": "USD"},
-            {"tag": "OperatingIncomeLoss", "taxonomy": "us-gaap", "units": "USD"},
-            {"tag": "StockholdersEquity", "taxonomy": "us-gaap", "units": "USD"},
-        ]
+        concepts = QuarterlyFeatures.concepts
         tickers_to_dfs: dict[str, list[pd.DataFrame]] = {}
         tickers_to_inserts = {}
         tags_to_misses = {}
