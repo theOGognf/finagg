@@ -45,6 +45,29 @@ class QuarterlyFeatures:
     )
 
     @classmethod
+    def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
+        """Normalize quarterly features columns."""
+        df = (
+            df.pivot(index="filed", values="value", columns="tag")
+            .fillna(method="ffill")
+            .dropna()
+            .astype(float)
+            .sort_index()
+        )
+        df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
+        df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
+            "LiabilitiesCurrent"
+        ]
+        df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
+        df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
+        df["PriceBookRatio"] = df["StockholdersEquity"] / (
+            df["AssetsCurrent"] - df["LiabilitiesCurrent"]
+        )
+        pct_change_columns = [concept["tag"] for concept in cls.concepts]
+        df[pct_change_columns] = df[pct_change_columns].pct_change()
+        return df.dropna()
+
+    @classmethod
     def from_api(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
@@ -74,19 +97,14 @@ class QuarterlyFeatures:
             df = api.company_concept.get(
                 tag, ticker=ticker, taxonomy=taxonomy, units=units
             )
-            df = get_unique_10q(df)
+            df = get_unique_10q(df, units=units)
             if start:
                 df = df[df["filed"] >= start]
             if end:
                 df = df[df["filed"] <= end]
             dfs.append(df)
         dfs = pd.concat(dfs)
-        return (
-            dfs.pivot(index="filed", values="value", columns="tag")
-            .fillna(method="ffill")
-            .dropna()
-            .sort_index()
-        )
+        return cls._normalize(dfs)
 
     @classmethod
     def from_sql(
@@ -120,16 +138,7 @@ class QuarterlyFeatures:
             if end:
                 stmt = and_(stmt, tags_table.c.filed <= end)
             df = pd.DataFrame(conn.execute(tags_table.select(stmt)))
-        return (
-            df.pivot(index="filed", values="value", columns="tag")
-            .fillna(method="ffill")
-            .dropna()
-            .sort_index()
-        )
-
-    @classmethod
-    def normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
-        """Normalize quarterly features columns."""
+        return cls._normalize(df)
 
 
 #: Public-facing API.

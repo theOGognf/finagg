@@ -13,17 +13,43 @@ class EconomicFeatures:
 
     #: Economic series IDs (typical economic indicators).
     series_ids = (
+        "CIVPART",  # Labor force participation rate
         "CPIAUCNS",  # Consumer price index
         "CSUSHPINSA",  # S&P/Case-Shiller national home price index
         "FEDFUNDS",  # Federal funds interest rate
         "GDP",  # Gross domestic product
         "GDPC1",  # Real gross domestic product
         "GS10",  # 10-Year treasury yield
+        "M2",  # Money stock measures (i.e., savings and related balances)
         "MICH",  # University of Michigan: inflation expectation
+        "PSAVERT",  # Personal savings rate
         "UMCSENT",  # University of Michigan: consumer sentiment
         "UNRATE",  # Unemployment rate
         "WALCL",  # US assets, total assets (less eliminations from consolidation)
     )
+
+    @classmethod
+    def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
+        """Normalize economic features columns."""
+        df = (
+            df.pivot(index="date", values="value", columns="series_id")
+            .fillna(method="ffill")
+            .dropna()
+            .astype(float)
+            .sort_index()
+        )
+        pct_change_columns = [
+            "CIVPART",
+            "CPIAUCNS",
+            "CSUSHPINSA",
+            "GDP",
+            "GDPC1",
+            "M2",
+            "UMCSENT",
+            "WALCL",
+        ]
+        df[pct_change_columns] = 100.0 * df[pct_change_columns].pct_change()
+        return df.dropna()
 
     @classmethod
     def from_api(
@@ -58,7 +84,7 @@ class EconomicFeatures:
             )
             dfs.append(df)
         dfs = pd.concat(dfs)
-        return cls._normalize(df)
+        return cls._normalize(dfs)
 
     @classmethod
     def from_sql(
@@ -89,19 +115,6 @@ class EconomicFeatures:
                 stmt = and_(stmt, series_table.c.date <= end)
             df = pd.DataFrame(conn.execute(series_table.select(stmt)))
         return cls._normalize(df)
-
-    @classmethod
-    def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
-        """Normalize economic features columns."""
-        df = (
-            df.pivot(index="date", values="value", columns="series_id")
-            .fillna(method="ffill")
-            .dropna()
-            .sort_index()
-        )
-        columns = ["CPIAUCNS", "CSUSHPINSA", "GDP", "GDPC1", "UMCSENT", "WALCL"]
-        df[columns] = 100.0 * df[columns].pct_change()
-        return df.dropna()
 
 
 #: Public-facing API.
