@@ -1,5 +1,7 @@
 """Features from SEC sources."""
 
+from functools import cache
+
 import pandas as pd
 from sqlalchemy.sql import and_
 
@@ -68,6 +70,7 @@ class QuarterlyFeatures:
         return df.dropna()
 
     @classmethod
+    @cache
     def from_api(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
@@ -107,6 +110,7 @@ class QuarterlyFeatures:
         return cls._normalize(dfs)
 
     @classmethod
+    @cache
     def from_sql(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:

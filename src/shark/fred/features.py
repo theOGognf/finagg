@@ -1,5 +1,7 @@
 """Features from FRED sources."""
 
+from functools import cache
+
 import pandas as pd
 from sqlalchemy.sql import and_
 
@@ -52,6 +54,7 @@ class EconomicFeatures:
         return df.dropna()
 
     @classmethod
+    @cache
     def from_api(
         cls, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
@@ -87,6 +90,7 @@ class EconomicFeatures:
         return cls._normalize(dfs)
 
     @classmethod
+    @cache
     def from_sql(
         cls, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
