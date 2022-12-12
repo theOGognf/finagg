@@ -45,5 +45,5 @@ def install(init_db: bool = True) -> None:
     else:
         logger.info("FRED API key already exists in env")
     if init_db:
-        c = scrape.scrape(features.EconomicFeatures.series_ids)
+        c = scrape.scrape(features.economic_features.series_ids)
         logger.info(f"{sum(c.values())} rows written")

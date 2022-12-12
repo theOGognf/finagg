@@ -8,7 +8,7 @@ from sqlalchemy.sql import and_
 from . import api, sql
 
 
-class EconomicFeatures:
+class _EconomicFeatures:
     """Methods for gathering economic data series from FRED sources."""
 
     #: Economic series IDs (typical economic indicators).
@@ -120,4 +120,4 @@ class EconomicFeatures:
 
 
 #: Public-facing API.
-economic_features = EconomicFeatures
+economic_features = _EconomicFeatures
