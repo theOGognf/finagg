@@ -5,7 +5,8 @@ from functools import cache
 import pandas as pd
 from sqlalchemy.sql import and_
 
-from . import api, sql
+from . import sql
+from .api import api
 
 
 def get_unique_10q(df: pd.DataFrame, /, *, units: str = "USD") -> pd.DataFrame:
