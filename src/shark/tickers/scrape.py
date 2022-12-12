@@ -1,10 +1,6 @@
 """Scrape the tickers API and store into local SQL tables."""
 
-from .api import api
-from .sql import djia as djia_table
-from .sql import engine, metadata
-from .sql import nasdaq100 as nasdaq100_table
-from .sql import sp500 as sp500_table
+from . import api, sql
 
 
 def scrape(
@@ -31,24 +27,24 @@ def scrape(
     if not (djia or sp500 or nasdaq100):
         raise ValueError("Need to scrape at least one index.")
 
-    metadata.drop_all(engine)
-    metadata.create_all(engine)
+    sql.metadata.drop_all(sql.engine)
+    sql.metadata.create_all(sql.engine)
 
-    with engine.connect() as conn:
+    with sql.engine.connect() as conn:
         indices_to_inserts = {"djia": 0, "sp500": 0, "nasdaq100": 0}
         if djia:
             df = api.djia.get()
             indices_to_inserts["djia"] = len(df.index)
-            conn.execute(djia_table.insert(), df.to_dict(orient="records"))
+            conn.execute(sql.djia.insert(), df.to_dict(orient="records"))
 
         if sp500:
             df = api.sp500.get()
             indices_to_inserts["sp500"] = len(df.index)
-            conn.execute(sp500_table.insert(), df.to_dict(orient="records"))
+            conn.execute(sql.sp500.insert(), df.to_dict(orient="records"))
 
         if nasdaq100:
             df = api.nasdaq100.get()
             indices_to_inserts["nasdaq100"] = len(df.index)
-            conn.execute(nasdaq100_table.insert(), df.to_dict(orient="records"))
+            conn.execute(sql.nasdaq100.insert(), df.to_dict(orient="records"))
 
     return indices_to_inserts

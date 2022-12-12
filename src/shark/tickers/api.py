@@ -61,7 +61,7 @@ class _DJIA(_Dataset):
     @cache
     def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
         """Get a dataframe containing data on the tickers in the DJIA."""
-        response = _API.get(cls.url, user_agent=user_agent)
+        response = get(cls.url, user_agent=user_agent)
         soup = BeautifulSoup(response.text, "html.parser")
         tbl = soup.find("table", {"class": "wikitable"})
         (df,) = pd.read_html(str(tbl))
@@ -96,7 +96,7 @@ class _Nasdaq100(_Dataset):
     @cache
     def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
         """Get a dataframe containing data on the tickers in the Nasdaq 100."""
-        response = _API.get(cls.url, user_agent=user_agent)
+        response = get(cls.url, user_agent=user_agent)
         soup = BeautifulSoup(response.text, "html.parser")
         tbl = soup.find_all("table", {"class": "wikitable"})[3]
         (df,) = pd.read_html(str(tbl))
@@ -121,7 +121,7 @@ class _SP500(_Dataset):
     @cache
     def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
         """Get a dataframe containing data on the tickers in the S&P 500."""
-        response = _API.get(cls.url, user_agent=user_agent)
+        response = get(cls.url, user_agent=user_agent)
         soup = BeautifulSoup(response.text, "html.parser")
         tbl = soup.find("table", {"class": "wikitable"})
         (df,) = pd.read_html(str(tbl))
@@ -141,60 +141,47 @@ class _SP500(_Dataset):
         )
 
 
-class _API:
-    """Collection of ticker APIs."""
+#: Path to tickers API requests cache.
+cache_path = str(_API_CACHE_PATH)
 
-    #: Path to tickers API requests cache.
-    cache_path = str(_API_CACHE_PATH)
+#: The Dow Jones Industrial Average.
+djia = _DJIA
 
-    #: The Dow Jones Industrial Average.
-    djia = _DJIA
+#: The Nasdaq Composite 100.
+nasdaq100 = _Nasdaq100
 
-    #: The Nasdaq Composite 100.
-    nasdaq100 = _Nasdaq100
+#: The Standard and Poor's 500.
+sp500 = _SP500
 
-    #: The Standard and Poor's 500.
-    sp500 = _SP500
 
-    def __init__(self, *args, **kwargs) -> None:
+def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
+    """Tickers API request helper.
+
+    Args:
+        url: Complete URL to get from.
+        user_agent: Required user agent header declaration to avoid errors.
+
+    Returns:
+        Successful responses.
+
+    """
+    user_agent = user_agent or os.environ.get("TICKERS_API_USER_AGENT", None)
+    if not user_agent:
         raise RuntimeError(
-            "Instantiating a tickers API directly is not allowed. "
-            "Use the `get` method instead."
+            "No tickers API user agent declaration found. "
+            "Pass your user agent declaration to the API directly, or "
+            "set the `TICKERS_API_USER_AGENT` environment variable."
         )
-
-    @classmethod
-    def get(cls, url: str, /, *, user_agent: None | str = None) -> requests.Response:
-        """Tickers API request helper.
-
-        Args:
-            url: Complete URL to get from.
-            user_agent: Required user agent header declaration to avoid errors.
-
-        Returns:
-            Successful responses.
-
-        """
-        user_agent = user_agent or os.environ.get("TICKERS_API_USER_AGENT", None)
-        if not user_agent:
-            raise RuntimeError(
-                "No tickers API user agent declaration found. "
-                "Pass your user agent declaration to the API directly, or "
-                "set the `TICKERS_API_USER_AGENT` environment variable."
-            )
-        response = session.get(url, headers={"User-Agent": user_agent})
-        response.raise_for_status()
-        return response
-
-    @classmethod
-    @cache
-    def get_ticker_set(cls, *, user_agent: None | str = None) -> set[str]:
-        """Get the set of tickers from all the indices."""
-        tickers = set()
-        tickers.update(cls.djia.get_ticker_list(user_agent=user_agent))
-        tickers.update(cls.nasdaq100.get_ticker_list(user_agent=user_agent))
-        tickers.update(cls.sp500.get_ticker_list(user_agent=user_agent))
-        return tickers
+    response = session.get(url, headers={"User-Agent": user_agent})
+    response.raise_for_status()
+    return response
 
 
-#: Public-facing tickers API.
-api = _API
+@cache
+def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
+    """Get the set of tickers from all the indices."""
+    tickers = set()
+    tickers.update(djia.get_ticker_list(user_agent=user_agent))
+    tickers.update(nasdaq100.get_ticker_list(user_agent=user_agent))
+    tickers.update(sp500.get_ticker_list(user_agent=user_agent))
+    return tickers

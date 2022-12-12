@@ -5,8 +5,7 @@ from functools import cache
 import pandas as pd
 from sqlalchemy.sql import and_
 
-from . import sql
-from .api import api
+from . import api, sql
 
 
 def get_unique_10q(df: pd.DataFrame, /, *, units: str = "USD") -> pd.DataFrame:
@@ -27,7 +26,7 @@ def get_unique_10q(df: pd.DataFrame, /, *, units: str = "USD") -> pd.DataFrame:
     return df.drop_duplicates(["accn", "tag"])
 
 
-class QuarterlyFeatures:
+class _QuarterlyFeatures:
     """Methods for gathering quarterly data from SEC sources."""
 
     #: XBRL disclosure concepts to pull for a company.
@@ -105,8 +104,8 @@ class QuarterlyFeatures:
             if end:
                 df = df[df["filed"] <= end]
             dfs.append(df)
-        dfs = pd.concat(dfs)
-        return cls._normalize(dfs)
+        df = pd.concat(dfs)
+        return cls._normalize(df)
 
     @classmethod
     @cache
@@ -145,4 +144,4 @@ class QuarterlyFeatures:
 
 
 #: Public-facing API.
-quarterly_features = QuarterlyFeatures
+quarterly_features = _QuarterlyFeatures

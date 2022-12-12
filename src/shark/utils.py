@@ -40,7 +40,7 @@ def join_with(s: str | list[str], /, delim: str) -> str:
     return delim.join(s)
 
 
-def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:
+def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> None | pathlib.Path:
     """Set the value of the environment variable `name` to `value`.
 
     The environment variable is permanently set in the environment
@@ -73,11 +73,11 @@ def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:
             for f in env_files:
                 p = home / f
                 if pathlib.Path.exists(p):
-                    with open(p, "a") as f:
-                        f.write(f"export {name}={value}\n")
+                    with open(p, "a") as env_file:
+                        env_file.write(f"export {name}={value}\n")
 
-                    with open(p, "r") as f:
-                        eof = f.readlines()[-1]
+                    with open(p, "r") as env_file:
+                        eof = env_file.readlines()[-1]
                         if f"export {name}={value}" not in eof:
                             continue
 
@@ -90,6 +90,7 @@ def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:
 
         case "Windows":
             subprocess.run(["setx", name, value])
+    return None
 
 
 def snake_case(s: str, /) -> str:

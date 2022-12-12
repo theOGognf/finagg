@@ -1,14 +1,15 @@
 """Scrape the SEC API and store into local SQL tables."""
+from typing import Sequence
 
 from ..tickers import api as tickers_api
 from . import api, features, sql
 
 
 def scrape(
-    tickers: str | list[str],
+    tickers: str | Sequence[str],
     /,
     *,
-    concepts: None | list[dict[str, str]] = None,
+    concepts: None | Sequence[dict[str, str]] = None,
 ) -> dict[str, int]:
     """Scrape company XBRL disclosures from the SEC API.
 

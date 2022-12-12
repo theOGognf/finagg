@@ -84,8 +84,8 @@ class EconomicFeatures:
                 output_type=4,
             )
             dfs.append(df)
-        dfs = pd.concat(dfs)
-        return cls._normalize(dfs)
+        df = pd.concat(dfs)
+        return cls._normalize(df)
 
     @classmethod
     @cache

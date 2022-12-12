@@ -1,9 +1,10 @@
 """Scrape the yfinance API for historical stock data and store into local SQL tables."""
+from typing import Sequence
 
 from . import api, sql
 
 
-def scrape(tickers: str | list[str], /) -> dict[str, int]:
+def scrape(tickers: str | Sequence[str], /) -> dict[str, int]:
     """Scrape yfinance historical stock data from the
     yfinance API.
 

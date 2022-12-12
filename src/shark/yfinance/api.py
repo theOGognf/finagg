@@ -36,8 +36,12 @@ def get(
         period=period, interval=interval, start=start, end=end, auto_adjust=True
     )
     df = df.reset_index()
-    df["Date"] = df["Date"].apply()
+
+    def _strftime(item: pd.Timestamp) -> str:
+        return item.strftime("%Y-%m-%d")
+
+    df["Date"] = df["Date"].apply(_strftime)
     df["ticker"] = stock.ticker
     df = df.drop(columns=["Dividends", "Stock Splits"])
-    df.columns = map(str.lower, df.columns)
+    df.columns = map(str.lower, df.columns)  # type: ignore
     return df

@@ -1,9 +1,10 @@
 """Scrape the FRED API for economic series data and store into local SQL tables."""
+from typing import Sequence
 
 from . import api, sql
 
 
-def scrape(series_ids: str | list[str], /) -> dict[str, int]:
+def scrape(series_ids: str | Sequence[str], /) -> dict[str, int]:
     """Scrape FRED economic series observation data
     from the FRED API.
 

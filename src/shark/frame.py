@@ -120,6 +120,10 @@ class FiscalFrame:
                 f"{self.__class__.__name__} but got `{other.__class__.__name__}` instead"
             )
 
+        if isinstance(other, tuple):
+            years, quarters = other
+            other = FiscalDelta(years, quarters)
+
         if isinstance(other, int | FiscalDelta):
             return self.__add__(-other)
 
@@ -129,4 +133,4 @@ class FiscalFrame:
     def fromstr(cls, s: str) -> "FiscalFrame":
         """Split a string into year-quarter parts by splitting on alphabetical characters."""
         year, quarter = [c for c in re.split("[a-zA-Z]", s) if c]
-        return cls(year, quarter)
+        return cls(int(year), int(quarter))

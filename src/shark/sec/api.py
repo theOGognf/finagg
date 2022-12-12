@@ -85,7 +85,7 @@ class _ThrottleWatchdog(Generic[_USER_AGENT, _THROTTLE_WATCHDOG_STATE]):
         @property
         def is_throttled(self) -> bool:
             """Are requests with the API key likely to be throttled?"""
-            return self.requests_per_second >= _API.max_requests_per_second
+            return self.requests_per_second >= max_requests_per_second
 
         @property
         def next_valid_request_dt(self) -> float:
@@ -226,11 +226,11 @@ class _CompanyConcept(_Dataset):
             raise ValueError("Must provide a `cik` or a `ticker`")
 
         if ticker:
-            cik = str(_API.get_cik(ticker))
+            cik = str(get_cik(ticker))
 
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik, taxonomy=taxonomy, tag=tag)
-        response = _API.get(url, user_agent=user_agent)
+        response = get(url, user_agent=user_agent)
         content = response.json()
         units = content.pop("units")
         results_list = []
@@ -274,11 +274,11 @@ class _CompanyFacts(_Dataset):
             raise ValueError("Must provide a `cik` or a `ticker`")
 
         if ticker:
-            cik = str(_API.get_cik(ticker))
+            cik = str(get_cik(ticker))
 
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik)
-        response = _API.get(url, user_agent=user_agent)
+        response = get(url, user_agent=user_agent)
         content = response.json()
         facts = content.pop("facts")
         results_list = []
@@ -344,7 +344,7 @@ class _Frames(_Dataset):
         url = cls.url.format(
             taxonomy=taxonomy, tag=tag, units=units, year=year, quarter=quarter
         )
-        response = _API.get(url, user_agent=user_agent)
+        response = get(url, user_agent=user_agent)
         content = response.json()
         data = content.pop("data")
         df = pd.DataFrame(data)
@@ -390,11 +390,11 @@ class _Submissions(_Dataset):
             raise ValueError("Must provide a `cik` or a `ticker`")
 
         if ticker:
-            cik = str(_API.get_cik(ticker))
+            cik = str(get_cik(ticker))
 
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik)
-        response = _API.get(url, user_agent=user_agent)
+        response = get(url, user_agent=user_agent)
         content = response.json()
         recent_filings = content.pop("filings")["recent"]
         df = pd.DataFrame(recent_filings)
@@ -428,96 +428,82 @@ class _Tickers(_Dataset):
             - company title
 
         """
-        response = _API.get(cls.url, user_agent=user_agent)
+        response = get(cls.url, user_agent=user_agent)
         content: dict[str, dict[str, str]] = response.json()
         df = pd.DataFrame([items for _, items in content.items()])
         return df.rename(columns={"cik_str": "cik"})
 
 
-class _API:
-    """Collection of SEC EDGAR APIs."""
+#: Count of warnings to limit log spam.
+_throttle_warnings = 0
 
-    #: Count of warnings to limit log spam.
-    _throttle_warnings = 0
+#: Throttling-prevention strategy. Tracks throttling metrics for each API key.
+_throttle_watchdog: _ThrottleWatchdog = _ThrottleWatchdog()
 
-    #: Throttling-prevention strategy. Tracks throttling metrics for each API key.
-    _throttle_watchdog: ClassVar[_ThrottleWatchdog] = _ThrottleWatchdog()
+#: Mapping of (uppercase) tickers to SEC CIK strings.
+_tickers_to_cik: dict[str, str] = {}
 
-    #: Mapping of (uppercase) tickers to SEC CIK strings.
-    _tickers_to_cik: ClassVar[dict[str, str]] = {}
+#: Path to SEC API requests cache.
+cache_path = str(_API_CACHE_PATH)
 
-    #: Path to SEC API requests cache.
-    cache_path = str(_API_CACHE_PATH)
+#: Get the full history of a company's concept (taxonomy and tag).
+company_concept = _CompanyConcept
 
-    #: Get the full history of a company's concept (taxonomy and tag).
-    company_concept = _CompanyConcept
+#: Get all XBRL disclosures from a single company (CIK).
+company_facts = _CompanyFacts
 
-    #: Get all XBRL disclosures from a single company (CIK).
-    company_facts = _CompanyFacts
+#: Get one fact for each reporting entity that most closely fits
+#: the calendrical period requested.
+frames = _Frames
 
-    #: Get one fact for each reporting entity that most closely fits
-    #: the calendrical period requested.
-    frames = _Frames
+#: Max allowed requests per second before your user agent
+#: gets throttled.
+max_requests_per_second = 10
 
-    #: Max allowed requests per second before your user agent
-    #: gets throttled.
-    max_requests_per_second = 10
+#: Get a company's metadata and recent submissions.
+submissions = _Submissions
 
-    #: Get a company's metadata and recent submissions.
-    submissions = _Submissions
+#: Used to get all SEC ticker data as opposed to
+#: an individual ticker's SEC CIK.
+tickers = _Tickers
 
-    #: Used to get all SEC ticker data as opposed to
-    #: an individual ticker's SEC CIK.
-    tickers = _Tickers
 
-    def __init__(self, *args, **kwargs) -> None:
+def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
+    """SEC EDGAR API request helper.
+
+    Args:
+        url: Complete URL to get from.
+        user_agent: Required user agent header declaration to avoid errors.
+
+    Returns:
+        Successful responses.
+
+    """
+    user_agent = user_agent or os.environ.get("SEC_API_USER_AGENT", None)
+    if not user_agent:
         raise RuntimeError(
-            "Instantiating an SEC API directly is not allowed. "
-            "Use the `get` method instead."
+            "No SEC API user agent declaration found. "
+            "Pass your user agent declaration to the API directly, or "
+            "set the `SEC_API_USER_AGENT` environment variable."
         )
-
-    @classmethod
-    def get(cls, url: str, /, *, user_agent: None | str = None) -> requests.Response:
-        """SEC EDGAR API request helper.
-
-        Args:
-            url: Complete URL to get from.
-            user_agent: Required user agent header declaration to avoid errors.
-
-        Returns:
-            Successful responses.
-
-        """
-        user_agent = user_agent or os.environ.get("SEC_API_USER_AGENT", None)
-        if not user_agent:
-            raise RuntimeError(
-                "No SEC API user agent declaration found. "
-                "Pass your user agent declaration to the API directly, or "
-                "set the `SEC_API_USER_AGENT` environment variable."
-            )
-        next_valid_request_dt = cls._throttle_watchdog[user_agent].next_valid_request_dt
-        if next_valid_request_dt > 0 and not cls._throttle_warnings:
-            logger.warning(
-                f"User agent `{user_agent}` may be throttled. "
-                f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
-            )
-            cls._throttle_warnings += 1
-        time.sleep(next_valid_request_dt)
-        response = session.get(url, headers={"User-Agent": user_agent})
-        cls._throttle_watchdog.update(user_agent, response)
-        response.raise_for_status()
-        return response
-
-    @classmethod
-    def get_cik(cls, ticker: str, /, *, user_agent: None | str = None) -> str:
-        """Return a ticker's SEC CIK."""
-        if not cls._tickers_to_cik:
-            response = cls.get(_Tickers.url, user_agent=user_agent)
-            content: dict[str, dict[str, str]] = response.json()
-            for _, items in content.items():
-                cls._tickers_to_cik[items["ticker"]] = items["cik_str"]
-        return cls._tickers_to_cik[ticker.upper()]
+    next_valid_request_dt = _throttle_watchdog[user_agent].next_valid_request_dt
+    if next_valid_request_dt > 0 and not _throttle_warnings:
+        logger.warning(
+            f"User agent `{user_agent}` may be throttled. "
+            f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
+        )
+    time.sleep(next_valid_request_dt)
+    response = session.get(url, headers={"User-Agent": user_agent})
+    _throttle_watchdog.update(user_agent, response)
+    response.raise_for_status()
+    return response
 
 
-#: Public-facing SEC API.
-api = _API
+def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
+    """Return a ticker's SEC CIK."""
+    if not _tickers_to_cik:
+        response = get(_Tickers.url, user_agent=user_agent)
+        content: dict[str, dict[str, str]] = response.json()
+        for _, items in content.items():
+            _tickers_to_cik[items["ticker"]] = items["cik_str"]
+    return _tickers_to_cik[ticker.upper()]

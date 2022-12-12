@@ -123,9 +123,9 @@ class _ThrottleWatchdog(Generic[_API_KEY, _THROTTLE_WATCHDOG_STATE]):
         @property
         def is_throttled(self) -> bool:
             """Are requests with the API key likely to be throttled?"""
-            throttled = self.errors_per_minute >= _API.max_errors_per_minute
-            throttled |= self.requests_per_minute >= _API.max_requests_per_minute
-            throttled |= self.volume_per_minute >= _API.max_volume_per_minute
+            throttled = self.errors_per_minute >= max_errors_per_minute
+            throttled |= self.requests_per_minute >= max_requests_per_minute
+            throttled |= self.volume_per_minute >= max_volume_per_minute
             return throttled
 
         @property
@@ -245,14 +245,14 @@ class _Dataset(ABC):
     @classmethod
     def get_parameter_list(cls, /, *, api_key: None | str = None) -> pd.DataFrame:
         """Return the list of parameters associated with the dataset API."""
-        return _API.get_parameter_list(cls.name, api_key=api_key)
+        return get_parameter_list(cls.name, api_key=api_key)
 
     @classmethod
     def get_parameter_values(
         cls, param: str, /, *, api_key: None | str = None
     ) -> pd.DataFrame:
         """Return all possible parameter values associated with the dataset API."""
-        return _API.get_parameter_values(cls.name, param, api_key=api_key)
+        return get_parameter_values(cls.name, param, api_key=api_key)
 
 
 class _FixedAssets(_Dataset):
@@ -298,7 +298,7 @@ class _FixedAssets(_Dataset):
                 "TableName": tid,
                 "Year": year,
             }
-            results_data = _API.get(params, api_key=api_key)
+            results_data = get(params, api_key=api_key)
             data = results_data["Data"]
             df = (
                 pd.DataFrame(data)
@@ -377,7 +377,7 @@ class _GDPByIndustry(_Dataset):
             "Year": year,
             "Industry": industry,
         }
-        (results_data,) = _API.get(params, api_key=api_key)
+        (results_data,) = get(params, api_key=api_key)
         data = results_data["Data"]  # type: ignore
         df = pd.DataFrame(data)
 
@@ -454,7 +454,7 @@ class _InputOutput(_Dataset):
             "TableID": table_id,
             "Year": year,
         }
-        (results_data,) = _API.get(params, api_key=api_key)
+        (results_data,) = get(params, api_key=api_key)
         data = results_data["Data"]  # type: ignore
         return (
             pd.DataFrame(data)
@@ -534,7 +534,7 @@ class _NIPA(_Dataset):
                 "Year": year,
                 "Frequency": freq,
             }
-            results_data = _API.get(params, api_key=api_key)
+            results_data = get(params, api_key=api_key)
             data = results_data["Data"]
             df = pd.DataFrame(data)
             df[["Year", "Quarter"]] = df["TimePeriod"].str.split("Q", n=1, expand=True)
@@ -571,160 +571,144 @@ class _NIPA(_Dataset):
         return pd.concat(results)
 
 
-class _API:
-    """Collection of BEA APIs."""
+#: Throttling-prevention strategy. Tracks throttling metrics for each API key.
+_throttle_watchdog: _ThrottleWatchdog = _ThrottleWatchdog()
 
-    #: Throttling-prevention strategy. Tracks throttling metrics for each API key.
-    _throttle_watchdog: ClassVar[_ThrottleWatchdog] = _ThrottleWatchdog()
+#: Path to BEA API requests cache.
+cache_path = str(_API_CACHE_PATH)
 
-    #: Path to BEA API requests cache.
-    cache_path = str(_API_CACHE_PATH)
+#: "FixedAssets" dataset API.
+fixed_assets = _FixedAssets
 
-    #: "FixedAssets" dataset API.
-    fixed_assets = _FixedAssets
+#: "GdpByIndustry" dataset API.
+gdp_by_industry = _GDPByIndustry
 
-    #: "GdpByIndustry" dataset API.
-    gdp_by_industry = _GDPByIndustry
+#: "InputOutput" dataset API.
+input_output = _InputOutput
 
-    #: "InputOutput" dataset API.
-    input_output = _InputOutput
+#: Max allowed BEA API errors per minute.
+max_errors_per_minute = 30
 
-    #: Max allowed BEA API errors per minute.
-    max_errors_per_minute = 30
+#: Max allowed BEA API requests per minute.
+max_requests_per_minute = 100
 
-    #: Max allowed BEA API requests per minute.
-    max_requests_per_minute = 100
+#: Max allowed BEA API response size (in MB) per minute.
+max_volume_per_minute = 100e6
 
-    #: Max allowed BEA API response size (in MB) per minute.
-    max_volume_per_minute = 100e6
+#: "NIPA" dataset API.
+nipa = _NIPA
 
-    #: "NIPA" dataset API.
-    nipa = _NIPA
+#: BEA API URL.
+url = "https://apps.bea.gov/api/data"
 
-    #: BEA API URL.
-    url = "https://apps.bea.gov/api/data"
 
-    def __init__(self, *args, **kwargs) -> None:
+def _api_error_as_response(error: dict) -> requests.Response:
+    """Convert an API error to a :class:`requests.Response` object."""
+    response = requests.Response()
+    response.status_code = int(error.pop("APIErrorCode"))
+    response._content = json.dumps(error).encode("utf-8")
+    return response
+
+
+def get(
+    params: dict,
+    /,
+    *,
+    api_key: None | str = None,
+) -> dict[str, list[dict]]:
+    """Main get method used by dataset APIs.
+
+    Handles throttle watchdog state updates, API key validation,
+    and common formatting/parameters between API methods.
+
+    Args:
+        params: Params specific to the API method.
+
+    Returns:
+        A list of result dictionaries.
+
+    Raises:
+        RuntimeError: If no BEA API key is passed or found.
+        BEAAPIException: If a BEA API error occurs.
+
+    """
+    api_key = api_key or os.environ.get("BEA_API_KEY", None)
+    if not api_key:
         raise RuntimeError(
-            "Instantiating a BEA API directly is not allowed. "
-            "Use one of the getter methods instead."
+            "No BEA API key found. "
+            "Pass the API key to the API directly, or "
+            "set the `BEA_API_KEY` environment variable."
         )
-
-    @classmethod
-    def _api_error_as_response(cls, error: dict) -> requests.Response:
-        """Convert an API error to a :class:`requests.Response` object."""
-        response = requests.Response()
-        response.status_code = int(error.pop("APIErrorCode"))
-        response._content = json.dumps(error).encode("utf-8")
-        return response
-
-    @classmethod
-    def get(
-        cls,
-        params: dict,
-        /,
-        *,
-        api_key: None | str = None,
-    ) -> dict[str, list[dict]]:
-        """Main get method used by dataset APIs.
-
-        Handles throttle watchdog state updates, API key validation,
-        and common formatting/parameters between API methods.
-
-        Args:
-            params: Params specific to the API method.
-
-        Returns:
-            A list of result dictionaries.
-
-        Raises:
-            RuntimeError: If no BEA API key is passed or found.
-            BEAAPIException: If a BEA API error occurs.
-
-        """
-        api_key = api_key or os.environ.get("BEA_API_KEY", None)
-        if not api_key:
-            raise RuntimeError(
-                "No BEA API key found. "
-                "Pass the API key to the API directly, or "
-                "set the `BEA_API_KEY` environment variable."
-            )
-        next_valid_request_dt = cls._throttle_watchdog[api_key].next_valid_request_dt
-        if next_valid_request_dt > 0:
-            logger.warning(
-                f"API key ending in `{api_key[-4:]}` may be throttled. "
-                f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
-            )
-        time.sleep(next_valid_request_dt)
-        params.update({"UserID": api_key, "ResultFormat": "JSON"})
-        response = session.get(cls.url, params=params)
-        cls._throttle_watchdog.update(api_key, response)
-        response.raise_for_status()
-        content = response.json()["BEAAPI"]
-        if "Error" in content:
-            error = cls._api_error_as_response(content["Error"])
-            raise BEAAPIError(response.request, error, error.content)
-        return content["Results"]  # type: ignore
-
-    @classmethod
-    @cache
-    def get_dataset_list(cls, /, *, api_key: None | str = None) -> pd.DataFrame:
-        """Return a list of datasets provided by the BEA API."""
-        params = {
-            "Method": "GetDatasetList",
-        }
-        results = cls.get(params, api_key=api_key)["Dataset"]
-        return pd.DataFrame(results)
-
-    @classmethod
-    @cache
-    def get_parameter_list(
-        cls, dataset: str, /, *, api_key: None | str = None
-    ) -> pd.DataFrame:
-        """Get a dataset's list of parameters.
-
-        Args:
-            dataset: Dataset API to inspect. See meth:`get_dataset_list` for a
-                list of datasets.
-
-        Returns:
-            Dataframe listing the dataset's parameters.
-
-        """
-        params = {
-            "Method": "GetParameterList",
-            "DatasetName": dataset,
-        }
-        results = cls.get(params, api_key=api_key)["Parameter"]
-        return pd.DataFrame(results)
-
-    @classmethod
-    @cache
-    def get_parameter_values(
-        cls, dataset: str, param: str, /, *, api_key: None | str = None
-    ) -> pd.DataFrame:
-        """Get potential values for a dataset's parameter.
-
-        Args:
-            dataset: Dataset API to inspect. See meth:`get_dataset_list` for
-                list of datasets.
-            param: Dataset API's parameter to inspect.
-
-        Returns:
-            Dataframe describing the dataset's parameter values.
-
-        """
-        params = {
-            "Method": "GetParameterValues",
-            "DatasetName": dataset,
-            "ParameterName": param,
-        }
-        results = cls.get(params, api_key=api_key)["ParamValue"]
-        return pd.DataFrame(results)
+    next_valid_request_dt = _throttle_watchdog[api_key].next_valid_request_dt
+    if next_valid_request_dt > 0:
+        logger.warning(
+            f"API key ending in `{api_key[-4:]}` may be throttled. "
+            f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
+        )
+    time.sleep(next_valid_request_dt)
+    params.update({"UserID": api_key, "ResultFormat": "JSON"})
+    response = session.get(url, params=params)
+    _throttle_watchdog.update(api_key, response)
+    response.raise_for_status()
+    content = response.json()["BEAAPI"]
+    if "Error" in content:
+        error = _api_error_as_response(content["Error"])
+        raise BEAAPIError(response.request, error, error.content)
+    return content["Results"]  # type: ignore
 
 
-#: Public-facing BEA API.
-api = _API
+@cache
+def get_dataset_list(*, api_key: None | str = None) -> pd.DataFrame:
+    """Return a list of datasets provided by the BEA API."""
+    params = {
+        "Method": "GetDatasetList",
+    }
+    results = get(params, api_key=api_key)["Dataset"]
+    return pd.DataFrame(results)
+
+
+@cache
+def get_parameter_list(dataset: str, /, *, api_key: None | str = None) -> pd.DataFrame:
+    """Get a dataset's list of parameters.
+
+    Args:
+        dataset: Dataset API to inspect. See meth:`get_dataset_list` for a
+            list of datasets.
+
+    Returns:
+        Dataframe listing the dataset's parameters.
+
+    """
+    params = {
+        "Method": "GetParameterList",
+        "DatasetName": dataset,
+    }
+    results = get(params, api_key=api_key)["Parameter"]
+    return pd.DataFrame(results)
+
+
+@cache
+def get_parameter_values(
+    dataset: str, param: str, /, *, api_key: None | str = None
+) -> pd.DataFrame:
+    """Get potential values for a dataset's parameter.
+
+    Args:
+        dataset: Dataset API to inspect. See meth:`get_dataset_list` for
+            list of datasets.
+        param: Dataset API's parameter to inspect.
+
+    Returns:
+        Dataframe describing the dataset's parameter values.
+
+    """
+    params = {
+        "Method": "GetParameterValues",
+        "DatasetName": dataset,
+        "ParameterName": param,
+    }
+    results = get(params, api_key=api_key)["ParamValue"]
+    return pd.DataFrame(results)
 
 
 class BEAAPIError(requests.RequestException):

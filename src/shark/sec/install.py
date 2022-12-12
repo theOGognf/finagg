@@ -96,7 +96,7 @@ def install(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
         sql.metadata.create_all(sql.engine)
 
         tickers = tickers_api.get_ticker_set()
-        concepts = features.QuarterlyFeatures.concepts
+        concepts = features.quarterly_features.concepts
         tickers_to_dfs: dict[str, list[pd.DataFrame]] = {}
         tickers_to_inserts = {}
         tags_to_misses = {}
@@ -125,10 +125,10 @@ def install(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
                     tickers_to_dfs[ticker].append(df)
                     if len(tickers_to_dfs[ticker]) == len(concepts):
                         dfs = tickers_to_dfs.pop(ticker)
-                        dfs = pd.concat(dfs)
+                        df = pd.concat(dfs)
                         try:
                             conn.execute(
-                                sql.tags.insert(), dfs.to_dict(orient="records")
+                                sql.tags.insert(), df.to_dict(orient="records")
                             )
                         except IntegrityError:
                             logger.info(
@@ -136,7 +136,7 @@ def install(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
                                 "(some tickers contain duplicate data)"
                             )
                             continue
-                        tickers_to_inserts[ticker] += len(dfs.index)
+                        tickers_to_inserts[ticker] += len(df.index)
                         logger.info(
                             f"{tickers_to_inserts[ticker]} rows written for {ticker}"
                         )
