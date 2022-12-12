@@ -11,10 +11,7 @@ from sqlalchemy.exc import IntegrityError
 
 from ..tickers import api as tickers_api
 from ..utils import setenv
-from .api import api
-from .features import QuarterlyFeatures, get_unique_10q
-from .sql import engine, metadata
-from .sql import tags as tags_table
+from . import api, features, sql
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -46,7 +43,7 @@ def _get_valid_concept(
     """
     try:
         df = api.company_concept.get(tag, ticker=ticker, taxonomy=taxonomy, units=units)
-        df = get_unique_10q(df, units=units)
+        df = features.get_unique_10q(df, units=units)
         if len(df.index) == 0:
             return None
         return df
@@ -95,17 +92,17 @@ def install(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
     else:
         logger.info("SEC API user agent already exists in env")
     if init_db:
-        metadata.drop_all(engine)
-        metadata.create_all(engine)
+        sql.metadata.drop_all(sql.engine)
+        sql.metadata.create_all(sql.engine)
 
         tickers = tickers_api.get_ticker_set()
-        concepts = QuarterlyFeatures.concepts
+        concepts = features.QuarterlyFeatures.concepts
         tickers_to_dfs: dict[str, list[pd.DataFrame]] = {}
         tickers_to_inserts = {}
         tags_to_misses = {}
         searches = []
         skipped_tickers = set()
-        with engine.connect() as conn:
+        with sql.engine.connect() as conn:
             with mp.Pool(processes=processes) as pool:
                 for ticker in sorted(tickers):
                     tickers_to_inserts[ticker] = 0
@@ -131,7 +128,7 @@ def install(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
                         dfs = pd.concat(dfs)
                         try:
                             conn.execute(
-                                tags_table.insert(), dfs.to_dict(orient="records")
+                                sql.tags.insert(), dfs.to_dict(orient="records")
                             )
                         except IntegrityError:
                             logger.info(

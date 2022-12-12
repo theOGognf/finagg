@@ -1,10 +1,6 @@
 """Scrape the yfinance API for historical stock data and store into local SQL tables."""
 
-import pandas as pd
-import yfinance as yf
-
-from .sql import engine, metadata
-from .sql import prices as prices_table
+from . import api, sql
 
 
 def scrape(tickers: str | list[str], /) -> dict[str, int]:
@@ -25,21 +21,14 @@ def scrape(tickers: str | list[str], /) -> dict[str, int]:
     if isinstance(tickers, str):
         tickers = [tickers]
 
-    metadata.drop_all(engine)
-    metadata.create_all(engine)
+    sql.metadata.drop_all(sql.engine)
+    sql.metadata.create_all(sql.engine)
 
-    with engine.connect() as conn:
+    with sql.engine.connect() as conn:
         tickers_to_inserts = {}
         for ticker in tickers:
-            ticker = yf.Ticker(ticker)
-            df: pd.DataFrame = ticker.history(
-                period="max", interval="1d", auto_adjust=True
-            )
-            df = df.reset_index()
-            df["ticker"] = ticker.ticker
-            df = df.drop(columns=["Dividends", "Stock Splits"])
-            df.columns = map(str.lower, df.columns)
+            df = api.get(ticker, interval="1d", period="max")
             tickers_to_inserts[ticker] = len(df.index)
-            conn.execute(prices_table.insert(), df.to_dict(orient="records"))
+            conn.execute(sql.prices.insert(), df.to_dict(orient="records"))
 
     return tickers_to_inserts

@@ -5,9 +5,7 @@ from functools import cache
 import pandas as pd
 from sqlalchemy.sql import and_
 
-from . import api
-from .sql import engine
-from .sql import series as series_table
+from . import api, sql
 
 
 class EconomicFeatures:
@@ -111,13 +109,13 @@ class EconomicFeatures:
             as a separate column. Sorted by date.
 
         """
-        with engine.connect() as conn:
-            stmt = series_table.c.series_id.in_(cls.series_ids)
+        with sql.engine.connect() as conn:
+            stmt = sql.series.c.series_id.in_(cls.series_ids)
             if start:
-                stmt = and_(stmt, series_table.c.date >= start)
+                stmt = and_(stmt, sql.series.c.date >= start)
             if end:
-                stmt = and_(stmt, series_table.c.date <= end)
-            df = pd.DataFrame(conn.execute(series_table.select(stmt)))
+                stmt = and_(stmt, sql.series.c.date <= end)
+            df = pd.DataFrame(conn.execute(sql.series.select(stmt)))
         return cls._normalize(df)
 
 

@@ -1,10 +1,7 @@
 """Scrape the SEC API and store into local SQL tables."""
 
 from ..tickers import api as tickers_api
-from .api import api
-from .features import get_unique_10q
-from .sql import engine, metadata
-from .sql import tags as tags_table
+from . import api, features, sql
 
 
 def scrape(
@@ -49,16 +46,16 @@ def scrape(
                 updates.update(tickers_api.sp500.get_ticker_list())
     unique_tickers |= updates
 
-    metadata.drop_all(engine)
-    metadata.create_all(engine)
+    sql.metadata.drop_all(sql.engine)
+    sql.metadata.create_all(sql.engine)
 
-    with engine.connect() as conn:
+    with sql.engine.connect() as conn:
         tickers_to_inserts = {}
         for ticker in unique_tickers:
             if concepts is None:
                 df = api.company_facts.get(ticker=ticker)
                 tickers_to_inserts[ticker] = len(df.index)
-                conn.execute(tags_table.insert(), df.to_dict(orient="records"))
+                conn.execute(sql.tags.insert(), df.to_dict(orient="records"))
 
             else:
                 tickers_to_inserts[ticker] = 0
@@ -69,7 +66,7 @@ def scrape(
                     df = api.company_concept.get(
                         tag, ticker=ticker, taxonomy=taxonomy, units=units
                     )
-                    df = get_unique_10q(df, units=units)
+                    df = features.get_unique_10q(df, units=units)
                     tickers_to_inserts[ticker] += len(df.index)
-                    conn.execute(tags_table.insert(), df.to_dict(orient="records"))
+                    conn.execute(sql.tags.insert(), df.to_dict(orient="records"))
     return tickers_to_inserts

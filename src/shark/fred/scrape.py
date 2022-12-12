@@ -1,8 +1,6 @@
 """Scrape the FRED API for economic series data and store into local SQL tables."""
 
-from . import api
-from .sql import engine, metadata
-from .sql import series as series_table
+from . import api, sql
 
 
 def scrape(series_ids: str | list[str], /) -> dict[str, int]:
@@ -27,10 +25,10 @@ def scrape(series_ids: str | list[str], /) -> dict[str, int]:
     if isinstance(series_ids, str):
         series_ids = [series_ids]
 
-    metadata.drop_all(engine)
-    metadata.create_all(engine)
+    sql.metadata.drop_all(sql.engine)
+    sql.metadata.create_all(sql.engine)
 
-    with engine.connect() as conn:
+    with sql.engine.connect() as conn:
         series_to_inserts = {}
         for series_id in series_ids:
             df = api.series.observations.get(
@@ -40,6 +38,6 @@ def scrape(series_ids: str | list[str], /) -> dict[str, int]:
                 output_type=4,
             )
             series_to_inserts[series_id] = len(df.index)
-            conn.execute(series_table.insert(), df.to_dict(orient="records"))
+            conn.execute(sql.series.insert(), df.to_dict(orient="records"))
 
     return series_to_inserts

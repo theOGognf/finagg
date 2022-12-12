@@ -5,8 +5,7 @@ import os
 import sys
 
 from ..utils import setenv
-from .features import EconomicFeatures
-from .scrape import scrape
+from . import features, scrape
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -46,5 +45,5 @@ def install(init_db: bool = True) -> None:
     else:
         logger.info("FRED API key already exists in env")
     if init_db:
-        c = scrape(EconomicFeatures.series_ids)
+        c = scrape.scrape(features.EconomicFeatures.series_ids)
         logger.info(f"{sum(c.values())} rows written")
