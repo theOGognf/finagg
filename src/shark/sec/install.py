@@ -75,10 +75,8 @@ def install(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
     Args:
         init_db: Whether to initialize local SQL tables
             with popular ticker data.
-
-    Returns:
-        Mapping of tickers to rows scraped for them.
-        Empty if no ticker data is scraped.
+        processes: Number of background processes to
+            use to scrape data.
 
     """
     if "SEC_API_USER_AGENT" not in os.environ:

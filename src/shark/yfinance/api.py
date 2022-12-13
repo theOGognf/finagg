@@ -42,6 +42,6 @@ def get(
 
     df["Date"] = df["Date"].apply(_strftime)
     df["ticker"] = stock.ticker
-    df = df.drop(columns=["Dividends", "Stock Splits"])
+    df = df.drop(columns=["Dividends", "Stock Splits"], errors="ignore")
     df.columns = map(str.lower, df.columns)  # type: ignore
     return df

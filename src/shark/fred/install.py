@@ -26,10 +26,6 @@ def install(init_db: bool = True) -> None:
         init_db: Whether to initialize local SQL tables
             with popular economic data.
 
-    Returns:
-        Mapping of economic series IDs to rows scraped
-        for them. Empty if no economic data is scraped.
-
     """
     if "FRED_API_KEY" not in os.environ:
         api_key = input(
