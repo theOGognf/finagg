@@ -18,7 +18,7 @@ class _DailyFeatures:
         df = df.drop(columns=["ticker"]).set_index("date").astype(float).sort_index()
         pct_change_columns = ["open", "high", "close", "volume"]
         df["price"] = df["close"]
-        df[pct_change_columns] = 10.0 * df[pct_change_columns].pct_change()
+        df[pct_change_columns] = df[pct_change_columns].pct_change()
         df[pct_change_columns] = df[pct_change_columns].replace(
             [-np.inf, np.inf], np.nan
         )
