@@ -67,7 +67,7 @@ def _search(params: dict[str, str]) -> dict:
     }
 
 
-def install(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
+def run(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
     """Set the `SEC_API_USER_AGENT` environment variable and
     optionally initialize local SQL tables with popular
     ticker data.

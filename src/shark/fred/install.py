@@ -17,7 +17,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def install(init_db: bool = True) -> None:
+def run(init_db: bool = True) -> None:
     """Set the `FRED_API_KEY` environment variable and
     optionally initialize local SQL tables with
     popular economic data.
@@ -41,5 +41,5 @@ def install(init_db: bool = True) -> None:
     else:
         logger.info("FRED API key already exists in env")
     if init_db:
-        c = scrape.scrape(features.economic_features.series_ids)
+        c = scrape.run(features.economic_features.series_ids)
         logger.info(f"{sum(c.values())} rows written")

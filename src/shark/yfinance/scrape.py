@@ -4,7 +4,7 @@ from typing import Sequence
 from . import api, sql
 
 
-def scrape(tickers: str | Sequence[str], /) -> dict[str, int]:
+def run(tickers: str | Sequence[str], /) -> dict[str, int]:
     """Scrape yfinance historical stock data from the
     yfinance API.
 

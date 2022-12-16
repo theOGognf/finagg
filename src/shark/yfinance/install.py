@@ -35,7 +35,7 @@ def _get(params: dict[str, str]) -> None | pd.DataFrame:
     return output
 
 
-def install(processes: int = mp.cpu_count() - 1) -> None:
+def run(processes: int = mp.cpu_count() - 1) -> None:
     """Initialize local SQL tables with yfinance
     stock price data.
 

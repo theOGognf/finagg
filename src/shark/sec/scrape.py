@@ -1,11 +1,12 @@
 """Scrape the SEC API and store into local SQL tables."""
+
 from typing import Sequence
 
 from ..tickers import api as tickers_api
 from . import api, features, sql
 
 
-def scrape(
+def run(
     tickers: str | Sequence[str],
     /,
     *,
