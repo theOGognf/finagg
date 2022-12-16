@@ -434,6 +434,9 @@ class _Tickers(_Dataset):
         return df.rename(columns={"cik_str": "cik"})
 
 
+#: Mapping of SEC CIK strings to (uppercase) tickers.
+_cik_to_tickers: dict[str, str] = {}
+
 #: Count of warnings to limit log spam.
 _throttle_warnings = 0
 
@@ -505,5 +508,20 @@ def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
         response = get(_Tickers.url, user_agent=user_agent)
         content: dict[str, dict[str, str]] = response.json()
         for _, items in content.items():
-            _tickers_to_cik[items["ticker"]] = items["cik_str"]
+            normalized_cik = str(items["cik_str"]).zfill(10)
+            _tickers_to_cik[items["ticker"]] = normalized_cik
+            _cik_to_tickers[normalized_cik] = items["ticker"]
     return _tickers_to_cik[ticker.upper()]
+
+
+def get_ticker(cik: str, /, *, user_agent: None | str = None) -> str:
+    """Return an SEC CIK's ticker."""
+    if not _cik_to_tickers:
+        response = get(_Tickers.url, user_agent=user_agent)
+        content: dict[str, dict[str, str]] = response.json()
+        for _, items in content.items():
+            normalized_cik = str(items["cik_str"]).zfill(10)
+            _cik_to_tickers[normalized_cik] = items["ticker"]
+            _tickers_to_cik[items["ticker"]] = normalized_cik
+    cik = str(cik).zfill(10)
+    return _cik_to_tickers[cik]

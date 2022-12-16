@@ -3,9 +3,22 @@
 from functools import cache
 
 import pandas as pd
-from sqlalchemy.sql import and_
+from sqlalchemy.sql import and_, distinct, select
 
 from . import api, sql
+
+
+@cache
+def get_ticker_set() -> set[str]:
+    """Get all unique tickers in the SQL tables."""
+    with sql.engine.connect() as conn:
+        ciks = conn.execute(select(distinct(sql.tags.c.cik)))
+        tickers = set()
+        for cik in ciks:
+            (cik,) = cik
+            ticker = api.get_ticker(cik)
+            tickers.add(ticker)
+    return tickers
 
 
 def get_unique_10q(df: pd.DataFrame, /, *, units: str = "USD") -> pd.DataFrame:
