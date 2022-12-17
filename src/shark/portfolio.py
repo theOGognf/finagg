@@ -35,29 +35,36 @@ class Position:
             quantity: Number of shares to buy.
 
         Returns:
-            Current total value of the position.
+            Value of the bought position.
 
         """
         self.quantity += quantity
         self.cost_basis_total += cost * quantity
         self.average_cost_basis = self.cost_basis_total / self.quantity
-        return cost * self.quantity
+        return cost * quantity
 
-    def compute_total_percent_change(self, cost: float) -> float:
-        """Compute the total percent change relative to the average
-        cost basis and the current value of the security.
+    def sell(self, cost: float, quantity: float) -> float:
+        """Sell `quantity` of the position for `cost`.
 
         Args:
-            cost: Current value of one share.
+            cost: Cost to sell at.
+            quantity: Number of shares to sell.
 
         Returns:
-            Total percent change in value. Negative indicates loss
-            in value, positive indicates gain in value.
+            Value of the sold position.
+
+        Raises:
+            ValueError if there aren't enough shares
+            to sell in the position.
 
         """
-        return (cost / self.average_cost_basis) - 1
+        if self.quantity < quantity:
+            raise ValueError("Invalid order - not enough shares")
+        self.quantity -= quantity
+        self.cost_basis_total = self.average_cost_basis * self.quantity
+        return cost * quantity
 
-    def compute_total_dollar_change(self, cost: float) -> float:
+    def total_dollar_change(self, cost: float) -> float:
         """Compute the total dollar change relative to the average
         cost basis and the current value of the security.
 
@@ -70,26 +77,19 @@ class Position:
         """
         return (cost - self.average_cost_basis) * self.quantity
 
-    def sell(self, cost: float, quantity: float) -> float:
-        """Sell `quantity` of the position for `cost`.
+    def total_percent_change(self, cost: float) -> float:
+        """Compute the total percent change relative to the average
+        cost basis and the current value of the security.
 
         Args:
-            cost: Cost to sell at.
-            quantity: Number of shares to sell.
+            cost: Current value of one share.
 
         Returns:
-            Current total value of the position.
-
-        Raises:
-            ValueError if there aren't enough shares
-            to sell in the position.
+            Total percent change in value. Negative indicates loss
+            in value, positive indicates gain in value.
 
         """
-        if self.quantity < quantity:
-            raise ValueError("Invalid order - not enough shares")
-        self.quantity -= quantity
-        self.cost_basis_total = self.average_cost_basis * self.quantity
-        return cost * self.quantity
+        return (cost / self.average_cost_basis) - 1
 
 
 _Symbol = TypeVar("_Symbol", bound=str)
@@ -114,15 +114,19 @@ class Portfolio(Generic[_Symbol, _Position]):
     positions: dict[str, Position]
 
     #: Total cash withdrawn since starting the portfolio.
-    withdraws_total: float
+    withdrawals_total: float
 
     def __init__(self, cash: float) -> None:
         self.cash = cash
         self.deposits_total = cash
-        self.withdraws_total = 0
+        self.withdrawals_total = 0
         self.positions = {}
 
     def __getitem__(self, symbol: str) -> Position:
+        """Return the portfolio's position in the security
+        identified by `symbol`.
+
+        """
         return self.positions[symbol]
 
     def buy(self, symbol: str, cost: float, quantity: float) -> float:
@@ -134,7 +138,7 @@ class Portfolio(Generic[_Symbol, _Position]):
             quantity: Number of shares to purchase.
 
         Returns:
-            Current total value of the symbol's position in the
+            Value of the symbol's bought position in the
             portfolio.
 
         Raises:
@@ -175,7 +179,7 @@ class Portfolio(Generic[_Symbol, _Position]):
             quantity: Number of shares to sell.
 
         Returns:
-            Current total value of the symbol's position in the
+            Value of the symbol's sold position in the
             portfolio.
 
         """
@@ -184,6 +188,41 @@ class Portfolio(Generic[_Symbol, _Position]):
             self.positions.pop(symbol)
         self.cash += cost * quantity
         return current_value
+
+    def total_dollar_change(self, costs: dict[str, float]) -> float:
+        """Compute the total dollar change relative to the total
+        deposits made into the portfolio.
+
+        Args:
+            costs: Mapping of symbol to its current value of one share.
+
+        Returns:
+            Total dollar change in value.
+
+        """
+        dollar_value_total = self.cash
+        for symbol, cost in costs.items():
+            if symbol in self.positions:
+                dollar_value_total += cost * self.positions[symbol].quantity
+        return dollar_value_total - self.deposits_total
+
+    def total_percent_change(self, costs: dict[str, float]) -> float:
+        """Compute the total percent change relative to the total
+        deposits made into the portfolio.
+
+        Args:
+            costs: Mapping of symbol to its current value of one share.
+
+        Returns:
+            Total percent change in value. Negative indicates loss
+            in value, positive indicates gain in value.
+
+        """
+        dollar_value_total = self.cash
+        for symbol, cost in costs.items():
+            if symbol in self.positions:
+                dollar_value_total += cost * self.positions[symbol].quantity
+        return (dollar_value_total / self.deposits_total) - 1
 
     def withdraw(self, cash: float) -> float:
         """Withdraw cash from the portfolio.
@@ -201,5 +240,5 @@ class Portfolio(Generic[_Symbol, _Position]):
         if self.cash < cash:
             raise ValueError("Not enough cash to withdraw")
         self.cash -= cash
-        self.withdraws_total += cash
+        self.withdrawals_total += cash
         return self.cash
