@@ -19,20 +19,16 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def _get(params: dict[str, str]) -> None | pd.DataFrame:
+def _get(ticker: str) -> tuple[str, pd.DataFrame]:
     """Wrapper for `api.get` to enable dispatching to
     `multiprocessing.Pool.imap`.
 
     """
     try:
-        df = api.get(params["ticker"], interval="1d", period="max")
-        if len(df.index) == 0:
-            df = None
+        df = api.get(ticker, interval="1d", period="max")
     except pd.errors.EmptyDataError:
-        df = None
-    output = params.copy()
-    output["result"] = df
-    return output
+        df = pd.DataFrame()
+    return ticker, df
 
 
 def run(processes: int = mp.cpu_count() - 1) -> None:
@@ -40,7 +36,7 @@ def run(processes: int = mp.cpu_count() - 1) -> None:
     stock price data.
 
     """
-    tickers = [{"ticker": ticker} for ticker in tickers_api.get_ticker_set()]
+    tickers = tickers_api.get_ticker_set()
 
     sql.metadata.drop_all(sql.engine)
     sql.metadata.create_all(sql.engine)
@@ -50,9 +46,8 @@ def run(processes: int = mp.cpu_count() - 1) -> None:
     with sql.engine.connect() as conn:
         with mp.Pool(processes=processes) as pool:
             for output in pool.imap_unordered(_get, tickers):
-                ticker = output["ticker"]
-                df = output["result"]
-                if df is None:
+                ticker, df = output
+                if not len(df.index):
                     skipped_tickers.add(ticker)
                     logger.info(
                         f"Skipping {ticker} due to missing data "
