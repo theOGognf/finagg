@@ -2,6 +2,7 @@
 
 from functools import cache
 
+import numpy as np
 import pandas as pd
 from sqlalchemy.sql import and_, distinct, select
 
@@ -79,6 +80,7 @@ class _QuarterlyFeatures:
         )
         pct_change_columns = [concept["tag"] for concept in cls.concepts]
         df[pct_change_columns] = df[pct_change_columns].pct_change()
+        df = df.replace([-np.inf, np.inf], np.nan)
         return df.dropna()
 
     @classmethod

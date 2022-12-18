@@ -2,6 +2,7 @@
 
 from functools import cache
 
+import numpy as np
 import pandas as pd
 
 from .. import sec, yfinance
@@ -20,7 +21,8 @@ class _FundamentalFeatures:
         )
         df = df.fillna(method="ffill").dropna()
         df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
-        return df
+        df = df.replace([-np.inf, np.inf], np.nan)
+        return df.dropna()
 
     @classmethod
     @cache
