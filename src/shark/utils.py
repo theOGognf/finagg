@@ -6,6 +6,9 @@ import platform
 import re
 import subprocess
 
+import numpy as np
+import pandas as pd
+
 
 def CamelCase(s: str, /) -> str:
     """Convert a string to CamelCase.
@@ -38,6 +41,56 @@ def join_with(s: str | list[str], /, delim: str) -> str:
     if isinstance(s, str):
         s = [s]
     return delim.join(s)
+
+
+def quantile_clip(
+    df: pd.DataFrame, /, *, lower: float = 0.05, upper: float = 0.95
+) -> pd.DataFrame:
+    """Clip dataframe values to be within the specified quantiles.
+
+    Args:
+        df: Dataframe to clip.
+        lower: Lower bound quantile.
+        upper: Upper bound quantile.
+
+    Returns:
+        A dataframe whose values are within the quantiles
+        specified by `lower` and `upper`.
+
+    """
+    # Lower quantile clipping
+    df = df.replace([-np.inf], np.nan)
+    df_q_lower = df.quantile(lower, numeric_only=True)
+    df = df.clip(lower=df_q_lower, axis=1)
+    df = df.fillna(method="ffill")
+    # Upper quantile clipping
+    df = df.replace([np.inf], np.nan)
+    df_q_upper = df.quantile(upper, numeric_only=True)
+    df = df.clip(upper=df_q_upper, axis=1)
+    df = df.fillna(method="ffill")
+    return df
+
+
+def safe_pct_change(col: pd.Series) -> pd.Series:
+    """Safely compute percent change on a column.
+
+    Replaces Inf values with NaN and forward-fills.
+    This function is meant to be used with
+    `pd.Series.apply`.
+
+    Args:
+        col: Series of values.
+
+    Returns:
+        A series representing percent changes of `col`.
+
+    """
+    return (
+        col.pct_change()
+        .replace([-np.inf, np.inf], np.nan)
+        .fillna(method="ffill")
+        .dropna()
+    )
 
 
 def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> None | pathlib.Path:

@@ -2,10 +2,10 @@
 
 from functools import cache
 
-import numpy as np
 import pandas as pd
 from sqlalchemy.sql import and_
 
+from .. import utils
 from . import api, sql
 
 
@@ -15,18 +15,19 @@ class _DailyFeatures:
     @classmethod
     def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
         """Normalize daily features columns."""
-        df = df.drop(columns=["ticker"]).set_index("date").astype(float).sort_index()
-        pct_change_columns = ["open", "high", "low", "close", "volume"]
+        df = (
+            df.drop(columns=["ticker"])
+            .fillna(method="ffill")
+            .dropna()
+            .set_index("date")
+            .astype(float)
+            .sort_index()
+        )
         df["price"] = df["close"]
-
-        def _safe_pct_change(col: pd.Series) -> pd.Series:
-            col = col.pct_change().replace([-np.inf, np.inf], np.nan)
-            mu = col.mean(numeric_only=True)
-            two_sigma = 2 * col.std(numeric_only=True)
-            return col.clip(lower=mu - two_sigma, upper=mu + two_sigma)
-
-        df[pct_change_columns] = df[pct_change_columns].apply(_safe_pct_change)
-        return df.dropna()
+        df = utils.quantile_clip(df)
+        pct_change_columns = ["open", "high", "low", "close", "volume"]
+        df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)
+        return df
 
     @classmethod
     @cache

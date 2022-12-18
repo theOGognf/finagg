@@ -2,10 +2,10 @@
 
 from functools import cache
 
-import numpy as np
 import pandas as pd
 from sqlalchemy.sql import and_, distinct, select
 
+from .. import utils
 from . import api, sql
 
 
@@ -78,10 +78,10 @@ class _QuarterlyFeatures:
         df["PriceBookRatio"] = df["StockholdersEquity"] / (
             df["AssetsCurrent"] - df["LiabilitiesCurrent"]
         )
+        df = utils.quantile_clip(df)
         pct_change_columns = [concept["tag"] for concept in cls.concepts]
-        df[pct_change_columns] = df[pct_change_columns].pct_change()
-        df = df.replace([-np.inf, np.inf], np.nan)
-        return df.dropna()
+        df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)
+        return df
 
     @classmethod
     @cache

@@ -5,6 +5,7 @@ from functools import cache
 import pandas as pd
 from sqlalchemy.sql import and_
 
+from .. import utils
 from . import api, sql
 
 
@@ -38,6 +39,8 @@ class _EconomicFeatures:
             .astype(float)
             .sort_index()
         )
+        df = utils.quantile_clip(df)
+
         pct_change_columns = [
             "CIVPART",
             "CPIAUCNS",
@@ -48,8 +51,8 @@ class _EconomicFeatures:
             "UMCSENT",
             "WALCL",
         ]
-        df[pct_change_columns] = 100.0 * df[pct_change_columns].pct_change()
-        return df.dropna()
+        df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)
+        return df
 
     @classmethod
     @cache
