@@ -61,12 +61,12 @@ def quantile_clip(
     # Lower quantile clipping
     df = df.replace([-np.inf], np.nan)
     df_q_lower = df.quantile(lower, numeric_only=True)
-    df = df.clip(lower=df_q_lower, axis=1)
+    df = df.clip(lower=df_q_lower, axis=1)  # type: ignore
     df = df.fillna(method="ffill")
     # Upper quantile clipping
     df = df.replace([np.inf], np.nan)
     df_q_upper = df.quantile(upper, numeric_only=True)
-    df = df.clip(upper=df_q_upper, axis=1)
+    df = df.clip(upper=df_q_upper, axis=1)  # type: ignore
     df = df.fillna(method="ffill")
     return df
 

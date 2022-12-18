@@ -50,7 +50,7 @@ class _FundamentalFeatures:
         quarterly_features = sec.features.quarterly_features.from_api(
             ticker, start=start, end=end
         )
-        start = quarterly_features.index[0]
+        start = str(quarterly_features.index[0])
         daily_features = yfinance.features.daily_features.from_api(
             ticker, start=start, end=end
         )
@@ -82,7 +82,7 @@ class _FundamentalFeatures:
         quarterly_features = sec.features.quarterly_features.from_sql(
             ticker, start=start, end=end
         )
-        start = quarterly_features.index[0]
+        start = str(quarterly_features.index[0])
         daily_features = yfinance.features.daily_features.from_sql(
             ticker, start=start, end=end
         )
