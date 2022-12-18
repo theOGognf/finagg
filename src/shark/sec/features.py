@@ -67,6 +67,7 @@ class _QuarterlyFeatures:
             .astype(float)
             .sort_index()
         )
+        df["EarningsPerShare"] = df["EarningsPerShareBasic"]
         df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
             "LiabilitiesCurrent"

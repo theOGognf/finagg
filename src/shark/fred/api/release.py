@@ -9,10 +9,10 @@ from functools import cache
 
 import pandas as pd
 
-from ._api import Dataset, get
+from . import _api
 
 
-class _ReleasesDates(Dataset):
+class _ReleasesDates(_api.Dataset):
     """Get release dates for all releases of economic data."""
 
     #: FRED API URL.
@@ -61,7 +61,7 @@ class _ReleasesDates(Dataset):
             releases of economic data.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -76,7 +76,7 @@ class _ReleasesDates(Dataset):
         return pd.DataFrame(data)
 
 
-class _Releases(Dataset):
+class _Releases(_api.Dataset):
     """Get all releases of economic data."""
 
     #: "releases/dates" FRED API. Get dates for releases of economic data.
@@ -127,7 +127,7 @@ class _Releases(Dataset):
             data.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -141,7 +141,7 @@ class _Releases(Dataset):
         return pd.DataFrame(data)
 
 
-class _ReleaseDates(Dataset):
+class _ReleaseDates(_api.Dataset):
     """Get data on release dates for a particular release of economic data."""
 
     #: FRED API URL.
@@ -186,7 +186,7 @@ class _ReleaseDates(Dataset):
             A dataframe containing data for an economic data release's release dates.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -201,7 +201,7 @@ class _ReleaseDates(Dataset):
         return pd.DataFrame(data)
 
 
-class _Series(Dataset):
+class _Series(_api.Dataset):
     """Get data on the series related to a release of economic data."""
 
     #: FRED API URL.
@@ -270,7 +270,7 @@ class _Series(Dataset):
             A dataframe containing series data for a release.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -289,7 +289,7 @@ class _Series(Dataset):
         return pd.DataFrame(data)
 
 
-class _Sources(Dataset):
+class _Sources(_api.Dataset):
     """Get sources related to an economic release."""
 
     #: FRED API URL.
@@ -324,7 +324,7 @@ class _Sources(Dataset):
             A dataframe containing sources related to an economic release.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -335,7 +335,7 @@ class _Sources(Dataset):
         return pd.DataFrame(data)
 
 
-class _Tags(Dataset):
+class _Tags(_api.Dataset):
     """Get tags for an economic release."""
 
     #: FRED API URL.
@@ -399,7 +399,7 @@ class _Tags(Dataset):
             according to the given parameters.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -417,7 +417,7 @@ class _Tags(Dataset):
         return pd.DataFrame(data)
 
 
-class _RelatedTags(Dataset):
+class _RelatedTags(_api.Dataset):
     """Get tags related to an economic release."""
 
     #: FRED API URL.
@@ -483,7 +483,7 @@ class _RelatedTags(Dataset):
             release according to the given parameters.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -502,7 +502,7 @@ class _RelatedTags(Dataset):
         return pd.DataFrame(data)
 
 
-class _Tables(Dataset):
+class _Tables(_api.Dataset):
     """Get release tables for a given economic release."""
 
     #: FRED API URL.
@@ -539,7 +539,7 @@ class _Tables(Dataset):
             A dataframe of release tables for a given economic release.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             release_id=release_id,
             element_id=element_id,
@@ -551,7 +551,7 @@ class _Tables(Dataset):
         return pd.DataFrame(data)
 
 
-class _Release(Dataset):
+class _Release(_api.Dataset):
     """Collection of `fred/release` APIs."""
 
     #: "release/dates" FRED API. Get economic release dates.
@@ -604,7 +604,7 @@ class _Release(Dataset):
             A dataframe containing high-level info on an economic release.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,

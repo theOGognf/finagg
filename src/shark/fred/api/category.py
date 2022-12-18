@@ -9,10 +9,10 @@ from functools import cache
 
 import pandas as pd
 
-from ._api import Dataset, get
+from . import _api
 
 
-class _Children(Dataset):
+class _Children(_api.Dataset):
     """Get all child categories for a specific parent category."""
 
     #: FRED API URL.
@@ -47,7 +47,7 @@ class _Children(Dataset):
             A dataframe containing data for a category's children.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -58,7 +58,7 @@ class _Children(Dataset):
         return pd.DataFrame(data)
 
 
-class _Related(Dataset):
+class _Related(_api.Dataset):
     """Get categories related to a category."""
 
     #: FRED API URL.
@@ -95,7 +95,7 @@ class _Related(Dataset):
             related to the given category.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -106,7 +106,7 @@ class _Related(Dataset):
         return pd.DataFrame(data)
 
 
-class _Series(Dataset):
+class _Series(_api.Dataset):
     """Get data for series within a category."""
 
     #: FRED API URL.
@@ -170,7 +170,7 @@ class _Series(Dataset):
             according to the given parameters.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -189,7 +189,7 @@ class _Series(Dataset):
         return pd.DataFrame(data)
 
 
-class _Tags(Dataset):
+class _Tags(_api.Dataset):
     """Get a category's tags."""
 
     #: FRED API URL.
@@ -254,7 +254,7 @@ class _Tags(Dataset):
             according to the given parameters.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -272,7 +272,7 @@ class _Tags(Dataset):
         return pd.DataFrame(data)
 
 
-class _RelatedTags(Dataset):
+class _RelatedTags(_api.Dataset):
     """Get data for tags related to a category."""
 
     #: FRED API URL.
@@ -339,7 +339,7 @@ class _RelatedTags(Dataset):
             according to the given parameters.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -358,7 +358,7 @@ class _RelatedTags(Dataset):
         return pd.DataFrame(data)
 
 
-class _Category(Dataset):
+class _Category(_api.Dataset):
     """Collection of `fred/category` APIs.
 
     See the related FRED API documentation at:
@@ -399,7 +399,7 @@ class _Category(Dataset):
             Dataframe of category details.
 
         """
-        data = get(cls.url, category_id=category_id, api_key=api_key).json()
+        data = _api.get(cls.url, category_id=category_id, api_key=api_key).json()
         data = data["categories"]
         return pd.DataFrame(data)
 

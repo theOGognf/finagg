@@ -9,8 +9,8 @@ import pandas as pd
 from requests.exceptions import HTTPError
 from sqlalchemy.exc import IntegrityError
 
+from .. import utils
 from ..tickers import api as tickers_api
-from ..utils import setenv
 from . import api, features, sql
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ def run(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
         ).strip()
         if not user_agent:
             raise RuntimeError("An empty SEC API user agent was given.")
-        p = setenv("SEC_API_USER_AGENT", user_agent)
+        p = utils.setenv("SEC_API_USER_AGENT", user_agent)
         logger.info(f"SEC API user agent writtern to {p}")
     else:
         logger.info("SEC API user agent already exists in env")

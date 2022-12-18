@@ -21,7 +21,7 @@ import requests
 import requests_cache
 from requests_cache import CachedResponse
 
-from ..utils import snake_case
+from .. import utils
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -398,16 +398,16 @@ class _Submissions(_Dataset):
         content = response.json()
         recent_filings = content.pop("filings")["recent"]
         df = pd.DataFrame(recent_filings)
-        df.columns = map(snake_case, df.columns)  # type: ignore
+        df.columns = map(utils.snake_case, df.columns)  # type: ignore
         df.rename(columns={"accession_number": "accn"})
-        metadata = {snake_case(k): v for k, v in content.items()}
+        metadata = {utils.snake_case(k): v for k, v in content.items()}
         mailing_address = metadata["addresses"]["mailing"]
         business_address = metadata["addresses"]["business"]
         metadata["addresses"]["mailing"] = {
-            snake_case(k): v for k, v in mailing_address.items()
+            utils.snake_case(k): v for k, v in mailing_address.items()
         }
         metadata["addresses"]["business"] = {
-            snake_case(k): v for k, v in business_address.items()
+            utils.snake_case(k): v for k, v in business_address.items()
         }
         return {"metadata": metadata, "filings": df}
 

@@ -9,10 +9,10 @@ from functools import cache
 
 import pandas as pd
 
-from ._api import Dataset, get
+from . import _api
 
 
-class _Releases(Dataset):
+class _Releases(_api.Dataset):
     """Get the releases for a source of economic data."""
 
     #: FRED API URL.
@@ -63,7 +63,7 @@ class _Releases(Dataset):
             source of economic data.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             source_id=source_id,
             realtime_start=realtime_start,
@@ -78,7 +78,7 @@ class _Releases(Dataset):
         return pd.DataFrame(data)
 
 
-class _Source(Dataset):
+class _Source(_api.Dataset):
     """Get a source of economic data."""
 
     #: "source/releases" FRED API. Get the releases for a source of economic data.
@@ -116,7 +116,7 @@ class _Source(Dataset):
             A dataframe containing high-level info on an economic source.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             source_id=source_id,
             realtime_start=realtime_start,
@@ -127,7 +127,7 @@ class _Source(Dataset):
         return pd.DataFrame(data)
 
 
-class _Sources(Dataset):
+class _Sources(_api.Dataset):
     """Get all sources of economic data."""
 
     #: FRED API URL.
@@ -174,7 +174,7 @@ class _Sources(Dataset):
             data.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,

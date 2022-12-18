@@ -9,10 +9,10 @@ from functools import cache
 
 import pandas as pd
 
-from ._api import Dataset, get
+from . import _api
 
 
-class _RelatedTags(Dataset):
+class _RelatedTags(_api.Dataset):
     """Get related FRED tags."""
 
     #: FRED API URL.
@@ -74,7 +74,7 @@ class _RelatedTags(Dataset):
             A dataframe containing data for related FRED tags.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -92,7 +92,7 @@ class _RelatedTags(Dataset):
         return pd.DataFrame(data)
 
 
-class _Series(Dataset):
+class _Series(_api.Dataset):
     """Get the economic data series matching tags."""
 
     #: FRED API URL.
@@ -149,7 +149,7 @@ class _Series(Dataset):
             A dataframe containing series data for related tags.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             tag_names=tag_names,
             exclude_tag_names=exclude_tag_names,
@@ -165,7 +165,7 @@ class _Series(Dataset):
         return pd.DataFrame(data)
 
 
-class _Tags(Dataset):
+class _Tags(_api.Dataset):
     """Get FRED tags."""
 
     #: "tags/series" FRED API. Get the series for a FRED tag.
@@ -231,7 +231,7 @@ class _Tags(Dataset):
             A dataframe containing data for all FRED economic data tags.
 
         """
-        data = get(
+        data = _api.get(
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,

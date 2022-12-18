@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 
-from ..utils import setenv
+from .. import utils
 from . import features, scrape
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ def run(init_db: bool = True) -> None:
         ).strip()
         if not api_key:
             raise RuntimeError("An empty FRED API key was given.")
-        p = setenv("FRED_API_KEY", api_key)
+        p = utils.setenv("FRED_API_KEY", api_key)
         logger.info(f"FRED API key writtern to {p}")
     else:
         logger.info("FRED API key already exists in env")
