@@ -1,11 +1,12 @@
-"""Features mixed from several sources."""
+"""Features engineered from several sources."""
 
 from functools import cache
 
-import numpy as np
 import pandas as pd
 
 from .. import sec, utils, yfinance
+from ..sec.features import quarterly_features
+from ..yfinance.features import daily_features
 
 
 class _FundamentalFeatures:
@@ -15,7 +16,7 @@ class _FundamentalFeatures:
     def _normalize(
         cls, quarterly_df: pd.DataFrame, daily_df: pd.DataFrame
     ) -> pd.DataFrame:
-        """Normalize the mixed features columns."""
+        """Normalize the engineered features columns."""
         df = pd.merge(
             quarterly_df, daily_df, how="outer", left_index=True, right_index=True
         )
@@ -29,7 +30,7 @@ class _FundamentalFeatures:
     def from_api(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
-        """Get mixed features directly from the SEC API.
+        """Get engineered features directly from APIs.
 
         Not all data series are published at the same rate or
         time. Missing rows for less-frequent publications
@@ -61,7 +62,7 @@ class _FundamentalFeatures:
     def from_sql(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
-        """Get mixed features directly from local SQL tables.
+        """Get engineered features directly from local SQL tables.
 
         Not all data series are published at the same rate or
         time. Missing rows for less-frequent publications
