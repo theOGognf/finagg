@@ -1,8 +1,10 @@
 """Definitions related to tracking an investment portfolio of cash and stocks."""
 
+from functools import total_ordering
 from typing import Generic, TypeVar
 
 
+@total_ordering
 class Position:
     """A position in holding a security.
 
@@ -26,6 +28,31 @@ class Position:
         self.cost_basis_total = cost * quantity
         self.average_cost_basis = cost
         self.quantity = quantity
+
+    def __eq__(self, __o: object) -> bool:
+        """Compare the position's cost basis."""
+        if not isinstance(__o, float | Position):
+            raise NotImplementedError(
+                "Can only compare " f"{self.__class__.__name__} to [float, Position]"
+            )
+
+        if isinstance(__o, Position):
+            return self.average_cost_basis == __o.average_cost_basis
+
+        return self.average_cost_basis == __o
+
+    def __lt__(self, __o: object) -> bool:
+        """Compare the position's cost basis."""
+        if not isinstance(__o, float | Position):
+            raise NotImplementedError(
+                "Can only compare "
+                f"{self.__class__.__name__} to [{float.__name__}, {Position.__name__}]"
+            )
+
+        if isinstance(__o, Position):
+            return self.average_cost_basis < __o.average_cost_basis
+
+        return self.average_cost_basis < __o
 
     def buy(self, cost: float, quantity: float) -> float:
         """Buy `quantity` of the position for `cost`.
@@ -122,6 +149,13 @@ class Portfolio(Generic[_Symbol, _Position]):
         self.withdrawals_total = 0
         self.positions = {}
 
+    def __contains__(self, symbol: str) -> bool:
+        """Return whether the portfolio contains a position
+        in `symbol`.
+
+        """
+        return symbol in self.positions
+
     def __getitem__(self, symbol: str) -> Position:
         """Return the portfolio's position in the security
         identified by `symbol`.
@@ -200,11 +234,23 @@ class Portfolio(Generic[_Symbol, _Position]):
             Total dollar change in value.
 
         """
+        return self.total_dollar_value(costs) - self.deposits_total
+
+    def total_dollar_value(self, costs: dict[str, float]) -> float:
+        """Compute the total dollar value of the portfolio.
+
+        Args:
+            costs: Mapping of symbol to its current value of one share.
+
+        Returns:
+            Total dollar value.
+
+        """
         dollar_value_total = self.cash
         for symbol, cost in costs.items():
             if symbol in self.positions:
                 dollar_value_total += cost * self.positions[symbol].quantity
-        return dollar_value_total - self.deposits_total
+        return dollar_value_total
 
     def total_percent_change(self, costs: dict[str, float]) -> float:
         """Compute the total percent change relative to the total
@@ -218,11 +264,7 @@ class Portfolio(Generic[_Symbol, _Position]):
             in value, positive indicates gain in value.
 
         """
-        dollar_value_total = self.cash
-        for symbol, cost in costs.items():
-            if symbol in self.positions:
-                dollar_value_total += cost * self.positions[symbol].quantity
-        return (dollar_value_total / self.deposits_total) - 1
+        return (self.total_dollar_value(costs) / self.deposits_total) - 1
 
     def withdraw(self, cash: float) -> float:
         """Withdraw cash from the portfolio.

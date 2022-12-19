@@ -5,7 +5,7 @@ from functools import cache
 import numpy as np
 import pandas as pd
 
-from .. import sec, yfinance
+from .. import sec, utils, yfinance
 
 
 class _FundamentalFeatures:
@@ -21,8 +21,8 @@ class _FundamentalFeatures:
         )
         df = df.fillna(method="ffill").dropna()
         df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
-        df = df.replace([-np.inf, np.inf], np.nan)
-        return df.dropna()
+        df = utils.quantile_clip(df)
+        return df
 
     @classmethod
     @cache
