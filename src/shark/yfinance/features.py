@@ -12,6 +12,14 @@ from . import api, sql
 class _DailyFeatures:
     """Methods for gathering daily stock data from Yahoo! finance."""
 
+    #: Name of feature store SQL table.
+    table_name = "daily_features"
+
+    @classmethod
+    def _load_table(cls) -> None:
+        """Placeholder for the feature engineering interface."""
+        raise NotImplementedError(f"Use {cls.table_name} from `shark.eng.features`")
+
     @classmethod
     def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
         """Normalize daily features columns."""
@@ -76,6 +84,18 @@ class _DailyFeatures:
                 stmt = and_(stmt, sql.prices.c.date <= end)
             df = pd.DataFrame(conn.execute(sql.prices.select(stmt)))
         return cls._normalize(df)
+
+    @classmethod
+    def from_store(
+        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
+    ) -> pd.DataFrame:
+        """Placeholder for the feature engineering interface."""
+        raise NotImplementedError(f"Use {cls.table_name} from `shark.eng.features`")
+
+    @classmethod
+    def to_store(cls, ticker: str, df: pd.DataFrame, /) -> None | int:
+        """Placeholder for the feature engineering interface."""
+        raise NotImplementedError(f"Use {cls.table_name} from `shark.eng.features`")
 
 
 #: Public-facing API.

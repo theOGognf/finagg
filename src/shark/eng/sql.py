@@ -23,7 +23,7 @@ metadata = MetaData()
 
 #: SQLAlchemy engine inspector for dynamically reflecting
 #: tables.
-inspector: Inspector = inspect(engine)
+inspector: Inspector = inspect(engine)  # type: ignore
 
 #: Features have minimal constraints to allow quick experimentation.
 if inspector.has_table("daily_features"):

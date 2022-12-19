@@ -11,11 +11,74 @@ from ..sec.features import quarterly_features
 from ..yfinance.features import daily_features
 from . import sql
 
+
 # Add feature store methods to other feature classes.
-quarterly_features.from_store = ...
-quarterly_features.to_store = ...
-daily_features.from_store = ...
-daily_features.to_store = ...
+def _quarterly_features_load_table(cls: type[quarterly_features]) -> None:
+    """Reflect the feature store SQL table."""
+    quarterly_features = Table(
+        cls.table_name,
+        sql.metadata,
+        Column("ticker", String, primary_key=True, doc="Unique company ticker."),
+        Column("filed", String, primary_key=True, doc="Filing date."),
+        autoload_with=sql.engine,
+    )
+    sql.quarterly_features = quarterly_features
+
+
+def _quarterly_features_from_store(
+    cls: type[quarterly_features],
+    ticker: str,
+    /,
+    *,
+    start: None | str = None,
+    end: None | str = None,
+) -> pd.DataFrame:
+    ...
+
+
+def _quarterly_features_to_store(
+    cls: type[quarterly_features], ticker: str, df: pd.DataFrame, /
+) -> None | int:
+    ...
+
+
+setattr(quarterly_features, "_load_table", classmethod(_quarterly_features_load_table))
+setattr(quarterly_features, "from_store", classmethod(_quarterly_features_from_store))
+setattr(quarterly_features, "to_store", classmethod(_quarterly_features_to_store))
+
+
+def _daily_features_load_table(cls: type[daily_features]) -> None:
+    """Reflect the feature store SQL table."""
+    daily_features = Table(
+        cls.table_name,
+        sql.metadata,
+        Column("ticker", String, primary_key=True, doc="Unique company ticker."),
+        Column("date", String, primary_key=True, doc="Stock price date."),
+        autoload_with=sql.engine,
+    )
+    sql.daily_features = daily_features
+
+
+def _daily_features_from_store(
+    cls: type[daily_features],
+    ticker: str,
+    /,
+    *,
+    start: None | str = None,
+    end: None | str = None,
+) -> pd.DataFrame:
+    ...
+
+
+def _daily_features_to_store(
+    cls: type[daily_features], ticker: str, df: pd.DataFrame, /
+) -> None | int:
+    ...
+
+
+setattr(daily_features, "_load_table", classmethod(_daily_features_load_table))
+setattr(daily_features, "from_store", classmethod(_daily_features_from_store))
+setattr(daily_features, "to_store", classmethod(_daily_features_to_store))
 
 
 class _FundamentalFeatures:
@@ -28,7 +91,7 @@ class _FundamentalFeatures:
     def _load_table(cls) -> None:
         """Reflect the feature store SQL table."""
         fundamental_features = Table(
-            "fundamental_features",
+            cls.table_name,
             sql.metadata,
             Column("ticker", String, primary_key=True, doc="Unique company ticker."),
             Column(
@@ -147,11 +210,11 @@ class _FundamentalFeatures:
             if end:
                 stmt = and_(stmt, table.c.date <= end)
             df = pd.DataFrame(conn.execute(table.select(stmt)))
-        df = df.set_index("date")
+        df = df.set_index("date").drop(columns="ticker")
         return df
 
     @classmethod
-    def to_store(cls, ticker: str, df: pd.DataFrame, /) -> int:
+    def to_store(cls, ticker: str, df: pd.DataFrame, /) -> None | int:
         """Write the dataframe to the feature store for `ticker`.
 
         Does the necessary handling to transform columns to

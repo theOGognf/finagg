@@ -58,6 +58,14 @@ class _QuarterlyFeatures:
         {"tag": "StockholdersEquity", "taxonomy": "us-gaap", "units": "USD"},
     )
 
+    #: Name of feature store SQL table.
+    table_name = "quarterly_features"
+
+    @classmethod
+    def _load_table(cls) -> None:
+        """Placeholder for the feature engineering interface."""
+        raise NotImplementedError(f"Use {cls.table_name} from `shark.eng.features`")
+
     @classmethod
     def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
         """Normalize quarterly features columns."""
@@ -157,6 +165,18 @@ class _QuarterlyFeatures:
                 stmt = and_(stmt, sql.tags.c.filed <= end)
             df = pd.DataFrame(conn.execute(sql.tags.select(stmt)))
         return cls._normalize(df)
+
+    @classmethod
+    def from_store(
+        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
+    ) -> pd.DataFrame:
+        """Placeholder for the feature engineering interface."""
+        raise NotImplementedError(f"Use {cls.table_name} from `shark.eng.features`")
+
+    @classmethod
+    def to_store(cls, ticker: str, df: pd.DataFrame, /) -> None | int:
+        """Placeholder for the feature engineering interface."""
+        raise NotImplementedError(f"Use {cls.table_name} from `shark.eng.features`")
 
 
 #: Public-facing API.
