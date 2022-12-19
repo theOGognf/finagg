@@ -3,6 +3,7 @@
 from functools import cache
 
 import pandas as pd
+from sqlalchemy import Column, String, Table
 from sqlalchemy.sql import and_
 
 from .. import sec, utils, yfinance
@@ -20,6 +21,23 @@ daily_features.to_store = ...
 class _FundamentalFeatures:
     """Method for gathering fundamental data on a stock using several sources."""
 
+    #: Name of feature store SQL table.
+    table_name = "fundamental_features"
+
+    @classmethod
+    def _load_table(cls) -> None:
+        """Reflect the feature store SQL table."""
+        fundamental_features = Table(
+            "fundamental_features",
+            sql.metadata,
+            Column("ticker", String, primary_key=True, doc="Unique company ticker."),
+            Column(
+                "date", String, primary_key=True, doc="Filing and stock price dates."
+            ),
+            autoload_with=sql.engine,
+        )
+        sql.fundamental_features = fundamental_features
+
     @classmethod
     def _normalize(
         cls, quarterly_df: pd.DataFrame, daily_df: pd.DataFrame
@@ -31,7 +49,7 @@ class _FundamentalFeatures:
         df = df.fillna(method="ffill").dropna()
         df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
         df = utils.quantile_clip(df)
-        return df
+        return df.dropna()
 
     @classmethod
     @cache
@@ -129,6 +147,7 @@ class _FundamentalFeatures:
             if end:
                 stmt = and_(stmt, table.c.date <= end)
             df = pd.DataFrame(conn.execute(table.select(stmt)))
+        df = df.set_index("date")
         return df
 
     @classmethod
@@ -148,9 +167,16 @@ class _FundamentalFeatures:
             Number of rows written to the SQL table.
 
         """
+        reflect_table = not sql.inspector.has_table(cls.table_name)
         df = df.reset_index(names="date")
         df["ticker"] = ticker
-        rows = df.to_sql("fundamental_features", sql.engine, if_exists="append")
+        size = len(df.index)
+        df = df.drop_duplicates(["ticker", "date"])
+        if not reflect_table and size != len(df.index):
+            raise RuntimeError(f"Primary key duplication error for `{ticker}`")
+        rows = df.to_sql(cls.table_name, sql.engine, if_exists="append", index=False)
+        if reflect_table:
+            cls._load_table()
         return rows
 
 
