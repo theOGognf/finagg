@@ -1,9 +1,10 @@
 """Features from FRED sources."""
 
 from functools import cache
+from typing import Sequence
 
 import pandas as pd
-from sqlalchemy import Column, String, Table
+from sqlalchemy import Column, Float, String, Table
 from sqlalchemy.sql import and_
 
 from .. import utils
@@ -32,6 +33,32 @@ class _EconomicFeatures:
 
     #: Name of feature store SQL table.
     table_name = "economic_features"
+
+    @classmethod
+    def _create_table(cls, column_names: Sequence[str]) -> None:
+        """Create the feature store SQL table."""
+        primary_keys = {"date"}
+        table_columns = [
+            Column(
+                "date",
+                String,
+                primary_key=True,
+                doc="Economic data series release date.",
+            ),
+        ]
+
+        for name in column_names:
+            if name not in primary_keys:
+                column = Column(name, Float)
+                table_columns.append(column)
+
+        economic_features = Table(
+            cls.table_name,
+            store.metadata,
+            *table_columns,
+        )
+        economic_features.create(bind=store.engine)
+        store.economic_features = economic_features
 
     @classmethod
     def _load_table(cls) -> None:
@@ -189,16 +216,12 @@ class _EconomicFeatures:
             Number of rows written to the SQL table.
 
         """
-        reflect_table = not store.inspector.has_table(cls.table_name)
         df = df.reset_index(names="date")
-        size = len(df.index)
-        df = df.drop_duplicates(["date"])
-        if not reflect_table and size != len(df.index):
-            raise RuntimeError(f"Primary key duplication error")
-        rows = df.to_sql(cls.table_name, store.engine, if_exists="append", index=False)
-        if reflect_table:
-            cls._load_table()
-        return rows
+        if not store.inspector.has_table(cls.table_name):
+            cls._create_table(df.columns)
+        with store.engine.connect() as conn:
+            conn.execute(store.economic_features.insert(), df.to_dict(orient="records"))
+        return len(df.index)
 
 
 #: Public-facing API.
