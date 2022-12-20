@@ -35,6 +35,7 @@ class _EconomicFeatures:
 
     @classmethod
     def _load_table(cls) -> None:
+        """Reflect the feature store SQL table."""
         economic_features = Table(
             "economic_features",
             store.metadata,
@@ -144,6 +145,23 @@ class _EconomicFeatures:
     def from_store(
         cls, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
+        """Get features from the feature-dedicated local SQL tables.
+
+        This is the preferred method for accessing features for
+        offline analysis (assuming data in the local SQL tables
+        is current).
+
+        Args:
+            start: The start date of the observation period.
+                Defaults to the first recorded date.
+            end: The end date of the observation period.
+                Defaults to the last recorded date.
+
+        Returns:
+            Economic data series dataframe with each series
+            as a separate column. Sorted by date.
+
+        """
         table = store.metadata.tables[cls.table_name]
         with store.engine.connect() as conn:
             stmt = table.c.date >= "0000-00-00"
@@ -157,6 +175,20 @@ class _EconomicFeatures:
 
     @classmethod
     def to_store(cls, df: pd.DataFrame, /) -> None | int:
+        """Write the dataframe to the feature store for `ticker`.
+
+        Does the necessary handling to transform columns to
+        prepare the dataframe to be written to a dynamically-defined
+        local SQL table.
+
+        Args:
+            df: Dataframe to store completely as rows in a local SQL
+                table.
+
+        Returns:
+            Number of rows written to the SQL table.
+
+        """
         reflect_table = not store.inspector.has_table(cls.table_name)
         df = df.reset_index(names="date")
         size = len(df.index)

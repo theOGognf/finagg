@@ -112,7 +112,7 @@ class _FundamentalFeatures:
     def from_store(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
-        """Get features from the feature store dedicated local SQL tables.
+        """Get features from the feature-dedicated local SQL tables.
 
         This is the preferred method for accessing features for
         offline analysis (assuming data in the local SQL tables

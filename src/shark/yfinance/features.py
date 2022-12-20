@@ -18,6 +18,7 @@ class _DailyFeatures:
 
     @classmethod
     def _load_table(cls) -> None:
+        """Reflect the feature store SQL table."""
         daily_features = Table(
             cls.table_name,
             store.metadata,
@@ -96,6 +97,23 @@ class _DailyFeatures:
     def from_store(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
+        """Get features from the feature-dedicated local SQL tables.
+
+        This is the preferred method for accessing features for
+        offline analysis (assuming data in the local SQL tables
+        is current).
+
+        Args:
+            ticker: Company ticker.
+            start: The start date of the observation period.
+                Defaults to the first recorded date.
+            end: The end date of the observation period.
+                Defaults to the last recorded date.
+
+        Returns:
+            Daily stock price dataframe. Sorted by date.
+
+        """
         table = store.metadata.tables[cls.table_name]
         with store.engine.connect() as conn:
             stmt = table.c.ticker == ticker
@@ -109,6 +127,21 @@ class _DailyFeatures:
 
     @classmethod
     def to_store(cls, ticker: str, df: pd.DataFrame, /) -> None | int:
+        """Write the dataframe to the feature store for `ticker`.
+
+        Does the necessary handling to transform columns to
+        prepare the dataframe to be written to a dynamically-defined
+        local SQL table.
+
+        Args:
+            ticker: Company ticker.
+            df: Dataframe to store completely as rows in a local SQL
+                table.
+
+        Returns:
+            Number of rows written to the SQL table.
+
+        """
         reflect_table = not store.inspector.has_table(cls.table_name)
         df = df.reset_index(names="date")
         df["ticker"] = ticker
