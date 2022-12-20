@@ -1,9 +1,10 @@
 """Features from yfinance sources."""
 
 from functools import cache
+from typing import Sequence
 
 import pandas as pd
-from sqlalchemy import Column, String, Table
+from sqlalchemy import Column, Float, String, Table
 from sqlalchemy.sql import and_
 
 from .. import utils
@@ -17,15 +18,25 @@ class _DailyFeatures:
     table_name = "daily_features"
 
     @classmethod
-    def _load_table(cls) -> None:
-        """Reflect the feature store SQL table."""
+    def _create_table(cls, column_names: Sequence[str]) -> None:
+        """Create the feature store SQL table."""
+        primary_keys = {"ticker", "date"}
+        table_columns = [
+            Column("ticker", String, primary_key=True, doc="Unique company ticker."),
+            Column("date", String, primary_key=True, doc="Stock price date."),
+        ]
+
+        for name in column_names:
+            if name not in primary_keys:
+                column = Column(name, Float)
+                table_columns.append(column)
+
         daily_features = Table(
             cls.table_name,
             store.metadata,
-            Column("ticker", String, primary_key=True, doc="Unique company ticker."),
-            Column("date", String, primary_key=True, doc="Stock price date."),
-            autoload_with=store.engine,
+            *table_columns,
         )
+        daily_features.create(bind=store.engine)
         store.daily_features = daily_features
 
     @classmethod
@@ -142,17 +153,13 @@ class _DailyFeatures:
             Number of rows written to the SQL table.
 
         """
-        reflect_table = not store.inspector.has_table(cls.table_name)
         df = df.reset_index(names="date")
         df["ticker"] = ticker
-        size = len(df.index)
-        df = df.drop_duplicates(["ticker", "date"])
-        if not reflect_table and size != len(df.index):
-            raise RuntimeError(f"Primary key duplication error for `{ticker}`")
-        rows = df.to_sql(cls.table_name, store.engine, if_exists="append", index=False)
-        if reflect_table:
-            cls._load_table()
-        return rows
+        if not store.inspector.has_table(cls.table_name):
+            cls._create_table(df.columns)
+        with store.engine.connect() as conn:
+            conn.execute(store.daily_features.insert(), df.to_dict(orient="records"))
+        return len(df.index)
 
 
 #: Public-facing API.
