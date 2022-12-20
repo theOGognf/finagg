@@ -9,7 +9,7 @@ from sqlalchemy.sql import and_
 from .. import sec, utils, yfinance
 from ..sec.features import quarterly_features
 from ..yfinance.features import daily_features
-from . import sql
+from . import store
 
 
 # Add feature store methods to other feature classes.
@@ -17,12 +17,12 @@ def _quarterly_features_load_table(cls: type[quarterly_features]) -> None:
     """Reflect the feature store SQL table."""
     quarterly_features = Table(
         cls.table_name,
-        sql.metadata,
+        store.metadata,
         Column("ticker", String, primary_key=True, doc="Unique company ticker."),
         Column("filed", String, primary_key=True, doc="Filing date."),
-        autoload_with=sql.engine,
+        autoload_with=store.engine,
     )
-    sql.quarterly_features = quarterly_features
+    store.quarterly_features = quarterly_features
 
 
 def _quarterly_features_from_store(
@@ -33,13 +33,32 @@ def _quarterly_features_from_store(
     start: None | str = None,
     end: None | str = None,
 ) -> pd.DataFrame:
-    ...
+    table = store.metadata.tables[cls.table_name]
+    with store.engine.connect() as conn:
+        stmt = table.c.ticker == ticker
+        if start:
+            stmt = and_(stmt, table.c.filed >= start)
+        if end:
+            stmt = and_(stmt, table.c.filed <= end)
+        df = pd.DataFrame(conn.execute(table.select(stmt)))
+    df = df.set_index("filed").drop(columns="ticker")
+    return df
 
 
 def _quarterly_features_to_store(
     cls: type[quarterly_features], ticker: str, df: pd.DataFrame, /
 ) -> None | int:
-    ...
+    reflect_table = not store.inspector.has_table(cls.table_name)
+    df = df.reset_index(names="filed")
+    df["ticker"] = ticker
+    size = len(df.index)
+    df = df.drop_duplicates(["ticker", "filed"])
+    if not reflect_table and size != len(df.index):
+        raise RuntimeError(f"Primary key duplication error for `{ticker}`")
+    rows = df.to_sql(cls.table_name, store.engine, if_exists="append", index=False)
+    if reflect_table:
+        cls._load_table()
+    return rows
 
 
 setattr(quarterly_features, "_load_table", classmethod(_quarterly_features_load_table))
@@ -51,12 +70,12 @@ def _daily_features_load_table(cls: type[daily_features]) -> None:
     """Reflect the feature store SQL table."""
     daily_features = Table(
         cls.table_name,
-        sql.metadata,
+        store.metadata,
         Column("ticker", String, primary_key=True, doc="Unique company ticker."),
         Column("date", String, primary_key=True, doc="Stock price date."),
-        autoload_with=sql.engine,
+        autoload_with=store.engine,
     )
-    sql.daily_features = daily_features
+    store.daily_features = daily_features
 
 
 def _daily_features_from_store(
@@ -67,13 +86,32 @@ def _daily_features_from_store(
     start: None | str = None,
     end: None | str = None,
 ) -> pd.DataFrame:
-    ...
+    table = store.metadata.tables[cls.table_name]
+    with store.engine.connect() as conn:
+        stmt = table.c.ticker == ticker
+        if start:
+            stmt = and_(stmt, table.c.date >= start)
+        if end:
+            stmt = and_(stmt, table.c.date <= end)
+        df = pd.DataFrame(conn.execute(table.select(stmt)))
+    df = df.set_index("date").drop(columns="ticker")
+    return df
 
 
 def _daily_features_to_store(
     cls: type[daily_features], ticker: str, df: pd.DataFrame, /
 ) -> None | int:
-    ...
+    reflect_table = not store.inspector.has_table(cls.table_name)
+    df = df.reset_index(names="date")
+    df["ticker"] = ticker
+    size = len(df.index)
+    df = df.drop_duplicates(["ticker", "date"])
+    if not reflect_table and size != len(df.index):
+        raise RuntimeError(f"Primary key duplication error for `{ticker}`")
+    rows = df.to_sql(cls.table_name, store.engine, if_exists="append", index=False)
+    if reflect_table:
+        cls._load_table()
+    return rows
 
 
 setattr(daily_features, "_load_table", classmethod(_daily_features_load_table))
@@ -92,14 +130,14 @@ class _FundamentalFeatures:
         """Reflect the feature store SQL table."""
         fundamental_features = Table(
             cls.table_name,
-            sql.metadata,
+            store.metadata,
             Column("ticker", String, primary_key=True, doc="Unique company ticker."),
             Column(
                 "date", String, primary_key=True, doc="Filing and stock price dates."
             ),
-            autoload_with=sql.engine,
+            autoload_with=store.engine,
         )
-        sql.fundamental_features = fundamental_features
+        store.fundamental_features = fundamental_features
 
     @classmethod
     def _normalize(
@@ -202,8 +240,8 @@ class _FundamentalFeatures:
             Sorted by date.
 
         """
-        table = sql.metadata.tables["fundamental_features"]
-        with sql.engine.connect() as conn:
+        table = store.metadata.tables["fundamental_features"]
+        with store.engine.connect() as conn:
             stmt = table.c.ticker == ticker
             if start:
                 stmt = and_(stmt, table.c.date >= start)
@@ -230,14 +268,14 @@ class _FundamentalFeatures:
             Number of rows written to the SQL table.
 
         """
-        reflect_table = not sql.inspector.has_table(cls.table_name)
+        reflect_table = not store.inspector.has_table(cls.table_name)
         df = df.reset_index(names="date")
         df["ticker"] = ticker
         size = len(df.index)
         df = df.drop_duplicates(["ticker", "date"])
         if not reflect_table and size != len(df.index):
             raise RuntimeError(f"Primary key duplication error for `{ticker}`")
-        rows = df.to_sql(cls.table_name, sql.engine, if_exists="append", index=False)
+        rows = df.to_sql(cls.table_name, store.engine, if_exists="append", index=False)
         if reflect_table:
             cls._load_table()
         return rows
