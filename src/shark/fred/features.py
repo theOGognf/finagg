@@ -3,10 +3,11 @@
 from functools import cache
 
 import pandas as pd
+from sqlalchemy import Column, String, Table
 from sqlalchemy.sql import and_
 
 from .. import utils
-from . import api, sql
+from . import api, sql, store
 
 
 class _EconomicFeatures:
@@ -28,6 +29,24 @@ class _EconomicFeatures:
         "UNRATE",  # Unemployment rate
         "WALCL",  # US assets, total assets (less eliminations from consolidation)
     )
+
+    #: Name of feature store SQL table.
+    table_name = "economic_features"
+
+    @classmethod
+    def _load_table(cls) -> None:
+        economic_features = Table(
+            "economic_features",
+            store.metadata,
+            Column(
+                "date",
+                String,
+                primary_key=True,
+                doc="Economic data series release date.",
+            ),
+            autoload_with=store.engine,
+        )
+        store.economic_features = economic_features
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
@@ -120,6 +139,34 @@ class _EconomicFeatures:
                 stmt = and_(stmt, sql.series.c.date <= end)
             df = pd.DataFrame(conn.execute(sql.series.select(stmt)))
         return cls._normalize(df)
+
+    @classmethod
+    def from_store(
+        cls, /, *, start: None | str = None, end: None | str = None
+    ) -> pd.DataFrame:
+        table = store.metadata.tables[cls.table_name]
+        with store.engine.connect() as conn:
+            stmt = table.c.date >= "0000-00-00"
+            if start:
+                stmt = and_(stmt, table.c.date >= start)
+            if end:
+                stmt = and_(stmt, table.c.date <= end)
+            df = pd.DataFrame(conn.execute(table.select(stmt)))
+        df = df.set_index("date")
+        return df
+
+    @classmethod
+    def to_store(cls, df: pd.DataFrame, /) -> None | int:
+        reflect_table = not store.inspector.has_table(cls.table_name)
+        df = df.reset_index(names="date")
+        size = len(df.index)
+        df = df.drop_duplicates(["date"])
+        if not reflect_table and size != len(df.index):
+            raise RuntimeError(f"Primary key duplication error")
+        rows = df.to_sql(cls.table_name, store.engine, if_exists="append", index=False)
+        if reflect_table:
+            cls._load_table()
+        return rows
 
 
 #: Public-facing API.

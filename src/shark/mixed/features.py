@@ -1,4 +1,4 @@
-"""Features engineered from several sources."""
+"""Features from several sources."""
 
 from functools import cache
 
@@ -7,116 +7,7 @@ from sqlalchemy import Column, String, Table
 from sqlalchemy.sql import and_
 
 from .. import sec, utils, yfinance
-from ..sec.features import quarterly_features
-from ..yfinance.features import daily_features
 from . import store
-
-
-# Add feature store methods to other feature classes.
-def _quarterly_features_load_table(cls: type[quarterly_features]) -> None:
-    """Reflect the feature store SQL table."""
-    quarterly_features = Table(
-        cls.table_name,
-        store.metadata,
-        Column("ticker", String, primary_key=True, doc="Unique company ticker."),
-        Column("filed", String, primary_key=True, doc="Filing date."),
-        autoload_with=store.engine,
-    )
-    store.quarterly_features = quarterly_features
-
-
-def _quarterly_features_from_store(
-    cls: type[quarterly_features],
-    ticker: str,
-    /,
-    *,
-    start: None | str = None,
-    end: None | str = None,
-) -> pd.DataFrame:
-    table = store.metadata.tables[cls.table_name]
-    with store.engine.connect() as conn:
-        stmt = table.c.ticker == ticker
-        if start:
-            stmt = and_(stmt, table.c.filed >= start)
-        if end:
-            stmt = and_(stmt, table.c.filed <= end)
-        df = pd.DataFrame(conn.execute(table.select(stmt)))
-    df = df.set_index("filed").drop(columns="ticker")
-    return df
-
-
-def _quarterly_features_to_store(
-    cls: type[quarterly_features], ticker: str, df: pd.DataFrame, /
-) -> None | int:
-    reflect_table = not store.inspector.has_table(cls.table_name)
-    df = df.reset_index(names="filed")
-    df["ticker"] = ticker
-    size = len(df.index)
-    df = df.drop_duplicates(["ticker", "filed"])
-    if not reflect_table and size != len(df.index):
-        raise RuntimeError(f"Primary key duplication error for `{ticker}`")
-    rows = df.to_sql(cls.table_name, store.engine, if_exists="append", index=False)
-    if reflect_table:
-        cls._load_table()
-    return rows
-
-
-setattr(quarterly_features, "_load_table", classmethod(_quarterly_features_load_table))
-setattr(quarterly_features, "from_store", classmethod(_quarterly_features_from_store))
-setattr(quarterly_features, "to_store", classmethod(_quarterly_features_to_store))
-
-
-def _daily_features_load_table(cls: type[daily_features]) -> None:
-    """Reflect the feature store SQL table."""
-    daily_features = Table(
-        cls.table_name,
-        store.metadata,
-        Column("ticker", String, primary_key=True, doc="Unique company ticker."),
-        Column("date", String, primary_key=True, doc="Stock price date."),
-        autoload_with=store.engine,
-    )
-    store.daily_features = daily_features
-
-
-def _daily_features_from_store(
-    cls: type[daily_features],
-    ticker: str,
-    /,
-    *,
-    start: None | str = None,
-    end: None | str = None,
-) -> pd.DataFrame:
-    table = store.metadata.tables[cls.table_name]
-    with store.engine.connect() as conn:
-        stmt = table.c.ticker == ticker
-        if start:
-            stmt = and_(stmt, table.c.date >= start)
-        if end:
-            stmt = and_(stmt, table.c.date <= end)
-        df = pd.DataFrame(conn.execute(table.select(stmt)))
-    df = df.set_index("date").drop(columns="ticker")
-    return df
-
-
-def _daily_features_to_store(
-    cls: type[daily_features], ticker: str, df: pd.DataFrame, /
-) -> None | int:
-    reflect_table = not store.inspector.has_table(cls.table_name)
-    df = df.reset_index(names="date")
-    df["ticker"] = ticker
-    size = len(df.index)
-    df = df.drop_duplicates(["ticker", "date"])
-    if not reflect_table and size != len(df.index):
-        raise RuntimeError(f"Primary key duplication error for `{ticker}`")
-    rows = df.to_sql(cls.table_name, store.engine, if_exists="append", index=False)
-    if reflect_table:
-        cls._load_table()
-    return rows
-
-
-setattr(daily_features, "_load_table", classmethod(_daily_features_load_table))
-setattr(daily_features, "from_store", classmethod(_daily_features_from_store))
-setattr(daily_features, "to_store", classmethod(_daily_features_to_store))
 
 
 class _FundamentalFeatures:
@@ -143,7 +34,7 @@ class _FundamentalFeatures:
     def _normalize(
         cls, quarterly_df: pd.DataFrame, daily_df: pd.DataFrame
     ) -> pd.DataFrame:
-        """Normalize the engineered features columns."""
+        """Normalize the feature columns."""
         df = pd.merge(
             quarterly_df, daily_df, how="outer", left_index=True, right_index=True
         )
@@ -157,7 +48,7 @@ class _FundamentalFeatures:
     def from_api(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
-        """Get engineered features directly from APIs.
+        """Get features directly from APIs.
 
         Not all data series are published at the same rate or
         time. Missing rows for less-frequent publications
@@ -189,7 +80,7 @@ class _FundamentalFeatures:
     def from_sql(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
-        """Get engineered features directly from local SQL tables.
+        """Get features directly from local SQL tables.
 
         Not all data series are published at the same rate or
         time. Missing rows for less-frequent publications
@@ -221,8 +112,7 @@ class _FundamentalFeatures:
     def from_store(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
-        """Get engineered features from the feature store
-        dedicated local SQL tables.
+        """Get features from the feature store dedicated local SQL tables.
 
         This is the preferred method for accessing features for
         offline analysis (assuming data in the local SQL tables

@@ -29,7 +29,7 @@ inspector: Inspector = inspect(engine)  # type: ignore
 
 #: Features have minimal constraints to allow quick experimentation.
 if inspector.has_table("economic_features"):
-    fundamental_features = Table(
+    economic_features = Table(
         "economic_features",
         metadata,
         Column(

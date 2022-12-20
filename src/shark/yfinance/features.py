@@ -3,10 +3,11 @@
 from functools import cache
 
 import pandas as pd
+from sqlalchemy import Column, String, Table
 from sqlalchemy.sql import and_
 
 from .. import utils
-from . import api, sql
+from . import api, sql, store
 
 
 class _DailyFeatures:
@@ -17,8 +18,14 @@ class _DailyFeatures:
 
     @classmethod
     def _load_table(cls) -> None:
-        """Placeholder for the feature engineering interface."""
-        raise NotImplementedError(f"Use {cls.table_name} from `shark.eng.features`")
+        daily_features = Table(
+            cls.table_name,
+            store.metadata,
+            Column("ticker", String, primary_key=True, doc="Unique company ticker."),
+            Column("date", String, primary_key=True, doc="Stock price date."),
+            autoload_with=store.engine,
+        )
+        store.daily_features = daily_features
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
@@ -89,13 +96,30 @@ class _DailyFeatures:
     def from_store(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
-        """Placeholder for the feature engineering interface."""
-        raise NotImplementedError(f"Use {cls.table_name} from `shark.eng.features`")
+        table = store.metadata.tables[cls.table_name]
+        with store.engine.connect() as conn:
+            stmt = table.c.ticker == ticker
+            if start:
+                stmt = and_(stmt, table.c.date >= start)
+            if end:
+                stmt = and_(stmt, table.c.date <= end)
+            df = pd.DataFrame(conn.execute(table.select(stmt)))
+        df = df.set_index("date").drop(columns="ticker")
+        return df
 
     @classmethod
     def to_store(cls, ticker: str, df: pd.DataFrame, /) -> None | int:
-        """Placeholder for the feature engineering interface."""
-        raise NotImplementedError(f"Use {cls.table_name} from `shark.eng.features`")
+        reflect_table = not store.inspector.has_table(cls.table_name)
+        df = df.reset_index(names="date")
+        df["ticker"] = ticker
+        size = len(df.index)
+        df = df.drop_duplicates(["ticker", "date"])
+        if not reflect_table and size != len(df.index):
+            raise RuntimeError(f"Primary key duplication error for `{ticker}`")
+        rows = df.to_sql(cls.table_name, store.engine, if_exists="append", index=False)
+        if reflect_table:
+            cls._load_table()
+        return rows
 
 
 #: Public-facing API.
