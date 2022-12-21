@@ -3,8 +3,8 @@
 import os
 import pathlib
 
-from sqlalchemy import Column, Float, MetaData, String, Table, create_engine
-from sqlalchemy.engine import Engine
+from sqlalchemy import Column, Float, MetaData, String, Table, create_engine, inspect
+from sqlalchemy.engine import Engine, Inspector
 
 _SQL_DB_PATH = (
     pathlib.Path(__file__).resolve().parent.parent.parent.parent
@@ -18,7 +18,9 @@ _SQL_DB_URL = os.environ.get(
 )
 
 
-def define_db(url: str = _SQL_DB_URL) -> tuple[Engine, MetaData, Table, Table, Table]:
+def define_db(
+    url: str = _SQL_DB_URL,
+) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 
     Used for the main SQL tables and for creating test
@@ -33,6 +35,7 @@ def define_db(url: str = _SQL_DB_URL) -> tuple[Engine, MetaData, Table, Table, T
 
     """
     engine = create_engine(url)
+    inspector: Inspector = inspect(engine)
     metadata = MetaData()
     djia = Table(
         "djia",
@@ -70,7 +73,7 @@ def define_db(url: str = _SQL_DB_URL) -> tuple[Engine, MetaData, Table, Table, T
         Column("cik", String, doc="The company's unique SEC CIK."),
         Column("founded", String, doc="When the company was founded."),
     )
-    return engine, metadata, djia, nasdaq100, sp500
+    return (engine, metadata), inspector, (djia, nasdaq100, sp500)
 
 
-engine, metadata, djia, nasdaq100, sp500 = define_db()
+(engine, metadata), inspector, (djia, nasdaq100, sp500) = define_db()

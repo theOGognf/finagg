@@ -1,10 +1,10 @@
 """Features from SEC sources."""
 
 from functools import cache
-from typing import Sequence
 
 import pandas as pd
-from sqlalchemy import Column, Float, String, Table
+from sqlalchemy import Column, Float, MetaData, String, Table, inspect
+from sqlalchemy.engine import Engine
 from sqlalchemy.sql import and_, distinct, select
 
 from .. import utils
@@ -64,7 +64,14 @@ class _QuarterlyFeatures:
     table_name = "quarterly_features"
 
     @classmethod
-    def _create_table(cls, column_names: Sequence[str]) -> None:
+    def _create_table(
+        cls,
+        column_names: pd.Index,
+        /,
+        *,
+        engine: Engine = store.engine,
+        metadata: MetaData = store.metadata,
+    ) -> None:
         """Create the feature store SQL table."""
         primary_keys = {"ticker", "filed"}
         table_columns = [
@@ -79,14 +86,14 @@ class _QuarterlyFeatures:
 
         quarterly_features = Table(
             cls.table_name,
-            store.metadata,
+            metadata,
             *table_columns,
         )
-        quarterly_features.create(bind=store.engine)
+        quarterly_features.create(bind=engine)
         store.quarterly_features = quarterly_features
 
     @classmethod
-    def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
+    def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize quarterly features columns."""
         df = (
             df.pivot(index="filed", values="value", columns="tag")
@@ -108,6 +115,7 @@ class _QuarterlyFeatures:
         df = utils.quantile_clip(df)
         pct_change_columns = [concept["tag"] for concept in cls.concepts]
         df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)
+        df.columns = df.columns.rename(None)
         return df.dropna()
 
     @classmethod
@@ -187,7 +195,14 @@ class _QuarterlyFeatures:
 
     @classmethod
     def from_store(
-        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: Engine = store.engine,
+        metadata: MetaData = store.metadata,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -201,14 +216,16 @@ class _QuarterlyFeatures:
                 Defaults to the first recorded date.
             end: The end date of the observation period.
                 Defaults to the last recorded date.
+            engine: Feature store database engine.
+            metadata: Metadata associated with the tables.
 
         Returns:
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
 
         """
-        table = store.metadata.tables[cls.table_name]
-        with store.engine.connect() as conn:
+        table: Table = metadata.tables[cls.table_name]
+        with engine.connect() as conn:
             stmt = table.c.ticker == ticker
             if start:
                 stmt = and_(stmt, table.c.filed >= start)
@@ -219,7 +236,15 @@ class _QuarterlyFeatures:
         return df
 
     @classmethod
-    def to_store(cls, ticker: str, df: pd.DataFrame, /) -> None | int:
+    def to_store(
+        cls,
+        ticker: str,
+        df: pd.DataFrame,
+        /,
+        *,
+        engine: Engine = store.engine,
+        metadata: MetaData = store.metadata,
+    ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
         Does the necessary handling to transform columns to
@@ -230,6 +255,8 @@ class _QuarterlyFeatures:
             ticker: Company ticker.
             df: Dataframe to store completely as rows in a local SQL
                 table.
+            engine: Feature store database engine.
+            metadata: Metadata associated with the tables.
 
         Returns:
             Number of rows written to the SQL table.
@@ -237,12 +264,12 @@ class _QuarterlyFeatures:
         """
         df = df.reset_index(names="filed")
         df["ticker"] = ticker
-        if not store.inspector.has_table(cls.table_name):
-            cls._create_table(df.columns)
-        with store.engine.connect() as conn:
-            conn.execute(
-                store.quarterly_features.insert(), df.to_dict(orient="records")
-            )
+        inspector = store.inspector if engine is store.engine else inspect(engine)
+        if not inspector.has_table(cls.table_name):
+            cls._create_table(df.columns, engine=engine, metadata=metadata)
+        table: Table = metadata.tables[cls.table_name]
+        with engine.connect() as conn:
+            conn.execute(table.insert(), df.to_dict(orient="records"))
         return len(df.index)
 
 

@@ -61,6 +61,7 @@ class _DailyFeatures:
         df = utils.quantile_clip(df)
         pct_change_columns = ["open", "high", "low", "close", "volume"]
         df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)
+        df.columns = df.columns.rename(None)
         return df.dropna()
 
     @classmethod

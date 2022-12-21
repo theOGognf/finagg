@@ -1,10 +1,10 @@
 """Features from several sources."""
 
 from functools import cache
-from typing import Sequence
 
 import pandas as pd
-from sqlalchemy import Column, Float, String, Table
+from sqlalchemy import Column, Float, MetaData, String, Table, inspect
+from sqlalchemy.engine import Engine
 from sqlalchemy.sql import and_
 
 from .. import sec, utils, yfinance
@@ -18,7 +18,14 @@ class _FundamentalFeatures:
     table_name = "fundamental_features"
 
     @classmethod
-    def _create_table(cls, column_names: Sequence[str]) -> None:
+    def _create_table(
+        cls,
+        column_names: pd.Index,
+        /,
+        *,
+        engine: Engine = store.engine,
+        metadata: MetaData = store.metadata,
+    ) -> None:
         """Create the feature store SQL table."""
         primary_keys = {"ticker", "date"}
         table_columns = [
@@ -35,15 +42,15 @@ class _FundamentalFeatures:
 
         fundamental_features = Table(
             cls.table_name,
-            store.metadata,
+            metadata,
             *table_columns,
         )
-        fundamental_features.create(bind=store.engine)
+        fundamental_features.create(bind=engine)
         store.fundamental_features = fundamental_features
 
     @classmethod
     def _normalize(
-        cls, quarterly_df: pd.DataFrame, daily_df: pd.DataFrame
+        cls, quarterly_df: pd.DataFrame, daily_df: pd.DataFrame, /
     ) -> pd.DataFrame:
         """Normalize the feature columns."""
         df = pd.merge(
@@ -52,6 +59,7 @@ class _FundamentalFeatures:
         df = df.fillna(method="ffill").dropna()
         df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
         df = utils.quantile_clip(df)
+        df.index.names = ["date"]
         return df.dropna()
 
     @classmethod
@@ -121,7 +129,14 @@ class _FundamentalFeatures:
     @classmethod
     @cache
     def from_store(
-        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: Engine = store.engine,
+        metadata: MetaData = store.metadata,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -135,14 +150,16 @@ class _FundamentalFeatures:
                 Defaults to the first recorded date.
             end: The end date of the observation period.
                 Defaults to the last recorded date.
+            engine: Feature store database engine.
+            metadata: Metadata associated with the tables.
 
         Returns:
             Combined quarterly and daily feature dataframe.
             Sorted by date.
 
         """
-        table = store.metadata.tables["fundamental_features"]
-        with store.engine.connect() as conn:
+        table: Table = metadata.tables[cls.table_name]
+        with engine.connect() as conn:
             stmt = table.c.ticker == ticker
             if start:
                 stmt = and_(stmt, table.c.date >= start)
@@ -153,7 +170,15 @@ class _FundamentalFeatures:
         return df
 
     @classmethod
-    def to_store(cls, ticker: str, df: pd.DataFrame, /) -> None | int:
+    def to_store(
+        cls,
+        ticker: str,
+        df: pd.DataFrame,
+        /,
+        *,
+        engine: Engine = store.engine,
+        metadata: MetaData = store.metadata,
+    ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
         Does the necessary handling to transform columns to
@@ -164,6 +189,8 @@ class _FundamentalFeatures:
             ticker: Company ticker.
             df: Dataframe to store completely as rows in a local SQL
                 table.
+            engine: Feature store database engine.
+            metadata: Metadata associated with the tables.
 
         Returns:
             Number of rows written to the SQL table.
@@ -171,12 +198,12 @@ class _FundamentalFeatures:
         """
         df = df.reset_index(names="date")
         df["ticker"] = ticker
-        if not store.inspector.has_table(cls.table_name):
-            cls._create_table(df.columns)
-        with store.engine.connect() as conn:
-            conn.execute(
-                store.fundamental_features.insert(), df.to_dict(orient="records")
-            )
+        inspector = store.inspector if engine is store.engine else inspect(engine)
+        if not inspector.has_table(cls.table_name):
+            cls._create_table(df.columns, engine=engine, metadata=metadata)
+        table: Table = metadata.tables[cls.table_name]
+        with engine.connect() as conn:
+            conn.execute(table.insert(), df.to_dict(orient="records"))
         return len(df.index)
 
 
