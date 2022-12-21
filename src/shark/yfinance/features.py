@@ -3,7 +3,7 @@
 from functools import cache
 
 import pandas as pd
-from sqlalchemy import Column, Float, String, Table, inspect
+from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import and_
 
@@ -19,7 +19,12 @@ class _DailyFeatures:
 
     @classmethod
     def _create_table(
-        cls, column_names: pd.Index, /, *, engine: Engine = store.engine
+        cls,
+        column_names: pd.Index,
+        /,
+        *,
+        engine: Engine = store.engine,
+        metadata: MetaData = store.metadata,
     ) -> None:
         """Create the feature store SQL table."""
         primary_keys = {"ticker", "date"}
@@ -35,14 +40,14 @@ class _DailyFeatures:
 
         daily_features = Table(
             cls.table_name,
-            store.metadata,
+            metadata,
             *table_columns,
         )
         daily_features.create(bind=engine)
         store.daily_features = daily_features
 
     @classmethod
-    def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
+    def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize daily features columns."""
         df = (
             df.drop(columns=["ticker"])
@@ -108,7 +113,14 @@ class _DailyFeatures:
 
     @classmethod
     def from_store(
-        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: Engine = store.engine,
+        metadata: MetaData = store.metadata,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -122,13 +134,15 @@ class _DailyFeatures:
                 Defaults to the first recorded date.
             end: The end date of the observation period.
                 Defaults to the last recorded date.
+            engine: Feature store database engine.
+            metadata: Metadata associated with the tables.
 
         Returns:
             Daily stock price dataframe. Sorted by date.
 
         """
-        table = store.metadata.tables[cls.table_name]
-        with store.engine.connect() as conn:
+        table: Table = metadata.tables[cls.table_name]
+        with engine.connect() as conn:
             stmt = table.c.ticker == ticker
             if start:
                 stmt = and_(stmt, table.c.date >= start)
@@ -146,7 +160,8 @@ class _DailyFeatures:
         /,
         *,
         engine: Engine = store.engine,
-    ) -> None | int:
+        metadata: MetaData = store.metadata,
+    ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
         Does the necessary handling to transform columns to
@@ -158,6 +173,7 @@ class _DailyFeatures:
             df: Dataframe to store completely as rows in a local SQL
                 table.
             engine: Feature store database engine.
+            metadata: Metadata associated with the tables.
 
         Returns:
             Number of rows written to the SQL table.
@@ -167,9 +183,10 @@ class _DailyFeatures:
         df["ticker"] = ticker
         inspector = store.inspector if engine is store.engine else inspect(engine)
         if not inspector.has_table(cls.table_name):
-            cls._create_table(df.columns, engine=engine)
+            cls._create_table(df.columns, engine=engine, metadata=metadata)
+        table: Table = metadata.tables[cls.table_name]
         with engine.connect() as conn:
-            conn.execute(store.daily_features.insert(), df.to_dict(orient="records"))
+            conn.execute(table.insert(), df.to_dict(orient="records"))
         return len(df.index)
 
 

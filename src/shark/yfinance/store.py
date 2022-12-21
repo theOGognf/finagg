@@ -19,22 +19,23 @@ _SQL_DB_URL = os.environ.get(
 
 
 def define_db(
-    path: str = _SQL_DB_URL,
-) -> tuple[Engine, Inspector, MetaData, Table]:
+    url: str = _SQL_DB_URL,
+) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 
     Used for the main SQL tables and for creating test
     databases.
 
     Args:
-        path: SQLAlchemy database URL.
+        url: SQLAlchemy database URL.
+        path: Path to database file.
 
     Returns:
         The engine, engine inspector, metadata, and tables associated with
         the database definition.
 
     """
-    engine = create_engine(path)
+    engine = create_engine(url)
     inspector: Inspector = inspect(engine)
     metadata = MetaData()
     if inspector.has_table("daily_features"):
@@ -47,7 +48,7 @@ def define_db(
         )
     else:
         daily_features = None
-    return engine, inspector, metadata, daily_features
+    return (engine, metadata), inspector, (daily_features,)
 
 
-engine, inspector, metadata, daily_features = define_db()
+(engine, metadata), inspector, (daily_features,) = define_db()

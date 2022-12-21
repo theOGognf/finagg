@@ -18,21 +18,21 @@ _SQL_DB_URL = os.environ.get(
 )
 
 
-def define_db(path: str = _SQL_DB_URL) -> tuple[Engine, MetaData, Table, Table, Table]:
+def define_db(url: str = _SQL_DB_URL) -> tuple[Engine, MetaData, Table, Table, Table]:
     """Utility method for defining the SQLAlchemy elements.
 
     Used for the main SQL tables and for creating test
     databases.
 
     Args:
-        path: SQLAlchemy database URL.
+        url: SQLAlchemy database URL.
 
     Returns:
         The engine, metadata, and tables associated with
         the database definition.
 
     """
-    engine = create_engine(path)
+    engine = create_engine(url)
     metadata = MetaData()
     djia = Table(
         "djia",
