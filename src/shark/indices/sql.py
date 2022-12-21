@@ -9,11 +9,11 @@ from sqlalchemy.engine import Engine, Inspector
 _SQL_DB_PATH = (
     pathlib.Path(__file__).resolve().parent.parent.parent.parent
     / "data"
-    / "tickers.sqlite"
+    / "indices.sqlite"
 )
 
 _SQL_DB_URL = os.environ.get(
-    "TICKERS_SQL_DB_URL",
+    "INDICES_SQL_DB_URL",
     f"sqlite:///{_SQL_DB_PATH}",
 )
 

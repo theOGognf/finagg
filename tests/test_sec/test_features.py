@@ -16,7 +16,7 @@ def resources() -> tuple[Engine, MetaData]:
     )
 
 
-def test_daily_features_to_from_store(resources: tuple[Engine, MetaData]) -> None:
+def test_quarterly_features_to_from_store(resources: tuple[Engine, MetaData]) -> None:
     engine, metadata = resources
     df1 = shark.sec.features.quarterly_features.from_api("AAPL")
     shark.sec.features.quarterly_features.to_store(

@@ -37,7 +37,7 @@ def yield_sqlite_test_resources(
         >>> from sqlalchemy import MetaData
         >>> from sqlalchemy.engine import Engine
         >>>
-        >>> from shark.testing import yield_sqlite_test_engine
+        >>> from shark.testing import yield_sqlite_test_resources
         >>>
         >>> @pytest.fixture
         ... def resources() -> tuple[Engine, MetaData]:

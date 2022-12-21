@@ -4,12 +4,14 @@ from sqlalchemy.engine import Engine
 
 import shark
 from shark.testing import yield_sqlite_test_resources
-from shark.yfinance.sql import _SQL_DB_PATH, define_db
+from shark.yfinance.sql import _SQL_DB_PATH
 
 
 @pytest.fixture
 def resources() -> tuple[Engine, MetaData]:
-    yield from yield_sqlite_test_resources(_SQL_DB_PATH, creator=define_db)
+    yield from yield_sqlite_test_resources(
+        _SQL_DB_PATH, creator=shark.yfinance.sql.define_db
+    )
 
 
 def test_run(resources: tuple[Engine, MetaData]) -> None:
