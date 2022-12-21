@@ -162,7 +162,7 @@ class _ThrottleWatchdog(Generic[_API_KEY, _THROTTLE_WATCHDOG_STATE]):
             self.pop()
             return len(self.responses)
 
-        def update(self, response: CachedResponse | requests.Response) -> float:  # type: ignore
+        def update(self, response: CachedResponse | requests.Response) -> float:
             """Update the throttle state associated with the API key.
 
             Args:

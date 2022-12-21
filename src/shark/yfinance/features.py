@@ -1,10 +1,10 @@
 """Features from yfinance sources."""
 
 from functools import cache
-from typing import Sequence
 
 import pandas as pd
-from sqlalchemy import Column, Float, String, Table
+from sqlalchemy import Column, Float, String, Table, inspect
+from sqlalchemy.engine import Engine
 from sqlalchemy.sql import and_
 
 from .. import utils
@@ -18,7 +18,9 @@ class _DailyFeatures:
     table_name = "daily_features"
 
     @classmethod
-    def _create_table(cls, column_names: Sequence[str]) -> None:
+    def _create_table(
+        cls, column_names: pd.Index, /, *, engine: Engine = store.engine
+    ) -> None:
         """Create the feature store SQL table."""
         primary_keys = {"ticker", "date"}
         table_columns = [
@@ -36,7 +38,7 @@ class _DailyFeatures:
             store.metadata,
             *table_columns,
         )
-        daily_features.create(bind=store.engine)
+        daily_features.create(bind=engine)
         store.daily_features = daily_features
 
     @classmethod
@@ -137,7 +139,14 @@ class _DailyFeatures:
         return df
 
     @classmethod
-    def to_store(cls, ticker: str, df: pd.DataFrame, /) -> None | int:
+    def to_store(
+        cls,
+        ticker: str,
+        df: pd.DataFrame,
+        /,
+        *,
+        engine: Engine = store.engine,
+    ) -> None | int:
         """Write the dataframe to the feature store for `ticker`.
 
         Does the necessary handling to transform columns to
@@ -148,6 +157,7 @@ class _DailyFeatures:
             ticker: Company ticker.
             df: Dataframe to store completely as rows in a local SQL
                 table.
+            engine: Feature store database engine.
 
         Returns:
             Number of rows written to the SQL table.
@@ -155,9 +165,10 @@ class _DailyFeatures:
         """
         df = df.reset_index(names="date")
         df["ticker"] = ticker
-        if not store.inspector.has_table(cls.table_name):
-            cls._create_table(df.columns)
-        with store.engine.connect() as conn:
+        inspector = store.inspector if engine is store.engine else inspect(engine)
+        if not inspector.has_table(cls.table_name):
+            cls._create_table(df.columns, engine=engine)
+        with engine.connect() as conn:
             conn.execute(store.daily_features.insert(), df.to_dict(orient="records"))
         return len(df.index)
 

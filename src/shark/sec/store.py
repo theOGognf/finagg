@@ -25,7 +25,7 @@ metadata = MetaData()
 
 #: SQLAlchemy engine inspector for dynamically reflecting
 #: tables.
-inspector: Inspector = inspect(engine)  # type: ignore
+inspector: Inspector = inspect(engine)
 
 if inspector.has_table("quarterly_features"):
     quarterly_features = Table(

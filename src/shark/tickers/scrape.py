@@ -1,10 +1,16 @@
 """Scrape the tickers API and store into local SQL tables."""
 
+from sqlalchemy.engine import Engine
+
 from . import api, sql
 
 
 def run(
-    *, djia: bool = True, sp500: bool = True, nasdaq100: bool = True
+    *,
+    djia: bool = True,
+    sp500: bool = True,
+    nasdaq100: bool = True,
+    engine: Engine = sql.engine,
 ) -> dict[str, int]:
     """Scrape popular indices ticker data from the tickers API.
 
@@ -15,6 +21,7 @@ def run(
         djia: Whether to scrape DJIA tickers.
         sp500: Whether to scrape S&P 500 tickers.
         nasdaq100: Whether to scrape Nasdaq 100 tickers.
+        engine: Custom database engine to use.
 
     Returns:
         A dictionary mapping indices to number of rows scraped
@@ -27,10 +34,10 @@ def run(
     if not (djia or sp500 or nasdaq100):
         raise ValueError("Need to scrape at least one index.")
 
-    sql.metadata.drop_all(sql.engine)
-    sql.metadata.create_all(sql.engine)
+    sql.metadata.drop_all(engine)
+    sql.metadata.create_all(engine)
 
-    with sql.engine.connect() as conn:
+    with engine.connect() as conn:
         indices_to_inserts = {"djia": 0, "sp500": 0, "nasdaq100": 0}
         if djia:
             df = api.djia.get()

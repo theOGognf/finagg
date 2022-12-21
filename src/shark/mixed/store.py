@@ -25,7 +25,7 @@ metadata = MetaData()
 
 #: SQLAlchemy engine inspector for dynamically reflecting
 #: tables.
-inspector: Inspector = inspect(engine)  # type: ignore
+inspector: Inspector = inspect(engine)
 
 #: Features have minimal constraints to allow quick experimentation.
 if inspector.has_table("fundamental_features"):
