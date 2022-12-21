@@ -61,22 +61,6 @@ class _EconomicFeatures:
         store.economic_features = economic_features
 
     @classmethod
-    def _load_table(cls) -> None:
-        """Reflect the feature store SQL table."""
-        economic_features = Table(
-            "economic_features",
-            store.metadata,
-            Column(
-                "date",
-                String,
-                primary_key=True,
-                doc="Economic data series release date.",
-            ),
-            autoload_with=store.engine,
-        )
-        store.economic_features = economic_features
-
-    @classmethod
     def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
         """Normalize economic features columns."""
         df = (
