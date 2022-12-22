@@ -11,10 +11,10 @@ def run(
     sp500: bool = True,
     nasdaq100: bool = True,
     engine: Engine = sql.engine,
+    drop_tables: bool = False,
 ) -> dict[str, int]:
     """Scrape popular ticker data from the indices API.
 
-    ALL TABLES ARE DROPPED PRIOR TO SCRAPING!
     Scraped data is loaded into local indices SQL tables.
 
     Args:
@@ -22,6 +22,7 @@ def run(
         sp500: Whether to scrape S&P 500 tickers.
         nasdaq100: Whether to scrape Nasdaq 100 tickers.
         engine: Custom database engine to use.
+        drop_tables: Whether to drop tables before scraping.
 
     Returns:
         A dictionary mapping indices to number of rows scraped
@@ -34,7 +35,9 @@ def run(
     if not (djia or sp500 or nasdaq100):
         raise ValueError("Need to scrape at least one index.")
 
-    sql.metadata.drop_all(engine)
+    if drop_tables:
+        sql.metadata.drop_all(engine)
+
     sql.metadata.create_all(engine)
 
     with engine.connect() as conn:

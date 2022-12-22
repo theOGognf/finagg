@@ -14,10 +14,10 @@ def run(
     *,
     concepts: None | Sequence[dict[str, str]] = None,
     engine: Engine = sql.engine,
+    drop_tables: bool = False,
 ) -> dict[str, int]:
     """Scrape company XBRL disclosures from the SEC API.
 
-    ALL TABLES ARE DROPPED PRIOR TO SCRAPING!
     Scraped data is loaded into local SEC SQL tables.
 
     You can specify concepts by specifying tag-taxonomy
@@ -28,6 +28,8 @@ def run(
         tickers: Company tickers to scrape.
         concepts: Taxonomy-tag pairs to scrape. If `None`,
             scrape all concepts.
+        engine: Custom database engine to use.
+        drop_tables: Whether to drop tables before scraping.
 
     Returns:
         A dictionary mapping tickers to number of rows scraped
@@ -51,7 +53,9 @@ def run(
                 updates.update(indices.api.sp500.get_ticker_list())
     unique_tickers |= updates
 
-    sql.metadata.drop_all(engine)
+    if drop_tables:
+        sql.metadata.drop_all(engine)
+
     sql.metadata.create_all(engine)
 
     with engine.connect() as conn:

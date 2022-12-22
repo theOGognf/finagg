@@ -4,10 +4,11 @@ import multiprocessing as mp
 import sys
 
 import pandas as pd
+import tqdm
 from sqlalchemy.exc import IntegrityError
 
 from .. import indices
-from . import api, sql
+from . import api, features, sql, store
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -19,7 +20,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def _get(ticker: str) -> tuple[str, pd.DataFrame]:
+def _api_get(ticker: str) -> tuple[str, pd.DataFrame]:
     """Wrapper for `api.get` to enable dispatching to
     `multiprocessing.Pool.imap`.
 
@@ -31,9 +32,24 @@ def _get(ticker: str) -> tuple[str, pd.DataFrame]:
     return ticker, df
 
 
-def run(processes: int = mp.cpu_count() - 1) -> None:
+def _features_get(ticker: str) -> tuple[str, pd.DataFrame]:
+    """Wrapper for feature getter to enable dispatching to
+    `multiprocessing.Pool.imap`.
+
+    """
+    df = features.daily_features.from_sql(ticker)
+    return ticker, df
+
+
+def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> None:
     """Initialize local SQL tables with yfinance
     stock price data.
+
+    Args:
+        processes: Number of background processes used to
+            scrape data.
+        install_features: Whether to install features from
+            the scraped data.
 
     """
     tickers = indices.api.get_ticker_set()
@@ -45,25 +61,38 @@ def run(processes: int = mp.cpu_count() - 1) -> None:
     skipped_tickers = set()
     with sql.engine.connect() as conn:
         with mp.Pool(processes=processes) as pool:
-            for output in pool.imap_unordered(_get, tickers):
-                ticker, df = output
-                if not len(df.index):
-                    skipped_tickers.add(ticker)
-                    logger.info(
-                        f"Skipping {ticker} due to missing data "
-                        "(some tickers may be delisted)"
-                    )
-                    continue
+            with tqdm.tqdm(
+                total=len(tickers), desc="Installing raw yfinance data"
+            ) as pbar:
+                for output in pool.imap_unordered(_api_get, tickers):
+                    pbar.update()
+                    ticker, df = output
+                    if not len(df.index):
+                        skipped_tickers.add(ticker)
+                        continue
 
-                try:
-                    conn.execute(sql.prices.insert(), df.to_dict(orient="records"))
-                except IntegrityError:
-                    logger.info(
-                        f"Skipping {ticker} due to missing data "
-                        "(some tickers may be delisted)"
-                    )
-                    continue
-                tickers_to_inserts[ticker] = len(df.index)
-                logger.info(f"{tickers_to_inserts[ticker]} rows written for {ticker}")
+                    try:
+                        conn.execute(sql.prices.insert(), df.to_dict(orient="records"))
+                    except IntegrityError:
+                        continue
+                    tickers_to_inserts[ticker] = len(df.index)
     logger.info(f"Total rows written: {sum(tickers_to_inserts.values())}")
     logger.info(f"Number of tickers skipped: {len(skipped_tickers)}/{len(tickers)}")
+
+    if install_features:
+        store.metadata.drop_all(store.engine)
+        store.metadata.create_all(store.engine)
+
+        with store.engine.connect() as conn:
+            with mp.Pool(processes=processes) as pool:
+                with tqdm.tqdm(
+                    total=len(tickers), desc="Installing yfinance features"
+                ) as pbar:
+                    for output in pool.imap_unordered(
+                        _features_get, tickers_to_inserts.keys()
+                    ):
+                        pbar.update()
+                        ticker, df = output
+                        features.daily_features.to_store(ticker, df)
+
+    logger.info("Installation complete!")

@@ -12,6 +12,7 @@ def get(
     end: None | str = None,
     interval: str = "1d",
     period: str = "max",
+    debug: bool = False,
 ) -> pd.DataFrame:
     """Get a ticker's stock price history.
 
@@ -26,6 +27,7 @@ def get(
         interval: Frequency at which stock price history is grapped.
         period: Time period to get in the past. `"max"` is the full
             stock price history.
+        debug: Debug mode passed to yfinance.
 
     Returns:
         A dataframe with normalized column names and values.
@@ -33,7 +35,12 @@ def get(
     """
     stock = yf.Ticker(ticker)
     df: pd.DataFrame = stock.history(
-        period=period, interval=interval, start=start, end=end, auto_adjust=True
+        period=period,
+        interval=interval,
+        start=start,
+        end=end,
+        auto_adjust=True,
+        debug=debug,
     )
     df = df.reset_index()
 

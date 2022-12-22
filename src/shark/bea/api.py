@@ -571,6 +571,9 @@ class _NIPA(_Dataset):
         return pd.concat(results)
 
 
+#: Count of warnings to limit log spam.
+_throttle_warnings = 0
+
 #: Throttling-prevention strategy. Tracks throttling metrics for each API key.
 _throttle_watchdog: _ThrottleWatchdog = _ThrottleWatchdog()
 
@@ -632,6 +635,7 @@ def get(
         BEAAPIException: If a BEA API error occurs.
 
     """
+    global _throttle_warnings
     api_key = api_key or os.environ.get("BEA_API_KEY", None)
     if not api_key:
         raise RuntimeError(
@@ -641,10 +645,12 @@ def get(
         )
     next_valid_request_dt = _throttle_watchdog[api_key].next_valid_request_dt
     if next_valid_request_dt > 0:
-        logger.warning(
-            f"API key ending in `{api_key[-4:]}` may be throttled. "
-            f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
-        )
+        if not _throttle_warnings:
+            logger.warning(
+                f"API key ending in `{api_key[-4:]}` may be throttled. "
+                f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
+            )
+            _throttle_warnings += 1
         time.sleep(next_valid_request_dt)
     params.update({"UserID": api_key, "ResultFormat": "JSON"})
     response = session.get(url, params=params)

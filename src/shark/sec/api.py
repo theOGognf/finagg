@@ -482,6 +482,7 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
         Successful responses.
 
     """
+    global _throttle_warnings
     user_agent = user_agent or os.environ.get("SEC_API_USER_AGENT", None)
     if not user_agent:
         raise RuntimeError(
@@ -490,12 +491,13 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
             "set the `SEC_API_USER_AGENT` environment variable."
         )
     next_valid_request_dt = _throttle_watchdog[user_agent].next_valid_request_dt
-    if next_valid_request_dt > 0 and not _throttle_warnings:
+    if next_valid_request_dt > 0:
         if not _throttle_warnings:
             logger.warning(
                 f"User agent `{user_agent}` may be throttled. "
                 f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
             )
+            _throttle_warnings += 1
         time.sleep(next_valid_request_dt)
     response = session.get(url, headers={"User-Agent": user_agent})
     _throttle_watchdog.update(user_agent, response)

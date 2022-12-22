@@ -17,5 +17,5 @@ logger.addHandler(handler)
 
 def run() -> None:
     """Initialize a local SQL table with popular ticker info."""
-    c = scrape.run(djia=True, sp500=True, nasdaq100=True)
+    c = scrape.run(djia=True, sp500=True, nasdaq100=True, drop_tables=True)
     logger.info(f"{sum(c.values())} rows written")

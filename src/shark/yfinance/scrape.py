@@ -12,16 +12,17 @@ def run(
     /,
     *,
     engine: Engine = sql.engine,
+    drop_tables: bool = False,
 ) -> dict[str, int]:
     """Scrape yfinance historical stock data from the
     yfinance API.
 
-    ALL TABLES ARE DROPPED PRIOR TO SCRAPING!
     Scraped data is loaded into local yfinance SQL tables.
 
     Args:
         tickers: Company tickers to scrape.
         engine: Custom database engine to use.
+        drop_tables: Whether to drop tables before scraping.
 
     Returns:
         A dictionary mapping tickers to number of rows scraped
@@ -31,7 +32,9 @@ def run(
     if isinstance(tickers, str):
         tickers = [tickers]
 
-    sql.metadata.drop_all(engine)
+    if drop_tables:
+        sql.metadata.drop_all(engine)
+
     sql.metadata.create_all(engine)
 
     with engine.connect() as conn:

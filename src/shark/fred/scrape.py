@@ -12,11 +12,11 @@ def run(
     /,
     *,
     engine: Engine = sql.engine,
+    drop_tables: bool = False,
 ) -> dict[str, int]:
     """Scrape FRED economic series observation data
     from the FRED API.
 
-    ALL TABLES ARE DROPPED PRIOR TO SCRAPING!
     Scraped data is loaded into local SEC SQL tables.
 
     Only the initial release of each observation is scraped.
@@ -25,6 +25,8 @@ def run(
 
     Args:
         series_ids: FRED economic series IDs to scrape.
+        engine: Custom database engine to use.
+        drop_tables: Whether to drop tables before scraping.
 
     Returns:
         A dictionary mapping series IDs to number of rows scraped
@@ -34,7 +36,9 @@ def run(
     if isinstance(series_ids, str):
         series_ids = [series_ids]
 
-    sql.metadata.drop_all(engine)
+    if drop_tables:
+        sql.metadata.drop_all(engine)
+
     sql.metadata.create_all(engine)
 
     with engine.connect() as conn:
