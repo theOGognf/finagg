@@ -491,11 +491,12 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
         )
     next_valid_request_dt = _throttle_watchdog[user_agent].next_valid_request_dt
     if next_valid_request_dt > 0 and not _throttle_warnings:
-        logger.warning(
-            f"User agent `{user_agent}` may be throttled. "
-            f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
-        )
-    time.sleep(next_valid_request_dt)
+        if not _throttle_warnings:
+            logger.warning(
+                f"User agent `{user_agent}` may be throttled. "
+                f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
+            )
+        time.sleep(next_valid_request_dt)
     response = session.get(url, headers={"User-Agent": user_agent})
     _throttle_watchdog.update(user_agent, response)
     response.raise_for_status()

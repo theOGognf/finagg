@@ -62,7 +62,7 @@ _API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 session = requests_cache.CachedSession(
     str(_API_CACHE_PATH),
-    ignored_parameters=["UserId", "ResultFormat"],
+    ignored_parameters=["ResultFormat"],
     expire_after=timedelta(days=1),
 )
 
@@ -645,7 +645,7 @@ def get(
             f"API key ending in `{api_key[-4:]}` may be throttled. "
             f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
         )
-    time.sleep(next_valid_request_dt)
+        time.sleep(next_valid_request_dt)
     params.update({"UserID": api_key, "ResultFormat": "JSON"})
     response = session.get(url, params=params)
     _throttle_watchdog.update(api_key, response)
