@@ -20,11 +20,10 @@ class _DailyFeatures:
     @classmethod
     def _create_table(
         cls,
+        engine: Engine,
+        metadata: MetaData,
         column_names: pd.Index,
         /,
-        *,
-        engine: Engine = store.engine,
-        metadata: MetaData = store.metadata,
     ) -> None:
         """Create the feature store SQL table."""
         primary_keys = {"ticker", "date"}
@@ -88,7 +87,14 @@ class _DailyFeatures:
     @classmethod
     @cache
     def from_sql(
-        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: Engine = sql.engine,
+        metadata: MetaData = sql.metadata,
     ) -> pd.DataFrame:
         """Get daily features from local SQL tables.
 
@@ -98,18 +104,21 @@ class _DailyFeatures:
                 Defaults to the first recorded date.
             end: The end date of the stock history.
                 Defaults to the last recorded date.
+            engine: Raw store database engine.
+            metadata: Metadata associated with the tables.
 
         Returns:
             Daily stock price dataframe. Sorted by date.
 
         """
-        with sql.engine.connect() as conn:
-            stmt = sql.prices.c.ticker == ticker
+        table: Table = metadata.tables["prices"]
+        with engine.connect() as conn:
+            stmt = table.c.ticker == ticker
             if start:
-                stmt = and_(stmt, sql.prices.c.date >= start)
+                stmt = and_(stmt, table.c.date >= start)
             if end:
-                stmt = and_(stmt, sql.prices.c.date <= end)
-            df = pd.DataFrame(conn.execute(sql.prices.select(stmt)))
+                stmt = and_(stmt, table.c.date <= end)
+            df = pd.DataFrame(conn.execute(table.select(stmt)))
         return cls._normalize(df)
 
     @classmethod
@@ -184,7 +193,7 @@ class _DailyFeatures:
         df["ticker"] = ticker
         inspector = store.inspector if engine is store.engine else inspect(engine)
         if not inspector.has_table(cls.table_name):
-            cls._create_table(df.columns, engine=engine, metadata=metadata)
+            cls._create_table(engine, metadata, df.columns)
         table: Table = metadata.tables[cls.table_name]
         with engine.connect() as conn:
             conn.execute(table.insert(), df.to_dict(orient="records"))

@@ -6,20 +6,20 @@ import pathlib
 from sqlalchemy import Column, MetaData, String, Table, create_engine, inspect
 from sqlalchemy.engine import Engine, Inspector
 
-_SQL_DB_PATH = (
+_DATABASE_PATH = (
     pathlib.Path(__file__).resolve().parent.parent.parent.parent
     / "data"
     / "yfinance_features.sqlite"
 )
 
-_SQL_DB_URL = os.environ.get(
-    "YFINANCE_FEATURES_SQL_DB_URL",
-    f"sqlite:///{_SQL_DB_PATH}",
+_DATABASE_URL = os.environ.get(
+    "YFINANCE_FEATURES_DATABASE_URL",
+    f"sqlite:///{_DATABASE_PATH}",
 )
 
 
 def define_db(
-    url: str = _SQL_DB_URL,
+    url: str = _DATABASE_URL,
 ) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 

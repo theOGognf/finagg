@@ -6,7 +6,7 @@ import sys
 import pandas as pd
 from sqlalchemy.exc import IntegrityError
 
-from ..tickers import api as tickers_api
+from .. import indices
 from . import api, sql
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ def run(processes: int = mp.cpu_count() - 1) -> None:
     stock price data.
 
     """
-    tickers = tickers_api.get_ticker_set()
+    tickers = indices.api.get_ticker_set()
 
     sql.metadata.drop_all(sql.engine)
     sql.metadata.create_all(sql.engine)

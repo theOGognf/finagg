@@ -1,5 +1,16 @@
 """Main package interface."""
 
-from . import _version, bea, fred, install, mixed, sec, tickers, utils, yfinance
+from . import (
+    _version,
+    bea,
+    fred,
+    indices,
+    install,
+    mixed,
+    sec,
+    testing,
+    utils,
+    yfinance,
+)
 
 __version__ = _version.get_versions()["version"]

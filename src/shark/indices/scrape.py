@@ -1,4 +1,4 @@
-"""Scrape the tickers API and store into local SQL tables."""
+"""Scrape the indices API and store into local SQL tables."""
 
 from sqlalchemy.engine import Engine
 
@@ -12,10 +12,10 @@ def run(
     nasdaq100: bool = True,
     engine: Engine = sql.engine,
 ) -> dict[str, int]:
-    """Scrape popular indices ticker data from the tickers API.
+    """Scrape popular ticker data from the indices API.
 
     ALL TABLES ARE DROPPED PRIOR TO SCRAPING!
-    Scraped data is loaded into local tickers SQL tables.
+    Scraped data is loaded into local indices SQL tables.
 
     Args:
         djia: Whether to scrape DJIA tickers.

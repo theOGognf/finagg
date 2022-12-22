@@ -2,10 +2,17 @@
 
 from typing import Sequence
 
+from sqlalchemy.engine import Engine
+
 from . import api, sql
 
 
-def run(series_ids: str | Sequence[str], /) -> dict[str, int]:
+def run(
+    series_ids: str | Sequence[str],
+    /,
+    *,
+    engine: Engine = sql.engine,
+) -> dict[str, int]:
     """Scrape FRED economic series observation data
     from the FRED API.
 
@@ -27,10 +34,10 @@ def run(series_ids: str | Sequence[str], /) -> dict[str, int]:
     if isinstance(series_ids, str):
         series_ids = [series_ids]
 
-    sql.metadata.drop_all(sql.engine)
-    sql.metadata.create_all(sql.engine)
+    sql.metadata.drop_all(engine)
+    sql.metadata.create_all(engine)
 
-    with sql.engine.connect() as conn:
+    with engine.connect() as conn:
         series_to_inserts = {}
         for series_id in series_ids:
             df = api.series.observations.get(

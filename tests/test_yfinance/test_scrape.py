@@ -3,14 +3,13 @@ from sqlalchemy import MetaData
 from sqlalchemy.engine import Engine
 
 import shark
-from shark.testing import yield_sqlite_test_resources
-from shark.yfinance.sql import _SQL_DB_PATH
+from shark.yfinance.sql import _DATABASE_PATH
 
 
 @pytest.fixture
 def resources() -> tuple[Engine, MetaData]:
-    yield from yield_sqlite_test_resources(
-        _SQL_DB_PATH, creator=shark.yfinance.sql.define_db
+    yield from shark.testing.sqlite_resources(
+        _DATABASE_PATH, creator=shark.yfinance.sql.define_db
     )
 
 

@@ -9,8 +9,7 @@ import pandas as pd
 from requests.exceptions import HTTPError
 from sqlalchemy.exc import IntegrityError
 
-from .. import utils
-from ..tickers import api as tickers_api
+from .. import indices, utils
 from . import api, features, sql
 
 logger = logging.getLogger(__name__)
@@ -93,7 +92,7 @@ def run(init_db: bool = True, processes: int = mp.cpu_count() - 1) -> None:
         sql.metadata.drop_all(sql.engine)
         sql.metadata.create_all(sql.engine)
 
-        tickers = tickers_api.get_ticker_set()
+        tickers = indices.api.get_ticker_set()
         concepts = features.quarterly_features.concepts
         tickers_to_dfs: dict[str, list[pd.DataFrame]] = {}
         tickers_to_inserts = {}

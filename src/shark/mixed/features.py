@@ -20,11 +20,10 @@ class _FundamentalFeatures:
     @classmethod
     def _create_table(
         cls,
+        engine: Engine,
+        metadata: MetaData,
         column_names: pd.Index,
         /,
-        *,
-        engine: Engine = store.engine,
-        metadata: MetaData = store.metadata,
     ) -> None:
         """Create the feature store SQL table."""
         primary_keys = {"ticker", "date"}
@@ -97,7 +96,16 @@ class _FundamentalFeatures:
     @classmethod
     @cache
     def from_sql(
-        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        sec_engine: Engine = sec.sql.engine,
+        sec_metadata: MetaData = sec.sql.metadata,
+        yf_engine: Engine = yfinance.sql.engine,
+        yf_metadata: MetaData = yfinance.sql.metadata,
     ) -> pd.DataFrame:
         """Get features directly from local SQL tables.
 
@@ -111,6 +119,10 @@ class _FundamentalFeatures:
                 Defaults to the first recorded date.
             end: The end date of the observation period.
                 Defaults to the last recorded date.
+            sec_engine: Raw SEC store database engine.
+            sec_metadata: Metadata associated with the SEC tables.
+            yf_engine: Raw yfinance store database engine.
+            yf_metadata: Metadata associated with the yfinance tables.
 
         Returns:
             Combined quarterly and daily feature dataframe.
@@ -118,11 +130,19 @@ class _FundamentalFeatures:
 
         """
         quarterly_features = sec.features.quarterly_features.from_sql(
-            ticker, start=start, end=end
+            ticker,
+            start=start,
+            end=end,
+            engine=sec_engine,
+            metadata=sec_metadata,
         )
         start = str(quarterly_features.index[0])
         daily_features = yfinance.features.daily_features.from_sql(
-            ticker, start=start, end=end
+            ticker,
+            start=start,
+            end=end,
+            engine=yf_engine,
+            metadata=yf_metadata,
         )
         return cls._normalize(quarterly_features, daily_features)
 
@@ -200,7 +220,7 @@ class _FundamentalFeatures:
         df["ticker"] = ticker
         inspector = store.inspector if engine is store.engine else inspect(engine)
         if not inspector.has_table(cls.table_name):
-            cls._create_table(df.columns, engine=engine, metadata=metadata)
+            cls._create_table(engine, metadata, df.columns)
         table: Table = metadata.tables[cls.table_name]
         with engine.connect() as conn:
             conn.execute(table.insert(), df.to_dict(orient="records"))

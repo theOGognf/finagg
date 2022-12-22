@@ -14,7 +14,7 @@ _CREATOR = Callable[
 ]
 
 
-def yield_sqlite_test_resources(
+def sqlite_resources(
     path: str, /, *, creator: None | _CREATOR = None
 ) -> Generator[tuple[Engine, MetaData], None, None]:
     """Yield a test database engine that's cleaned-up after
@@ -37,11 +37,11 @@ def yield_sqlite_test_resources(
         >>> from sqlalchemy import MetaData
         >>> from sqlalchemy.engine import Engine
         >>>
-        >>> from shark.testing import yield_sqlite_test_resources
+        >>> import shark
         >>>
         >>> @pytest.fixture
         ... def resources() -> tuple[Engine, MetaData]:
-        ...     yield from yield_sqlite_test_resources("/path/to/db.sqlite")
+        ...     yield from shark.testing.sqlite_resources("/path/to/db.sqlite")
         ...
 
     """

@@ -2,7 +2,9 @@
 
 from typing import Sequence
 
-from ..tickers import api as tickers_api
+from sqlalchemy.engine import Engine
+
+from .. import indices
 from . import api, features, sql
 
 
@@ -11,6 +13,7 @@ def run(
     /,
     *,
     concepts: None | Sequence[dict[str, str]] = None,
+    engine: Engine = sql.engine,
 ) -> dict[str, int]:
     """Scrape company XBRL disclosures from the SEC API.
 
@@ -39,19 +42,19 @@ def run(
     for ticker in unique_tickers:
         match ticker.upper():
             case "DJIA":
-                updates.update(tickers_api.djia.get_ticker_list())
+                updates.update(indices.api.djia.get_ticker_list())
 
             case "NASDAQ100":
-                updates.update(tickers_api.nasdaq100.get_ticker_list())
+                updates.update(indices.api.nasdaq100.get_ticker_list())
 
             case "SP500":
-                updates.update(tickers_api.sp500.get_ticker_list())
+                updates.update(indices.api.sp500.get_ticker_list())
     unique_tickers |= updates
 
-    sql.metadata.drop_all(sql.engine)
-    sql.metadata.create_all(sql.engine)
+    sql.metadata.drop_all(engine)
+    sql.metadata.create_all(engine)
 
-    with sql.engine.connect() as conn:
+    with engine.connect() as conn:
         tickers_to_inserts = {}
         for ticker in unique_tickers:
             if concepts is None:

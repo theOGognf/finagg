@@ -66,11 +66,10 @@ class _QuarterlyFeatures:
     @classmethod
     def _create_table(
         cls,
+        engine: Engine,
+        metadata: MetaData,
         column_names: pd.Index,
         /,
-        *,
-        engine: Engine = store.engine,
-        metadata: MetaData = store.metadata,
     ) -> None:
         """Create the feature store SQL table."""
         primary_keys = {"ticker", "filed"}
@@ -161,7 +160,14 @@ class _QuarterlyFeatures:
     @classmethod
     @cache
     def from_sql(
-        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: Engine = sql.engine,
+        metadata: MetaData = sql.metadata,
     ) -> pd.DataFrame:
         """Get quarterly features from local SEC SQL tables.
 
@@ -175,22 +181,25 @@ class _QuarterlyFeatures:
                 Defaults to the first recorded date.
             end: The end date of the observation period.
                 Defaults to the last recorded date.
+            engine: Raw store database engine.
+            metadata: Metadata associated with the tables.
 
         Returns:
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
 
         """
-        with sql.engine.connect() as conn:
-            stmt = sql.tags.c.cik == api.get_cik(ticker)
+        table: Table = metadata.tables["tags"]
+        with engine.connect() as conn:
+            stmt = table.c.cik == api.get_cik(ticker)
             stmt = and_(
-                stmt, sql.tags.c.tag.in_([concept["tag"] for concept in cls.concepts])
+                stmt, table.c.tag.in_([concept["tag"] for concept in cls.concepts])
             )
             if start:
-                stmt = and_(stmt, sql.tags.c.filed >= start)
+                stmt = and_(stmt, table.c.filed >= start)
             if end:
-                stmt = and_(stmt, sql.tags.c.filed <= end)
-            df = pd.DataFrame(conn.execute(sql.tags.select(stmt)))
+                stmt = and_(stmt, table.c.filed <= end)
+            df = pd.DataFrame(conn.execute(table.select(stmt)))
         return cls._normalize(df)
 
     @classmethod
@@ -266,7 +275,7 @@ class _QuarterlyFeatures:
         df["ticker"] = ticker
         inspector = store.inspector if engine is store.engine else inspect(engine)
         if not inspector.has_table(cls.table_name):
-            cls._create_table(df.columns, engine=engine, metadata=metadata)
+            cls._create_table(engine, metadata, df.columns)
         table: Table = metadata.tables[cls.table_name]
         with engine.connect() as conn:
             conn.execute(table.insert(), df.to_dict(orient="records"))

@@ -1,3 +1,3 @@
-"""Top-level tickers interface."""
+"""Top-level indices interface."""
 
 from . import api, install, scrape, sql

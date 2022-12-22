@@ -1,10 +1,10 @@
 """Features from FRED sources."""
 
 from functools import cache
-from typing import Sequence
 
 import pandas as pd
-from sqlalchemy import Column, Float, String, Table
+from sqlalchemy import Column, Float, MetaData, String, Table, inspect
+from sqlalchemy.engine import Engine
 from sqlalchemy.sql import and_
 
 from .. import utils
@@ -35,7 +35,13 @@ class _EconomicFeatures:
     table_name = "economic_features"
 
     @classmethod
-    def _create_table(cls, column_names: Sequence[str]) -> None:
+    def _create_table(
+        cls,
+        engine: Engine,
+        metadata: MetaData,
+        column_names: pd.Index,
+        /,
+    ) -> None:
         """Create the feature store SQL table."""
         primary_keys = {"date"}
         table_columns = [
@@ -54,14 +60,14 @@ class _EconomicFeatures:
 
         economic_features = Table(
             cls.table_name,
-            store.metadata,
+            metadata,
             *table_columns,
         )
-        economic_features.create(bind=store.engine)
+        economic_features.create(bind=engine)
         store.economic_features = economic_features
 
     @classmethod
-    def _normalize(cls, df: pd.DataFrame) -> pd.DataFrame:
+    def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize economic features columns."""
         df = (
             df.pivot(index="date", values="value", columns="series_id")
@@ -83,6 +89,7 @@ class _EconomicFeatures:
             "WALCL",
         ]
         df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)
+        df.columns = df.columns.rename(None)
         return df
 
     @classmethod
@@ -124,7 +131,12 @@ class _EconomicFeatures:
     @classmethod
     @cache
     def from_sql(
-        cls, *, start: None | str = None, end: None | str = None
+        cls,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: Engine = sql.engine,
+        metadata: MetaData = sql.metadata,
     ) -> pd.DataFrame:
         """Get economic features from local FRED SQL tables.
 
@@ -137,24 +149,33 @@ class _EconomicFeatures:
                 Defaults to the first recorded date.
             end: The end date of the observation period.
                 Defaults to the last recorded date.
+            engine: Raw store database engine.
+            metadata: Metadata associated with the tables.
 
         Returns:
             Economic data series dataframe with each series
             as a separate column. Sorted by date.
 
         """
-        with sql.engine.connect() as conn:
-            stmt = sql.series.c.series_id.in_(cls.series_ids)
+        table: Table = metadata.tables["series"]
+        with engine.connect() as conn:
+            stmt = table.c.series_id.in_(cls.series_ids)
             if start:
-                stmt = and_(stmt, sql.series.c.date >= start)
+                stmt = and_(stmt, table.c.date >= start)
             if end:
-                stmt = and_(stmt, sql.series.c.date <= end)
-            df = pd.DataFrame(conn.execute(sql.series.select(stmt)))
+                stmt = and_(stmt, table.c.date <= end)
+            df = pd.DataFrame(conn.execute(table.select(stmt)))
         return cls._normalize(df)
 
     @classmethod
     def from_store(
-        cls, /, *, start: None | str = None, end: None | str = None
+        cls,
+        /,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: Engine = store.engine,
+        metadata: MetaData = store.metadata,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -167,14 +188,16 @@ class _EconomicFeatures:
                 Defaults to the first recorded date.
             end: The end date of the observation period.
                 Defaults to the last recorded date.
+            engine: Feature store database engine.
+            metadata: Metadata associated with the tables.
 
         Returns:
             Economic data series dataframe with each series
             as a separate column. Sorted by date.
 
         """
-        table = store.metadata.tables[cls.table_name]
-        with store.engine.connect() as conn:
+        table: Table = metadata.tables[cls.table_name]
+        with engine.connect() as conn:
             stmt = table.c.date >= "0000-00-00"
             if start:
                 stmt = and_(stmt, table.c.date >= start)
@@ -185,7 +208,14 @@ class _EconomicFeatures:
         return df
 
     @classmethod
-    def to_store(cls, df: pd.DataFrame, /) -> None | int:
+    def to_store(
+        cls,
+        df: pd.DataFrame,
+        /,
+        *,
+        engine: Engine = store.engine,
+        metadata: MetaData = store.metadata,
+    ) -> None | int:
         """Write the dataframe to the feature store for `ticker`.
 
         Does the necessary handling to transform columns to
@@ -195,16 +225,20 @@ class _EconomicFeatures:
         Args:
             df: Dataframe to store completely as rows in a local SQL
                 table.
+            engine: Feature store database engine.
+            metadata: Metadata associated with the tables.
 
         Returns:
             Number of rows written to the SQL table.
 
         """
         df = df.reset_index(names="date")
-        if not store.inspector.has_table(cls.table_name):
-            cls._create_table(df.columns)
-        with store.engine.connect() as conn:
-            conn.execute(store.economic_features.insert(), df.to_dict(orient="records"))
+        inspector = store.inspector if engine is store.engine else inspect(engine)
+        if not inspector.has_table(cls.table_name):
+            cls._create_table(engine, metadata, df.columns)
+        table: Table = metadata.tables[cls.table_name]
+        with engine.connect() as conn:
+            conn.execute(table.insert(), df.to_dict(orient="records"))
         return len(df.index)
 
 

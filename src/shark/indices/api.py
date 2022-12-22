@@ -1,4 +1,4 @@
-"""Tickers API (symbols in popular indices)."""
+"""Indices API (symbols in popular indices)."""
 
 import os
 import pathlib
@@ -13,10 +13,10 @@ import requests_cache
 from bs4 import BeautifulSoup
 
 _API_CACHE_PATH = os.environ.get(
-    "TICKERS_API_CACHE_PATH",
+    "INDICES_API_CACHE_PATH",
     pathlib.Path(__file__).resolve().parent.parent.parent.parent
     / "data"
-    / "tickers_api_cache",
+    / "indices_api_cache",
 )
 _API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
 _API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -35,7 +35,7 @@ class _Dataset(ABC):
 
     def __init__(self, *args, **kwargs) -> None:
         raise RuntimeError(
-            "Instantiating a tickers API directly is not allowed. "
+            "Instantiating a indices API directly is not allowed. "
             "Use the `get` method instead."
         )
 
@@ -141,7 +141,7 @@ class _SP500(_Dataset):
         )
 
 
-#: Path to tickers API requests cache.
+#: Path to indices API requests cache.
 cache_path = str(_API_CACHE_PATH)
 
 #: The Dow Jones Industrial Average.
@@ -168,7 +168,7 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
     user_agent = user_agent or os.environ.get("TICKERS_API_USER_AGENT", None)
     if not user_agent:
         raise RuntimeError(
-            "No tickers API user agent declaration found. "
+            "No indices API user agent declaration found. "
             "Pass your user agent declaration to the API directly, or "
             "set the `TICKERS_API_USER_AGENT` environment variable."
         )
