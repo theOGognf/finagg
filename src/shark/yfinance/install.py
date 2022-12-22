@@ -86,7 +86,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
         with store.engine.connect() as conn:
             with mp.Pool(processes=processes) as pool:
                 with tqdm.tqdm(
-                    total=len(tickers), desc="Installing yfinance features"
+                    total=len(tickers_to_inserts), desc="Installing yfinance features"
                 ) as pbar:
                     for output in pool.imap_unordered(
                         _features_get, tickers_to_inserts.keys()

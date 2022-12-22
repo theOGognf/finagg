@@ -23,6 +23,22 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
+def _api_get(params: dict[str, str]) -> dict:
+    """Wrapper for `_get_valid_concept` to enable dispatching
+    to `multiprocessing.Pool.imap`.
+
+    """
+    ticker = params["ticker"]
+    tag = params["tag"]
+    taxonomy = params["taxonomy"]
+    units = params["units"]
+    return {
+        "ticker": ticker,
+        "tag": tag,
+        "result": _get_valid_concept(ticker, tag, taxonomy, units),
+    }
+
+
 def _features_get(ticker: str) -> tuple[str, pd.DataFrame]:
     """Wrapper for feature getter to enable dispatching to
     `multiprocessing.Pool.imap`.
@@ -60,22 +76,6 @@ def _get_valid_concept(
         return None
 
 
-def _search(params: dict[str, str]) -> dict:
-    """Wrapper for `_get_valid_concept` to enable dispatching
-    to `multiprocessing.Pool.imap`.
-
-    """
-    ticker = params["ticker"]
-    tag = params["tag"]
-    taxonomy = params["taxonomy"]
-    units = params["units"]
-    return {
-        "ticker": ticker,
-        "tag": tag,
-        "result": _get_valid_concept(ticker, tag, taxonomy, units),
-    }
-
-
 def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> None:
     """Set the `SEC_API_USER_AGENT` environment variable and
     optionally initialize local SQL tables with popular
@@ -111,7 +111,6 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
     with sql.engine.connect() as conn:
         with mp.Pool(processes=processes) as pool:
             for ticker in sorted(tickers):
-                tickers_to_inserts[ticker] = 0
                 tickers_to_dfs[ticker] = []
                 for concept in concepts:
                     search = concept.copy()
@@ -120,7 +119,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
                     searches.append(search)
 
             with tqdm.tqdm(total=len(searches), desc="Installing raw SEC data") as pbar:
-                for output in pool.imap_unordered(_search, searches):
+                for output in pool.imap_unordered(_api_get, searches):
                     pbar.update()
                     ticker = output["ticker"]
                     tag = output["tag"]
@@ -140,7 +139,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
                             )
                         except IntegrityError:
                             continue
-                        tickers_to_inserts[ticker] += len(df.index)
+                        tickers_to_inserts[ticker] = len(df.index)
     logger.info(f"Total rows written: {sum(tickers_to_inserts.values())}")
     logger.info(f"Number of tickers skipped: {len(skipped_tickers)}/{len(tickers)}")
     logger.info(f"Missed tags summary: {tags_to_misses}")
@@ -152,7 +151,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
         with store.engine.connect() as conn:
             with mp.Pool(processes=processes) as pool:
                 with tqdm.tqdm(
-                    total=len(tickers), desc="Installing yfinance features"
+                    total=len(tickers_to_inserts), desc="Installing SEC features"
                 ) as pbar:
                     for output in pool.imap_unordered(
                         _features_get, tickers_to_inserts.keys()

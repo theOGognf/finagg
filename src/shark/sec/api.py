@@ -241,6 +241,7 @@ class _CompanyConcept(_Dataset):
         results = pd.concat(results_list)
         for k, v in content.items():
             results[k] = v
+        results["cik"] = cik
         return results.rename(columns={"entityName": "entity", "val": "value"})
 
 
@@ -295,6 +296,7 @@ class _CompanyFacts(_Dataset):
         results = pd.concat(results_list)
         for k, v in content.items():
             results[k] = v
+        results["cik"] = cik
         return results.rename(
             columns={"entityName": "entity", "uom": "units", "val": "value"}
         )
@@ -400,6 +402,7 @@ class _Submissions(_Dataset):
         df = pd.DataFrame(recent_filings)
         df.columns = map(utils.snake_case, df.columns)  # type: ignore
         df.rename(columns={"accession_number": "accn"})
+        df["cik"] = cik
         metadata = {utils.snake_case(k): v for k, v in content.items()}
         mailing_address = metadata["addresses"]["mailing"]
         business_address = metadata["addresses"]["business"]
