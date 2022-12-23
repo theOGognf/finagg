@@ -29,18 +29,16 @@ import logging
 import os
 import pathlib
 import sys
-import time
 from abc import ABC, abstractmethod
-from collections import deque
-from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from functools import cache
-from typing import ClassVar, Generic, Literal, Sequence, TypeVar
+from typing import ClassVar, Literal, Sequence
 
 import pandas as pd
 import requests
 import requests_cache
-from requests_cache import CachedResponse
+
+from .. import ratelimit
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -66,163 +64,7 @@ session = requests_cache.CachedSession(
     expire_after=timedelta(days=1),
 )
 
-
-_API_KEY = TypeVar("_API_KEY", bound=str)
-_THROTTLE_WATCHDOG_STATE = TypeVar(
-    "_THROTTLE_WATCHDOG_STATE", bound="_ThrottleWatchdog.State"
-)
 _YEAR = int | str
-
-
-class _ThrottleWatchdog(Generic[_API_KEY, _THROTTLE_WATCHDOG_STATE]):
-    """Throttling-prevention strategy. Tracks throttle metrics in BEA API responses."""
-
-    @dataclass(frozen=True)
-    class Response:
-        """BEA API response with throttle-specific info."""
-
-        #: Time the response was received and processed.
-        time: datetime
-
-        #: Response size in bytes.
-        size: int
-
-        #: Whether the response resulted in an API error.
-        is_error: bool
-
-        #: Time to wait in seconds if responses are being throttled.
-        retry_after: float
-
-    @dataclass(repr=False)
-    class State:
-        """BEA API throttle state."""
-
-        #: BEA API key associated with the state.
-        api_key: str
-
-        #: Deque of BEA API responses formatted for throttle-specific info.
-        responses: deque["_ThrottleWatchdog.Response"]
-
-        def __repr__(self) -> str:
-            """Return a string representation of the state."""
-            return (
-                f"<{self.__class__.__qualname__}("
-                f"api_key={self.api_key}, "
-                f"errors_per_minute={self.errors_per_minute}, "
-                f"requests_per_minute={self.requests_per_minute}, "
-                f"volume_per_minute={self.volume_per_minute}"
-                ")>"
-            )
-
-        @property
-        def errors_per_minute(self) -> int:
-            """Return BEA API response errors per minute."""
-            self.pop()
-            return sum([r.is_error for r in self.responses])
-
-        @property
-        def is_throttled(self) -> bool:
-            """Are requests with the API key likely to be throttled?"""
-            throttled = self.errors_per_minute >= max_errors_per_minute
-            throttled |= self.requests_per_minute >= max_requests_per_minute
-            throttled |= self.volume_per_minute >= max_volume_per_minute
-            return throttled
-
-        @property
-        def next_valid_request_dt(self) -> float:
-            """Return the number of seconds needed to wait
-            until another request can be made without throttling.
-
-            """
-            if not self.responses:
-                return 0.0
-            dt = self.youngest.retry_after
-            if self.is_throttled:
-                dt = max(
-                    dt, 60 - (self.youngest.time - self.oldest.time).total_seconds()
-                )
-            return dt
-
-        @property
-        def oldest(self) -> "_ThrottleWatchdog.Response":
-            """Return the oldest BEA API response formatted for throttle-specific info."""
-            return self.responses[0]
-
-        def pop(self) -> None:
-            """Remove all responses older than 60 seconds."""
-            while (
-                self.responses
-                and (self.youngest.time - self.oldest.time).total_seconds() > 60.0
-            ):
-                self.responses.popleft()
-
-        @property
-        def requests_per_minute(self) -> int:
-            """Return BEA API response requests per minute."""
-            self.pop()
-            return len(self.responses)
-
-        def update(self, response: CachedResponse | requests.Response) -> float:
-            """Update the throttle state associated with the API key.
-
-            Args:
-                response: Raw BEA API response.
-
-            Returns:
-                Time needed to wait until another request can be made without throttling.
-
-            """
-            if hasattr(response, "from_cache") and response.from_cache:
-                return 0.0
-            retry_after = (
-                float(response.headers["Retry-After"])
-                if response.status_code == 429
-                else 0.0
-            )
-            self.responses.append(
-                _ThrottleWatchdog.Response(
-                    datetime.now(tz=timezone.utc),
-                    len(response.content),
-                    response.status_code != 200,
-                    retry_after,
-                )
-            )
-            return self.next_valid_request_dt
-
-        @property
-        def volume_per_minute(self) -> int:
-            """Return BEA API response volume per minute."""
-            self.pop()
-            return sum([r.size for r in self.responses])
-
-        @property
-        def youngest(self) -> "_ThrottleWatchdog.Response":
-            """Return the youngest BEA API response formatted for throttle-specific info."""
-            return self.responses[-1]
-
-    #: Mapping of BEA API key to throttle state associated with that API key.
-    states: dict[str, "_ThrottleWatchdog.State"]
-
-    def __init__(self) -> None:
-        self.states = {}
-
-    def __getitem__(self, api_key: str) -> "_ThrottleWatchdog.State":
-        """Get the throttle state associated with the given API key."""
-        if api_key not in self.states:
-            self.states[api_key] = _ThrottleWatchdog.State(api_key, deque())
-        return self.states[api_key]
-
-    def update(self, api_key: str, response: requests.Response) -> float:
-        """Update the throttle state associated with the given API key.
-
-        Args:
-            response: Raw BEA API response.
-
-        Returns:
-            Time needed to wait until another request can be made without throttling.
-
-        """
-        return self.states[api_key].update(response)
 
 
 class _Dataset(ABC):
@@ -571,12 +413,6 @@ class _NIPA(_Dataset):
         return pd.concat(results)
 
 
-#: Count of warnings to limit log spam.
-_throttle_warnings = 0
-
-#: Throttling-prevention strategy. Tracks throttling metrics for each API key.
-_throttle_watchdog: _ThrottleWatchdog = _ThrottleWatchdog()
-
 #: Path to BEA API requests cache.
 cache_path = str(_API_CACHE_PATH)
 
@@ -588,15 +424,6 @@ gdp_by_industry = _GDPByIndustry
 
 #: "InputOutput" dataset API.
 input_output = _InputOutput
-
-#: Max allowed BEA API errors per minute.
-max_errors_per_minute = 30
-
-#: Max allowed BEA API requests per minute.
-max_requests_per_minute = 100
-
-#: Max allowed BEA API response size (in MB) per minute.
-max_volume_per_minute = 100e6
 
 #: "NIPA" dataset API.
 nipa = _NIPA
@@ -611,6 +438,18 @@ def _api_error_as_response(error: dict) -> requests.Response:
     response.status_code = int(error.pop("APIErrorCode"))
     response._content = json.dumps(error).encode("utf-8")
     return response
+
+
+@ratelimit.guard(
+    [
+        ratelimit.RequestLimit(90, timedelta(minutes=1)),
+        ratelimit.ErrorLimit(20, timedelta(minutes=1)),
+        ratelimit.SizeLimit(90e6, timedelta(minutes=1)),
+    ]
+)
+def _guarded_get(url: str, params: dict, /) -> requests.Response:
+    """Guarded version of `session.get`."""
+    return session.get(url, params=params)
 
 
 def get(
@@ -635,7 +474,6 @@ def get(
         BEAAPIException: If a BEA API error occurs.
 
     """
-    global _throttle_warnings
     api_key = api_key or os.environ.get("BEA_API_KEY", None)
     if not api_key:
         raise RuntimeError(
@@ -643,18 +481,9 @@ def get(
             "Pass the API key to the API directly, or "
             "set the `BEA_API_KEY` environment variable."
         )
-    next_valid_request_dt = _throttle_watchdog[api_key].next_valid_request_dt
-    if next_valid_request_dt > 0:
-        if not _throttle_warnings:
-            logger.warning(
-                f"API key ending in `{api_key[-4:]}` may be throttled. "
-                f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
-            )
-            _throttle_warnings += 1
-        time.sleep(next_valid_request_dt)
+
     params.update({"UserID": api_key, "ResultFormat": "JSON"})
-    response = session.get(url, params=params)
-    _throttle_watchdog.update(api_key, response)
+    response = _guarded_get(url, params)
     response.raise_for_status()
     content = response.json()["BEAAPI"]
     if "Error" in content:

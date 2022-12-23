@@ -9,19 +9,15 @@ import logging
 import os
 import pathlib
 import sys
-import time
 from abc import ABC, abstractmethod
-from collections import deque
-from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
-from typing import ClassVar, Generic, TypeVar
+from datetime import timedelta
+from typing import ClassVar
 
 import pandas as pd
 import requests
 import requests_cache
-from requests_cache import CachedResponse
 
-from .. import utils
+from .. import ratelimit, utils
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -45,125 +41,6 @@ session = requests_cache.CachedSession(
     str(_API_CACHE_PATH),
     expire_after=timedelta(days=1),
 )
-
-
-_USER_AGENT = TypeVar("_USER_AGENT", bound=str)
-_THROTTLE_WATCHDOG_STATE = TypeVar(
-    "_THROTTLE_WATCHDOG_STATE", bound="_ThrottleWatchdog.State"
-)
-
-
-class _ThrottleWatchdog(Generic[_USER_AGENT, _THROTTLE_WATCHDOG_STATE]):
-    """Throttling-prevention strategy. Tracks throttle metrics in BEA API responses."""
-
-    @dataclass(frozen=True)
-    class Response:
-        """SEC API response with throttle-specific info."""
-
-        #: Time the response was received and processed.
-        time: datetime
-
-    @dataclass(repr=False)
-    class State:
-        """SEC API throttle state."""
-
-        #: SEC user agent associated with the state.
-        user_agent: str
-
-        #: Deque of SEC API responses formatted for throttle-specific info.
-        responses: deque["_ThrottleWatchdog.Response"]
-
-        def __repr__(self) -> str:
-            """Return a string representation of the state."""
-            return (
-                f"<{self.__class__.__qualname__}("
-                f"user_agent={self.user_agent}, "
-                f"requests_per_second={self.requests_per_second}"
-                ")>"
-            )
-
-        @property
-        def is_throttled(self) -> bool:
-            """Are requests with the API key likely to be throttled?"""
-            return self.requests_per_second >= max_requests_per_second
-
-        @property
-        def next_valid_request_dt(self) -> float:
-            """Return the number of seconds needed to wait
-            until another request can be made without throttling.
-
-            """
-            if not self.responses:
-                return 0.0
-            if self.is_throttled:
-                dt = 1 - (self.youngest.time - self.oldest.time).total_seconds()
-                return dt
-            return 0.0
-
-        @property
-        def oldest(self) -> "_ThrottleWatchdog.Response":
-            """Return the oldest BEA API response formatted for throttle-specific info."""
-            return self.responses[0]
-
-        def pop(self) -> None:
-            """Remove all responses older than 60 seconds."""
-            while (
-                self.responses
-                and (self.youngest.time - self.oldest.time).total_seconds() > 1.0
-            ):
-                self.responses.popleft()
-
-        @property
-        def requests_per_second(self) -> int:
-            """Return BEA API response requests per minute."""
-            self.pop()
-            return len(self.responses)
-
-        def update(self, response: CachedResponse | requests.Response) -> float:
-            """Update the throttle state associated with the API key.
-
-            Args:
-                response: Raw BEA API response.
-
-            Returns:
-                Time needed to wait until another request can be made without throttling.
-
-            """
-            if hasattr(response, "from_cache") and response.from_cache:
-                return 0.0
-            self.responses.append(
-                _ThrottleWatchdog.Response(datetime.now(tz=timezone.utc))
-            )
-            return self.next_valid_request_dt
-
-        @property
-        def youngest(self) -> "_ThrottleWatchdog.Response":
-            """Return the youngest SEC API response formatted for throttle-specific info."""
-            return self.responses[-1]
-
-    #: Mapping of SEC user agent to throttle state associated with that user agent.
-    states: dict[str, "_ThrottleWatchdog.State"]
-
-    def __init__(self) -> None:
-        self.states = {}
-
-    def __getitem__(self, user_agent: str) -> "_ThrottleWatchdog.State":
-        """Get the throttle state associated with the given API key."""
-        if user_agent not in self.states:
-            self.states[user_agent] = _ThrottleWatchdog.State(user_agent, deque())
-        return self.states[user_agent]
-
-    def update(self, user_agent: str, response: requests.Response) -> float:
-        """Update the throttle state associated with the given user agent.
-
-        Args:
-            response: Raw SEC API response.
-
-        Returns:
-            Time needed to wait until another request can be made without throttling.
-
-        """
-        return self.states[user_agent].update(response)
 
 
 class _Dataset(ABC):
@@ -440,12 +317,6 @@ class _Tickers(_Dataset):
 #: Mapping of SEC CIK strings to (uppercase) tickers.
 _cik_to_tickers: dict[str, str] = {}
 
-#: Count of warnings to limit log spam.
-_throttle_warnings = 0
-
-#: Throttling-prevention strategy. Tracks throttling metrics for each API key.
-_throttle_watchdog: _ThrottleWatchdog = _ThrottleWatchdog()
-
 #: Mapping of (uppercase) tickers to SEC CIK strings.
 _tickers_to_cik: dict[str, str] = {}
 
@@ -462,16 +333,18 @@ company_facts = _CompanyFacts
 #: the calendrical period requested.
 frames = _Frames
 
-#: Max allowed requests per second before your user agent
-#: gets throttled.
-max_requests_per_second = 10
-
 #: Get a company's metadata and recent submissions.
 submissions = _Submissions
 
 #: Used to get all SEC ticker data as opposed to
 #: an individual ticker's SEC CIK.
 tickers = _Tickers
+
+
+@ratelimit.guard([ratelimit.RequestLimit(9, timedelta(seconds=1))])
+def _guarded_get(url: str, user_agent: str, /) -> requests.Response:
+    """Guarded version of `session.get`."""
+    return session.get(url, headers={"User-Agent": user_agent})
 
 
 def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
@@ -485,7 +358,6 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
         Successful responses.
 
     """
-    global _throttle_warnings
     user_agent = user_agent or os.environ.get("SEC_API_USER_AGENT", None)
     if not user_agent:
         raise RuntimeError(
@@ -493,17 +365,7 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
             "Pass your user agent declaration to the API directly, or "
             "set the `SEC_API_USER_AGENT` environment variable."
         )
-    next_valid_request_dt = _throttle_watchdog[user_agent].next_valid_request_dt
-    if next_valid_request_dt > 0:
-        if not _throttle_warnings:
-            logger.warning(
-                f"User agent `{user_agent}` may be throttled. "
-                f"Blocking until the next available request for {next_valid_request_dt:.2f} second(s)."
-            )
-            _throttle_warnings += 1
-        time.sleep(next_valid_request_dt)
-    response = session.get(url, headers={"User-Agent": user_agent})
-    _throttle_watchdog.update(user_agent, response)
+    response = _guarded_get(url, user_agent)
     response.raise_for_status()
     return response
 

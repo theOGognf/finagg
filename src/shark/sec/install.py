@@ -23,22 +23,6 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def _api_get(params: dict[str, str]) -> dict:
-    """Wrapper for `_get_valid_concept` to enable dispatching
-    to `multiprocessing.Pool.imap`.
-
-    """
-    ticker = params["ticker"]
-    tag = params["tag"]
-    taxonomy = params["taxonomy"]
-    units = params["units"]
-    return {
-        "ticker": ticker,
-        "tag": tag,
-        "result": _get_valid_concept(ticker, tag, taxonomy, units),
-    }
-
-
 def _features_get(ticker: str) -> tuple[str, pd.DataFrame]:
     """Wrapper for feature getter to enable dispatching to
     `multiprocessing.Pool.imap`.
@@ -50,8 +34,8 @@ def _features_get(ticker: str) -> tuple[str, pd.DataFrame]:
 
 def _get_valid_concept(
     ticker: str, tag: str, taxonomy: str, units: str, /
-) -> None | pd.DataFrame:
-    """Return a filtered dataframe if it's valid.
+) -> pd.DataFrame:
+    """Return a filtered dataframe.
 
     A valid dataframe will be a continuous reporting of
     SEC filings and not have duplicate data.
@@ -63,17 +47,18 @@ def _get_valid_concept(
         units: SEC XBRL data units.
 
     Returns:
-        A dataframe or `None` if a valid dataframe doesn't exist.
+        A dataframe with unique form 10-Q rows or
+        an empty dataframe if no rows exist.
 
     """
     try:
         df = api.company_concept.get(tag, ticker=ticker, taxonomy=taxonomy, units=units)
         df = features.get_unique_10q(df, units=units)
-        if len(df.index) == 0:
-            return None
+        if not len(df.index):
+            return pd.DataFrame()
         return df
     except (HTTPError, KeyError):
-        return None
+        return pd.DataFrame()
 
 
 def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> None:
@@ -103,31 +88,24 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
 
     tickers = indices.api.get_ticker_set()
     concepts = features.quarterly_features.concepts
+    total_searches = len(tickers) * len(concepts)
     tickers_to_dfs: dict[str, list[pd.DataFrame]] = {}
     tickers_to_inserts = {}
     tags_to_misses = {}
-    searches = []
     skipped_tickers = set()
     with sql.engine.connect() as conn:
-        with mp.Pool(processes=processes) as pool:
-            for ticker in sorted(tickers):
-                tickers_to_dfs[ticker] = []
+        with tqdm.tqdm(total=total_searches, desc="Installing raw SEC data") as pbar:
+            for ticker in tickers:
                 for concept in concepts:
-                    search = concept.copy()
-                    search["ticker"] = ticker
-                    tags_to_misses[concept["tag"]] = 0
-                    searches.append(search)
-
-            with tqdm.tqdm(total=len(searches), desc="Installing raw SEC data") as pbar:
-                for output in pool.imap_unordered(_api_get, searches):
                     pbar.update()
-                    ticker = output["ticker"]
-                    tag = output["tag"]
-                    df = output["result"]
-                    if df is None:
+                    tag = concept["tag"]
+                    taxonomy = concept["taxonomy"]
+                    units = concept["units"]
+                    df = _get_valid_concept(ticker, tag, taxonomy, units)
+                    if not len(df.index):
                         skipped_tickers.add(ticker)
                         tags_to_misses[tag] += 1
-                        continue
+                        break
 
                     tickers_to_dfs[ticker].append(df)
                     if len(tickers_to_dfs[ticker]) == len(concepts):
