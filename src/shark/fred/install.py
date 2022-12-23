@@ -17,10 +17,14 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def run() -> None:
+def run(install_features: bool = False) -> None:
     """Set the `FRED_API_KEY` environment variable and
     optionally initialize local SQL tables with
     popular economic data.
+
+    Args:
+        install_features: Whether to install features from
+            the scraped data.
 
     """
     if "FRED_API_KEY" not in os.environ:
@@ -36,5 +40,12 @@ def run() -> None:
         logger.info(f"FRED API key writtern to {p}")
     else:
         logger.info("FRED API key already exists in env")
-    c = scrape.run(features.economic_features.series_ids, drop_tables=True)
-    logger.info(f"{sum(c.values())} rows written")
+    raw_count = scrape.run(features.economic_features.series_ids, drop_tables=True)
+    logger.info(f"{sum(raw_count.values())} raw rows written")
+
+    if install_features:
+        df = features.economic_features.from_sql()
+        feature_count = features.economic_features.to_store(df)
+        logger.info(f"{feature_count} feature rows written")
+
+    logger.info("Installation complete!")

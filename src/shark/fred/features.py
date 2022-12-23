@@ -215,7 +215,7 @@ class _EconomicFeatures:
         *,
         engine: Engine = store.engine,
         metadata: MetaData = store.metadata,
-    ) -> None | int:
+    ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
         Does the necessary handling to transform columns to

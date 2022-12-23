@@ -4,17 +4,14 @@ import time
 from abc import ABC, abstractmethod
 from collections import deque
 from datetime import timedelta
+from functools import update_wrapper
 from typing import Any, Callable, Sequence
 
 import requests
-import requests_cache
 
-Response = requests.Response | requests_cache.CachedResponse
 Getter = Callable[
-    [
-        Any,
-    ],
-    Response,
+    ...,
+    requests.Response,
 ]
 
 
@@ -59,7 +56,7 @@ class RateLimit(ABC):
         self.responses = deque()
 
     @abstractmethod
-    def eval(self, response: Response) -> float | dict[str, float]:
+    def eval(self, response: requests.Response) -> float | dict[str, float]:
         """Evaluate a response and determine how much it contributes
         to the max limit imposed by this instance.
 
@@ -85,7 +82,7 @@ class RateLimit(ABC):
         """Get the most recent response timestamp."""
         return self.responses[-1][1] if self.responses else time.perf_counter()
 
-    def update(self, response: Response) -> float:
+    def update(self, response: requests.Response) -> float:
         """Update the rate limit's running `total` and `responses` collection.
 
         Args:
@@ -124,8 +121,8 @@ class RateLimit(ABC):
         tmp_limit = self.total_limit
         tmp_wait = 0.0
         if self.total_limit >= self.limit:
-            for response in self.responses:
-                limit, ts = response
+            for r in self.responses:
+                limit, ts = r
                 tmp_limit -= limit
                 tmp_wait += self.period - (self.ts - ts)
                 if tmp_limit < self.limit:
@@ -138,7 +135,7 @@ class RateLimit(ABC):
 class RequestLimit(RateLimit):
     """Limit the number of requests made."""
 
-    def eval(self, response: Response) -> float | dict[str, float]:
+    def eval(self, response: requests.Response) -> float | dict[str, float]:
         if hasattr(response, "from_cache") and response.from_cache:
             return 0.0
         return float(1)
@@ -147,7 +144,7 @@ class RequestLimit(RateLimit):
 class ErrorLimit(RateLimit):
     """Limit the number of errors occurred."""
 
-    def eval(self, response: Response) -> float | dict[str, float]:
+    def eval(self, response: requests.Response) -> float | dict[str, float]:
         if hasattr(response, "from_cache") and response.from_cache:
             return 0.0
         return float(response.status_code != 200)
@@ -156,7 +153,7 @@ class ErrorLimit(RateLimit):
 class SizeLimit(RateLimit):
     """Limit the size of responses."""
 
-    def eval(self, response: Response) -> float | dict[str, float]:
+    def eval(self, response: requests.Response) -> float | dict[str, float]:
         if hasattr(response, "from_cache") and response.from_cache:
             return 0.0
         return float(len(response.content))
@@ -188,8 +185,9 @@ class RateLimitGuard:
         self.f = f
         self.limits = limits
         self.warn = warn
+        update_wrapper(self, f)
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Response:
+    def __call__(self, *args: Any, **kwargs: Any) -> requests.Response:
         """Call the underlying getter and sleep the wait required to
         satisfy the guard's limits.
 
@@ -213,10 +211,12 @@ class RateLimitGuard:
         return r
 
 
-def guard(limits: Sequence[RateLimit], *, warn: bool = False):
+def guard(
+    limits: Sequence[RateLimit], *, warn: bool = False
+) -> Callable[[Getter,], RateLimitGuard]:
     """Apply `limits` to a requests-style getter."""
 
     def decorator(f: Getter) -> RateLimitGuard:
-        return RateLimitGuard(f, limits, warn=warn)
+        return RateLimitGuard(f, tuple(limits), warn=warn)
 
     return decorator
