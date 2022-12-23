@@ -12,14 +12,24 @@ from . import api, sql, store
 
 
 @cache
-def get_ticker_set() -> set[str]:
-    """Get all unique tickers in the SQL tables."""
+def get_sql_tickers() -> set[str]:
+    """Get all unique tickers in the raw SQL tables."""
     with sql.engine.connect() as conn:
-        ciks = conn.execute(select(distinct(sql.tags.c.cik)))
         tickers = set()
-        for cik in ciks:
+        for cik in conn.execute(select(distinct(sql.tags.c.cik))):
             (cik,) = cik
             ticker = api.get_ticker(cik)
+            tickers.add(ticker)
+    return tickers
+
+
+@cache
+def get_store_tickers() -> set[str]:
+    """Get all unique tickers in the feature SQL tables."""
+    with store.engine.connect() as conn:
+        tickers = set()
+        for ticker in conn.execute(select(distinct(store.quarterly_features.c.ticker))):
+            (ticker,) = ticker
             tickers.add(ticker)
     return tickers
 

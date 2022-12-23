@@ -3,9 +3,9 @@
 from . import fred, indices, sec, yfinance
 
 
-def run() -> None:
+def run(install_features: bool = False) -> None:
     """Run all installation scripts for submodules."""
-    fred.install.run()
+    fred.install.run(install_features=install_features)
     indices.install.run()
-    sec.install.run()
-    yfinance.install.run()
+    sec.install.run(install_features=install_features)
+    yfinance.install.run(install_features=install_features)

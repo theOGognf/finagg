@@ -1,4 +1,5 @@
 """Utils to scrape an initial stock price historical dataset."""
+
 import logging
 import multiprocessing as mp
 import sys

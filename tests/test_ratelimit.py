@@ -10,7 +10,7 @@ PERIOD = 10
 
 
 class StrictLimiter(shark.ratelimit.RateLimit):
-    def eval(self, response: shark.ratelimit.Response) -> float | dict[str, float]:
+    def eval(self, response: requests.Response) -> float | dict[str, float]:
         if hasattr(response, "from_cache") and response.from_cache:
             return 0.0
         wait = 100 if response.status_code != 200 else 0.0
