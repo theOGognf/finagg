@@ -127,7 +127,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
         store.metadata.create_all(store.engine)
 
         with store.engine.connect() as conn:
-            with mp.Pool(processes=processes) as pool:
+            with mp.Pool(processes=processes, initializer=store.engine.dispose) as pool:
                 with tqdm.tqdm(
                     total=len(tickers_to_inserts), desc="Installing SEC features"
                 ) as pbar:

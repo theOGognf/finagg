@@ -105,7 +105,7 @@ class RateLimit(ABC):
         wait = v["wait"]
 
         ts = time.perf_counter()
-        dt = ts - self.ts
+        dt = max(ts - self.ts, 0.0)
         self.total_limit += limit
         self.total_wait = max(self.total_wait - dt, 0.0)
         self.total_wait = max(self.total_wait, wait)
@@ -159,7 +159,7 @@ class SizeLimit(RateLimit):
     def eval(self, response: Response) -> float | dict[str, float]:
         if hasattr(response, "from_cache") and response.from_cache:
             return 0.0
-        return float(response.size)
+        return float(len(response.content))
 
 
 class RateLimitGuard:
