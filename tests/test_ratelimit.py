@@ -43,8 +43,8 @@ def expected_wait() -> list[int]:
 
 def test_request_limit_update(expected_wait: list[int]) -> None:
     limit = shark.ratelimit.RequestLimit(LIMIT, PERIOD)
+    response = requests.Response()
     for wait in expected_wait:
-        response = requests.Response()
         assert limit.update(response) == wait
 
 
@@ -62,15 +62,15 @@ def test_request_limit_update_with_wait(_) -> None:
 
 def test_error_limit_update(expected_wait: list[int]) -> None:
     limit = shark.ratelimit.ErrorLimit(LIMIT, PERIOD)
+    response = requests.Response()
+    response.status_code = 404
     for wait in expected_wait:
-        response = requests.Response()
-        response.status_code = 404
         assert limit.update(response) == wait
 
 
 def test_size_limit_update(expected_wait: list[int]) -> None:
     limit = shark.ratelimit.SizeLimit(LIMIT, PERIOD)
+    response = requests.Response()
+    response._content = b"0"
     for wait in expected_wait:
-        response = requests.Response()
-        response._content = b"0"
         assert limit.update(response) == wait

@@ -57,42 +57,59 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
     sql.metadata.drop_all(sql.engine)
     sql.metadata.create_all(sql.engine)
 
-    tickers_to_inserts = {}
-    skipped_tickers = set()
+    raw_tickers_to_inserts = {}
+    skipped_raw_tickers = set()
     with sql.engine.connect() as conn:
         with mp.Pool(processes=processes) as pool:
             with tqdm.tqdm(
-                total=len(tickers), desc="Installing raw yfinance data"
+                total=len(tickers),
+                desc="Installing raw yfinance data",
+                position=0,
+                leave=True,
             ) as pbar:
                 for output in pool.imap_unordered(_api_get, tickers):
                     pbar.update()
                     ticker, df = output
-                    if not len(df.index):
-                        skipped_tickers.add(ticker)
+                    if len(df.index) == 0:
+                        skipped_raw_tickers.add(ticker)
                         continue
 
                     try:
                         conn.execute(sql.prices.insert(), df.to_dict(orient="records"))
                     except IntegrityError:
                         continue
-                    tickers_to_inserts[ticker] = len(df.index)
-    logger.info(f"Total rows written: {sum(tickers_to_inserts.values())}")
-    logger.info(f"Number of tickers skipped: {len(skipped_tickers)}/{len(tickers)}")
+                    raw_tickers_to_inserts[ticker] = len(df.index)
+    logger.info(f"Total rows written: {sum(raw_tickers_to_inserts.values())}")
+    logger.info(f"Number of tickers skipped: {len(skipped_raw_tickers)}/{len(tickers)}")
 
     if install_features:
         store.metadata.drop_all(store.engine)
         store.metadata.create_all(store.engine)
 
+        feature_tickers_to_inserts = {}
+        skipped_feature_tickers = set()
         with store.engine.connect() as conn:
-            with mp.Pool(processes=processes) as pool:
+            with mp.Pool(processes=processes, initializer=sql.engine.dispose) as pool:
                 with tqdm.tqdm(
-                    total=len(tickers_to_inserts), desc="Installing yfinance features"
+                    total=len(raw_tickers_to_inserts),
+                    desc="Installing yfinance features",
+                    position=0,
+                    leave=True,
                 ) as pbar:
                     for output in pool.imap_unordered(
-                        _features_get, tickers_to_inserts.keys()
+                        _features_get, raw_tickers_to_inserts.keys()
                     ):
                         pbar.update()
                         ticker, df = output
-                        features.daily_features.to_store(ticker, df)
+                        if len(df.index) > 0:
+                            features.daily_features.to_store(ticker, df)
+                            feature_tickers_to_inserts[ticker] = len(df.index)
+                        else:
+                            skipped_feature_tickers.add(ticker)
+        logger.info(f"Total rows written: {sum(feature_tickers_to_inserts.values())}")
+        logger.info(
+            "Number of tickers skipped: "
+            f"{len(skipped_feature_tickers)}/{len(raw_tickers_to_inserts)}"
+        )
 
     logger.info("Installation complete!")

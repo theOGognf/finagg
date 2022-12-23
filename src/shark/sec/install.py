@@ -54,7 +54,7 @@ def _get_valid_concept(
     try:
         df = api.company_concept.get(tag, ticker=ticker, taxonomy=taxonomy, units=units)
         df = features.get_unique_10q(df, units=units)
-        if not len(df.index):
+        if len(df.index) == 0:
             return pd.DataFrame()
         return df
     except (HTTPError, KeyError):
@@ -90,52 +90,67 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
     concepts = features.quarterly_features.concepts
     total_searches = len(tickers) * len(concepts)
     tickers_to_dfs: dict[str, list[pd.DataFrame]] = {}
-    tickers_to_inserts = {}
-    tags_to_misses = {}
-    skipped_tickers = set()
+    raw_tickers_to_inserts = {}
+    tags_to_misses = {c["tag"]: 0 for c in concepts}
+    skipped_raw_tickers = set()
     with sql.engine.connect() as conn:
-        with tqdm.tqdm(total=total_searches, desc="Installing raw SEC data") as pbar:
+        with tqdm.tqdm(
+            total=total_searches, desc="Installing raw SEC data", position=0, leave=True
+        ) as pbar:
             for ticker in tickers:
+                tickers_to_dfs[ticker] = []
                 for concept in concepts:
                     pbar.update()
                     tag = concept["tag"]
                     taxonomy = concept["taxonomy"]
                     units = concept["units"]
                     df = _get_valid_concept(ticker, tag, taxonomy, units)
-                    if not len(df.index):
-                        skipped_tickers.add(ticker)
+                    if len(df.index) == 0:
+                        skipped_raw_tickers.add(ticker)
                         tags_to_misses[tag] += 1
                         break
 
                     tickers_to_dfs[ticker].append(df)
-                    if len(tickers_to_dfs[ticker]) == len(concepts):
-                        dfs = tickers_to_dfs.pop(ticker)
-                        df = pd.concat(dfs)
-                        try:
-                            conn.execute(
-                                sql.tags.insert(), df.to_dict(orient="records")
-                            )
-                        except IntegrityError:
-                            continue
-                        tickers_to_inserts[ticker] = len(df.index)
-    logger.info(f"Total rows written: {sum(tickers_to_inserts.values())}")
-    logger.info(f"Number of tickers skipped: {len(skipped_tickers)}/{len(tickers)}")
+
+                if len(tickers_to_dfs[ticker]) == len(concepts):
+                    dfs = tickers_to_dfs.pop(ticker)
+                    df = pd.concat(dfs)
+                    try:
+                        conn.execute(sql.tags.insert(), df.to_dict(orient="records"))
+                        raw_tickers_to_inserts[ticker] = len(df.index)
+                    except IntegrityError:
+                        continue
+    logger.info(f"Total rows written: {sum(raw_tickers_to_inserts.values())}")
+    logger.info(f"Number of tickers skipped: {len(skipped_raw_tickers)}/{len(tickers)}")
     logger.info(f"Missed tags summary: {tags_to_misses}")
 
     if install_features:
         store.metadata.drop_all(store.engine)
         store.metadata.create_all(store.engine)
 
+        feature_tickers_to_inserts = {}
+        skipped_feature_tickers = set()
         with store.engine.connect() as conn:
-            with mp.Pool(processes=processes, initializer=store.engine.dispose) as pool:
+            with mp.Pool(processes=processes, initializer=sql.engine.dispose) as pool:
                 with tqdm.tqdm(
-                    total=len(tickers_to_inserts), desc="Installing SEC features"
+                    total=len(raw_tickers_to_inserts),
+                    desc="Installing SEC features",
+                    position=0,
+                    leave=True,
                 ) as pbar:
                     for output in pool.imap_unordered(
-                        _features_get, tickers_to_inserts.keys()
+                        _features_get, raw_tickers_to_inserts.keys()
                     ):
                         pbar.update()
                         ticker, df = output
-                        features.quarterly_features.to_store(ticker, df)
-
+                        if len(df.index) > 0:
+                            features.quarterly_features.to_store(ticker, df)
+                            feature_tickers_to_inserts[ticker] = len(df.index)
+                        else:
+                            skipped_feature_tickers.add(ticker)
+        logger.info(f"Total rows written: {sum(feature_tickers_to_inserts.values())}")
+        logger.info(
+            "Number of tickers skipped: "
+            f"{len(skipped_feature_tickers)}/{len(raw_tickers_to_inserts)}"
+        )
     logger.info("Installation complete!")

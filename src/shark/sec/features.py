@@ -39,7 +39,7 @@ def get_unique_10q(df: pd.DataFrame, /, *, units: str = "USD") -> pd.DataFrame:
     df = df[
         (df["form"] == "10-Q") & (df["units"] == units) & (df["fp"].str.startswith("Q"))
     ]
-    return df.drop_duplicates(["accn", "tag"])
+    return df.drop_duplicates(["tag", "filed"])
 
 
 class _QuarterlyFeatures:
