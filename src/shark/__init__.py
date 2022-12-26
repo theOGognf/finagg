@@ -1,5 +1,9 @@
 """Main package interface."""
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from . import (
     _version,
     bea,
