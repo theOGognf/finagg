@@ -5,7 +5,7 @@ import os
 import sys
 
 from .. import utils
-from . import features, scrape
+from . import features, scrape, store
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -44,6 +44,9 @@ def run(install_features: bool = False) -> None:
     logger.info(f"{sum(raw_count.values())} raw rows written")
 
     if install_features:
+        store.metadata.drop_all(store.engine)
+        store.metadata.create_all(store.engine)
+
         df = features.economic_features.from_sql()
         feature_count = features.economic_features.to_store(df)
         logger.info(f"{feature_count} feature rows written")

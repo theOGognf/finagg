@@ -92,10 +92,8 @@ def _define_db(
     tags = Table(
         "tags",
         metadata,
-        Column("cik", String, doc="Unique SEC ID."),
-        Column(
-            "accn", String, primary_key=True, doc="Unique submission/access number."
-        ),
+        Column("cik", String, primary_key=True, doc="Unique SEC ID."),
+        Column("accn", String, doc="Unique submission/access number."),
         Column(
             "taxonomy", String, doc="XBRL taxonomy the submission's tag belongs to."
         ),
@@ -122,7 +120,12 @@ def _define_db(
             doc="When the tag's value's measurements started.",
         ),
         Column("end", String, doc="When the tag's value's measurements ended."),
-        Column("filed", String, doc="When the submission was actually filed."),
+        Column(
+            "filed",
+            String,
+            primary_key=True,
+            doc="When the submission was actually filed.",
+        ),
         Column(
             "frame",
             String,

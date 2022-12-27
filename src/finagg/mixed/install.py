@@ -25,7 +25,10 @@ def _features_get(ticker: str) -> tuple[str, pd.DataFrame]:
     `multiprocessing.Pool.imap`.
 
     """
-    df = features.fundamental_features.from_sql(ticker)
+    try:
+        df = features.fundamental_features.from_sql(ticker)
+    except KeyError:
+        return ticker, pd.DataFrame()
     return ticker, df
 
 
