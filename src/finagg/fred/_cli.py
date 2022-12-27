@@ -47,6 +47,3 @@ class Command:
             case "scrape":
                 args, _ = self.scrape_parser.parse_known_args()
                 scrape.run(args.series)
-
-            case _:
-                raise ValueError(f"{cmd} is not supported")

@@ -23,6 +23,3 @@ class Command:
         match cmd:
             case "install":
                 install.run()
-
-            case _:
-                raise ValueError(f"{cmd} is not supported")
