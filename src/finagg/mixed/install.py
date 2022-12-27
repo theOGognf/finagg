@@ -27,7 +27,7 @@ def _features_get(ticker: str) -> tuple[str, pd.DataFrame]:
     """
     try:
         df = features.fundamental_features.from_sql(ticker)
-    except KeyError:
+    except (IndexError, KeyError):
         return ticker, pd.DataFrame()
     return ticker, df
 
