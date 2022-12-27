@@ -1,3 +1,3 @@
 """SEC top-level interface."""
 
-from . import api, features, install, scrape, sql, store
+from . import _cli, api, features, install, scrape, sql, store

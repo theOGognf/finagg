@@ -433,7 +433,6 @@ def _api_error_as_response(error: dict) -> requests.Response:
         ratelimit.ErrorLimit(20, timedelta(minutes=1)),
         ratelimit.SizeLimit(90e6, timedelta(minutes=1)),
     ],
-    warn=True,
 )
 def _guarded_get(url: str, params: dict, /) -> requests.Response:
     """Guarded version of `session.get`."""

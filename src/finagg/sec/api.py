@@ -328,7 +328,7 @@ submissions = _Submissions
 tickers = _Tickers
 
 
-@ratelimit.guard([ratelimit.RequestLimit(9, timedelta(seconds=1))], warn=True)
+@ratelimit.guard([ratelimit.RequestLimit(9, timedelta(seconds=1))])
 def _guarded_get(url: str, user_agent: str, /) -> requests.Response:
     """Guarded version of `session.get`."""
     return session.get(url, headers={"User-Agent": user_agent})
