@@ -2,6 +2,7 @@
 
 import os
 import pathlib
+from functools import cache
 
 from sqlalchemy import (
     Column,
@@ -11,9 +12,13 @@ from sqlalchemy import (
     String,
     Table,
     create_engine,
+    distinct,
     inspect,
+    select,
 )
 from sqlalchemy.engine import Engine, Inspector
+
+from . import api
 
 _DATABASE_PATH = (
     pathlib.Path(__file__).resolve().parent.parent.parent.parent / "data" / "sec.sqlite"
@@ -146,3 +151,15 @@ def define_db(
 
 
 (engine, metadata), inspector, (submissions, tags) = define_db()
+
+
+@cache
+def get_ticker_set() -> set[str]:
+    """Get all unique tickers in the raw SQL tables."""
+    with engine.connect() as conn:
+        tickers = set()
+        for cik in conn.execute(select(distinct(tags.c.cik))):
+            (cik,) = cik
+            ticker = api.get_ticker(cik)
+            tickers.add(ticker)
+    return tickers

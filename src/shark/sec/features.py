@@ -11,29 +11,6 @@ from .. import utils
 from . import api, sql, store
 
 
-@cache
-def get_sql_tickers() -> set[str]:
-    """Get all unique tickers in the raw SQL tables."""
-    with sql.engine.connect() as conn:
-        tickers = set()
-        for cik in conn.execute(select(distinct(sql.tags.c.cik))):
-            (cik,) = cik
-            ticker = api.get_ticker(cik)
-            tickers.add(ticker)
-    return tickers
-
-
-@cache
-def get_store_tickers() -> set[str]:
-    """Get all unique tickers in the feature SQL tables."""
-    with store.engine.connect() as conn:
-        tickers = set()
-        for ticker in conn.execute(select(distinct(store.quarterly_features.c.ticker))):
-            (ticker,) = ticker
-            tickers.add(ticker)
-    return tickers
-
-
 def get_unique_10q(df: pd.DataFrame, /, *, units: str = "USD") -> pd.DataFrame:
     """Get all unique rows as determined by the
     accession number (`accn`) and tag for each quarter.

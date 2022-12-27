@@ -165,12 +165,12 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
         Successful responses.
 
     """
-    user_agent = user_agent or os.environ.get("TICKERS_API_USER_AGENT", None)
+    user_agent = user_agent or os.environ.get("INDICES_API_USER_AGENT", None)
     if not user_agent:
         raise RuntimeError(
             "No indices API user agent declaration found. "
             "Pass your user agent declaration to the API directly, or "
-            "set the `TICKERS_API_USER_AGENT` environment variable."
+            "set the `INDICES_API_USER_AGENT` environment variable."
         )
     response = session.get(url, headers={"User-Agent": user_agent})
     response.raise_for_status()

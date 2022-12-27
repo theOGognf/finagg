@@ -2,8 +2,18 @@
 
 import os
 import pathlib
+from functools import cache
 
-from sqlalchemy import Column, MetaData, String, Table, create_engine, inspect
+from sqlalchemy import (
+    Column,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+    distinct,
+    inspect,
+    select,
+)
 from sqlalchemy.engine import Engine, Inspector
 
 _DATABASE_PATH = (
@@ -51,3 +61,14 @@ def define_db(
 
 
 (engine, metadata), inspector, (quarterly_features,) = define_db()
+
+
+@cache
+def get_ticker_set() -> set[str]:
+    """Get all unique tickers in the feature SQL tables."""
+    with engine.connect() as conn:
+        tickers = set()
+        for ticker in conn.execute(select(distinct(quarterly_features.c.ticker))):
+            (ticker,) = ticker
+            tickers.add(ticker)
+    return tickers
