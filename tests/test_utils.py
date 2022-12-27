@@ -1,6 +1,6 @@
 import pytest
 
-from shark.utils import CamelCase, join_with, snake_case
+from finagg.utils import CamelCase, join_with, snake_case
 
 
 @pytest.mark.parametrize(

@@ -37,11 +37,11 @@ def sqlite_resources(
         >>> from sqlalchemy import MetaData
         >>> from sqlalchemy.engine import Engine
         >>>
-        >>> import shark
+        >>> import finagg
         >>>
         >>> @pytest.fixture
         ... def resources() -> tuple[Engine, MetaData]:
-        ...     yield from shark.testing.sqlite_resources("/path/to/db.sqlite")
+        ...     yield from finagg.testing.sqlite_resources("/path/to/db.sqlite")
         ...
 
     """

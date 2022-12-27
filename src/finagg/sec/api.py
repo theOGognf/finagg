@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter(
-    "%(asctime)s | %(levelname)s | shark.sec.api - %(message)s"
+    "%(asctime)s | %(levelname)s | finagg.sec.api - %(message)s"
 )
 handler.setFormatter(formatter)
 logger.addHandler(handler)

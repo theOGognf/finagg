@@ -1,6 +1,6 @@
 import pytest
 
-from shark.frame import FiscalDelta, FiscalFrame, is_valid_fiscal_seq
+from finagg.frame import FiscalDelta, FiscalFrame, is_valid_fiscal_seq
 
 
 @pytest.mark.parametrize(

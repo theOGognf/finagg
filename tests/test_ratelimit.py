@@ -3,13 +3,13 @@ from unittest.mock import patch
 import pytest
 import requests
 
-import shark
+import finagg
 
 LIMIT = 3
 PERIOD = 10
 
 
-class StrictLimiter(shark.ratelimit.RateLimit):
+class StrictLimiter(finagg.ratelimit.RateLimit):
     def eval(self, response: requests.Response) -> float | dict[str, float]:
         if hasattr(response, "from_cache") and response.from_cache:
             return 0.0
@@ -42,7 +42,7 @@ def expected_wait() -> list[int]:
 
 
 def test_request_limit_update(expected_wait: list[int]) -> None:
-    limit = shark.ratelimit.RequestLimit(LIMIT, PERIOD)
+    limit = finagg.ratelimit.RequestLimit(LIMIT, PERIOD)
     response = requests.Response()
     for wait in expected_wait:
         assert limit.update(response) == wait
@@ -61,7 +61,7 @@ def test_request_limit_update_with_wait(_) -> None:
 
 
 def test_error_limit_update(expected_wait: list[int]) -> None:
-    limit = shark.ratelimit.ErrorLimit(LIMIT, PERIOD)
+    limit = finagg.ratelimit.ErrorLimit(LIMIT, PERIOD)
     response = requests.Response()
     response.status_code = 404
     for wait in expected_wait:
@@ -69,7 +69,7 @@ def test_error_limit_update(expected_wait: list[int]) -> None:
 
 
 def test_size_limit_update(expected_wait: list[int]) -> None:
-    limit = shark.ratelimit.SizeLimit(LIMIT, PERIOD)
+    limit = finagg.ratelimit.SizeLimit(LIMIT, PERIOD)
     response = requests.Response()
     response._content = b"0"
     for wait in expected_wait:

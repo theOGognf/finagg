@@ -17,7 +17,7 @@ def get(
     """Get a ticker's stock price history.
 
     Does a simple transform on yfinance's ticker API
-    dataframe result to be compatible with shark's
+    dataframe result to be compatible with finagg's
     local SQL tables.
 
     Args:

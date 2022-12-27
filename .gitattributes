@@ -1,1 +1,1 @@
-src/shark/_version.py export-subst
+src/finagg/_version.py export-subst

@@ -1,5 +1,5 @@
-import shark
+import finagg
 
 
 def test_get() -> None:
-    shark.yfinance.api.get("AAPL")
+    finagg.yfinance.api.get("AAPL")

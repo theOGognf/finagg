@@ -10,17 +10,17 @@ See the official BEA API user guide for more info:
 
 Examples:
     List datasets.
-    >>> import shark
-    >>> shark.bea.api.get_dataset_list()
+    >>> import finagg
+    >>> finagg.bea.api.get_dataset_list()
 
     Listing parameters for GDP by industry.
-    >>> shark.bea.api.gdp_by_industry.get_parameter_list()
+    >>> finagg.bea.api.gdp_by_industry.get_parameter_list()
 
     Listing possible parameter values.
-    >>> shark.bea.api.gdp_by_industry.get_parameter_values("year")
+    >>> finagg.bea.api.gdp_by_industry.get_parameter_values("year")
 
     Getting GDP by industry for specific years.
-    >>> shark.bea.api.gdp_by_industry.get(year=[1995, 1996])
+    >>> finagg.bea.api.gdp_by_industry.get(year=[1995, 1996])
 
 """
 
@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter(
-    "%(asctime)s | %(levelname)s | shark.bea.api - %(message)s"
+    "%(asctime)s | %(levelname)s | finagg.bea.api - %(message)s"
 )
 handler.setFormatter(formatter)
 logger.addHandler(handler)

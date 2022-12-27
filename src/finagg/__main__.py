@@ -5,7 +5,7 @@ from . import fred, indices, sec, yfinance
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="shark command line utilities. Scrape APIs, train models, query models, and more."
+        description="finagg command line utilities. Scrape APIs, train models, query models, and more."
     )
     subparsers = parser.add_subparsers(
         help="Subcommands for the main package and other submodules."

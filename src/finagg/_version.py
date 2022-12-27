@@ -44,8 +44,8 @@ def get_config():
     cfg.VCS = "git"
     cfg.style = "pep440"
     cfg.tag_prefix = ""
-    cfg.parentdir_prefix = "shark-"
-    cfg.versionfile_source = "src/shark/_version.py"
+    cfg.parentdir_prefix = "finagg-"
+    cfg.versionfile_source = "src/finagg/_version.py"
     cfg.verbose = False
     return cfg
 

@@ -1,6 +1,6 @@
 import pytest
 
-from shark.portfolio import Portfolio, Position
+from finagg.portfolio import Portfolio, Position
 
 CHANGE_MULTIPLE = 0.5
 INITIAL_CASH = 10_000
