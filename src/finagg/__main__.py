@@ -1,13 +1,19 @@
+"""Main CLI entry points."""
+
 import argparse
 
-from . import fred, indices, install, sec, yfinance
+from . import fred, indices, install, mixed, sec, yfinance
 
 
 def main() -> int:
+    """Create and run parsers according to the given commands."""
     parser = argparse.ArgumentParser(
         description="finagg command line utilities. Scrape APIs, train models, query models, and more."
     )
     subparsers = parser.add_subparsers(dest="base_cmd")
+
+    # finagg indices ...
+    indices_cmd = indices._cli.Command(subparsers)
 
     # finagg install ...
     install_parser = subparsers.add_parser(
@@ -25,14 +31,7 @@ def main() -> int:
     fred_cmd = fred._cli.Command(subparsers)
 
     # finagg mixed ...
-    mixed_parser = subparsers.add_parser(
-        "mixed", help="Tools for features built from several submodules."
-    )
-    mixed_subparsers = mixed_parser.add_subparsers(dest="mixed")
-    mixed_install = mixed_subparsers.add_parser(
-        "install",
-        help="Drop and recreate tables, and scrape the recommended features into the SQL database.",
-    )
+    mixed_cmd = mixed._cli.Command(subparsers)
 
     # finagg sec ...
     sec_cmd = sec._cli.Command(subparsers)
@@ -42,12 +41,18 @@ def main() -> int:
 
     args = parser.parse_args()
     match args.base_cmd:
+        case "fred":
+            fred_cmd.run(args.fred_cmd)
+
+        case "indices":
+            indices_cmd.run(args.indices_cmd)
+
         case "install":
             install_args, _ = install_parser.parse_known_args()
             install.run(install_features=install_args.features)
 
-        case "fred":
-            fred_cmd.run(args.fred_cmd)
+        case "mixed":
+            mixed_cmd.run(args.mixed_cmd)
 
         case "sec":
             sec_cmd.run(args.sec_cmd)

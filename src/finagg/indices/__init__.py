@@ -1,3 +1,3 @@
 """Top-level indices interface."""
 
-from . import api, install, scrape, sql
+from . import _cli, api, install, scrape, sql

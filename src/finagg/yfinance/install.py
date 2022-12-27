@@ -89,24 +89,23 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
 
         feature_tickers_to_inserts = {}
         skipped_feature_tickers = set()
-        with store.engine.connect() as conn:
-            with mp.Pool(processes=processes, initializer=sql.engine.dispose) as pool:
-                with tqdm.tqdm(
-                    total=len(raw_tickers_to_inserts),
-                    desc="Installing yfinance features",
-                    position=0,
-                    leave=True,
-                ) as pbar:
-                    for output in pool.imap_unordered(
-                        _features_get, raw_tickers_to_inserts.keys()
-                    ):
-                        pbar.update()
-                        ticker, df = output
-                        if len(df.index) > 0:
-                            features.daily_features.to_store(ticker, df)
-                            feature_tickers_to_inserts[ticker] = len(df.index)
-                        else:
-                            skipped_feature_tickers.add(ticker)
+        with mp.Pool(processes=processes, initializer=sql.engine.dispose) as pool:
+            with tqdm.tqdm(
+                total=len(raw_tickers_to_inserts),
+                desc="Installing yfinance features",
+                position=0,
+                leave=True,
+            ) as pbar:
+                for output in pool.imap_unordered(
+                    _features_get, raw_tickers_to_inserts.keys()
+                ):
+                    pbar.update()
+                    ticker, df = output
+                    if len(df.index) > 0:
+                        features.daily_features.to_store(ticker, df)
+                        feature_tickers_to_inserts[ticker] = len(df.index)
+                    else:
+                        skipped_feature_tickers.add(ticker)
         logger.info(f"Total rows written: {sum(feature_tickers_to_inserts.values())}")
         logger.info(
             "Number of tickers skipped: "

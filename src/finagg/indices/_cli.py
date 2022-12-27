@@ -1,4 +1,4 @@
-"""CLI and tools for aggregating mixed features."""
+"""CLI and tools for aggregating tickers in common indices."""
 
 import argparse
 
@@ -10,16 +10,16 @@ class Command:
 
     def __init__(self, parent: argparse._SubParsersAction) -> None:
         self.parser: argparse.ArgumentParser = parent.add_parser(
-            "mixed", help="Mixed feature tools."
+            "indices", help="Indices tools."
         )
-        subparser = self.parser.add_subparsers(dest="mixed_cmd")
+        subparser = self.parser.add_subparsers(dest="indices_cmd")
         self.install_parser = subparser.add_parser(
             "install",
-            help="Drop and recreate tables, and install features into the SQL database.",
+            help="Drop and recreate tables, and scrape tickers into the SQL database.",
         )
 
     def run(self, cmd: str) -> None:
-        """Run the mixed features command specified by `cmd`."""
+        """Run the indices command specified by `cmd`."""
         match cmd:
             case "install":
                 install.run()
