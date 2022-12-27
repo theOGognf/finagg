@@ -1,7 +1,6 @@
 """Abstract FRED API definition."""
 
 import os
-import pathlib
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from typing import Any, ClassVar
@@ -10,19 +9,12 @@ import pandas as pd
 import requests
 import requests_cache
 
-_API_CACHE_PATH = os.environ.get(
-    "FRED_API_CACHE_PATH",
-    pathlib.Path(__file__).resolve().parent.parent.parent.parent.parent
-    / "data"
-    / "fred_api_cache",
-)
-_API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
-_API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+from ... import backend
 
 session = requests_cache.CachedSession(
-    str(_API_CACHE_PATH),
+    str(backend.http_cache_path),
     ignored_parameters=["api_key", "file_type"],
-    expire_after=timedelta(days=1),
+    expire_after=timedelta(weeks=1),
 )
 
 

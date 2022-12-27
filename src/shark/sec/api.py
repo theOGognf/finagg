@@ -7,7 +7,6 @@ See the official SEC EDGAR API page for more info:
 
 import logging
 import os
-import pathlib
 import sys
 from abc import ABC, abstractmethod
 from datetime import timedelta
@@ -17,7 +16,7 @@ import pandas as pd
 import requests
 import requests_cache
 
-from .. import ratelimit, utils
+from .. import backend, ratelimit, utils
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -28,18 +27,9 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-_API_CACHE_PATH = os.environ.get(
-    "SEC_API_CACHE_PATH",
-    pathlib.Path(__file__).resolve().parent.parent.parent.parent
-    / "data"
-    / "sec_api_cache",
-)
-_API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
-_API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
-
 session = requests_cache.CachedSession(
-    str(_API_CACHE_PATH),
-    expire_after=timedelta(days=1),
+    str(backend.http_cache_path),
+    expire_after=timedelta(weeks=1),
 )
 
 
@@ -319,9 +309,6 @@ _cik_to_tickers: dict[str, str] = {}
 
 #: Mapping of (uppercase) tickers to SEC CIK strings.
 _tickers_to_cik: dict[str, str] = {}
-
-#: Path to SEC API requests cache.
-cache_path = str(_API_CACHE_PATH)
 
 #: Get the full history of a company's concept (taxonomy and tag).
 company_concept = _CompanyConcept

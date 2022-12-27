@@ -1,7 +1,5 @@
 """Yahoo! finance SQLAlchemy interfaces."""
 
-import os
-import pathlib
 from functools import cache
 
 from sqlalchemy import (
@@ -17,20 +15,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine import Engine, Inspector
 
-_DATABASE_PATH = (
-    pathlib.Path(__file__).resolve().parent.parent.parent.parent
-    / "data"
-    / "yfinance.sqlite"
-)
-
-_DATABASE_URL = os.environ.get(
-    "YFINANCE_DATABASE_URL",
-    f"sqlite:///{_DATABASE_PATH}",
-)
+from .. import backend
 
 
-def define_db(
-    url: str = _DATABASE_URL,
+def _define_db(
+    url: str = backend.database_url,
 ) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 
@@ -45,8 +34,12 @@ def define_db(
         the database definition.
 
     """
-    engine = create_engine(url)
-    inspector: Inspector = inspect(engine)
+    if url != backend.engine.url:
+        engine = create_engine(url)
+        inspector: Inspector = inspect(engine)
+    else:
+        engine = backend.engine
+        inspector = backend.inspector
     metadata = MetaData()
     prices = Table(
         "prices",
@@ -62,7 +55,7 @@ def define_db(
     return (engine, metadata), inspector, (prices,)
 
 
-(engine, metadata), inspector, (prices,) = define_db()
+(engine, metadata), inspector, (prices,) = _define_db()
 
 
 @cache

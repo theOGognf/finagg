@@ -3,13 +3,12 @@ from sqlalchemy import MetaData
 from sqlalchemy.engine import Engine
 
 import shark
-from shark.indices.sql import _DATABASE_PATH
 
 
 @pytest.fixture
 def resources() -> tuple[Engine, MetaData]:
     yield from shark.testing.sqlite_resources(
-        _DATABASE_PATH, creator=shark.indices.sql.define_db
+        shark.backend.database_path, creator=shark.indices.sql.define_db
     )
 
 

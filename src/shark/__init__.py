@@ -6,6 +6,7 @@ load_dotenv()
 
 from . import (
     _version,
+    backend,
     bea,
     fred,
     indices,

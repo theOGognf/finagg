@@ -1,7 +1,6 @@
 """Indices API (symbols in popular indices)."""
 
 import os
-import pathlib
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from functools import cache
@@ -12,17 +11,10 @@ import requests
 import requests_cache
 from bs4 import BeautifulSoup
 
-_API_CACHE_PATH = os.environ.get(
-    "INDICES_API_CACHE_PATH",
-    pathlib.Path(__file__).resolve().parent.parent.parent.parent
-    / "data"
-    / "indices_api_cache",
-)
-_API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
-_API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+from .. import backend
 
 session = requests_cache.CachedSession(
-    str(_API_CACHE_PATH),
+    str(backend.http_cache_path),
     expire_after=timedelta(weeks=1),
 )
 
@@ -140,9 +132,6 @@ class _SP500(_Dataset):
             }
         )
 
-
-#: Path to indices API requests cache.
-cache_path = str(_API_CACHE_PATH)
 
 #: The Dow Jones Industrial Average.
 djia = _DJIA

@@ -27,7 +27,6 @@ Examples:
 import json
 import logging
 import os
-import pathlib
 import sys
 from abc import ABC, abstractmethod
 from datetime import timedelta
@@ -38,7 +37,7 @@ import pandas as pd
 import requests
 import requests_cache
 
-from .. import ratelimit
+from .. import backend, ratelimit
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -49,17 +48,8 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-_API_CACHE_PATH = os.environ.get(
-    "BEA_API_CACHE_PATH",
-    pathlib.Path(__file__).resolve().parent.parent.parent.parent
-    / "data"
-    / "bea_api_cache",
-)
-_API_CACHE_PATH = pathlib.Path(_API_CACHE_PATH)
-_API_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
-
 session = requests_cache.CachedSession(
-    str(_API_CACHE_PATH),
+    str(backend.http_cache_path),
     ignored_parameters=["ResultFormat"],
     expire_after=timedelta(days=1),
 )
@@ -412,9 +402,6 @@ class _NIPA(_Dataset):
             results.append(df)
         return pd.concat(results)
 
-
-#: Path to BEA API requests cache.
-cache_path = str(_API_CACHE_PATH)
 
 #: "FixedAssets" dataset API.
 fixed_assets = _FixedAssets

@@ -1,7 +1,5 @@
 """SEC SQLAlchemy interfaces."""
 
-import os
-import pathlib
 from functools import cache
 
 from sqlalchemy import (
@@ -18,20 +16,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine import Engine, Inspector
 
+from .. import backend
 from . import api
 
-_DATABASE_PATH = (
-    pathlib.Path(__file__).resolve().parent.parent.parent.parent / "data" / "sec.sqlite"
-)
 
-_DATABASE_URL = os.environ.get(
-    "SEC_DATABASE_URL",
-    f"sqlite:///{_DATABASE_PATH}",
-)
-
-
-def define_db(
-    url: str = _DATABASE_URL,
+def _define_db(
+    url: str = backend.database_url,
 ) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 
@@ -46,8 +36,12 @@ def define_db(
         the database definition.
 
     """
-    engine = create_engine(url)
-    inspector: Inspector = inspect(engine)
+    if url != backend.engine.url:
+        engine = create_engine(url)
+        inspector: Inspector = inspect(engine)
+    else:
+        engine = backend.engine
+        inspector = backend.inspector
     metadata = MetaData()
     submissions = Table(
         "submissions",
@@ -150,7 +144,7 @@ def define_db(
     return (engine, metadata), inspector, (submissions, tags)
 
 
-(engine, metadata), inspector, (submissions, tags) = define_db()
+(engine, metadata), inspector, (submissions, tags) = _define_db()
 
 
 @cache

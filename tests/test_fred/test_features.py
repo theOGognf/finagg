@@ -5,13 +5,12 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
 
 import shark
-from shark.fred.store import _DATABASE_PATH
 
 
 @pytest.fixture
 def resources() -> tuple[Engine, MetaData]:
     yield from shark.testing.sqlite_resources(
-        _DATABASE_PATH, creator=shark.fred.store.define_db
+        shark.backend.database_path, creator=shark.fred.store._define_db
     )
 
 

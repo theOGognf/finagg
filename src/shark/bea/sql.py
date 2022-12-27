@@ -1,7 +1,5 @@
 """BEA SQLAlchemy interfaces."""
 
-import os
-import pathlib
 
 from sqlalchemy import (
     Column,
@@ -15,18 +13,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine import Engine, Inspector
 
-_DATABASE_PATH = (
-    pathlib.Path(__file__).resolve().parent.parent.parent.parent / "data" / "bea.sqlite"
-)
-
-_DATABASE_URL = os.environ.get(
-    "BEA_DATABASE_URL",
-    f"sqlite:///{_DATABASE_PATH}",
-)
+from .. import backend
 
 
 def define_db(
-    url: str = _DATABASE_URL,
+    url: str = backend.database_url,
 ) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 
@@ -42,8 +33,13 @@ def define_db(
         the database definition.
 
     """
-    engine = create_engine(url)
-    inspector: Inspector = inspect(engine)
+    if url != backend.engine.url:
+        engine = create_engine(url)
+        inspector: Inspector = inspect(engine)
+    else:
+        engine = backend.engine
+        inspector = backend.inspector
+
     metadata = MetaData()
 
     fixed_assets = Table(

@@ -1,25 +1,14 @@
 """FRED SQLAlchemy interfaces."""
 
-import os
-import pathlib
 
 from sqlalchemy import Column, Float, MetaData, String, Table, create_engine, inspect
 from sqlalchemy.engine import Engine, Inspector
 
-_DATABASE_PATH = (
-    pathlib.Path(__file__).resolve().parent.parent.parent.parent
-    / "data"
-    / "fred.sqlite"
-)
-
-_DATABASE_URL = os.environ.get(
-    "FRED_DATABASE_URL",
-    f"sqlite:///{_DATABASE_PATH}",
-)
+from .. import backend
 
 
 def define_db(
-    url: str = _DATABASE_URL,
+    url: str = backend.database_url,
 ) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 
@@ -35,8 +24,12 @@ def define_db(
         the database definition.
 
     """
-    engine = create_engine(url)
-    inspector: Inspector = inspect(engine)
+    if url != backend.engine.url:
+        engine = create_engine(url)
+        inspector: Inspector = inspect(engine)
+    else:
+        engine = backend.engine
+        inspector = backend.inspector
     metadata = MetaData()
     series = Table(
         "series",
