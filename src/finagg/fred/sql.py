@@ -7,7 +7,7 @@ from sqlalchemy.engine import Engine, Inspector
 from .. import backend
 
 
-def define_db(
+def _define_db(
     url: str = backend.database_url,
 ) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
@@ -53,4 +53,4 @@ def define_db(
     return (engine, metadata), inspector, (series,)
 
 
-(engine, metadata), inspector, (series,) = define_db()
+(engine, metadata), inspector, (series,) = _define_db()
