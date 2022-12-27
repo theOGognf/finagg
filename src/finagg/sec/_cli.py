@@ -42,8 +42,7 @@ class Command:
                 install.run(install_features=args.features)
 
             case "ls":
-                for ticker in sorted(sql.get_ticker_set()):
-                    print(ticker)
+                print(sorted(sql.get_ticker_set()))
 
             case "scrape":
                 args, _ = self.scrape_parser.parse_known_args()

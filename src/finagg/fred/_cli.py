@@ -42,8 +42,7 @@ class Command:
                 install.run(install_features=args.features)
 
             case "ls":
-                for series in sorted(sql.get_series_set()):
-                    print(series)
+                print(sorted(sql.get_series_set()))
 
             case "scrape":
                 args, _ = self.scrape_parser.parse_known_args()

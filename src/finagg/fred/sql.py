@@ -1,7 +1,19 @@
 """FRED SQLAlchemy interfaces."""
 
 
-from sqlalchemy import Column, Float, MetaData, String, Table, create_engine, inspect
+from functools import cache
+
+from sqlalchemy import (
+    Column,
+    Float,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+    distinct,
+    inspect,
+    select,
+)
 from sqlalchemy.engine import Engine, Inspector
 
 from .. import backend
@@ -54,3 +66,14 @@ def _define_db(
 
 
 (engine, metadata), inspector, (series,) = _define_db()
+
+
+@cache
+def get_series_set() -> set[str]:
+    """Get all unique series in the raw SQL tables."""
+    with engine.connect() as conn:
+        series_ids = set()
+        for series_id in conn.execute(select(distinct(series.c.series_id))):
+            (series_id,) = series_id
+            series_ids.add(series_id)
+    return series_ids
