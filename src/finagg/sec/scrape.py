@@ -76,6 +76,8 @@ def run(
                         tag, ticker=ticker, taxonomy=taxonomy, units=units
                     )
                     df = features.get_unique_10q(df, units=units)
-                    tickers_to_inserts[ticker] += len(df.index)
-                    conn.execute(sql.tags.insert(), df.to_dict(orient="records"))
+                    count = conn.execute(
+                        sql.tags.insert(), df.to_dict(orient="records")
+                    ).rowcount
+                    tickers_to_inserts[ticker] += count
     return tickers_to_inserts

@@ -44,17 +44,23 @@ def run(
         indices_to_inserts = {"djia": 0, "sp500": 0, "nasdaq100": 0}
         if djia:
             df = api.djia.get()
-            indices_to_inserts["djia"] = len(df.index)
-            conn.execute(sql.djia.insert(), df.to_dict(orient="records"))
+            count = conn.execute(
+                sql.djia.insert(), df.to_dict(orient="records")
+            ).rowcount
+            indices_to_inserts["djia"] = count
 
         if sp500:
             df = api.sp500.get()
-            indices_to_inserts["sp500"] = len(df.index)
-            conn.execute(sql.sp500.insert(), df.to_dict(orient="records"))
+            count = conn.execute(
+                sql.sp500.insert(), df.to_dict(orient="records")
+            ).rowcount
+            indices_to_inserts["sp500"] = count
 
         if nasdaq100:
             df = api.nasdaq100.get()
-            indices_to_inserts["nasdaq100"] = len(df.index)
-            conn.execute(sql.nasdaq100.insert(), df.to_dict(orient="records"))
+            count = conn.execute(
+                sql.nasdaq100.insert(), df.to_dict(orient="records")
+            ).rowcount
+            indices_to_inserts["nasdaq100"] = count
 
     return indices_to_inserts

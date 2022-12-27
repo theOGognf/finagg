@@ -8,7 +8,7 @@ import finagg
 @pytest.fixture
 def resources() -> tuple[Engine, MetaData]:
     yield from finagg.testing.sqlite_resources(
-        finagg.backend.database_path, creator=finagg.yfinance.sql._define_db
+        finagg.backend.database_path, creator=finagg.fred.sql._define_db
     )
 
 

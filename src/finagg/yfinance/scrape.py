@@ -41,7 +41,9 @@ def run(
         tickers_to_inserts = {}
         for ticker in tickers:
             df = api.get(ticker, interval="1d", period="max")
-            tickers_to_inserts[ticker] = len(df.index)
-            conn.execute(sql.prices.insert(), df.to_dict(orient="records"))
+            count = conn.execute(
+                sql.prices.insert(), df.to_dict(orient="records")
+            ).rowcount
+            tickers_to_inserts[ticker] = count
 
     return tickers_to_inserts

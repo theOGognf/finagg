@@ -6,7 +6,7 @@ from . import install
 
 
 class Command:
-    """Indices subcommand."""
+    """Mixed features subcommand."""
 
     def __init__(self, parent: argparse._SubParsersAction) -> None:
         self.parser: argparse.ArgumentParser = parent.add_parser(

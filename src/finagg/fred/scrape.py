@@ -50,7 +50,9 @@ def run(
                 realtime_end=-1,
                 output_type=4,
             )
-            series_to_inserts[series_id] = len(df.index)
-            conn.execute(sql.series.insert(), df.to_dict(orient="records"))
+            count = conn.execute(
+                sql.series.insert(), df.to_dict(orient="records")
+            ).rowcount
+            series_to_inserts[series_id] = count
 
     return series_to_inserts
