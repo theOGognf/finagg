@@ -1,25 +1,17 @@
 """CLI and tools for aggregating mixed features."""
 
-import argparse
-
-from . import install
+import click
 
 
-class Command:
-    """Mixed features subcommand."""
+@click.group(help="Mixed feature tools.")
+def entry_point() -> None:
+    ...
 
-    def __init__(self, parent: argparse._SubParsersAction) -> None:
-        self.parser: argparse.ArgumentParser = parent.add_parser(
-            "mixed", help="Mixed feature tools."
-        )
-        subparser = self.parser.add_subparsers(dest="mixed_cmd")
-        self.install_parser = subparser.add_parser(
-            "install",
-            help="Drop and recreate tables, and install features into the SQL database.",
-        )
 
-    def run(self, cmd: str) -> None:
-        """Run the mixed features command specified by `cmd`."""
-        match cmd:
-            case "install":
-                install.run()
+@entry_point.command(
+    help="Drop and recreate tables, and install features into the SQL database.",
+)
+def install() -> None:
+    from . import install
+
+    install.run()

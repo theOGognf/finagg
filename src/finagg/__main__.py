@@ -28,6 +28,9 @@ def install(install_features: bool = False) -> None:
 
 cli.add_command(fred._cli.entry_point, "fred")
 cli.add_command(indices._cli.entry_point, "indices")
+cli.add_command(mixed._cli.entry_point, "mixed")
+cli.add_command(sec._cli.entry_point, "sec")
+cli.add_command(yfinance._cli.entry_point, "yfinance")
 
 
 def main() -> int:

@@ -36,7 +36,7 @@ def ls() -> None:
 @entry_point.command(
     help="Scrape a specified economic data series into the SQL database.",
 )
-@click.option("--series", required=True, help="Series IDs to scrape.")
+@click.option("--series", required=True, multiple=True, help="Series IDs to scrape.")
 def scrape(series: Sequence[str], /) -> None:
     from . import scrape
 
