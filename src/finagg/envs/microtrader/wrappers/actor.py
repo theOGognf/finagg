@@ -1,0 +1,69 @@
+"""Abstractions for interacting with the environment."""
+
+from abc import ABC, abstractmethod
+from typing import Any
+
+from gym import spaces
+
+from ....portfolio import Portfolio
+
+
+class Actor(ABC):
+    @abstractmethod
+    def act(self, action: Any, ticker: str, price: float, portfolio: Portfolio) -> None:
+        """Manage `portfolio` with `action`."""
+
+    @property
+    @abstractmethod
+    def action_space(self) -> spaces.Space:
+        """Each actor can have a different space."""
+
+    def reset(self) -> None:
+        """This method is called on environment resets.
+
+        Override this if the actor is stateful across environment transitions.
+
+        """
+
+
+class TradingDesk(Actor):
+    """Manage a portfolio containing cash and a position in just one security."""
+
+    #: Right-end bin values for trade amounts.
+    amount_bins: list[float]
+
+    def __init__(self, *, amount_bins: int = 3) -> None:
+        super().__init__()
+        self.amount_bins = [(i + 1) / (amount_bins + 1) for i in range(amount_bins)]
+        self.action_space = spaces.Tuple(
+            [spaces.Discrete(3), spaces.Discrete(amount_bins)]
+        )
+
+    def act(
+        self, action: tuple[int, int], ticker: str, price: float, portfolio: Portfolio
+    ) -> None:
+        """No-op, buy, or sell positions.
+
+        Args:
+            action: Tuple of action type (no-op, buy, or sell)
+                and buy/sell amount bin ID.
+            ticker: Security name.
+            price: Security current price.
+            portfolio: Portfolio to manage.
+
+        """
+        action_type, amount_bin = action
+        amount = self.amount_bins[amount_bin]
+        match action_type:
+            case 0:
+                return
+
+            case 1:
+                quantity = amount * portfolio.cash
+                portfolio.buy(ticker, price, quantity)
+                return
+
+            case 2:
+                quantity = amount * portfolio[ticker].quantity
+                portfolio.sell(ticker, price, quantity)
+                return
