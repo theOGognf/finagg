@@ -42,7 +42,7 @@ def join_with(s: str | list[str], /, delim: str) -> str:
 
 
 def quantile_clip(
-    df: pd.DataFrame, /, *, lower: float = 0.05, upper: float = 0.95
+    df: pd.DataFrame, /, *, lower: float = 0.01, upper: float = 0.99
 ) -> pd.DataFrame:
     """Clip dataframe values to be within the specified quantiles.
 

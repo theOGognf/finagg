@@ -2,6 +2,7 @@
 
 from functools import cache
 
+import numpy as np
 import pandas as pd
 from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
@@ -13,6 +14,9 @@ from . import store
 
 class _FundamentalFeatures:
     """Method for gathering fundamental data on a stock using several sources."""
+
+    #: Indices to compare daily changes to.
+    reference_indices = ("VOO", "VGT")
 
     #: Name of feature store SQL table.
     table_name = "fundamental_features"
@@ -66,7 +70,10 @@ class _FundamentalFeatures:
         for index, index_df in indices_df.items():
             for col in relative_columns:
                 df[f"{index}_{col}"] = index_df[col] / daily_df[col]
-                df[f"{index}_{col}"] = df[f"{index}_{col}"].fillna(0.0)
+                df[f"{index}_{col}"] = (
+                    df[f"{index}_{col}"].replace([np.inf, -np.inf], np.nan).fillna(0.0)
+                )
+
         df.index.names = ["date"]
         return df.dropna()
 
@@ -104,7 +111,7 @@ class _FundamentalFeatures:
             index: yfinance.features.daily_features.from_api(
                 index, start=start, end=end
             )
-            for index in ["VOO", "VGT"]
+            for index in cls.reference_indices
         }
         return cls._normalize(quarterly_features, daily_features, indices_features)
 
@@ -163,7 +170,7 @@ class _FundamentalFeatures:
             index: yfinance.features.daily_features.from_sql(
                 index, start=start, end=end
             )
-            for index in ["VOO", "VGT"]
+            for index in cls.reference_indices
         }
         return cls._normalize(quarterly_features, daily_features, indices_features)
 
