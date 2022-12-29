@@ -49,7 +49,11 @@ class _FundamentalFeatures:
 
     @classmethod
     def _normalize(
-        cls, quarterly_df: pd.DataFrame, daily_df: pd.DataFrame, /
+        cls,
+        quarterly_df: pd.DataFrame,
+        daily_df: pd.DataFrame,
+        indices_df: dict[str, pd.DataFrame],
+        /,
     ) -> pd.DataFrame:
         """Normalize the feature columns."""
         df = pd.merge(
@@ -58,6 +62,11 @@ class _FundamentalFeatures:
         df = df.fillna(method="ffill").dropna()
         df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
         df = utils.quantile_clip(df)
+        relative_columns = ["open", "high", "low", "close", "volume"]
+        for index, index_df in indices_df.items():
+            for col in relative_columns:
+                df[f"{index}_{col}"] = index_df[col] / daily_df[col]
+                df[f"{index}_{col}"] = df[f"{index}_{col}"].fillna(0.0)
         df.index.names = ["date"]
         return df.dropna()
 
@@ -91,7 +100,13 @@ class _FundamentalFeatures:
         daily_features = yfinance.features.daily_features.from_api(
             ticker, start=start, end=end
         )
-        return cls._normalize(quarterly_features, daily_features)
+        indices_features = {
+            index: yfinance.features.daily_features.from_api(
+                index, start=start, end=end
+            )
+            for index in ["VOO", "VGT"]
+        }
+        return cls._normalize(quarterly_features, daily_features, indices_features)
 
     @classmethod
     @cache
@@ -144,7 +159,13 @@ class _FundamentalFeatures:
             engine=yf_engine,
             metadata=yf_metadata,
         )
-        return cls._normalize(quarterly_features, daily_features)
+        indices_features = {
+            index: yfinance.features.daily_features.from_sql(
+                index, start=start, end=end
+            )
+            for index in ["VOO", "VGT"]
+        }
+        return cls._normalize(quarterly_features, daily_features, indices_features)
 
     @classmethod
     @cache

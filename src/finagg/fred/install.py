@@ -41,6 +41,8 @@ def run(install_features: bool = False) -> None:
     else:
         logger.info("FRED API key already exists in env")
     raw_count = scrape.run(features.economic_features.series_ids, drop_tables=True)
+    if not feature_count:
+        raise RuntimeError("An error occurred when installing FRED raw data.")
     logger.info(f"{sum(raw_count.values())} raw rows written")
 
     if install_features:
@@ -49,6 +51,8 @@ def run(install_features: bool = False) -> None:
 
         df = features.economic_features.from_sql()
         feature_count = features.economic_features.to_store(df)
+        if not feature_count:
+            raise RuntimeError("An error occurred when installing FRED features.")
         logger.info(f"{feature_count} feature rows written")
 
     logger.info("Installation complete!")

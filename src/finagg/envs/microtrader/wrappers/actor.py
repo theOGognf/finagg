@@ -60,7 +60,7 @@ class DiscreteTrader(Actor):
                 return
 
             case 1:
-                quantity = amount * portfolio.cash
+                quantity = amount * portfolio.cash / price
                 portfolio.buy(ticker, price, quantity)
                 return
 

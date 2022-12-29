@@ -1,5 +1,6 @@
 """FRED CLI and tools."""
 
+import logging
 from typing import Sequence
 
 import click
@@ -24,7 +25,15 @@ def entry_point() -> None:
     default=False,
     help="Whether to install features with the recommended datasets.",
 )
-def install(install_features: bool = False) -> None:
+@click.option(
+    "-v/--verbose",
+    is_flag=True,
+    default=False,
+    help="Log installation errors for each series.",
+)
+def install(install_features: bool = False, verbose: bool = False) -> None:
+    if verbose:
+        _install.logger.setLevel(logging.DEBUG)
     _install.run(install_features=install_features)
 
 
@@ -37,5 +46,5 @@ def ls() -> None:
     help="Scrape a specified economic data series into the SQL database.",
 )
 @click.option("--series", required=True, multiple=True, help="Series IDs to scrape.")
-def scrape(series: Sequence[str], /) -> None:
+def scrape(series: Sequence[str]) -> None:
     _scrape.run(series)

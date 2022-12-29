@@ -28,7 +28,8 @@ def _api_get(ticker: str) -> tuple[str, pd.DataFrame]:
     """
     try:
         df = api.get(ticker, interval="1d", period="max")
-    except pd.errors.EmptyDataError:
+    except pd.errors.EmptyDataError as e:
+        logger.debug(f"Skipping {ticker} due to {e}")
         df = pd.DataFrame()
     return ticker, df
 
@@ -54,6 +55,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
 
     """
     tickers = indices.api.get_ticker_set()
+    tickers += {"VOO", "VGT"}
 
     sql.metadata.drop_all(sql.engine)
     sql.metadata.create_all(sql.engine)
@@ -80,6 +82,11 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
                     except IntegrityError:
                         continue
                     raw_tickers_to_inserts[ticker] = len(df.index)
+    if not raw_tickers_to_inserts:
+        raise RuntimeError(
+            "An error occurred when installing Yahoo! finance raw data. "
+            "Set the logging mode to debug or use the verbose flag with the CLI for more info."
+        )
     logger.info(f"Total rows written: {sum(raw_tickers_to_inserts.values())}")
     logger.info(f"Number of tickers skipped: {len(skipped_raw_tickers)}/{len(tickers)}")
 
@@ -106,6 +113,11 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
                         feature_tickers_to_inserts[ticker] = len(df.index)
                     else:
                         skipped_feature_tickers.add(ticker)
+        if not feature_tickers_to_inserts:
+            raise RuntimeError(
+                "An error occurred when installing Yahoo! finance features. "
+                "Set the logging mode to debug or use the verbose flag with the CLI for more info."
+            )
         logger.info(f"Total rows written: {sum(feature_tickers_to_inserts.values())}")
         logger.info(
             "Number of tickers skipped: "

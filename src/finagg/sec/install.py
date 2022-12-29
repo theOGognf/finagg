@@ -55,9 +55,11 @@ def _get_valid_concept(
         df = api.company_concept.get(tag, ticker=ticker, taxonomy=taxonomy, units=units)
         df = features.get_unique_10q(df, units=units)
         if len(df.index) == 0:
+            logger.debug(f"Skipping {ticker} due to missing data")
             return pd.DataFrame()
         return df
-    except (HTTPError, KeyError):
+    except (HTTPError, KeyError) as e:
+        logger.debug(f"Skipping {ticker} due to {e}")
         return pd.DataFrame()
 
 
@@ -120,6 +122,11 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
                         raw_tickers_to_inserts[ticker] = len(df.index)
                     except IntegrityError:
                         continue
+    if not raw_tickers_to_inserts:
+        raise RuntimeError(
+            "An error occurred when installing SEC raw data. "
+            "Set the logging mode to debug or use the verbose flag with the CLI for more info."
+        )
     logger.info(f"Total rows written: {sum(raw_tickers_to_inserts.values())}")
     logger.info(f"Number of tickers skipped: {len(skipped_raw_tickers)}/{len(tickers)}")
     logger.info(f"Missed tags summary: {tags_to_misses}")
@@ -148,6 +155,11 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
                             feature_tickers_to_inserts[ticker] = len(df.index)
                         else:
                             skipped_feature_tickers.add(ticker)
+        if not feature_tickers_to_inserts:
+            raise RuntimeError(
+                "An error occurred when installing SEC features. "
+                "Set the logging mode to debug or use the verbose flag with the CLI for more info."
+            )
         logger.info(f"Total rows written: {sum(feature_tickers_to_inserts.values())}")
         logger.info(
             "Number of tickers skipped: "

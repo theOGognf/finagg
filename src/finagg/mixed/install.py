@@ -27,7 +27,8 @@ def _features_get(ticker: str) -> tuple[str, pd.DataFrame]:
     """
     try:
         df = features.fundamental_features.from_sql(ticker)
-    except (IndexError, KeyError):
+    except (IndexError, KeyError) as e:
+        logger.debug(f"Skipping {ticker} due to {e}")
         return ticker, pd.DataFrame()
     return ticker, df
 
@@ -68,6 +69,11 @@ def run(processes: int = mp.cpu_count() - 1) -> None:
                     tickers_to_inserts[ticker] = len(df.index)
                 else:
                     skipped_tickers.add(ticker)
+    if not tickers_to_inserts:
+        raise RuntimeError(
+            "An error occurred when installing mixed features. "
+            "Set the logging mode to debug or use the verbose flag with the CLI for more info."
+        )
     logger.info(f"Total rows written: {sum(tickers_to_inserts.values())}")
     logger.info(
         "Number of tickers skipped: "
