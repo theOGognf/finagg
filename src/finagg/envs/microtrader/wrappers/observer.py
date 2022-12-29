@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
+import numpy as np
 from gym import spaces
 
 from ....portfolio import Portfolio
@@ -27,7 +28,29 @@ class Observer(ABC):
 class FundamentalsMonitor(Observer):
     """Observe daily and quarterly fundamentals."""
 
-    def observe(self, features: dict[str, float], portfolio: Portfolio) -> list[float]:
+    def __init__(self) -> None:
+        super().__init__()
+        self.observation_space = spaces.Box(
+            -100,
+            100,
+            shape=(
+                (
+                    sum(
+                        [
+                            2,  # Change in value
+                            7,  # Fundamentals
+                            5,  # Changes in prices and volume
+                            5,  # Changes w.r.t. VOO
+                            5,  # Changes w.r.t. VGT
+                        ]
+                    )
+                ),
+            ),
+        )
+
+    def observe(
+        self, features: dict[str, float], portfolio: Portfolio
+    ) -> np.ndarray[float]:
         """Observe fundamental features.
 
         Args:
@@ -45,36 +68,40 @@ class FundamentalsMonitor(Observer):
         else:
             position_percent_change = 0.0
         portfolio_percent_change = portfolio.total_percent_change({ticker: price})
-        return [
-            # Change in value
-            portfolio_percent_change,
-            position_percent_change,
-            # Fundamentals
-            features["PriceEarningsRatio"],
-            features["EarningsPerShare"],
-            features["WorkingCapitalRatio"],
-            features["QuickRatio"],
-            features["DebtEquityRatio"],
-            features["ReturnOnEquity"],
-            features["PriceBookRatio"],
-            # Changes in prices and volumes
-            features["open"],
-            features["high"],
-            features["low"],
-            features["close"],
-            features["volume"],
-            # Changes w.r.t. common indices
-            features["VOO_open"],
-            features["VOO_high"],
-            features["VOO_low"],
-            features["VOO_close"],
-            features["VOO_volume"],
-            features["VGT_open"],
-            features["VGT_high"],
-            features["VGT_low"],
-            features["VGT_close"],
-            features["VGT_volume"],
-        ]
+        return np.clip(
+            [
+                # Change in value
+                portfolio_percent_change,
+                position_percent_change,
+                # Fundamentals
+                features["PriceEarningsRatio"],
+                features["EarningsPerShare"],
+                features["WorkingCapitalRatio"],
+                features["QuickRatio"],
+                features["DebtEquityRatio"],
+                features["ReturnOnEquity"],
+                features["PriceBookRatio"],
+                # Changes in prices and volume
+                features["open"],
+                features["high"],
+                features["low"],
+                features["close"],
+                features["volume"],
+                # Changes w.r.t. common indices
+                features["VOO_open"],
+                features["VOO_high"],
+                features["VOO_low"],
+                features["VOO_close"],
+                features["VOO_volume"],
+                features["VGT_open"],
+                features["VGT_high"],
+                features["VGT_low"],
+                features["VGT_close"],
+                features["VGT_volume"],
+            ],
+            -99,
+            99,
+        )
 
 
 def get_observer(observer: str, **kwargs) -> Observer:

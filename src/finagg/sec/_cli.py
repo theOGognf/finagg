@@ -47,5 +47,12 @@ def ls() -> None:
     help="Scrape a specified ticker quarterly report into the SQL database."
 )
 @click.option("--ticker", required=True, multiple=True, help="Ticker to scrape.")
-def scrape(ticker: Sequence[str]) -> None:
-    _scrape.run(ticker)
+@click.option("--tag", default=None, help="XBRL tag to scrape.")
+@click.option("--taxonomy", default=None, help="XBRL taxonomy to scrape.")
+@click.option("--units", default=None, help="Units to scrape.")
+def scrape(ticker: Sequence[str], tag: str, taxonomy: str, units: str) -> None:
+    if tag and taxonomy and units:
+        concepts = {"tag": tag, "taxonomy": taxonomy, "units": units}
+    else:
+        concepts = None
+    _scrape.run(ticker, concepts=concepts)
