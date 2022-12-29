@@ -16,10 +16,11 @@ def entry_point() -> None:
     help="Drop and recreate tables, and install features into the SQL database.",
 )
 @click.option(
-    "-v/--verbose",
+    "-v",
+    "--verbose",
     is_flag=True,
     default=False,
-    help="Log installation errors for each series.",
+    help="Log installation errors for each ticker.",
 )
 def install(verbose: bool = False) -> None:
     if verbose:

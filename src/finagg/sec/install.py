@@ -127,7 +127,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
             "An error occurred when installing SEC raw data. "
             "Set the logging mode to debug or use the verbose flag with the CLI for more info."
         )
-    logger.info(f"Total rows written: {sum(raw_tickers_to_inserts.values())}")
+    logger.info(f"Total raw rows written: {sum(raw_tickers_to_inserts.values())}")
     logger.info(f"Number of tickers skipped: {len(skipped_raw_tickers)}/{len(tickers)}")
     logger.info(f"Missed tags summary: {tags_to_misses}")
 
@@ -160,7 +160,9 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
                 "An error occurred when installing SEC features. "
                 "Set the logging mode to debug or use the verbose flag with the CLI for more info."
             )
-        logger.info(f"Total rows written: {sum(feature_tickers_to_inserts.values())}")
+        logger.info(
+            f"Total feature rows written: {sum(feature_tickers_to_inserts.values())}"
+        )
         logger.info(
             "Number of tickers skipped: "
             f"{len(skipped_feature_tickers)}/{len(raw_tickers_to_inserts)}"

@@ -26,10 +26,11 @@ def entry_point() -> None:
     help="Whether to install features with the recommended datasets.",
 )
 @click.option(
-    "-v/--verbose",
+    "-v",
+    "--verbose",
     is_flag=True,
     default=False,
-    help="Log installation errors for each series.",
+    help="Log installation errors for each ticker.",
 )
 def install(install_features: bool = False, verbose: bool = False) -> None:
     if verbose:

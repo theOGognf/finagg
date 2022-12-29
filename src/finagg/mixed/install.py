@@ -74,7 +74,7 @@ def run(processes: int = mp.cpu_count() - 1) -> None:
             "An error occurred when installing mixed features. "
             "Set the logging mode to debug or use the verbose flag with the CLI for more info."
         )
-    logger.info(f"Total rows written: {sum(tickers_to_inserts.values())}")
+    logger.info(f"Total feature rows written: {sum(tickers_to_inserts.values())}")
     logger.info(
         "Number of tickers skipped: "
         f"{len(skipped_tickers)}/{len(tickers_to_inserts)}"
