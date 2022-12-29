@@ -2,6 +2,8 @@
 
 import click
 
+from . import install as _install
+
 
 @click.group(help="Mixed feature tools.")
 def entry_point() -> None:
@@ -12,6 +14,4 @@ def entry_point() -> None:
     help="Drop and recreate tables, and install features into the SQL database.",
 )
 def install() -> None:
-    from . import install
-
-    install.run()
+    _install.run()

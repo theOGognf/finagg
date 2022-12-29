@@ -9,14 +9,12 @@ from ....portfolio import Portfolio
 
 
 class Actor(ABC):
+    #: Underlying action space.
+    action_space: spaces.Space
+
     @abstractmethod
     def act(self, action: Any, ticker: str, price: float, portfolio: Portfolio) -> None:
         """Manage `portfolio` with `action`."""
-
-    @property
-    @abstractmethod
-    def action_space(self) -> spaces.Space:
-        """Each actor can have a different space."""
 
     def reset(self) -> None:
         """This method is called on environment resets.
@@ -26,7 +24,7 @@ class Actor(ABC):
         """
 
 
-class TradingDesk(Actor):
+class DiscreteTrader(Actor):
     """Manage a portfolio containing cash and a position in just one security."""
 
     #: Right-end bin values for trade amounts.
@@ -67,3 +65,9 @@ class TradingDesk(Actor):
                 quantity = amount * portfolio[ticker].quantity
                 portfolio.sell(ticker, price, quantity)
                 return
+
+
+def get_actor(actor: str, **kwargs) -> Actor:
+    """Get an actor based on its short name."""
+    actors = {"default": DiscreteTrader, "discrete_trader": DiscreteTrader}
+    return actors[actor](**kwargs)
