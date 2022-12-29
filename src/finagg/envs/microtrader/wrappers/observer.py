@@ -3,7 +3,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-import pandas as pd
 from gym import spaces
 
 from ....portfolio import Portfolio
@@ -14,7 +13,7 @@ class Observer(ABC):
     observation_space: spaces.Space
 
     @abstractmethod
-    def observe(self, features: pd.DataFrame, portfolio: Portfolio) -> Any:
+    def observe(self, features: dict[str, float], portfolio: Portfolio) -> Any:
         """Observe the environment from predefined features and a portfolio."""
 
     def reset(self) -> Any:
