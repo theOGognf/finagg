@@ -13,9 +13,7 @@ class Actor(ABC):
     action_space: spaces.Space
 
     @abstractmethod
-    def act(
-        self, action: Any, features: dict[str, float], portfolio: Portfolio
-    ) -> None:
+    def act(self, action: Any, features: dict, portfolio: Portfolio) -> None:
         """Manage `portfolio` with `action`."""
 
     def reset(self) -> None:
@@ -40,7 +38,10 @@ class DiscreteTrader(Actor):
         )
 
     def act(
-        self, action: tuple[int, int], features: dict[str, float], portfolio: Portfolio
+        self,
+        action: tuple[int, int],
+        features: dict,
+        portfolio: Portfolio,
     ) -> None:
         """No-op, buy, or sell positions.
 
@@ -51,8 +52,8 @@ class DiscreteTrader(Actor):
             portfolio: Portfolio to manage.
 
         """
-        ticker = features["ticker"]
-        price = features["price"]
+        ticker: str = features["ticker"]
+        price: float = features["price"]
         action_type, amount_bin = action
         amount = self.amount_bins[amount_bin]
         match action_type:

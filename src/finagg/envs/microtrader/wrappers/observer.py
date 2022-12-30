@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 from gym import spaces
 
 from ....portfolio import Portfolio
@@ -14,7 +15,7 @@ class Observer(ABC):
     observation_space: spaces.Space
 
     @abstractmethod
-    def observe(self, features: dict[str, float], portfolio: Portfolio) -> Any:
+    def observe(self, features: dict, portfolio: Portfolio) -> Any:
         """Observe the environment from predefined features and a portfolio."""
 
     def reset(self) -> Any:
@@ -48,9 +49,7 @@ class FundamentalsMonitor(Observer):
             ),
         )
 
-    def observe(
-        self, features: dict[str, float], portfolio: Portfolio
-    ) -> np.ndarray[float]:
+    def observe(self, features: dict, portfolio: Portfolio) -> npt.NDArray[np.float32]:
         """Observe fundamental features.
 
         Args:
@@ -61,8 +60,8 @@ class FundamentalsMonitor(Observer):
             List of fundamental features.
 
         """
-        ticker = features["ticker"]
-        price = features["price"]
+        ticker: str = features["ticker"]
+        price: float = features["price"]
         if ticker in portfolio:
             position_percent_change = portfolio[ticker].total_percent_change(price)
         else:

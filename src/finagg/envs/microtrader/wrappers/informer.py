@@ -8,9 +8,7 @@ from ....portfolio import Portfolio
 
 class Informer(ABC):
     @abstractmethod
-    def inform(
-        self, action: Any, features: dict[str, float], portfolio: Portfolio
-    ) -> None:
+    def inform(self, action: Any, features: dict, portfolio: Portfolio) -> dict:
         """Get info from `portfolio` and `action`."""
 
     def reset(self) -> None:
@@ -25,7 +23,10 @@ class TradeLocater(Informer):
     """Mark trade locations."""
 
     def inform(
-        self, action: tuple[int, int], features: dict[str, float], portfolio: Portfolio
+        self,
+        action: tuple[int, int],
+        features: dict,
+        portfolio: Portfolio,
     ) -> dict:
         """Get info from an environment step.
 
@@ -38,8 +39,8 @@ class TradeLocater(Informer):
             An info dictionary.
 
         """
-        ticker = features["ticker"]
-        price = features["price"]
+        ticker: str = features["ticker"]
+        price: float = features["price"]
         cost_basis_total = portfolio[ticker].cost_basis_total
         average_cost_basis = portfolio[ticker].average_cost_basis
         return {

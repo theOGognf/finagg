@@ -5,6 +5,7 @@ from typing import Sequence
 
 import click
 
+from . import features
 from . import install as _install
 from . import scrape as _scrape
 from . import sql
@@ -52,7 +53,7 @@ def ls() -> None:
 @click.option("--units", default=None, help="Units to scrape.")
 def scrape(ticker: Sequence[str], tag: str, taxonomy: str, units: str) -> None:
     if tag and taxonomy and units:
-        concepts = {"tag": tag, "taxonomy": taxonomy, "units": units}
+        concepts = ({"tag": tag, "taxonomy": taxonomy, "units": units},)
     else:
-        concepts = None
+        concepts = features.quarterly_features.concepts
     _scrape.run(ticker, concepts=concepts)

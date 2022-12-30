@@ -53,7 +53,7 @@ def _get_valid_concept(
     """
     try:
         df = api.company_concept.get(tag, ticker=ticker, taxonomy=taxonomy, units=units)
-        df = features.get_unique_10q(df, units=units)
+        df = features.get_unique_filings(df, units=units)
         if len(df.index) == 0:
             logger.debug(f"Skipping {ticker} due to missing data")
             return pd.DataFrame()

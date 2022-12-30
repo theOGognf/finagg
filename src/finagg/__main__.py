@@ -2,7 +2,9 @@
 
 import click
 
-from . import fred, indices, mixed, sec, yfinance
+from . import fred, indices
+from . import install as _install
+from . import mixed, sec, yfinance
 
 
 @click.group()
@@ -21,9 +23,7 @@ def cli() -> None:
     help="Whether to install features with the recommended datasets.",
 )
 def install(install_features: bool = False) -> None:
-    from . import install
-
-    install.run(install_features=install_features)
+    _install.run(install_features=install_features)
 
 
 cli.add_command(fred._cli.entry_point, "fred")

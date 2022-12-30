@@ -5,27 +5,36 @@ from functools import cache
 import pandas as pd
 from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import and_, distinct, select
+from sqlalchemy.sql import and_
 
 from .. import utils
 from . import api, sql, store
 
 
-def get_unique_10q(df: pd.DataFrame, /, *, units: str = "USD") -> pd.DataFrame:
-    """Get all unique rows as determined by the
-    accession number (`accn`) and tag for each quarter.
+def get_unique_filings(
+    df: pd.DataFrame, /, *, form: str = "10-Q", units: None | str = None
+) -> pd.DataFrame:
+    """Get all unique rows as determined by the filing date
+    and tag for a period.
 
     Args:
         df: Dataframe without unique rows.
+        form: Only keep rows with form type `form`.
         units: Only keep rows with units `units` if not `None`.
 
     Returns:
         Dataframe with unique rows.
 
     """
-    df = df[
-        (df["form"] == "10-Q") & (df["units"] == units) & (df["fp"].str.startswith("Q"))
-    ]
+    mask = df["form"] == form
+    match form:
+        case "10-K":
+            mask &= df["fp"] == "FY"
+        case "10-Q":
+            mask &= df["fp"].str.startswith("Q")
+    if units:
+        mask &= df["units"] == units
+    df = df[mask]
     return df.drop_duplicates(["tag", "filed"])
 
 
@@ -135,7 +144,7 @@ class _QuarterlyFeatures:
             df = api.company_concept.get(
                 tag, ticker=ticker, taxonomy=taxonomy, units=units
             )
-            df = get_unique_10q(df, units=units)
+            df = get_unique_filings(df, units=units)
             if start:
                 df = df[df["filed"] >= start]
             if end:

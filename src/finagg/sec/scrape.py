@@ -75,7 +75,7 @@ def run(
                     df = api.company_concept.get(
                         tag, ticker=ticker, taxonomy=taxonomy, units=units
                     )
-                    df = features.get_unique_10q(df, units=units)
+                    df = features.get_unique_filings(df, units=units)
                     count = conn.execute(
                         sql.tags.insert(), df.to_dict(orient="records")
                     ).rowcount
