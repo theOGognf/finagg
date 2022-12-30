@@ -47,7 +47,10 @@ def ls() -> None:
 
 
 @entry_point.command(
-    help="Scrape a specified ticker quarterly report into the SQL database."
+    help=(
+        "Scrape a specified ticker quarterly report into the SQL database. "
+        "A collection of recommended concepts are scraped by default."
+    )
 )
 @click.option("--ticker", required=True, multiple=True, help="Ticker to scrape.")
 @click.option("--tag", default=None, help="XBRL tag to scrape.")

@@ -53,13 +53,14 @@ class FiscalFrame:
     """A year and quarter pair.
 
     Examples:
-        Getting quarter differences between frames.
+        Getting quarter differences between frames and determining if the sequence
+        is valid.
         >>> import finagg
         >>> df = finagg.sec.api.company_concept.get("AssetsCurrent", ticker="AAPL")
         >>> frames: pd.Series = df["fy"].astype(int).astype(str) + df["fp"].astype(str)
-        >>> frames = frames.apply(lambda row: FiscalFrame.fromstr(row))
+        >>> frames = frames.apply(lambda row: finagg.frame.FiscalFrame.fromstr(row))
         >>> frames = frames.diff(periods=1).dropna().astype(int)
-        >>> is_valid_fiscal_seq(frames.tolist())
+        >>> finagg.frame.is_valid_fiscal_seq(frames.tolist())
 
     """
 

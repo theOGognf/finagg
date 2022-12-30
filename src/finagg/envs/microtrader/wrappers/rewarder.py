@@ -23,7 +23,7 @@ class PortfolioDollarChange(Rewarder):
     """Reward total dollar changes in portfolio value."""
 
     #: Previous portfolio total dollar change.
-    #: Used for computing the change from the new price.
+    #: Used for computing the change w.r.t. the previous price.
     prev_total_dollar_change: float
 
     def __init__(self) -> None:
@@ -39,12 +39,13 @@ class PortfolioDollarChange(Rewarder):
         """Get a reward from an environment step.
 
         Args:
-            action: Action taken.
+            _: Action taken (unused).
             features: Environment state data.
             portfolio: Portfolio to observe.
 
         Returns:
-            A reward value.
+            Change in portfolio dollar value w.r.t. the previous
+            trading day.
 
         """
         ticker: str = features["ticker"]
