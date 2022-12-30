@@ -16,8 +16,10 @@ def entry_point() -> None:
 
 
 @entry_point.command(
-    help="Set the FRED API key, drop and recreate tables, "
-    "and scrape the recommended datasets and features into the SQL database.",
+    help=(
+        "Set the FRED API key, drop and recreate tables, "
+        "and scrape the recommended datasets and features into the SQL database."
+    ),
 )
 @click.option(
     "--install-features",

@@ -17,8 +17,10 @@ def entry_point() -> None:
 
 
 @entry_point.command(
-    help="Set the SEC API key, drop and recreate tables, "
-    "and scrape the recommended datasets and features into the SQL database.",
+    help=(
+        "Set the SEC API key, drop and recreate tables, "
+        "and scrape the recommended datasets and features into the SQL database."
+    ),
 )
 @click.option(
     "--install-features",
@@ -53,7 +55,7 @@ def ls() -> None:
 @click.option("--units", default=None, help="Units to scrape.")
 def scrape(ticker: Sequence[str], tag: str, taxonomy: str, units: str) -> None:
     if tag and taxonomy and units:
-        concepts = ({"tag": tag, "taxonomy": taxonomy, "units": units},)
+        concepts = [{"tag": tag, "taxonomy": taxonomy, "units": units}]
     else:
-        concepts = features.quarterly_features.concepts
+        concepts = list(features.quarterly_features.concepts)
     _scrape.run(ticker, concepts=concepts)
