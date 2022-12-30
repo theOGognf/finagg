@@ -28,13 +28,15 @@ class DiscreteTrader(Actor):
     """Manage a portfolio containing cash and a position in just one security."""
 
     #: Right-end bin values for trade amounts.
-    amount_bins: list[float]
+    trade_amount_bins: list[float]
 
-    def __init__(self, *, amount_bins: int = 3) -> None:
+    def __init__(self, *, trade_amount_bins: int = 5) -> None:
         super().__init__()
-        self.amount_bins = [(i + 1) / (amount_bins + 1) for i in range(amount_bins)]
+        self.trade_amount_bins = [
+            (i + 1) / (trade_amount_bins + 1) for i in range(trade_amount_bins)
+        ]
         self.action_space = spaces.Tuple(
-            [spaces.Discrete(3), spaces.Discrete(amount_bins)]
+            [spaces.Discrete(3), spaces.Discrete(trade_amount_bins)]
         )
 
     def act(
@@ -54,8 +56,8 @@ class DiscreteTrader(Actor):
         """
         ticker: str = features["ticker"]
         price: float = features["price"]
-        action_type, amount_bin = action
-        amount = self.amount_bins[amount_bin]
+        action_type, trade_amount_bin = action
+        amount = self.trade_amount_bins[trade_amount_bin]
         match action_type:
             case 0:
                 return
