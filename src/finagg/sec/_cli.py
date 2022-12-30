@@ -11,7 +11,7 @@ from . import scrape as _scrape
 from . import sql
 
 
-@click.group()
+@click.group(help="Securities and Exchange Commission (SEC) tools.")
 def entry_point() -> None:
     ...
 
