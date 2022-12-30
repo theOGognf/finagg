@@ -2,7 +2,7 @@
 
 import random
 from dataclasses import dataclass, field
-from typing import Any, Iterator
+from typing import Any, Hashable, Iterable
 
 import gym
 import pandas as pd
@@ -22,24 +22,22 @@ class Sampler:
     required_rows: int
 
     #: Number of times `step` can be called to get features.
-    remaining_rows: None | int
+    remaining_rows: int
 
     #: Trading symbol/ticker.
-    ticker: None | str
+    ticker: str
 
     #: Backend iterator that iterates over all the samples.
-    iterator: None | Iterator[pd.Series]
+    iterator: Iterable[tuple[Hashable, pd.Series]]
 
     def __init__(self, trading_days: int, /) -> None:
         self.trading_days = trading_days
         self.required_rows = trading_days + 1
-        self.remaining_rows = None
-        self.ticker = None
-        self.iterator = None
 
     def reset(self) -> tuple[dict, bool]:
         """Sample a new set of features."""
-        self.ticker = random.sample(mixed.store.get_ticker_set())
+        tickers = list(mixed.store.get_ticker_set())
+        self.ticker = random.choice(tickers)
         df = mixed.features.fundamental_features.from_store(self.ticker)
         num_rows = len(df.index)
         if num_rows < self.required_rows:
@@ -48,15 +46,17 @@ class Sampler:
             idx = random.randint(0, num_rows - self.required_rows)
             subsample = df.iloc[idx : idx + self.required_rows]
         self.remaining_rows = len(subsample.index) - 1
-        self.iterator = subsample.itertuples()
-        features = next(self.iterator)
+        self.iterator = subsample.iterrows()
+        date, features = next(self.iterator)  # type: ignore
+        features["date"] = date
         features["ticker"] = self.ticker
         return features, self.remaining_rows <= 0
 
     def step(self) -> tuple[dict, bool]:
         """Return the next row of features and whether there's more data remaining."""
         self.remaining_rows -= 1
-        features = next(self.iterator)
+        date, features = next(self.iterator)  # type: ignore
+        features["date"] = date
         features["ticker"] = self.ticker
         return features, self.remaining_rows <= 0
 
@@ -108,7 +108,10 @@ class MicroTrader(gym.Env):
     actor: wrappers.Actor
 
     #: Environment config.
-    conig: Config
+    config: Config
+
+    #: Features (environment state) updated each step.
+    features: dict
 
     #: Interface for getting extra data out of the environment.
     #: Most useful for debugging/analysis.
@@ -118,7 +121,7 @@ class MicroTrader(gym.Env):
     observer: wrappers.Observer
 
     #: New portfolio created on `reset`.
-    portfolio: None | Portfolio
+    portfolio: Portfolio
 
     #: Interface for playing with reward shaping.
     rewarder: wrappers.Rewarder
@@ -130,6 +133,8 @@ class MicroTrader(gym.Env):
 
     def __init__(self, config: None | dict = None) -> None:
         super().__init__()
+        if config is None:
+            config = {}
         self.config = self.Config(**config)
         self.actor = wrappers.get_actor(self.config.actor, **self.config.actor_config)
         self.informer = wrappers.get_informer(
@@ -144,22 +149,14 @@ class MicroTrader(gym.Env):
         self.stopper = wrappers.get_stopper(
             self.config.stopper, **self.config.stopper_config
         )
-        self.portfolio = None
-        self.features = None
         self.sampler = Sampler(self.config.trading_days)
+        self.action_space = self.actor.action_space
+        self.observation_space = self.observer.observation_space
 
-    @property
-    def action_space(self) -> gym.Space:
-        """Return the actor's action space."""
-        return self.actor.action_space
-
-    @property
-    def observation_space(self) -> gym.Space:
-        """Return the observer's action space."""
-        return self.observer.observation_space
-
-    def reset(self) -> Any:
+    def reset(self, *, seed: None | int = None) -> Any:
         """Reset the environment."""
+        if seed is not None:
+            random.seed(seed)
         self.portfolio = Portfolio(self.config.starting_cash)
         self.features, _ = self.sampler.reset()
         self.actor.reset()
@@ -168,12 +165,12 @@ class MicroTrader(gym.Env):
         self.stopper.reset()
         return self.observer.reset(self.features, self.portfolio)
 
-    def step(self, action: Any) -> Any:
+    def step(self, action: Any) -> tuple[Any, float, bool, dict]:
         """Step the environment with `action`."""
         self.actor.act(action, self.features, self.portfolio)
         reward = self.rewarder.reward(action, self.features, self.portfolio)
         done = self.stopper.eval(self.features, self.portfolio)
         info = self.informer.inform(action, self.features, self.portfolio)
-        self.features, not_out_of_data = self.sampler.step()
+        self.features, out_of_data = self.sampler.step()
         obs = self.observer.observe(self.features, self.portfolio)
-        return obs, reward, done and not_out_of_data, info
+        return obs, reward, done or out_of_data, info
