@@ -10,17 +10,17 @@ See the official BEA API user guide for more info:
 
 Examples:
     List datasets.
-    >>> import finagg
-    >>> finagg.bea.api.get_dataset_list()
+    >>> import finagg.bea.api as bea
+    >>> bea.get_dataset_list()
 
     Listing parameters for GDP by industry.
-    >>> finagg.bea.api.gdp_by_industry.get_parameter_list()
+    >>> bea.gdp_by_industry.get_parameter_list()
 
     Listing possible parameter values.
-    >>> finagg.bea.api.gdp_by_industry.get_parameter_values("year")
+    >>> bea.gdp_by_industry.get_parameter_values("year")
 
     Getting GDP by industry for specific years.
-    >>> finagg.bea.api.gdp_by_industry.get(year=[1995, 1996])
+    >>> bea.gdp_by_industry.get(year=[1995, 1996])
 
 """
 

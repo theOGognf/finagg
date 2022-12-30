@@ -3,6 +3,14 @@
 See the official FRED API docs for more info:
     https://fred.stlouisfed.org/docs/api/fred/
 
+Examples:
+    Get data categories under the root.
+    >>> import finagg.fred.api as fred
+    >>> fred.category.children.get(0)
+
+    Get series related to a category.
+    >>> fred.category.series.get(10)
+
 """
 
 from functools import cache

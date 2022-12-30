@@ -3,6 +3,11 @@
 See the official FRED API docs for more info:
     https://fred.stlouisfed.org/docs/api/fred/
 
+Examples:
+    Get all release dates.
+    >>> import finagg.fred.api as fred
+    >>> fred.releases.dates.get()
+
 """
 
 from functools import cache
@@ -72,7 +77,7 @@ class _ReleasesDates(_api.Dataset):
             include_release_dates_with_no_data=include_release_dates_with_no_data,
             api_key=api_key,
         ).json()
-        data = data["releases"]
+        data = data["release_dates"]
         return pd.DataFrame(data)
 
 

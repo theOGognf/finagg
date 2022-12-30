@@ -1,7 +1,24 @@
 """The "fred/series" API.
 
+This is probably the most popular API implementation.
+Useful for examining historical or projected economic data.
+The API comes with builtin methods for filtering data based
+on publication date or frequency. See the docs of each
+method for more details.
+
 See the official FRED API docs for more info:
     https://fred.stlouisfed.org/docs/api/fred/
+
+Examples:
+    Get the latest release of an economic data series.
+    >>> import finagg.fred.api as fred
+    >>> fred.series.get("GDP")
+
+    Get all initial releases of an economic data series.
+    >>> fred.series.get("GDP", realtime_start=0, realtime_end=-1, output_type=4)
+
+    Search for economic data series.
+    >>> fred.series.search.get("Unemployment rate")
 
 """
 

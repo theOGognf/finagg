@@ -12,7 +12,6 @@ from . import (
     indices,
     install,
     mixed,
-    ratelimit,
     sec,
     testing,
     utils,

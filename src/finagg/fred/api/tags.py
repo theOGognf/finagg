@@ -3,6 +3,11 @@
 See the official FRED API docs for more info:
     https://fred.stlouisfed.org/docs/api/fred/
 
+Examples:
+    List tags related to an economic data series.
+    >>> import finagg.fred.api as fred
+    >>> fred.tags.series.get()
+
 """
 
 from functools import cache
