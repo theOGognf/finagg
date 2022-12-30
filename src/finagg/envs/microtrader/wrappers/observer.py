@@ -18,7 +18,8 @@ class Observer(ABC):
     def observe(self, features: dict, portfolio: Portfolio) -> Any:
         """Observe the environment from predefined features and a portfolio."""
 
-    def reset(self) -> Any:
+    @abstractmethod
+    def reset(self, features: dict, portfolio: Portfolio) -> Any:
         """This method is called on environment resets.
 
         Override this if the actor is stateful across environment transitions.
@@ -104,6 +105,10 @@ class FundamentalsMonitor(Observer):
             -99,
             99,
         )
+
+    def reset(self, features: dict, portfolio: Portfolio) -> npt.NDArray[np.float32]:
+        """Just observe to reset."""
+        return self.observe(features, portfolio)
 
 
 def get_observer(observer: str, **kwargs) -> Observer:

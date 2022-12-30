@@ -60,17 +60,18 @@ fundamental_data = finagg.mixed.features.fundamental_features.from_sql("AAPL")
 
 - [**pandas** for fast, flexible, and expressive representations of relational data.](https://pandas.pydata.org/)
 - [**requests** for HTTP requests to 3rd party APIs.](https://requests.readthedocs.io/en/latest/)
-- [**requests-cache** for caching HTTP requests to help avoid getting throttled by 3rd party libraries.](https://requests-cache.readthedocs.io/en/stable/)
+- [**requests-cache** for caching HTTP requests to avoid getting throttled by 3rd party API servers.](https://requests-cache.readthedocs.io/en/stable/)
 - [**SQLAlchemy** for a SQL Python interface.](https://www.sqlalchemy.org/)
-- [**yfinance** for Yahoo! Finance data.](https://github.com/ranaroussi/yfinance)
+- [**yfinance** for historical stock data from Yahoo! Finance.](https://github.com/ranaroussi/yfinance)
 
 ## API References
 
-- [**BEA API**](https://apps.bea.gov/api/signup/)
-- [**FRED API**](https://fred.stlouisfed.org/docs/api/fred/)
-- [**SEC API**](https://www.sec.gov/edgar/sec-api-documentation)
+- [The BEA API](https://apps.bea.gov/api/signup/) and [its respective API key registration link](https://apps.bea.gov/API/signup/).
+- [The FRED API](https://fred.stlouisfed.org/docs/api/fred/) and [its respective API key registration link.](https://fredaccount.stlouisfed.org/login/secure/)
+- [The SEC API.](https://www.sec.gov/edgar/sec-api-documentation)
 
 ## Related Projects
 
 - [**FinRL** is a collection of financial reinforcement learning environments and tools.](https://github.com/AI4Finance-Foundation/FinRL)
+- [**fredapi** is an implementation of the FRED API.](https://github.com/mortada/fredapi)
 - [**sec-edgar** is an implementation of a file-based SEC EDGAR parser.](https://github.com/sec-edgar/sec-edgar)

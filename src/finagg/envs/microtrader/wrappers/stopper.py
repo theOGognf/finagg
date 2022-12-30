@@ -18,23 +18,15 @@ class Stopper(ABC):
         """
 
 
-class BalanceAndTimeLimiter(Stopper):
-    """Limit trading days and trading balances."""
+class LossLimiter(Stopper):
+    """Limit trading balance loss."""
 
     #: Max allowed loss in total portfolio value.
     max_loss: float
 
-    #: Max allowed trading days.
-    max_trading_days: int
-
-    #: Days spent trading.
-    trading_days: int
-
-    def __init__(self, *, max_loss: float = -0.5, max_trading_days: int = 365) -> None:
+    def __init__(self, *, max_loss: float = -0.5) -> None:
         super().__init__()
         self.max_loss = max_loss
-        self.max_trading_days = max_trading_days
-        self.trading_days = 0
 
     def eval(self, features: dict, portfolio: Portfolio) -> bool:
         """Determine whether to stop trading.
@@ -47,22 +39,15 @@ class BalanceAndTimeLimiter(Stopper):
             Whether the environment is done.
 
         """
-        self.trading_days += 1
         ticker: str = features["ticker"]
         price: float = features["price"]
-        return (portfolio.total_percent_change({ticker: price}) <= self.max_loss) or (
-            self.trading_days >= self.max_trading_days
-        )
-
-    def reset(self) -> None:
-        """Reset trading day counter."""
-        self.trading_days = 0
+        return portfolio.total_percent_change({ticker: price}) <= self.max_loss
 
 
 def get_stopper(stopper: str, **kwargs) -> Stopper:
     """Get a stopper based on its short name."""
     stoppers = {
-        "default": BalanceAndTimeLimiter,
-        "balance_and_time_limiter": BalanceAndTimeLimiter,
+        "default": LossLimiter,
+        "loss_limiter": LossLimiter,
     }
     return stoppers[stopper](**kwargs)
