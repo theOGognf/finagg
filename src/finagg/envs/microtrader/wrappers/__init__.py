@@ -1,3 +1,5 @@
+"""Abstractions for different ways to play with the environment."""
+
 from .actor import Actor, get_actor
 from .informer import Informer, get_informer
 from .observer import Observer, get_observer
