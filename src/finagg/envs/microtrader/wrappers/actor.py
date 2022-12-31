@@ -16,7 +16,7 @@ class Actor(ABC):
     def act(self, action: Any, features: dict, portfolio: Portfolio) -> None:
         """Manage `portfolio` with `action`."""
 
-    def reset(self) -> None:
+    def reset(self, features: dict, portfolio: Portfolio) -> None:
         """This method is called on environment resets.
 
         Override this if the actor is stateful across environment transitions.
@@ -71,6 +71,13 @@ class DiscreteTrader(Actor):
                 quantity = amount * portfolio[ticker].quantity
                 portfolio.sell(ticker, price, quantity)
                 return
+
+    def reset(self, features: dict, portfolio: Portfolio) -> None:
+        """Start the portfolio with a small position in the security."""
+        ticker: str = features["ticker"]
+        price: float = features["price"]
+        quantity = 0.01 * portfolio.cash / price
+        portfolio.buy(ticker, price, quantity)
 
 
 def get_actor(actor: str, **kwargs) -> Actor:

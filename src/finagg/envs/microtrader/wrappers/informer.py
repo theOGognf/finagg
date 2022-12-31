@@ -39,6 +39,7 @@ class TradeLocater(Informer):
             An info dictionary.
 
         """
+        trade_type, trade_amount = action
         ticker: str = features["ticker"]
         price: float = features["price"]
         if ticker in portfolio:
@@ -55,7 +56,8 @@ class TradeLocater(Informer):
             "date": features["date"],
             "ticker": ticker,
             "price": price,
-            "type": action[0],
+            "trade_type": trade_type,
+            "trade_amount": trade_amount,
             "cost_basis_total": cost_basis_total,
             "average_cost_basis": average_cost_basis,
             "position_percent_change": position_percent_change,

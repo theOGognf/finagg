@@ -159,7 +159,7 @@ class MicroTrader(gym.Env):
             random.seed(seed)
         self.portfolio = Portfolio(self.config.starting_cash)
         self.features, _ = self.sampler.reset()
-        self.actor.reset()
+        self.actor.reset(self.features, self.portfolio)
         self.informer.reset()
         self.rewarder.reset()
         self.stopper.reset()
