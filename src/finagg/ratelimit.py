@@ -5,14 +5,11 @@ from abc import ABC, abstractmethod
 from collections import deque
 from datetime import timedelta
 from functools import update_wrapper
-from typing import Any, Callable, Sequence
+from typing import Callable, Generic, ParamSpec, Sequence
 
 import requests
 
-Getter = Callable[
-    ...,
-    requests.Response,
-]
+_P = ParamSpec("_P")
 
 
 class RateLimit(ABC):
@@ -159,14 +156,14 @@ class SizeLimit(RateLimit):
         return float(len(response.content))
 
 
-class RateLimitGuard:
+class RateLimitGuard(Generic[_P]):
     """Wraps requests-like getters to introduce blocking functionality
     when requests are getting close to violating call limits.
 
     """
 
     #: requests-like getter that returns a response.
-    f: Getter
+    f: Callable[_P, requests.Response]
 
     #: Limits to apply to requests/responses.
     limits: tuple[RateLimit, ...]
@@ -176,7 +173,7 @@ class RateLimitGuard:
 
     def __init__(
         self,
-        f: Getter,
+        f: Callable[_P, requests.Response],
         limits: tuple[RateLimit, ...],
         /,
         *,
@@ -187,7 +184,7 @@ class RateLimitGuard:
         self.warn = warn
         update_wrapper(self, f)
 
-    def __call__(self, *args: Any, **kwargs: Any) -> requests.Response:
+    def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> requests.Response:
         """Call the underlying getter and sleep the wait required to
         satisfy the guard's limits.
 
@@ -213,10 +210,10 @@ class RateLimitGuard:
 
 def guard(
     limits: Sequence[RateLimit], *, warn: bool = False
-) -> Callable[[Getter,], RateLimitGuard]:
+) -> Callable[[Callable[_P, requests.Response],], RateLimitGuard[_P]]:
     """Apply `limits` to a requests-style getter."""
 
-    def decorator(f: Getter) -> RateLimitGuard:
+    def decorator(f: Callable[_P, requests.Response]) -> RateLimitGuard[_P]:
         return RateLimitGuard(f, tuple(limits), warn=warn)
 
     return decorator
