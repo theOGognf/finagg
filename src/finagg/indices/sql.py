@@ -1,4 +1,4 @@
-"""Ticker SQLAlchemy interfaces."""
+"""Indices SQLAlchemy interfaces."""
 
 
 from sqlalchemy import Column, Float, MetaData, String, Table, create_engine, inspect

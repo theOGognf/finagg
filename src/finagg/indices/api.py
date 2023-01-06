@@ -19,21 +19,15 @@ session = requests_cache.CachedSession(
 )
 
 
-class _Dataset(ABC):
-    """Abstract ticlers API."""
+class _API(ABC):
+    """Abstract indices API."""
 
     #: Request API URL.
     url: ClassVar[str]
 
-    def __init__(self, *args, **kwargs) -> None:
-        raise RuntimeError(
-            "Instantiating a indices API directly is not allowed. "
-            "Use the `get` method instead."
-        )
-
     @classmethod
     @abstractmethod
-    def get(cls, *args, **kwargs) -> dict | pd.DataFrame:
+    def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
         """Main dataset API method."""
 
     @classmethod
@@ -43,14 +37,11 @@ class _Dataset(ABC):
         return df["ticker"].tolist()
 
 
-class _DJIA(_Dataset):
-    """List all companies currently in the DJIA."""
+class _DJIA(_API):
 
-    #: API URL.
     url = "https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average"
 
     @classmethod
-    @cache
     def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
         """Get a dataframe containing data on the tickers in the DJIA."""
         response = get(cls.url, user_agent=user_agent)
@@ -78,14 +69,11 @@ class _DJIA(_Dataset):
         return df
 
 
-class _Nasdaq100(_Dataset):
-    """List all companies currently in the Nasdaq 100."""
+class _Nasdaq100(_API):
 
-    #: API URL.
     url = "https://en.wikipedia.org/wiki/Nasdaq-100"
 
     @classmethod
-    @cache
     def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
         """Get a dataframe containing data on the tickers in the Nasdaq 100."""
         response = get(cls.url, user_agent=user_agent)
@@ -103,14 +91,11 @@ class _Nasdaq100(_Dataset):
         )
 
 
-class _SP500(_Dataset):
-    """List all companies currently in the S&P 500."""
+class _SP500(_API):
 
-    #: API URL.
     url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 
     @classmethod
-    @cache
     def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
         """Get a dataframe containing data on the tickers in the S&P 500."""
         response = get(cls.url, user_agent=user_agent)
@@ -134,13 +119,13 @@ class _SP500(_Dataset):
 
 
 #: The Dow Jones Industrial Average.
-djia = _DJIA
+djia = _DJIA()
 
 #: The Nasdaq Composite 100.
-nasdaq100 = _Nasdaq100
+nasdaq100 = _Nasdaq100()
 
 #: The Standard and Poor's 500.
-sp500 = _SP500
+sp500 = _SP500()
 
 
 def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
