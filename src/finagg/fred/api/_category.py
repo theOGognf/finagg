@@ -20,7 +20,7 @@ import pandas as pd
 from . import _api
 
 
-class _Children(_api.Dataset):
+class _Children(_api.API):
     """Get all child categories for a specific parent category."""
 
     #: FRED API URL.
@@ -66,7 +66,7 @@ class _Children(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _Related(_api.Dataset):
+class _Related(_api.API):
     """Get categories related to a category."""
 
     #: FRED API URL.
@@ -114,7 +114,7 @@ class _Related(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _Series(_api.Dataset):
+class _Series(_api.API):
     """Get data for series within a category."""
 
     #: FRED API URL.
@@ -197,7 +197,7 @@ class _Series(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _Tags(_api.Dataset):
+class _Tags(_api.API):
     """Get a category's tags."""
 
     #: FRED API URL.
@@ -280,7 +280,7 @@ class _Tags(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _RelatedTags(_api.Dataset):
+class _RelatedTags(_api.API):
     """Get data for tags related to a category."""
 
     #: FRED API URL.
@@ -366,7 +366,7 @@ class _RelatedTags(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _Category(_api.Dataset):
+class _Category(_api.API):
     """Collection of `fred/category` APIs.
 
     See the related FRED API documentation at:
@@ -375,19 +375,19 @@ class _Category(_api.Dataset):
     """
 
     #: "category/children" FRED API. Get the children of a category.
-    children = _Children
+    children = _Children()
 
     #: "category/related" FRED API. Get categories related to a category.
-    related = _Related
+    related = _Related()
 
     #: "category/related_tags" FRED API. Get tags related to a category.
-    related_tags = _RelatedTags
+    related_tags = _RelatedTags()
 
     #: "category/series" FRED API. Get a category's series.
-    series = _Series
+    series = _Series()
 
     #: "category/tags" FRED API. Get a category's tags.
-    tags = _Tags
+    tags = _Tags()
 
     #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/category"
@@ -413,4 +413,4 @@ class _Category(_api.Dataset):
 
 
 #: Public-facing "fred/category" API.
-category = _Category
+category = _Category()

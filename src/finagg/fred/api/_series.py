@@ -29,7 +29,7 @@ import pandas as pd
 from . import _api
 
 
-class _Categories(_api.Dataset):
+class _Categories(_api.API):
     """Get the categories for an economic data series."""
 
     #: FRED API URL.
@@ -75,7 +75,7 @@ class _Categories(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _Observations(_api.Dataset):
+class _Observations(_api.API):
     """Get the observations or data values for an economic data series."""
 
     #: FRED API URL.
@@ -194,7 +194,7 @@ class _Observations(_api.Dataset):
         return df
 
 
-class _Release(_api.Dataset):
+class _Release(_api.API):
     """Get the release for an economic data series."""
 
     #: FRED API URL.
@@ -240,7 +240,7 @@ class _Release(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _SearchRelatedTags(_api.Dataset):
+class _SearchRelatedTags(_api.API):
     """Get the related tags for a series search."""
 
     #: FRED API URL.
@@ -326,7 +326,7 @@ class _SearchRelatedTags(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _SearchTags(_api.Dataset):
+class _SearchTags(_api.API):
     """Get the tags for a series search."""
 
     #: FRED API URL.
@@ -409,7 +409,7 @@ class _SearchTags(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _Search(_api.Dataset):
+class _Search(_api.API):
     """Get economic data series that match search text."""
 
     #: "series/search/related_tags" FRED API. Get the related tags for a
@@ -512,7 +512,7 @@ class _Search(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _Tags(_api.Dataset):
+class _Tags(_api.API):
     """Get FRED tags for a series."""
 
     #: FRED API URL.
@@ -571,7 +571,7 @@ class _Tags(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _Updates(_api.Dataset):
+class _Updates(_api.API):
     """Get economic data series sorted by when observations
     were updated on the FRED server.
 
@@ -643,7 +643,7 @@ class _Updates(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _VintageDates(_api.Dataset):
+class _VintageDates(_api.API):
     """Get the dates in history when a series' data values were revised
     or new data values were released.
 
@@ -704,36 +704,36 @@ class _VintageDates(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _Series(_api.Dataset):
+class _Series(_api.API):
     """Get an economic data series."""
 
     #: "series/categories" FRED API. Get the categories for
     #: an economic data series.
-    categories = _Categories
+    categories = _Categories()
 
     #: "series/observations" FRED API. Get the observations or
     #: data values for an economic data series.
-    observations = _Observations
+    observations = _Observations()
 
     #: "series/release" FRED API. Get the release for an economic data series.
-    release = _Release
+    release = _Release()
 
     #: "series/search" FRED API. Get economic data series that match search text.
-    search = _Search
+    search = _Search()
 
     #: "series/tags" FRED API. Get FRED tags for a series.
-    tags = _Tags
+    tags = _Tags()
 
     #: "series/updates" FRED API. Get economic data series sorted by
     #: when observations were updated on the FRED server.
-    updates = _Updates
+    updates = _Updates()
 
     #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series"
 
     #: "series/vintage_dates" FRED API. Get the dates in history when a
     #: a series' data values were revised or new data values were released.
-    vintage_dates = _VintageDates
+    vintage_dates = _VintageDates()
 
     @classmethod
     def get(
@@ -775,4 +775,4 @@ class _Series(_api.Dataset):
 
 
 #: Public-facing "fred/series" API.
-series = _Series
+series = _Series()

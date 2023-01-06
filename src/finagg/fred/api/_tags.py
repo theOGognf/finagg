@@ -17,7 +17,7 @@ import pandas as pd
 from . import _api
 
 
-class _RelatedTags(_api.Dataset):
+class _RelatedTags(_api.API):
     """Get related FRED tags."""
 
     #: FRED API URL.
@@ -97,7 +97,7 @@ class _RelatedTags(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _Series(_api.Dataset):
+class _Series(_api.API):
     """Get the economic data series matching tags."""
 
     #: FRED API URL.
@@ -170,11 +170,11 @@ class _Series(_api.Dataset):
         return pd.DataFrame(data)
 
 
-class _Tags(_api.Dataset):
+class _Tags(_api.API):
     """Get FRED tags."""
 
     #: "tags/series" FRED API. Get the series for a FRED tag.
-    series = _Series
+    series = _Series()
 
     #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/tags"
@@ -254,5 +254,5 @@ class _Tags(_api.Dataset):
 
 
 #: Public-facing "fred/tags" and "fred/related_tags" APIs.
-tags = _Tags
-related_tags = _RelatedTags
+tags = _Tags()
+related_tags = _RelatedTags()

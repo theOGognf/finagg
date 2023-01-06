@@ -18,25 +18,19 @@ session = requests_cache.CachedSession(
 )
 
 
-class Dataset(ABC):
+class API(ABC):
     """Abstract FRED API."""
 
     #: Request API URL endpoint after the base URL.
     url: ClassVar[str]
 
-    def __init__(self, *args, **kwargs) -> None:
-        raise RuntimeError(
-            "Instantiating a FRED API directly is not allowed. "
-            "Use one of the `get` methods instead."
-        )
-
     @classmethod
     @abstractmethod
-    def get(cls, *args, **kwargs) -> pd.DataFrame:
+    def get(cls, *args: Any, **kwargs: Any) -> pd.DataFrame:
         """Main dataset API method."""
 
 
-def get(url: str, /, **kwargs) -> requests.Response:
+def get(url: str, /, **kwargs: Any) -> requests.Response:
     """Main API get function used by all `Dataset.get` methods.
 
     Also formats FRED API parameters for convenience.
@@ -54,7 +48,7 @@ def get(url: str, /, **kwargs) -> requests.Response:
     return response
 
 
-def pformat(**kwargs) -> dict[str, Any]:
+def pformat(**kwargs: Any) -> dict[str, Any]:
     """FRED API parameter formatting.
 
     Args:
