@@ -64,5 +64,8 @@ class TradeLocater(Informer):
 
 def get_informer(informer: str, **kwargs: Any) -> Informer:
     """Get an informer based on its short name."""
-    informers = {"default": TradeLocater, "trade_locater": TradeLocater}
+    informers: dict[str, type[Informer]] = {
+        "default": TradeLocater,
+        "trade_locater": TradeLocater,
+    }
     return informers[informer](**kwargs)

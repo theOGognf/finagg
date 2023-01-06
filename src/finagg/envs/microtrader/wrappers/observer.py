@@ -121,7 +121,7 @@ class FundamentalsMonitor(Observer):
 
 def get_observer(observer: str, **kwargs: Any) -> Observer:
     """Get an observer based on its short name."""
-    observers = {
+    observers: dict[str, type[Observer]] = {
         "default": FundamentalsMonitor,
         "fundamentals": FundamentalsMonitor,
     }

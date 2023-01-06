@@ -1,19 +1,19 @@
 """Actual environment definition using `wrappers`."""
 
 import random
-from dataclasses import dataclass, field
+from dataclasses import field
 from typing import Any, Hashable, Iterable
 
 import gym
 import pandas as pd
+from pydantic import BaseModel
 
 from ... import mixed
 from ...portfolio import Portfolio
 from . import wrappers
 
 
-@dataclass
-class Config:
+class Config(BaseModel):
     """Environment configuration."""
 
     #: Actor wrapper ID.

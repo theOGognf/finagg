@@ -47,7 +47,7 @@ class LossLimiter(Stopper):
 
 def get_stopper(stopper: str, **kwargs: Any) -> Stopper:
     """Get a stopper based on its short name."""
-    stoppers = {
+    stoppers: dict[str, type[Stopper]] = {
         "default": LossLimiter,
         "loss_limiter": LossLimiter,
     }

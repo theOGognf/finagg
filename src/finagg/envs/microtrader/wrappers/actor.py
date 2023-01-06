@@ -13,10 +13,10 @@ class Actor(ABC):
     action_space: spaces.Space
 
     @abstractmethod
-    def act(self, action: Any, features: dict, portfolio: Portfolio) -> None:
+    def act(self, action: Any, features: dict[str, Any], portfolio: Portfolio) -> None:
         """Manage `portfolio` with `action`."""
 
-    def reset(self, features: dict, portfolio: Portfolio) -> None:
+    def reset(self, features: dict[str, Any], portfolio: Portfolio) -> None:
         """This method is called on environment resets.
 
         Override this if the actor is stateful across environment transitions.
@@ -42,7 +42,7 @@ class DiscreteTrader(Actor):
     def act(
         self,
         action: tuple[int, int],
-        features: dict,
+        features: dict[str, Any],
         portfolio: Portfolio,
     ) -> None:
         """No-op, buy, or sell positions.
@@ -78,7 +78,7 @@ class DiscreteTrader(Actor):
                 features["trade_amount"] = quantity
                 return
 
-    def reset(self, features: dict, portfolio: Portfolio) -> None:
+    def reset(self, features: dict[str, Any], portfolio: Portfolio) -> None:
         """Start the portfolio with a small position in the security."""
         ticker: str = features["ticker"]
         price: float = features["price"]
@@ -94,22 +94,23 @@ class FlattenedDiscreteTrader(Actor):
 
     def __init__(self, *, trade_amount_bins: int = 2) -> None:
         super().__init__()
-        self.trade_amount_bins = [0.5, 0.99]
+        self.trade_amount_bins = [
+            (i + 1) / (trade_amount_bins + 1) for i in range(trade_amount_bins)
+        ]
         self.action_space = spaces.Discrete(
             sum([1, trade_amount_bins, trade_amount_bins])
         )
 
     def act(
         self,
-        action: tuple[int, int],
-        features: dict,
+        action: int,
+        features: dict[str, Any],
         portfolio: Portfolio,
     ) -> None:
         """No-op, buy, or sell positions.
 
         Args:
-            action: Tuple of action type (no-op, buy, or sell)
-                and buy/sell amount bin ID.
+            action: Discrete action (no-op + trade bin options).
             features: Environment state data such as security price.
             portfolio: Portfolio to manage.
 
@@ -146,7 +147,7 @@ class FlattenedDiscreteTrader(Actor):
             portfolio.sell(ticker, price, quantity)
             return
 
-    def reset(self, features: dict, portfolio: Portfolio) -> None:
+    def reset(self, features: dict[str, Any], portfolio: Portfolio) -> None:
         """Start the portfolio with a small position in the security."""
         ticker: str = features["ticker"]
         price: float = features["price"]
@@ -154,7 +155,10 @@ class FlattenedDiscreteTrader(Actor):
         portfolio.buy(ticker, price, quantity)
 
 
-def get_actor(actor: str, **kwargs) -> Actor:
+def get_actor(actor: str, **kwargs: Any) -> Actor:
     """Get an actor based on its short name."""
-    actors = {"default": FlattenedDiscreteTrader, "discrete_trader": DiscreteTrader}
+    actors: dict[str, type[Actor]] = {
+        "default": FlattenedDiscreteTrader,
+        "discrete_trader": DiscreteTrader,
+    }
     return actors[actor](**kwargs)

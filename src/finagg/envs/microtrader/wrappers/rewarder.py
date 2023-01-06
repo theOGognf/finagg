@@ -96,7 +96,7 @@ class PortfolioTotalPercentChange(Rewarder):
 
 def get_rewarder(rewarder: str, **kwargs: Any) -> Rewarder:
     """Get a rewarder based on its short name."""
-    rewarders = {
+    rewarders: dict[str, type[Rewarder]] = {
         "default": PortfolioTotalDollarValue,
         "portfolio_cash_change": PortfolioCashChange,
         "portfolio_total_percent_change": PortfolioTotalPercentChange,
