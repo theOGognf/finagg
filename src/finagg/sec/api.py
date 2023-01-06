@@ -14,7 +14,7 @@ Examples:
     Get a concept for a period from all companies.
     >>> sec.frames.get("NetIncomeLoss", 2020, 3)
 
-    Get the SEC CIK string representation of a ticker
+    Get the SEC CIK string representation of a ticker.
     >>> sec.get_cik("AAPL")
 
     Get the ticker from an SEC CIK.

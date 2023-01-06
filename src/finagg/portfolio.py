@@ -1,7 +1,6 @@
 """Definitions related to tracking an investment portfolio of cash and stocks."""
 
 from functools import total_ordering
-from typing import Generic, TypeVar
 
 
 @total_ordering
@@ -119,11 +118,7 @@ class Position:
         return (cost / self.average_cost_basis) - 1
 
 
-_Symbol = TypeVar("_Symbol", bound=str)
-_Position = TypeVar("_Position", bound=Position)
-
-
-class Portfolio(Generic[_Symbol, _Position]):
+class Portfolio:
     """A collection of cash and security positions.
 
     Args:

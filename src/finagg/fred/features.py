@@ -243,4 +243,4 @@ class _EconomicFeatures:
 
 
 #: Public-facing API.
-economic_features = _EconomicFeatures
+economic_features = _EconomicFeatures()

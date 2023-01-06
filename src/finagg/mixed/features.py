@@ -256,4 +256,4 @@ class _FundamentalFeatures:
 
 
 #: Public-facing API.
-fundamental_features = _FundamentalFeatures
+fundamental_features = _FundamentalFeatures()
