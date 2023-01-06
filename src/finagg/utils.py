@@ -69,7 +69,7 @@ def quantile_clip(
     return df
 
 
-def safe_pct_change(col: pd.Series) -> pd.Series:
+def safe_pct_change(col: pd.Series) -> pd.Series:  # type: ignore
     """Safely compute percent change on a column.
 
     Replaces Inf values with NaN and forward-fills.
