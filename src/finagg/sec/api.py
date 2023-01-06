@@ -27,7 +27,7 @@ import os
 import sys
 from abc import ABC, abstractmethod
 from datetime import timedelta
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import pandas as pd
 import requests
@@ -50,28 +50,20 @@ session = requests_cache.CachedSession(
 )
 
 
-class _Dataset(ABC):
+class _API(ABC):
     """Abstract SEC EDGAR API."""
 
     #: Request API URL.
     url: ClassVar[str]
 
-    def __init__(self, *args, **kwargs) -> None:
-        raise RuntimeError(
-            "Instantiating an SEC API directly is not allowed. "
-            "Use the `get` method instead."
-        )
-
     @classmethod
     @abstractmethod
-    def get(cls, *args, **kwargs) -> dict | pd.DataFrame:
+    def get(cls, *args: Any, **kwargs: Any) -> dict[str, Any] | pd.DataFrame:
         """Main dataset API method."""
 
 
-class _CompanyConcept(_Dataset):
-    """Get the full history of a company's concept (taxonomy and tag)."""
+class _CompanyConcept(_API):
 
-    #: API URL.
     url = (
         "https://data.sec.gov/api/xbrl"
         "/companyconcept"
@@ -129,10 +121,8 @@ class _CompanyConcept(_Dataset):
         return results.rename(columns={"entityName": "entity", "val": "value"})
 
 
-class _CompanyFacts(_Dataset):
-    """Get all XBRL disclosures from a single company (CIK)."""
+class _CompanyFacts(_API):
 
-    #: API URL.
     url = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 
     @classmethod
@@ -186,13 +176,8 @@ class _CompanyFacts(_Dataset):
         )
 
 
-class _Frames(_Dataset):
-    """Get one fact for each reporting entity that most closely fits
-    the calendrical period requested.
+class _Frames(_API):
 
-    """
-
-    #: API URL.
     url = (
         "https://data.sec.gov/api/xbrl"
         "/frames"
@@ -246,10 +231,8 @@ class _Frames(_Dataset):
         )
 
 
-class _Submissions(_Dataset):
-    """Get an entity's metadata and current filing history."""
+class _Submissions(_API):
 
-    #: API URL.
     url = "https://data.sec.gov/submissions/CIK{cik}.json"
 
     @classmethod
@@ -260,7 +243,7 @@ class _Submissions(_Dataset):
         cik: None | str = None,
         ticker: None | str = None,
         user_agent: None | str = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Return all recent filings from a single company (CIK).
 
         Args:
@@ -299,10 +282,8 @@ class _Submissions(_Dataset):
         return {"metadata": metadata, "filings": df}
 
 
-class _Tickers(_Dataset):
-    """Simple dataset to get the table of all SEC CIKs for all tickers."""
+class _Tickers(_API):
 
-    #: API URL.
     url = "https://www.sec.gov/files/company_tickers.json"
 
     @classmethod
@@ -327,30 +308,14 @@ _cik_to_tickers: dict[str, str] = {}
 #: Mapping of (uppercase) tickers to SEC CIK strings.
 _tickers_to_cik: dict[str, str] = {}
 
-#: Get the full history of a company's concept (taxonomy and tag).
-company_concept = _CompanyConcept
-
-#: Get all XBRL disclosures from a single company (CIK).
-company_facts = _CompanyFacts
-
-#: Get one fact for each reporting entity that most closely fits
-#: the calendrical period requested.
-frames = _Frames
-
-#: Get a company's metadata and recent submissions.
-submissions = _Submissions
-
-#: Used to get all SEC ticker data as opposed to
-#: an individual ticker's SEC CIK.
-tickers = _Tickers
+company_concept = _CompanyConcept()
+company_facts = _CompanyFacts()
+frames = _Frames()
+submissions = _Submissions()
+tickers = _Tickers()
 
 
 @ratelimit.guard([ratelimit.RequestLimit(9, timedelta(seconds=1))])
-def _guarded_get(url: str, user_agent: str, /) -> requests.Response:
-    """Guarded version of `session.get`."""
-    return session.get(url, headers={"User-Agent": user_agent})
-
-
 def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
     """SEC EDGAR API request helper.
 
@@ -369,7 +334,7 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
             "Pass your user agent declaration to the API directly, or "
             "set the `SEC_API_USER_AGENT` environment variable."
         )
-    response = _guarded_get(url, user_agent)
+    response = session.get(url, headers={"User-Agent": user_agent})
     response.raise_for_status()
     return response
 
