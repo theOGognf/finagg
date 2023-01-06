@@ -31,7 +31,7 @@ import sys
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from functools import cache
-from typing import ClassVar, Literal, Sequence
+from typing import Any, ClassVar, Literal, Sequence
 
 import pandas as pd
 import requests
@@ -57,21 +57,15 @@ session = requests_cache.CachedSession(
 _YEAR = int | str
 
 
-class _Dataset(ABC):
+class _API(ABC):
     """Interface for BEA Dataset APIs."""
 
     #: Request API URL.
     name: ClassVar[str]
 
-    def __init__(self, *args, **kwargs) -> None:
-        raise RuntimeError(
-            "Instantiating a BEA API directly is not allowed. "
-            "Use one of the getter methods instead."
-        )
-
     @classmethod
     @abstractmethod
-    def get(cls, *args, **kwargs) -> pd.DataFrame:
+    def get(cls, *args: Any, **kwargs: Any) -> pd.DataFrame:
         """Main dataset API method."""
 
     @classmethod
@@ -87,7 +81,7 @@ class _Dataset(ABC):
         return get_parameter_values(cls.name, param, api_key=api_key)
 
 
-class _FixedAssets(_Dataset):
+class _FixedAssets(_API):
     """US fixed assets (assets for long-term use).
 
     Details low-level US economic details.
@@ -166,7 +160,7 @@ class _FixedAssets(_Dataset):
         return pd.concat(results)
 
 
-class _GDPByIndustry(_Dataset):
+class _GDPByIndustry(_API):
     """GDP (a single summary statistic) for each industry.
 
     Data provided by this API is considered coarse/high-level.
@@ -242,7 +236,7 @@ class _GDPByIndustry(_Dataset):
         )
 
 
-class _InputOutput(_Dataset):
+class _InputOutput(_API):
     """Specific input-output statistics for each industry.
 
     Data provided by this API is considered granular/low-level.
@@ -320,7 +314,7 @@ class _InputOutput(_Dataset):
         )
 
 
-class _NIPA(_Dataset):
+class _NIPA(_API):
     """National income and product accounts.
 
     Details high-level US economic details in several
@@ -404,22 +398,22 @@ class _NIPA(_Dataset):
 
 
 #: "FixedAssets" dataset API.
-fixed_assets = _FixedAssets
+fixed_assets = _FixedAssets()
 
 #: "GdpByIndustry" dataset API.
-gdp_by_industry = _GDPByIndustry
+gdp_by_industry = _GDPByIndustry()
 
 #: "InputOutput" dataset API.
-input_output = _InputOutput
+input_output = _InputOutput()
 
 #: "NIPA" dataset API.
-nipa = _NIPA
+nipa = _NIPA()
 
 #: BEA API URL.
 url = "https://apps.bea.gov/api/data"
 
 
-def _api_error_as_response(error: dict) -> requests.Response:
+def _api_error_as_response(error: dict[str, str]) -> requests.Response:
     """Convert an API error to a :class:`requests.Response` object."""
     response = requests.Response()
     response.status_code = int(error.pop("APIErrorCode"))
@@ -434,17 +428,17 @@ def _api_error_as_response(error: dict) -> requests.Response:
         ratelimit.SizeLimit(90e6, timedelta(minutes=1)),
     ],
 )
-def _guarded_get(url: str, params: dict, /) -> requests.Response:
+def _guarded_get(url: str, params: dict[str, Any], /) -> requests.Response:
     """Guarded version of `session.get`."""
     return session.get(url, params=params)
 
 
 def get(
-    params: dict,
+    params: dict[str, Any],
     /,
     *,
     api_key: None | str = None,
-) -> dict[str, list[dict]]:
+) -> dict[str, list[dict[str, Any]]]:
     """Main get method used by dataset APIs.
 
     Handles throttle watchdog state updates, API key validation,
