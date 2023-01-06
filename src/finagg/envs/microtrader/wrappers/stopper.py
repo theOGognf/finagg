@@ -1,16 +1,17 @@
 """Abstractions for stopping the environment."""
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 from ....portfolio import Portfolio
 
 
 class Stopper(ABC):
     @abstractmethod
-    def eval(self, features: dict, portfolio: Portfolio) -> bool:
+    def eval(self, features: dict[str, Any], portfolio: Portfolio) -> bool:
         """Determine whether to stop from `features` and `portfolio`."""
 
-    def reset(self) -> None:
+    def reset(self, features: dict[str, Any], portfolio: Portfolio) -> None:
         """This method is called on environment resets.
 
         Override this if the stopper is stateful across environment transitions.
@@ -28,7 +29,7 @@ class LossLimiter(Stopper):
         super().__init__()
         self.max_loss = max_loss
 
-    def eval(self, features: dict, portfolio: Portfolio) -> bool:
+    def eval(self, features: dict[str, Any], portfolio: Portfolio) -> bool:
         """Determine whether to stop trading.
 
         Args:
@@ -44,7 +45,7 @@ class LossLimiter(Stopper):
         return portfolio.total_percent_change({ticker: price}) <= self.max_loss
 
 
-def get_stopper(stopper: str, **kwargs) -> Stopper:
+def get_stopper(stopper: str, **kwargs: Any) -> Stopper:
     """Get a stopper based on its short name."""
     stoppers = {
         "default": LossLimiter,

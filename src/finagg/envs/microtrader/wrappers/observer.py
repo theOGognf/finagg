@@ -15,11 +15,11 @@ class Observer(ABC):
     observation_space: spaces.Space
 
     @abstractmethod
-    def observe(self, features: dict, portfolio: Portfolio) -> Any:
+    def observe(self, features: dict[str, Any], portfolio: Portfolio) -> Any:
         """Observe the environment from predefined features and a portfolio."""
 
     @abstractmethod
-    def reset(self, features: dict, portfolio: Portfolio) -> Any:
+    def reset(self, features: dict[str, Any], portfolio: Portfolio) -> Any:
         """This method is called on environment resets.
 
         Override this if the actor is stateful across environment transitions.
@@ -39,7 +39,8 @@ class FundamentalsMonitor(Observer):
                 (
                     sum(
                         [
-                            1,  # Cash on hand
+                            1,  # Time limits
+                            2,  # Value on hand
                             2,  # Change in value
                             7,  # Fundamentals
                             5,  # Changes in prices and volume
@@ -51,7 +52,9 @@ class FundamentalsMonitor(Observer):
             ),
         )
 
-    def observe(self, features: dict, portfolio: Portfolio) -> npt.NDArray[np.float32]:
+    def observe(
+        self, features: dict[str, Any], portfolio: Portfolio
+    ) -> npt.NDArray[np.float32]:
         """Observe fundamental features.
 
         Args:
@@ -71,14 +74,17 @@ class FundamentalsMonitor(Observer):
         portfolio_percent_change = portfolio.total_percent_change({ticker: price})
         return np.clip(
             [
-                # Cash on hand
+                features["trading_days_remaining"] / features["max_trading_days"],
+                # Total assets on hand
                 portfolio.cash / portfolio.deposits_total,
+                portfolio.total_dollar_value({ticker: price})
+                / portfolio.deposits_total,
                 # Change in value
                 portfolio_percent_change,
                 position_percent_change,
                 # Fundamentals
-                features["PriceEarningsRatio"],
-                features["EarningsPerShare"],
+                features["PriceEarningsRatio"] / 100,
+                features["EarningsPerShare"] / 100,
                 features["WorkingCapitalRatio"],
                 features["QuickRatio"],
                 features["DebtEquityRatio"],
@@ -106,12 +112,14 @@ class FundamentalsMonitor(Observer):
             99,
         )
 
-    def reset(self, features: dict, portfolio: Portfolio) -> npt.NDArray[np.float32]:
+    def reset(
+        self, features: dict[str, Any], portfolio: Portfolio
+    ) -> npt.NDArray[np.float32]:
         """Just observe to reset."""
         return self.observe(features, portfolio)
 
 
-def get_observer(observer: str, **kwargs) -> Observer:
+def get_observer(observer: str, **kwargs: Any) -> Observer:
     """Get an observer based on its short name."""
     observers = {
         "default": FundamentalsMonitor,

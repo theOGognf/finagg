@@ -8,10 +8,10 @@ from ....portfolio import Portfolio
 
 class Rewarder(ABC):
     @abstractmethod
-    def reward(self, action: Any, features: dict, portfolio: Portfolio) -> float:
+    def reward(self, features: dict[str, Any], portfolio: Portfolio) -> float:
         """Get a reward from manging a `portfolio` with an `action`."""
 
-    def reset(self) -> None:
+    def reset(self, features: dict[str, Any], portfolio: Portfolio) -> None:
         """This method is called on environment resets.
 
         Override this if the rewarder is stateful across environment transitions.
@@ -19,47 +19,87 @@ class Rewarder(ABC):
         """
 
 
-class PortfolioDollarChange(Rewarder):
-    """Reward total dollar changes in portfolio value."""
-
-    #: Previous portfolio total dollar change.
-    #: Used for computing the change w.r.t. the previous price.
-    prev_total_dollar_change: float
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.prev_total_dollar_change = 0.0
+class PortfolioCashChange(Rewarder):
+    """Reward change in portfolio cash."""
 
     def reward(
         self,
-        _: tuple[int, int],
-        features: dict,
+        features: dict[str, Any],
         portfolio: Portfolio,
     ) -> float:
         """Get a reward from an environment step.
 
         Args:
-            _: Action taken (unused).
             features: Environment state data.
             portfolio: Portfolio to observe.
 
         Returns:
-            Change in portfolio dollar value w.r.t. the previous
-            trading day.
+            Change in portfolio cash w.r.t. initial deposits.
+
+        """
+        price: float = features["price"]
+        quantity: float = features["trade_amount"]
+        if features["trade_type"] == 0:
+            reward = 0.0
+        if features["trade_type"] == 1:
+            reward = -price * quantity
+        if features["trade_type"] == 2:
+            reward = price * quantity
+        return reward / portfolio.deposits_total
+
+
+class PortfolioTotalDollarValue(Rewarder):
+    """Reward total portfolio value."""
+
+    def reward(
+        self,
+        features: dict[str, Any],
+        portfolio: Portfolio,
+    ) -> float:
+        """Get a reward from an environment step.
+
+        Args:
+            features: Environment state data.
+            portfolio: Portfolio to observe.
+
+        Returns:
+            Ratio of total portfolio value to initial deposits.
 
         """
         ticker: str = features["ticker"]
         price: float = features["price"]
-        total_dollar_change = portfolio.total_dollar_change({ticker: price})
-        reward = total_dollar_change - self.prev_total_dollar_change
-        self.prev_total_dollar_change = total_dollar_change
-        return reward
+        return portfolio.total_dollar_value({ticker: price}) / portfolio.deposits_total
 
 
-def get_rewarder(rewarder: str, **kwargs) -> Rewarder:
+class PortfolioTotalPercentChange(Rewarder):
+    """Reward total portfolio change in value."""
+
+    def reward(
+        self,
+        features: dict[str, Any],
+        portfolio: Portfolio,
+    ) -> float:
+        """Get a reward from an environment step.
+
+        Args:
+            features: Environment state data.
+            portfolio: Portfolio to observe.
+
+        Returns:
+            Percent change in total value.
+
+        """
+        ticker: str = features["ticker"]
+        price: float = features["price"]
+        return portfolio.total_percent_change({ticker: price})
+
+
+def get_rewarder(rewarder: str, **kwargs: Any) -> Rewarder:
     """Get a rewarder based on its short name."""
     rewarders = {
-        "default": PortfolioDollarChange,
-        "portfolio_dollar_change": PortfolioDollarChange,
+        "default": PortfolioTotalDollarValue,
+        "portfolio_cash_change": PortfolioCashChange,
+        "portfolio_total_percent_change": PortfolioTotalPercentChange,
+        "portfolio_total_dollar_value": PortfolioTotalDollarValue,
     }
     return rewarders[rewarder](**kwargs)

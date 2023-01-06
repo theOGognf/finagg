@@ -8,10 +8,10 @@ from ....portfolio import Portfolio
 
 class Informer(ABC):
     @abstractmethod
-    def inform(self, action: Any, features: dict, portfolio: Portfolio) -> dict:
+    def inform(self, features: dict[str, Any], portfolio: Portfolio) -> dict[str, Any]:
         """Get info from `portfolio` and `action`."""
 
-    def reset(self) -> None:
+    def reset(self, features: dict[str, Any], portfolio: Portfolio) -> None:
         """This method is called on environment resets.
 
         Override this if the informer is stateful across environment transitions.
@@ -24,10 +24,9 @@ class TradeLocater(Informer):
 
     def inform(
         self,
-        action: tuple[int, int],
-        features: dict,
+        features: dict[str, Any],
         portfolio: Portfolio,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Get info from an environment step.
 
         Args:
@@ -39,7 +38,6 @@ class TradeLocater(Informer):
             An info dictionary.
 
         """
-        trade_type, trade_amount = action
         ticker: str = features["ticker"]
         price: float = features["price"]
         if ticker in portfolio:
@@ -56,8 +54,6 @@ class TradeLocater(Informer):
             "date": features["date"],
             "ticker": ticker,
             "price": price,
-            "trade_type": trade_type,
-            "trade_amount": trade_amount,
             "cost_basis_total": cost_basis_total,
             "average_cost_basis": average_cost_basis,
             "position_percent_change": position_percent_change,
@@ -66,7 +62,7 @@ class TradeLocater(Informer):
         }
 
 
-def get_informer(informer: str, **kwargs) -> Informer:
+def get_informer(informer: str, **kwargs: Any) -> Informer:
     """Get an informer based on its short name."""
     informers = {"default": TradeLocater, "trade_locater": TradeLocater}
     return informers[informer](**kwargs)
