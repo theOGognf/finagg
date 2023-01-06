@@ -201,4 +201,4 @@ class _DailyFeatures:
 
 
 #: Public-facing API.
-daily_features = _DailyFeatures
+daily_features = _DailyFeatures()
