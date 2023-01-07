@@ -6,6 +6,8 @@ aggregated data into features useful for analysis and AI/ML.
 
 ## Quick Start
 
+### Installation
+
 Install **finagg** from GitHub directly.
 
 ```python
@@ -22,6 +24,8 @@ finagg install
 
 The installation will point you where to get free API keys and write them to a local
 `.env` file for storage.
+
+### Basic Usage
 
 Explore the APIs directly.
 
@@ -75,3 +79,23 @@ fundamental_data = finagg.mixed.features.fundamental_features.from_sql("AAPL")
 - [**FinRL** is a collection of financial reinforcement learning environments and tools.](https://github.com/AI4Finance-Foundation/FinRL)
 - [**fredapi** is an implementation of the FRED API.](https://github.com/mortada/fredapi)
 - [**sec-edgar** is an implementation of a file-based SEC EDGAR parser.](https://github.com/sec-edgar/sec-edgar)
+
+## Frequently Asked Questions
+
+### Where should I start?
+
+Aggregate some data, create some analysis notebooks, and train some RL agents! The package was
+created to make it very easy to aggregate investment data, perform investment analysis, and train
+trading/investment RL agents on a local, single GPU machine. Build custom models, observation and
+reward functions, and rules-based trading algorithms.
+
+### What Python versions are supported?
+
+Python 3.10 and up are supported. We don't plan on supporting lower versions because 3.10 introduces
+some nice quality of life updates that are used throughout the package.
+
+### What operating systems are supported?
+
+The package is developed and tested on both Linux and Windows, but we recommend using Linux or WSL
+in practice. The package performs a good amount of I/O and interprocess operations that could result
+in a noticeable performance degradation on Windows.
