@@ -30,7 +30,6 @@ import os
 import sys
 from abc import ABC, abstractmethod
 from datetime import timedelta
-from functools import cache
 from typing import Any, ClassVar, Literal, Sequence
 
 import pandas as pd
@@ -89,7 +88,6 @@ class _FixedAssets(_API):
 
     """
 
-    #: BEA dataset API name.
     name = "FixedAssets"
 
     @classmethod
@@ -168,7 +166,6 @@ class _GDPByIndustry(_API):
 
     """
 
-    #: BEA dataset API name.
     name = "GdpByIndustry"
 
     @classmethod
@@ -252,7 +249,6 @@ class _InputOutput(_API):
 
     """
 
-    #: BEA dataset API name.
     name = "InputOutput"
 
     @classmethod
@@ -322,7 +318,6 @@ class _NIPA(_API):
 
     """
 
-    #: BEA dataset API name.
     name = "NIPA"
 
     @classmethod
@@ -473,7 +468,6 @@ def get(
     return content["Results"]  # type: ignore
 
 
-@cache
 def get_dataset_list(*, api_key: None | str = None) -> pd.DataFrame:
     """Return a list of datasets provided by the BEA API."""
     params = {
@@ -483,7 +477,6 @@ def get_dataset_list(*, api_key: None | str = None) -> pd.DataFrame:
     return pd.DataFrame(results)
 
 
-@cache
 def get_parameter_list(dataset: str, /, *, api_key: None | str = None) -> pd.DataFrame:
     """Get a dataset's list of parameters.
 
@@ -503,7 +496,6 @@ def get_parameter_list(dataset: str, /, *, api_key: None | str = None) -> pd.Dat
     return pd.DataFrame(results)
 
 
-@cache
 def get_parameter_values(
     dataset: str, param: str, /, *, api_key: None | str = None
 ) -> pd.DataFrame:

@@ -10,21 +10,16 @@ Examples:
 
 """
 
-from functools import cache
-
 import pandas as pd
 
 from . import _api
 
 
 class _ReleasesDates(_api.API):
-    """Get release dates for all releases of economic data."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/releases/dates"
 
     @classmethod
-    @cache
     def get(
         cls,
         *,
@@ -37,7 +32,7 @@ class _ReleasesDates(_api.API):
         include_release_dates_with_no_data: None | bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
-        """Get all releases of economic data.
+        """Get all release dates of economic data.
 
         See the related FRED API documentation at:
             https://fred.stlouisfed.org/docs/api/fred/releases_dates.html
@@ -87,11 +82,9 @@ class _Releases(_api.API):
     #: "releases/dates" FRED API. Get dates for releases of economic data.
     dates = _ReleasesDates
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/releases"
 
     @classmethod
-    @cache
     def get(
         cls,
         *,
@@ -147,13 +140,10 @@ class _Releases(_api.API):
 
 
 class _ReleaseDates(_api.API):
-    """Get data on release dates for a particular release of economic data."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/release/dates"
 
     @classmethod
-    @cache
     def get(
         cls,
         release_id: int,
@@ -207,9 +197,7 @@ class _ReleaseDates(_api.API):
 
 
 class _Series(_api.API):
-    """Get data on the series related to a release of economic data."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/release/series"
 
     @classmethod
@@ -295,13 +283,10 @@ class _Series(_api.API):
 
 
 class _Sources(_api.API):
-    """Get sources related to an economic release."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/release/sources"
 
     @classmethod
-    @cache
     def get(
         cls,
         release_id: int,
@@ -341,9 +326,7 @@ class _Sources(_api.API):
 
 
 class _Tags(_api.API):
-    """Get tags for an economic release."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/release/tags"
 
     @classmethod
@@ -423,9 +406,7 @@ class _Tags(_api.API):
 
 
 class _RelatedTags(_api.API):
-    """Get tags related to an economic release."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/release/related_tags"
 
     @classmethod
@@ -508,13 +489,10 @@ class _RelatedTags(_api.API):
 
 
 class _Tables(_api.API):
-    """Get release tables for a given economic release."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/release/tables"
 
     @classmethod
-    @cache
     def get(
         cls,
         release_id: int,
@@ -577,11 +555,9 @@ class _Release(_api.API):
     #: "release/tags" FRED API. Get tags of an economic release.
     tags = _Tags()
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/release"
 
     @classmethod
-    @cache
     def get(
         cls,
         release_id: int,

@@ -10,21 +10,16 @@ Examples:
 
 """
 
-from functools import cache
-
 import pandas as pd
 
 from . import _api
 
 
 class _Releases(_api.API):
-    """Get the releases for a source of economic data."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/source/releases"
 
     @classmethod
-    @cache
     def get(
         cls,
         source_id: int,
@@ -89,11 +84,9 @@ class _Source(_api.API):
     #: "source/releases" FRED API. Get the releases for a source of economic data.
     releases = _Releases()
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/source"
 
     @classmethod
-    @cache
     def get(
         cls,
         source_id: int,
@@ -133,13 +126,10 @@ class _Source(_api.API):
 
 
 class _Sources(_api.API):
-    """Get all sources of economic data."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/sources"
 
     @classmethod
-    @cache
     def get(
         cls,
         realtime_start: None | int | str = None,

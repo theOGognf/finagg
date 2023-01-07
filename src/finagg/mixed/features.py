@@ -1,7 +1,5 @@
 """Features from several sources."""
 
-from functools import cache
-
 import numpy as np
 import pandas as pd
 from sqlalchemy import Column, Float, MetaData, String, Table, inspect
@@ -78,7 +76,6 @@ class _FundamentalFeatures:
         return df.dropna()
 
     @classmethod
-    @cache
     def from_api(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
@@ -116,7 +113,6 @@ class _FundamentalFeatures:
         return cls._normalize(quarterly_features, daily_features, indices_features)
 
     @classmethod
-    @cache
     def from_sql(
         cls,
         ticker: str,
@@ -175,7 +171,6 @@ class _FundamentalFeatures:
         return cls._normalize(quarterly_features, daily_features, indices_features)
 
     @classmethod
-    @cache
     def from_store(
         cls,
         ticker: str,

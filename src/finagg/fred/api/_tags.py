@@ -10,17 +10,13 @@ Examples:
 
 """
 
-from functools import cache
-
 import pandas as pd
 
 from . import _api
 
 
 class _RelatedTags(_api.API):
-    """Get related FRED tags."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/related_tags"
 
     @classmethod
@@ -98,9 +94,7 @@ class _RelatedTags(_api.API):
 
 
 class _Series(_api.API):
-    """Get the economic data series matching tags."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/tags/series"
 
     @classmethod
@@ -176,7 +170,6 @@ class _Tags(_api.API):
     #: "tags/series" FRED API. Get the series for a FRED tag.
     series = _Series()
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/tags"
 
     @classmethod

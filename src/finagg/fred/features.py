@@ -1,7 +1,5 @@
 """Features from FRED sources."""
 
-from functools import cache
-
 import pandas as pd
 from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
@@ -93,7 +91,6 @@ class _EconomicFeatures:
         return df
 
     @classmethod
-    @cache
     def from_api(
         cls, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
@@ -129,7 +126,6 @@ class _EconomicFeatures:
         return cls._normalize(df)
 
     @classmethod
-    @cache
     def from_sql(
         cls,
         *,

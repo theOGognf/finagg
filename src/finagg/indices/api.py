@@ -118,7 +118,7 @@ class _SP500(_API):
         )
 
 
-#: The Dow Jones Industrial Average.
+#: The Nasdaq Composite 100.
 djia = _DJIA()
 
 #: The Nasdaq Composite 100.

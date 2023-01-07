@@ -13,21 +13,16 @@ Examples:
 
 """
 
-from functools import cache
-
 import pandas as pd
 
 from . import _api
 
 
 class _Children(_api.API):
-    """Get all child categories for a specific parent category."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/category/children"
 
     @classmethod
-    @cache
     def get(
         cls,
         category_id: int = 0,
@@ -67,13 +62,10 @@ class _Children(_api.API):
 
 
 class _Related(_api.API):
-    """Get categories related to a category."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/category/related"
 
     @classmethod
-    @cache
     def get(
         cls,
         category_id: int,
@@ -115,9 +107,7 @@ class _Related(_api.API):
 
 
 class _Series(_api.API):
-    """Get data for series within a category."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/category/series"
 
     @classmethod
@@ -198,9 +188,7 @@ class _Series(_api.API):
 
 
 class _Tags(_api.API):
-    """Get a category's tags."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/category/tags"
 
     @classmethod
@@ -281,9 +269,7 @@ class _Tags(_api.API):
 
 
 class _RelatedTags(_api.API):
-    """Get data for tags related to a category."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/category/related_tags"
 
     @classmethod
@@ -389,11 +375,9 @@ class _Category(_api.API):
     #: "category/tags" FRED API. Get a category's tags.
     tags = _Tags()
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/category"
 
     @classmethod
-    @cache
     def get(cls, category_id: int = 0, *, api_key: None | str = None) -> pd.DataFrame:
         """Get a category's details.
 

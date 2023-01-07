@@ -1,7 +1,5 @@
 """Features from yfinance sources."""
 
-from functools import cache
-
 import pandas as pd
 from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
@@ -64,7 +62,6 @@ class _DailyFeatures:
         return df.dropna()
 
     @classmethod
-    @cache
     def from_api(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
@@ -85,7 +82,6 @@ class _DailyFeatures:
         return cls._normalize(df)
 
     @classmethod
-    @cache
     def from_sql(
         cls,
         ticker: str,

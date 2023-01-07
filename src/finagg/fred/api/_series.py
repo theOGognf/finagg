@@ -22,21 +22,16 @@ Examples:
 
 """
 
-from functools import cache
-
 import pandas as pd
 
 from . import _api
 
 
 class _Categories(_api.API):
-    """Get the categories for an economic data series."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series/categories"
 
     @classmethod
-    @cache
     def get(
         cls,
         series_id: str,
@@ -76,9 +71,7 @@ class _Categories(_api.API):
 
 
 class _Observations(_api.API):
-    """Get the observations or data values for an economic data series."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series/observations"
 
     @classmethod
@@ -195,9 +188,7 @@ class _Observations(_api.API):
 
 
 class _Release(_api.API):
-    """Get the release for an economic data series."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series/release"
 
     @classmethod
@@ -241,9 +232,7 @@ class _Release(_api.API):
 
 
 class _SearchRelatedTags(_api.API):
-    """Get the related tags for a series search."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series/search/related_tags"
 
     @classmethod
@@ -327,9 +316,7 @@ class _SearchRelatedTags(_api.API):
 
 
 class _SearchTags(_api.API):
-    """Get the tags for a series search."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series/search/tags"
 
     @classmethod
@@ -419,7 +406,6 @@ class _Search(_api.API):
     #: "series/search/tags" FRED API. Get the tags for a series search.
     tags = _SearchTags
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series/search"
 
     @classmethod
@@ -513,9 +499,7 @@ class _Search(_api.API):
 
 
 class _Tags(_api.API):
-    """Get FRED tags for a series."""
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series/tags"
 
     @classmethod
@@ -572,12 +556,7 @@ class _Tags(_api.API):
 
 
 class _Updates(_api.API):
-    """Get economic data series sorted by when observations
-    were updated on the FRED server.
 
-    """
-
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series/updates"
 
     @classmethod
@@ -644,12 +623,7 @@ class _Updates(_api.API):
 
 
 class _VintageDates(_api.API):
-    """Get the dates in history when a series' data values were revised
-    or new data values were released.
 
-    """
-
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series/vintage_dates"
 
     @classmethod
@@ -728,7 +702,6 @@ class _Series(_api.API):
     #: when observations were updated on the FRED server.
     updates = _Updates()
 
-    #: FRED API URL.
     url = "https://api.stlouisfed.org/fred/series"
 
     #: "series/vintage_dates" FRED API. Get the dates in history when a

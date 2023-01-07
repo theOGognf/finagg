@@ -308,10 +308,21 @@ _cik_to_tickers: dict[str, str] = {}
 #: Mapping of (uppercase) tickers to SEC CIK strings.
 _tickers_to_cik: dict[str, str] = {}
 
+#: Get the full history of a company's concept (taxonomy and tag).
 company_concept = _CompanyConcept()
+
+#: Get all XBRL disclosures from a single company (CIK).
 company_facts = _CompanyFacts()
+
+#: Get one fact for each reporting entity that most closely fits
+#: the calendrical period requested.
 frames = _Frames()
+
+#: Get a company's metadata and recent submissions.
 submissions = _Submissions()
+
+#: Used to get all SEC ticker data as opposed to
+#: an individual ticker's SEC CIK.
 tickers = _Tickers()
 
 
