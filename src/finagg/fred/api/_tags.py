@@ -173,7 +173,6 @@ class _Tags(_api.API):
     url = "https://api.stlouisfed.org/fred/tags"
 
     @classmethod
-    @cache
     def get(
         cls,
         *,

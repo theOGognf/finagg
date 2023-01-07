@@ -192,7 +192,6 @@ class _Release(_api.API):
     url = "https://api.stlouisfed.org/fred/series/release"
 
     @classmethod
-    @cache
     def get(
         cls,
         series_id: str,
@@ -503,7 +502,6 @@ class _Tags(_api.API):
     url = "https://api.stlouisfed.org/fred/series/tags"
 
     @classmethod
-    @cache
     def get(
         cls,
         series_id: str,
@@ -560,7 +558,6 @@ class _Updates(_api.API):
     url = "https://api.stlouisfed.org/fred/series/updates"
 
     @classmethod
-    @cache
     def get(
         cls,
         *,
@@ -627,7 +624,6 @@ class _VintageDates(_api.API):
     url = "https://api.stlouisfed.org/fred/series/vintage_dates"
 
     @classmethod
-    @cache
     def get(
         cls,
         series_id: str,
