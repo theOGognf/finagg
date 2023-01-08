@@ -30,7 +30,7 @@ class Position:
         self.average_cost_basis = cost
         self.quantity = quantity
 
-    def __eq__(self, __o: object) -> torch.Tensor:
+    def __eq__(self, __o: object) -> torch.Tensor:  # type: ignore
         """Compare the position's cost basis."""
         if not isinstance(__o, torch.Tensor | Position):
             raise NotImplementedError(
@@ -145,7 +145,7 @@ class Portfolio:
         self.cash = cash
         self.deposits_total = cash
         self.withdrawals_total = torch.zeros_like(cash)
-        self.position = Position()
+        self.position = Position(torch.zeros_like(cash), torch.zeros_like(cash))
 
     def buy(self, cost: torch.Tensor, quantity: torch.Tensor) -> torch.Tensor:
         """Buy `quantity` of security for `cost`.

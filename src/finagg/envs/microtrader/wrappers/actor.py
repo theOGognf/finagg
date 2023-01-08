@@ -33,7 +33,6 @@ class DCABaseline(Actor):
     def __init__(self) -> None:
         super().__init__()
         self.action_space = spaces.Discrete(1)
-        self.trade_amount = None
 
     def act(
         self,
@@ -160,8 +159,6 @@ class DCATrader(Actor):
     def __init__(self) -> None:
         super().__init__()
         self.action_space = spaces.Discrete(2)
-        self.trade_amount = None
-        self.min_trade_amount = None
 
     def act(
         self,
