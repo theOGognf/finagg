@@ -38,7 +38,7 @@ class PortfolioCashChange(Rewarder):
 
         """
         price: float = features["price"]
-        quantity: float = features["trade_amount"]
+        quantity: float = features["trade_quantity"]
         if features["trade_type"] == 0:
             reward = 0.0
         if features["trade_type"] == 1:

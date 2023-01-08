@@ -2,6 +2,8 @@
 
 from functools import total_ordering
 
+import torch
+
 
 @total_ordering
 class Position:
@@ -14,26 +16,26 @@ class Position:
     """
 
     #: Average dollar cost for each share in the position.
-    average_cost_basis: float
+    average_cost_basis: torch.Tensor
 
     #: Total dollar cost for all shares in the position.
     #: The amount of dollars or cash invested in this security.
-    cost_basis_total: float
+    cost_basis_total: torch.Tensor
 
     #: Current number of shares owned in the position.
-    quantity: float
+    quantity: torch.Tensor
 
-    def __init__(self, cost: float, quantity: float) -> None:
+    def __init__(self, cost: torch.Tensor, quantity: torch.Tensor) -> None:
         self.cost_basis_total = cost * quantity
         self.average_cost_basis = cost
         self.quantity = quantity
 
-    def __eq__(self, __o: object) -> bool:
+    def __eq__(self, __o: object) -> torch.Tensor:
         """Compare the position's cost basis."""
-        if not isinstance(__o, float | Position):
+        if not isinstance(__o, torch.Tensor | Position):
             raise NotImplementedError(
                 "Can only compare "
-                f"{self.__class__.__name__} to [{float.__name__}, {Position.__name__}]"
+                f"{self.__class__.__name__} to [{torch.Tensor.__name__}, {Position.__name__}]"
             )
 
         if isinstance(__o, Position):
@@ -41,12 +43,12 @@ class Position:
 
         return self.average_cost_basis == __o
 
-    def __lt__(self, __o: object) -> bool:
+    def __lt__(self, __o: object) -> torch.Tensor:
         """Compare the position's cost basis."""
-        if not isinstance(__o, float | Position):
+        if not isinstance(__o, torch.Tensor | Position):
             raise NotImplementedError(
                 "Can only compare "
-                f"{self.__class__.__name__} to [{float.__name__}, {Position.__name__}]"
+                f"{self.__class__.__name__} to [{torch.Tensor.__name__}, {Position.__name__}]"
             )
 
         if isinstance(__o, Position):
@@ -54,7 +56,7 @@ class Position:
 
         return self.average_cost_basis < __o
 
-    def buy(self, cost: float, quantity: float) -> float:
+    def buy(self, cost: torch.Tensor, quantity: torch.Tensor) -> torch.Tensor:
         """Buy `quantity` of the position for `cost`.
 
         Args:
@@ -65,12 +67,12 @@ class Position:
             Value of the bought position.
 
         """
-        self.quantity += quantity
-        self.cost_basis_total += cost * quantity
+        self.quantity = self.quantity + quantity
+        self.cost_basis_total = self.cost_basis_total + cost * quantity
         self.average_cost_basis = self.cost_basis_total / self.quantity
         return cost * quantity
 
-    def sell(self, cost: float, quantity: float) -> float:
+    def sell(self, cost: torch.Tensor, quantity: torch.Tensor) -> torch.Tensor:
         """Sell `quantity` of the position for `cost`.
 
         Args:
@@ -85,13 +87,13 @@ class Position:
             to sell in the position.
 
         """
-        if self.quantity < quantity:
+        if torch.any(self.quantity < quantity):
             raise ValueError("Invalid order - not enough shares")
-        self.quantity -= quantity
+        self.quantity = self.quantity - quantity
         self.cost_basis_total = self.average_cost_basis * self.quantity
         return cost * quantity
 
-    def total_dollar_change(self, cost: float) -> float:
+    def total_dollar_change(self, cost: torch.Tensor) -> torch.Tensor:
         """Compute the total dollar change relative to the average
         cost basis and the current value of the security.
 
@@ -104,7 +106,7 @@ class Position:
         """
         return (cost - self.average_cost_basis) * self.quantity
 
-    def total_percent_change(self, cost: float) -> float:
+    def total_percent_change(self, cost: torch.Tensor) -> torch.Tensor:
         """Compute the total percent change relative to the average
         cost basis and the current value of the security.
 
@@ -128,48 +130,32 @@ class Portfolio:
     """
 
     #: Total liquid cash on-hand.
-    cash: float
+    cash: torch.Tensor
 
     #: Total cash deposited since starting the portfolio.
-    deposits_total: float
+    deposits_total: torch.Tensor
 
     #: Existing positions for each security.
-    positions: dict[str, Position]
+    position: Position
 
     #: Total cash withdrawn since starting the portfolio.
-    withdrawals_total: float
+    withdrawals_total: torch.Tensor
 
-    def __init__(self, cash: float) -> None:
+    def __init__(self, cash: torch.Tensor) -> None:
         self.cash = cash
         self.deposits_total = cash
-        self.withdrawals_total = 0
-        self.positions = {}
+        self.withdrawals_total = torch.zeros_like(cash)
+        self.position = Position()
 
-    def __contains__(self, symbol: str) -> bool:
-        """Return whether the portfolio contains a position
-        in `symbol`.
-
-        """
-        return symbol in self.positions
-
-    def __getitem__(self, symbol: str) -> Position:
-        """Return the portfolio's position in the security
-        identified by `symbol`.
-
-        """
-        return self.positions[symbol]
-
-    def buy(self, symbol: str, cost: float, quantity: float) -> float:
-        """Buy `quantity` of security with `symbol` for `cost`.
+    def buy(self, cost: torch.Tensor, quantity: torch.Tensor) -> torch.Tensor:
+        """Buy `quantity` of security for `cost`.
 
         Args:
-            symbol: Security ticker.
-            cost: Cost to buy the symbol at.
+            cost: Cost to buy at.
             quantity: Number of shares to purchase.
 
         Returns:
-            Value of the symbol's bought position in the
-            portfolio.
+            Value of the additional position in the portfolio.
 
         Raises:
             ValueError if the portfolio doesn't have enough cash
@@ -177,16 +163,12 @@ class Portfolio:
 
         """
         current_value = cost * quantity
-        if self.cash < current_value:
+        if torch.any(self.cash < current_value):
             raise ValueError("Invalid order - not enough cash")
-        self.cash -= current_value
-        if symbol not in self.positions:
-            self.positions[symbol] = Position(cost, quantity)
-            return current_value
-        else:
-            return self.positions[symbol].buy(cost, quantity)
+        self.cash = self.cash - current_value
+        return self.position.buy(cost, quantity)
 
-    def deposit(self, cash: float) -> float:
+    def deposit(self, cash: torch.Tensor) -> torch.Tensor:
         """Deposit more cash into the portfolio.
 
         Args:
@@ -196,73 +178,67 @@ class Portfolio:
             Total cash in the portfolio.
 
         """
-        self.cash += cash
-        self.deposits_total += cash
+        self.cash = self.cash + cash
+        self.deposits_total = self.deposits_total + cash
         return self.cash
 
-    def sell(self, symbol: str, cost: float, quantity: float) -> float:
-        """Sell `quantity` of security with `symbol` for `cost`.
+    def sell(self, cost: torch.Tensor, quantity: torch.Tensor) -> torch.Tensor:
+        """Sell `quantity` of security for `cost`.
 
         Args:
-            symbol: Security ticker.
-            cost: Cost to sell the symbol at.
+            cost: Cost to sell at.
             quantity: Number of shares to sell.
 
         Returns:
-            Value of the symbol's sold position in the
-            portfolio.
+            Value of the portfolio's sold position.
 
         """
-        current_value = self.positions[symbol].sell(cost, quantity)
-        if not self.positions[symbol].quantity:
-            self.positions.pop(symbol)
-        self.cash += cost * quantity
+        current_value = self.position.sell(cost, quantity)
+        self.cash = self.cash + cost * quantity
         return current_value
 
-    def total_dollar_change(self, costs: dict[str, float]) -> float:
+    def total_dollar_change(self, cost: torch.Tensor) -> torch.Tensor:
         """Compute the total dollar change relative to the total
         deposits made into the portfolio.
 
         Args:
-            costs: Mapping of symbol to its current value of one share.
+            cost: Current security cost.
 
         Returns:
             Total dollar change in value.
 
         """
-        return self.total_dollar_value(costs) - self.deposits_total
+        return self.total_dollar_value(cost) - self.deposits_total
 
-    def total_dollar_value(self, costs: dict[str, float]) -> float:
+    def total_dollar_value(self, cost: torch.Tensor) -> torch.Tensor:
         """Compute the total dollar value of the portfolio.
 
         Args:
-            costs: Mapping of symbol to its current value of one share.
+            cost: Current security cost.
 
         Returns:
             Total dollar value.
 
         """
         dollar_value_total = self.cash
-        for symbol, cost in costs.items():
-            if symbol in self.positions:
-                dollar_value_total += cost * self.positions[symbol].quantity
+        dollar_value_total = dollar_value_total + cost * self.position.quantity
         return dollar_value_total
 
-    def total_percent_change(self, costs: dict[str, float]) -> float:
+    def total_percent_change(self, cost: torch.Tensor) -> torch.Tensor:
         """Compute the total percent change relative to the total
         deposits made into the portfolio.
 
         Args:
-            costs: Mapping of symbol to its current value of one share.
+            cost: Current security cost.
 
         Returns:
             Total percent change in value. Negative indicates loss
             in value, positive indicates gain in value.
 
         """
-        return (self.total_dollar_value(costs) / self.deposits_total) - 1
+        return (self.total_dollar_value(cost) / self.deposits_total) - 1
 
-    def withdraw(self, cash: float) -> float:
+    def withdraw(self, cash: torch.Tensor) -> torch.Tensor:
         """Withdraw cash from the portfolio.
 
         Args:
@@ -275,8 +251,8 @@ class Portfolio:
             ValueError if there's not enough cash to withdraw.
 
         """
-        if self.cash < cash:
+        if torch.any(self.cash < cash):
             raise ValueError("Not enough cash to withdraw")
-        self.cash -= cash
-        self.withdrawals_total += cash
+        self.cash = self.cash - cash
+        self.withdrawals_total = self.withdrawals_total + cash
         return self.cash

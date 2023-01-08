@@ -24,6 +24,53 @@ class Actor(ABC):
         """
 
 
+class BuyAndHoldTrader(Actor):
+    """Buy and hold action space. Either buy or don't."""
+
+    #: Total cash to use each buy.
+    trade_amount: float
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.action_space = spaces.Discrete(2)
+        self.trade_amount = None
+
+    def act(
+        self,
+        action: int,
+        features: dict[str, Any],
+        portfolio: Portfolio,
+    ) -> None:
+        """No-op, buy, or sell positions.
+
+        Args:
+            action: No-op or buy.
+            features: Environment state data such as security price.
+            portfolio: Portfolio to manage.
+
+        """
+        action = int(action)
+        ticker: str = features["ticker"]
+        price: float = features["price"]
+        match action:
+            case 0:
+                features["trade_type"] = 0
+                features["trade_quantity"] = 0
+                return
+
+            case 1:
+                quantity = self.trade_amount / price
+                portfolio.buy(ticker, price, quantity)
+                features["trade_type"] = 1
+                features["trade_quantity"] = quantity
+                return
+
+    def reset(self, features: dict[str, Any], portfolio: Portfolio) -> None:
+        """Start the portfolio with a small position in the security."""
+        max_trading_days = features["max_trading_days"]
+        self.trade_amount = portfolio.deposits_total / max_trading_days
+
+
 class DiscreteTrader(Actor):
     """Manage a portfolio containing cash and a position in just one security."""
 
@@ -61,21 +108,21 @@ class DiscreteTrader(Actor):
         match action_type:
             case 0:
                 features["trade_type"] = 0
-                features["trade_amount"] = 0
+                features["trade_quantity"] = 0
                 return
 
             case 1:
                 quantity = amount * portfolio.cash / price
                 portfolio.buy(ticker, price, quantity)
                 features["trade_type"] = 1
-                features["trade_amount"] = quantity
+                features["trade_quantity"] = quantity
                 return
 
             case 2:
                 quantity = amount * portfolio[ticker].quantity
                 portfolio.sell(ticker, price, quantity)
                 features["trade_type"] = 2
-                features["trade_amount"] = quantity
+                features["trade_quantity"] = quantity
                 return
 
     def reset(self, features: dict[str, Any], portfolio: Portfolio) -> None:
@@ -120,18 +167,18 @@ class FlattenedDiscreteTrader(Actor):
 
         if action == 0:
             features["trade_type"] = 0
-            features["trade_amount"] = 0
+            features["trade_quantity"] = 0
             return
 
         elif 1 <= action <= len(self.trade_amount_bins):
             amount = self.trade_amount_bins[action - 1]
             if portfolio.cash < price:
                 features["trade_type"] = 1
-                features["trade_amount"] = 0.0
+                features["trade_quantity"] = 0.0
                 return
             quantity = amount * portfolio.cash / price
             features["trade_type"] = 1
-            features["trade_amount"] = quantity
+            features["trade_quantity"] = quantity
             portfolio.buy(ticker, price, quantity)
             return
 
@@ -139,11 +186,11 @@ class FlattenedDiscreteTrader(Actor):
             amount = self.trade_amount_bins[(action - 1) % len(self.trade_amount_bins)]
             if ticker not in portfolio:
                 features["trade_type"] = 2
-                features["trade_amount"] = 0.0
+                features["trade_quantity"] = 0.0
                 return
             quantity = amount * portfolio[ticker].quantity
             features["trade_type"] = 2
-            features["trade_amount"] = quantity
+            features["trade_quantity"] = quantity
             portfolio.sell(ticker, price, quantity)
             return
 
@@ -158,7 +205,9 @@ class FlattenedDiscreteTrader(Actor):
 def get_actor(actor: str, **kwargs: Any) -> Actor:
     """Get an actor based on its short name."""
     actors: dict[str, type[Actor]] = {
-        "default": FlattenedDiscreteTrader,
+        "default": BuyAndHoldTrader,
+        "buy_and_hold_tader": BuyAndHoldTrader,
         "discrete_trader": DiscreteTrader,
+        "flattened_discrete_trader": FlattenedDiscreteTrader,
     }
     return actors[actor](**kwargs)
