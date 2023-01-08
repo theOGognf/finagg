@@ -1,7 +1,7 @@
 """Abstractions for interacting with the environment."""
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Literal
 
 from gym import spaces
 
@@ -24,16 +24,144 @@ class Actor(ABC):
         """
 
 
-class BuyAndHoldTrader(Actor):
-    """Buy and hold action space. Either buy or don't."""
+class DCABaseline(Actor):
+    """Dollar cost averaging baseline."""
 
     #: Total cash to use each buy.
     trade_amount: float
 
     def __init__(self) -> None:
         super().__init__()
+        self.action_space = spaces.Discrete(1)
+        self.trade_amount = None
+
+    def act(
+        self,
+        action: Literal[0],
+        features: dict[str, Any],
+        portfolio: Portfolio,
+    ) -> None:
+        """No-op, buy, or sell positions.
+
+        Args:
+            action: Only buy.
+            features: Environment state data such as security price.
+            portfolio: Portfolio to manage.
+
+        """
+        ticker: str = features["ticker"]
+        price: float = features["price"]
+        quantity = self.trade_amount / price
+        portfolio.buy(ticker, price, quantity)
+        features["trade_type"] = 1
+        features["trade_quantity"] = quantity
+
+    def reset(self, features: dict[str, Any], portfolio: Portfolio) -> None:
+        """Start the portfolio with a small position in the security."""
+        max_trading_days = features["max_trading_days"]
+        self.trade_amount = portfolio.deposits_total / max_trading_days
+
+
+class BuyAndHoldBaseline(Actor):
+    """Invest the entire portfolio immediately and hold forever."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.action_space = spaces.Discrete(1)
+
+    def act(
+        self,
+        action: Literal[0],
+        features: dict[str, Any],
+        portfolio: Portfolio,
+    ) -> None:
+        """No-op, buy, or sell positions.
+
+        Args:
+            action: Only buy.
+            features: Environment state data such as security price.
+            portfolio: Portfolio to manage.
+
+        """
+        if portfolio.cash > 0:
+            ticker: str = features["ticker"]
+            price: float = features["price"]
+            quantity = portfolio.cash / price
+            portfolio.buy(ticker, price, quantity)
+            features["trade_type"] = 1
+            features["trade_quantity"] = quantity
+        else:
+            features["trade_type"] = 0
+            features["trade_quantity"] = 0
+
+
+class BuyAndHoldTrader(Actor):
+    """Manage a portfolio containing cash and a position in just one security
+    by only buying and holding.
+
+    """
+
+    #: Right-end bin values for trade amounts.
+    trade_amount_bins: list[float]
+
+    def __init__(self, *, trade_amount_bins: int = 5) -> None:
+        super().__init__()
+        self.trade_amount_bins = [
+            (i + 1) / (trade_amount_bins + 1) for i in range(trade_amount_bins)
+        ]
+        self.action_space = spaces.Tuple(
+            [spaces.Discrete(2), spaces.Discrete(trade_amount_bins)]
+        )
+
+    def act(
+        self,
+        action: tuple[int, int],
+        features: dict[str, Any],
+        portfolio: Portfolio,
+    ) -> None:
+        """No-op, buy, or sell positions.
+
+        Args:
+            action: Tuple of action type (no-op or buy)
+                and buy amount bin ID.
+            features: Environment state data such as security price.
+            portfolio: Portfolio to manage.
+
+        """
+        ticker: str = features["ticker"]
+        price: float = features["price"]
+        action_type, trade_amount_bin = action
+        amount = self.trade_amount_bins[trade_amount_bin]
+        match action_type:
+            case 0:
+                features["trade_type"] = 0
+                features["trade_quantity"] = 0
+                return
+
+            case 1:
+                quantity = amount * portfolio.cash / price
+                portfolio.buy(ticker, price, quantity)
+                features["trade_type"] = 1
+                features["trade_quantity"] = quantity
+                return
+
+
+class DCATrader(Actor):
+    """Dollar cost averaging trader. Buy in small increments."""
+
+    #: Minimum cash to use each buy.
+    min_trade_amount: float
+
+    #: Accumulated cash to use each buy.
+    #: If a buy trade is skipped for a day, this amount is incremented
+    #: by `min_trade_amount`.
+    trade_amount: float
+
+    def __init__(self) -> None:
+        super().__init__()
         self.action_space = spaces.Discrete(2)
         self.trade_amount = None
+        self.min_trade_amount = None
 
     def act(
         self,
@@ -56,6 +184,7 @@ class BuyAndHoldTrader(Actor):
             case 0:
                 features["trade_type"] = 0
                 features["trade_quantity"] = 0
+                self.trade_amount += self.min_trade_amount
                 return
 
             case 1:
@@ -63,12 +192,14 @@ class BuyAndHoldTrader(Actor):
                 portfolio.buy(ticker, price, quantity)
                 features["trade_type"] = 1
                 features["trade_quantity"] = quantity
+                self.trade_amount = self.min_trade_amount
                 return
 
     def reset(self, features: dict[str, Any], portfolio: Portfolio) -> None:
         """Start the portfolio with a small position in the security."""
         max_trading_days = features["max_trading_days"]
-        self.trade_amount = portfolio.deposits_total / max_trading_days
+        self.min_trade_amount = portfolio.deposits_total / max_trading_days
+        self.trade_amount = self.min_trade_amount
 
 
 class DiscreteTrader(Actor):
@@ -206,7 +337,10 @@ def get_actor(actor: str, **kwargs: Any) -> Actor:
     """Get an actor based on its short name."""
     actors: dict[str, type[Actor]] = {
         "default": BuyAndHoldTrader,
-        "buy_and_hold_tader": BuyAndHoldTrader,
+        "buy_and_hold_baseline": BuyAndHoldBaseline,
+        "buy_and_hold_trader": BuyAndHoldTrader,
+        "dca_baseline": DCABaseline,
+        "dca_trader": DCATrader,
         "discrete_trader": DiscreteTrader,
         "flattened_discrete_trader": FlattenedDiscreteTrader,
     }

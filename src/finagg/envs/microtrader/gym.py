@@ -1,12 +1,11 @@
 """Actual environment definition using `wrappers`."""
 
 import random
-from dataclasses import field
 from typing import Any, Hashable, Iterable
 
 import gym
 import pandas as pd
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ... import mixed
 from ...portfolio import Portfolio
@@ -32,19 +31,19 @@ class Config(BaseModel):
     stopper: str = "default"
 
     #: Actor config.
-    actor_config: dict[str, Any] = field(default_factory=dict)
+    actor_config: dict[str, Any] = Field(default_factory=dict)
 
     #: Informer config.
-    informer_config: dict[str, Any] = field(default_factory=dict)
+    informer_config: dict[str, Any] = Field(default_factory=dict)
 
     #: Observer config.
-    observer_config: dict[str, Any] = field(default_factory=dict)
+    observer_config: dict[str, Any] = Field(default_factory=dict)
 
     #: Rewarder config.
-    rewarder_config: dict[str, Any] = field(default_factory=dict)
+    rewarder_config: dict[str, Any] = Field(default_factory=dict)
 
     #: Stopper config.
-    stopper_config: dict[str, Any] = field(default_factory=dict)
+    stopper_config: dict[str, Any] = Field(default_factory=dict)
 
     #: Starting portfolio value and cash.
     starting_cash: float = 10_000
