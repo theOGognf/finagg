@@ -64,6 +64,9 @@ class DCABaseline(Actor):
 class BuyAndHoldBaseline(Actor):
     """Invest the entire portfolio immediately and hold forever."""
 
+    #: Whether or not we've already bought.
+    invested: bool
+
     def __init__(self) -> None:
         super().__init__()
         self.action_space = spaces.Discrete(1)
@@ -82,16 +85,21 @@ class BuyAndHoldBaseline(Actor):
             portfolio: Portfolio to manage.
 
         """
-        if portfolio.cash > 0:
+        if not self.invested:
             ticker: str = features["ticker"]
             price: float = features["price"]
-            quantity = portfolio.cash / price
+            quantity = portfolio.cash // price
             portfolio.buy(ticker, price, quantity)
             features["trade_type"] = 1
             features["trade_quantity"] = quantity
+            self.invested = True
         else:
             features["trade_type"] = 0
             features["trade_quantity"] = 0
+
+    def reset(self, features: dict[str, Any], portfolio: Portfolio) -> None:
+        """Start the portfolio with a small position in the security."""
+        self.invested = False
 
 
 class BuyAndHoldTrader(Actor):
