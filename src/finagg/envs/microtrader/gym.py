@@ -107,7 +107,7 @@ class Sampler:
         return features, self.remaining_rows <= 0
 
 
-class MicroTrader(gym.Env):  # type: ignore
+class MicroTrader(gym.Env):
     """Manage a portfolio containing cash and a single security position."""
 
     #: Interface for managing the portfolio.

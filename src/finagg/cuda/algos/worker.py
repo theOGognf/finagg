@@ -1,4 +1,5 @@
 import gym
+import torch
 from tensordict import TensorDict
 
 
@@ -9,15 +10,25 @@ class RolloutWorker:
         /,
         *,
         env_config: None | dict = None,
-        num_envs: None | int = None,
         horizon: None | int = None,
+        num_envs: int = 8192,
+        rollout_fragment_length: int = 200,
     ) -> None:
         self.env_cls = env_cls
         self.env_config = {} if env_config is None else env_config
-        self.env = self.env_cls(env_config)
-        self.num_envs = num_envs
+        self.env = self.env_cls()
+        if not horizon:
+            if self.env.spec and self.env.spec.max_episode_steps:
+                horizon = self.env.spec.max_episode_steps
+            else:
+                horizon = float("inf")
         self.horizon = horizon
+        self.num_envs = num_envs
+        self.rollout_fragment_length = rollout_fragment_length
         self.buffer = TensorDict()
 
-    def reset(self, *, seed: None | int = None):
+    def reset(self, *, seed: None | int = None) -> TensorDict:
         self.env.reset()
+
+    def step(self, action: torch.Tensor) -> TensorDict:
+        ...
