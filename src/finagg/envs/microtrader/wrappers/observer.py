@@ -12,7 +12,7 @@ from ....portfolio import Portfolio
 
 class Observer(ABC):
     #: Underlying observation space.
-    observation_space: spaces.Space
+    observation_space: spaces.Space[Any]
 
     @abstractmethod
     def observe(self, features: dict[str, Any], portfolio: Portfolio) -> Any:

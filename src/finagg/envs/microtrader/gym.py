@@ -5,6 +5,7 @@ from typing import Any, Hashable, Iterable
 
 import gym
 import pandas as pd
+from gym.core import ActType, ObsType
 from pydantic import BaseModel, Field
 
 from ... import mixed
@@ -107,7 +108,7 @@ class Sampler:
         return features, self.remaining_rows <= 0
 
 
-class MicroTrader(gym.Env):
+class MicroTrader(gym.Env[ObsType, ActType]):
     """Manage a portfolio containing cash and a single security position."""
 
     #: Interface for managing the portfolio.
@@ -160,7 +161,13 @@ class MicroTrader(gym.Env):
         self.action_space = self.actor.action_space
         self.observation_space = self.observer.observation_space
 
-    def reset(self, *, seed: None | int = None) -> Any:
+    def reset(
+        self,
+        *,
+        seed: None | int = None,
+        return_info: bool = False,
+        options: None | dict[str, Any] = None,
+    ) -> Any:
         """Reset the environment."""
         if seed is not None:
             random.seed(seed)

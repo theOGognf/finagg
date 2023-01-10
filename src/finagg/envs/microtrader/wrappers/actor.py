@@ -10,7 +10,7 @@ from ....portfolio import Portfolio
 
 class Actor(ABC):
     #: Underlying action space.
-    action_space: spaces.Space
+    action_space: spaces.Space[Any]
 
     @abstractmethod
     def act(self, action: Any, features: dict[str, Any], portfolio: Portfolio) -> None:
@@ -118,7 +118,7 @@ class BuyAndHoldTrader(Actor):
         ]
         self.action_space = spaces.Tuple(
             [spaces.Discrete(2), spaces.Discrete(trade_amount_bins)]
-        )
+        )  # type: ignore
 
     def act(
         self,
@@ -220,7 +220,7 @@ class DiscreteTrader(Actor):
         ]
         self.action_space = spaces.Tuple(
             [spaces.Discrete(3), spaces.Discrete(trade_amount_bins)]
-        )
+        )  # type: ignore
 
     def act(
         self,

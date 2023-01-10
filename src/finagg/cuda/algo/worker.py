@@ -1,15 +1,18 @@
+from typing import Any
+
 import gym
 import torch
+from gym.core import ActType, ObsType
 from tensordict import TensorDict
 
 
 class RolloutWorker:
     def __init__(
         self,
-        env_cls: type[gym.Env],
+        env_cls: type[gym.Env[ObsType, ActType]],
         /,
         *,
-        env_config: None | dict = None,
+        env_config: None | dict[str, Any] = None,
         horizon: None | int = None,
         num_envs: int = 8192,
         rollout_fragment_length: int = 200,
@@ -20,8 +23,6 @@ class RolloutWorker:
         if not horizon:
             if self.env.spec and self.env.spec.max_episode_steps:
                 horizon = self.env.spec.max_episode_steps
-            else:
-                horizon = float("inf")
         self.horizon = horizon
         self.num_envs = num_envs
         self.rollout_fragment_length = rollout_fragment_length
