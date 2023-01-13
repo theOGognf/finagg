@@ -28,8 +28,17 @@ class RolloutWorker:
         self.rollout_fragment_length = rollout_fragment_length
         self.buffer = TensorDict()
 
-    def reset(self, *, seed: None | int = None) -> TensorDict:
-        self.env.reset()
+    def postprocess_obs(self) -> TensorDict:
+        ...
+
+    def reset(self) -> TensorDict:
+        obs = self.env.reset(
+            seed=self.env_config.get("seed", None),
+            return_info=False,
+            options=self.env_config,
+        )
+        self.buffer["obs"][..., 0, :] = obs
+        return obs
 
     def step(self, action: torch.Tensor) -> TensorDict:
         ...
