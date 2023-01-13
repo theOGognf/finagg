@@ -7,6 +7,7 @@ import torch
 from tensordict import TensorDict
 from torchrl.data import TensorSpec
 
+from .batch import Batch
 from .view import ViewRequirement
 
 
@@ -15,7 +16,7 @@ class Model(ABC, torch.nn.Module):
     a value function approximation and features to be consumed by an
     action distribution for action sampling.
 
-    This definition is largely influenced by RLlib's model concept:
+    This definition is largely inspired by RLlib's model concept:
         https://github.com/ray-project/ray/blob/master/rllib/models/modelv2.py.
 
     The model is intended to be called with the forward pass (like any
@@ -75,7 +76,9 @@ class Model(ABC, torch.nn.Module):
         self.feature_spec = feature_spec
         self.action_spec = action_spec
         self.config = config if config else {}
-        self.view_requirements = {"obs": ViewRequirement(col="obs", shift=0)}
+        self.view_requirements = {
+            Batch.OBS.value: ViewRequirement(key=Batch.OBS.value, shift=0)
+        }
 
     @abstractmethod
     def forward(self, batch: TensorDict) -> TensorDict:
