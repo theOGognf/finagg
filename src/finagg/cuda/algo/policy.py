@@ -21,12 +21,15 @@ class Policy:
     always respected.
 
     Args:
-        observation_spec:
-        feature_spec:
-        action_spec:
-        model_cls:
-        model_config:
-        dist_cls:
+        observation_spec: Spec defining observations from the environment
+            and inputs to the model's forward pass.
+        feature_spec: Spec defining the model's forward pass output and
+            the inputs to the action distribution.
+        action_spec: Spec defining the action distribution's outputs
+            and the inputs to the environment.
+        model_cls: Model class to use.
+        model_config: Model class args.
+        dist_cls: Action distribution class.
 
     """
 
@@ -110,22 +113,25 @@ class Policy:
             dict can vary.
 
         """
+        with torch.no_grad():
+            # Process view requirements, reshaping tensors as-needed
+            # by the model. `mode` determines how to process the view
+            # requirements as a view requirement is applied differently
+            # when sampling many samples at once vs just one sample.
+            processed_batch = TensorDict(
+                {}, batch_size=batch.batch_size, device=batch.device
+            )
+            for key, view_requirement in self.model.view_requirements.items():
+                match mode:
+                    case "all":
+                        processed_batch[key] = view_requirement.process_all(batch)
+                    case "last":
+                        processed_batch[key] = view_requirement.process_last(batch)
+
         # This is the same mechanism within `torch.no_grad`
         # for enabling/disabling gradients.
         prev = torch.is_grad_enabled()
         torch.set_grad_enabled(requires_grad)
-
-        # Process view requirements, reshaping tensors as-needed
-        # by the model. `mode` determines how to process the view
-        # requirements as a view requirement is applied differently
-        # when sampling many samples at once vs just one sample.
-        processed_batch = TensorDict({}, batch_size=batch.batch_size)
-        for key, view_requirement in self.model.view_requirements.items():
-            match mode:
-                case "all":
-                    processed_batch[key] = view_requirement.process_all(batch)
-                case "last":
-                    processed_batch[key] = view_requirement.process_last(batch)
 
         # Perform inference, sampling, and value approximation.
         features = self.model(processed_batch)
@@ -133,7 +139,11 @@ class Policy:
         actions = dist.deterministic_sample() if deterministic else dist.sample()
 
         # Store required outputs and get/store optional outputs.
-        out = batch if inplace else TensorDict({}, batch_size=batch.batch_size)
+        out = (
+            batch
+            if inplace
+            else TensorDict({}, batch_size=batch.batch_size, device=batch.device)
+        )
         out[Batch.FEATURES.value] = features
         out[Batch.ACTIONS.value] = actions
         if return_logp:

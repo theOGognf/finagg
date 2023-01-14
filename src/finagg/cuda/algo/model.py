@@ -77,7 +77,7 @@ class Model(ABC, torch.nn.Module):
         self.action_spec = action_spec
         self.config = config if config else {}
         self.view_requirements = {
-            Batch.OBS.value: ViewRequirement(key=Batch.OBS.value, shift=0)
+            Batch.OBS.value: ViewRequirement(Batch.OBS.value, shift=0)
         }
 
     @abstractmethod
