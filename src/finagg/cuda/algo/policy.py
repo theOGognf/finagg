@@ -61,7 +61,7 @@ class Policy:
         batch: TensorDict,
         /,
         *,
-        mode: str = "last",
+        kind: str = "last",
         deterministic: bool = False,
         inplace: bool = False,
         requires_grad: bool = False,
@@ -82,7 +82,7 @@ class Policy:
                 The B and T dimensions are typically combined into one dimension
                 during batch preprocessing according to the model's view
                 requirements.
-            mode: String indicating the type of sample to perform. The model's
+            kind: String indicating the type of sample to perform. The model's
                 view requirements handles preprocessing slightly differently
                 depending on the value. Options include:
                     - "last": Sample from `batch` using only the samples
@@ -113,20 +113,19 @@ class Policy:
             dict can vary.
 
         """
-        with torch.no_grad():
-            # Process view requirements, reshaping tensors as-needed
-            # by the model. `mode` determines how to process the view
-            # requirements as a view requirement is applied differently
-            # when sampling many samples at once vs just one sample.
-            processed_batch = TensorDict(
-                {}, batch_size=batch.batch_size, device=batch.device
-            )
-            for key, view_requirement in self.model.view_requirements.items():
-                match mode:
-                    case "all":
-                        processed_batch[key] = view_requirement.process_all(batch)
-                    case "last":
-                        processed_batch[key] = view_requirement.process_last(batch)
+        # Process view requirements, reshaping tensors as-needed
+        # by the model. `mode` determines how to process the view
+        # requirements as a view requirement is applied differently
+        # when sampling many samples at once vs just one sample.
+        processed_batch = TensorDict(
+            {}, batch_size=batch.batch_size, device=batch.device
+        )
+        for key, view_requirement in self.model.view_requirements.items():
+            match kind:
+                case "all":
+                    processed_batch[key] = view_requirement.process_all(batch)
+                case "last":
+                    processed_batch[key] = view_requirement.process_last(batch)
 
         # This is the same mechanism within `torch.no_grad`
         # for enabling/disabling gradients.

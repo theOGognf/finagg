@@ -24,8 +24,6 @@ class Model(ABC, torch.nn.Module):
     distribution. It's expected that the value function approximation
     is stored after each forward pass in some intermediate attribute
     and can be accessed with a subsequent call to `value_function`.
-    Both the `forward` method and the `value_function` must be implemented
-    to properly implement a model.
 
     Example data flow (adapted from the RLlib reference above):
         batch -> forward() -> features
