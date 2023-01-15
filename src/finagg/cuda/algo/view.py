@@ -1,30 +1,50 @@
 """Definitions regarding applying views to batches of tensors or tensor dicts."""
 
-from abc import ABC, abstractmethod
+from typing import Protocol
 
 import torch
 from tensordict import TensorDict
 
 
-class View(ABC):
+class View(Protocol):
+    """A view requirement protocol for processing batch elements during policy
+    sampling and training.
+
+    Supports applying methods to a batch of size [B, T, ...] (where B is the
+    batch dimension, and T is the time or sequence dimension) for all elements
+    of B and T or just the last elements of T for all B.
+
+    """
+
     @staticmethod
-    @abstractmethod
+    def apply_all(
+        x: torch.Tensor | TensorDict, size: int, /
+    ) -> torch.Tensor | TensorDict:
+        """Apply the view to all elements of B and T in a batch of size
+        [B, T, ...] such that the returned batch is of shape [B_NEW, size, ...]
+        where B_NEW <= B * T.
+
+        """
+
+    @staticmethod
+    def apply_last(
+        x: torch.Tensor | TensorDict, size: int, /
+    ) -> torch.Tensor | TensorDict:
+        """Apply the view to the last elements of T for all B in a batch
+        of size [B, T, ...] such that the returned batch is of shape
+        [B, size, ...].
+
+        """
+
+    @staticmethod
     def burn_size(size: int, /) -> int:
-        ...
+        """Return the amount of samples along the time or sequence dimension
+        that's dropped for each batch element.
 
-    @staticmethod
-    @abstractmethod
-    def process_all(
-        x: torch.Tensor | TensorDict, size: int, /
-    ) -> torch.Tensor | TensorDict:
-        ...
+        This is used to determine batch size reshaping during training to make
+        batch components have the same size.
 
-    @staticmethod
-    @abstractmethod
-    def process_last(
-        x: torch.Tensor | TensorDict, size: int, /
-    ) -> torch.Tensor | TensorDict:
-        ...
+        """
 
 
 def rolling_window(x: torch.Tensor, size: int, /, *, step: int = 1) -> torch.Tensor:
@@ -63,16 +83,7 @@ class RollingWindow(View):
     """
 
     @staticmethod
-    def burn_size(size: int, /) -> int:
-        """This view doesn't perform any padding or masking and instead
-        burns-off a small amount of samples at the beginning of each
-        sequence in order to create sequences of the same length.
-
-        """
-        return size - 1
-
-    @staticmethod
-    def process_all(
+    def apply_all(
         x: torch.Tensor | TensorDict, size: int, /
     ) -> torch.Tensor | TensorDict:
         """Unfold the given tensor or tensor dict along the time or sequence
@@ -106,7 +117,7 @@ class RollingWindow(View):
             ).reshape(-1)
 
     @staticmethod
-    def process_last(
+    def apply_last(
         x: torch.Tensor | TensorDict, size: int, /
     ) -> torch.Tensor | TensorDict:
         """Grab the last `size` elements of `x` along the time or sequence
@@ -131,8 +142,25 @@ class RollingWindow(View):
             B = x.size(0)
             return x.apply(lambda x: x[:, -size:, ...], batch_size=[B, size])
 
+    @staticmethod
+    def burn_size(size: int, /) -> int:
+        """This view doesn't perform any padding or masking and instead
+        burns-off a small amount of samples at the beginning of each
+        sequence in order to create sequences of the same length.
+
+        """
+        return size - 1
+
 
 class MaskedRollingWindow(View):
+    @staticmethod
+    def apply_all(x: torch.Tensor | TensorDict, size: int, /) -> TensorDict:
+        ...
+
+    @staticmethod
+    def apply_last(x: torch.Tensor | TensorDict, size: int, /) -> TensorDict:
+        ...
+
     @staticmethod
     def burn_size(size: int, /) -> int:
         """This view pads the beginning of each sequence and provides masking
@@ -141,22 +169,14 @@ class MaskedRollingWindow(View):
         """
         return size - size
 
-    @staticmethod
-    def process_all(x: torch.Tensor | TensorDict, size: int, /) -> TensorDict:
-        ...
-
-    @staticmethod
-    def process_last(x: torch.Tensor | TensorDict, size: int, /) -> TensorDict:
-        ...
-
 
 class ViewRequirement:
-    """Batch preprocessing for creating overlapping sequences or time series
-    observations of environments that's applied prior to feeding samples into a
+    """Batch preprocessing for creating overlapping time series or sequential
+    environment observations that's applied prior to feeding samples into a
     policy's model.
 
     This component is purely for convenience. Its functionality can optionally
-    be replicated within an environment's observation function, but, because
+    be replicated within an environment's observation function. However, because
     this functionaltiy is fairly common, it's recommended to use this
     component where simple time or sequence shifting is required for
     sequence-based observations.
@@ -222,7 +242,7 @@ class ViewRequirement:
             case "masked_rolling_window":
                 self.method = MaskedRollingWindow
 
-    def process_all(self, batch: TensorDict) -> torch.Tensor | TensorDict:
+    def apply_all(self, batch: TensorDict) -> torch.Tensor | TensorDict:
         """Apply the view to all of the time or sequence elements.
 
         This method expands the elements of `batch`'s first two dimensions
@@ -251,9 +271,9 @@ class ViewRequirement:
             if not self.shift:
                 return item.reshape(-1)
 
-            return self.method.process_all(item, self.shift + 1)
+            return self.method.apply_all(item, self.shift + 1)
 
-    def process_last(self, batch: TensorDict) -> torch.Tensor | TensorDict:
+    def apply_last(self, batch: TensorDict) -> torch.Tensor | TensorDict:
         """Apply the view to just the last time or sequence elements.
 
         This method is typically used for sampling a model's features
@@ -278,4 +298,8 @@ class ViewRequirement:
             if not self.shift:
                 return item[:, -1, ...]
 
-            return self.method.process_last(item, self.shift + 1)
+            return self.method.apply_last(item, self.shift + 1)
+
+    def burn_size(self) -> int:
+        """Return the burn size of the underlying view requirement method."""
+        return self.method.burn_size(self.shift + 1)

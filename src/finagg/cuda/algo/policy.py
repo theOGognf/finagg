@@ -113,23 +113,7 @@ class Policy:
             dict can vary.
 
         """
-        # Process view requirements, reshaping tensors as-needed
-        # by the model. `mode` determines how to process the view
-        # requirements as a view requirement is applied differently
-        # when sampling many samples at once vs just one sample.
-        batch_sizes = {}
-        processed_batch = TensorDict({}, batch_size=[])
-        for key, view_requirement in self.model.view_requirements.items():
-            match kind:
-                case "all":
-                    item = view_requirement.process_all(batch)
-                case "last":
-                    item = view_requirement.process_last(batch)
-            processed_batch[key] = item
-            B_NEW = item.size(0)
-            batch_sizes[key] = B_NEW
-        batch_size = next(batch_sizes.values())
-        processed_batch.batch_size = batch_size
+        in_batch = self.model.apply_view_requirements(batch, kind=kind)
 
         # This is the same mechanism within `torch.no_grad`
         # for enabling/disabling gradients.
@@ -137,7 +121,7 @@ class Policy:
         torch.set_grad_enabled(requires_grad)
 
         # Perform inference, sampling, and value approximation.
-        features = self.model(processed_batch)
+        features = self.model(in_batch)
         dist = self.dist_cls(features, self.model)
         actions = dist.deterministic_sample() if deterministic else dist.sample()
 
@@ -145,7 +129,7 @@ class Policy:
         out = (
             batch
             if inplace
-            else TensorDict({}, batch_size=batch_size, device=batch.device)
+            else TensorDict({}, batch_size=in_batch.batch_size, device=batch.device)
         )
         out[str(Batch.FEATURES)] = features
         out[str(Batch.ACTIONS)] = actions
