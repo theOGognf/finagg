@@ -92,6 +92,9 @@ class RollingWindow(View):
         also expanded into the batch dimension such that each new sequence
         becomes an additional batch element.
 
+        The expanded batch dimension has sample loss because the initial
+        `size - 1` samples are required to make a sequence of size `size`.
+
         Args:
             x: Tensor or tensor dict of size [B, T, ...] where B is the
                 batch dimension, and T is the time or sequence dimension.
@@ -139,8 +142,9 @@ class RollingWindow(View):
         if isinstance(x, torch.Tensor):
             return x[:, -size:, ...]
         else:
-            B = x.size(0)
-            return x.apply(lambda x: x[:, -size:, ...], batch_size=[B, size])
+            B, T = x.shape[:2]
+            T_NEW = min(T, size)
+            return x.apply(lambda x: x[:, -size:, ...], batch_size=[B, T_NEW])
 
     @staticmethod
     def burn_size(size: int, /) -> int:
@@ -153,13 +157,59 @@ class RollingWindow(View):
 
 
 class MaskedRollingWindow(View):
+    """A view that creates a rolling window of an item's time or sequence
+    dimension with padding and masking to make all batch elements the same
+    size.
+
+    This is effectively the same as `RollingWindow` but with padding and
+    masking.
+
+    """
+
     @staticmethod
     def apply_all(x: torch.Tensor | TensorDict, size: int, /) -> TensorDict:
-        ...
+        """Unfold the given tensor or tensor dict along the time or sequence
+        dimension such that the the time or sequence dimension becomes a
+        rolling window of size `size`. The new time or sequence dimension is
+        also expanded into the batch dimension such that each new sequence
+        becomes an additional batch element.
+
+        The expanded batch dimension is always size B * T because this view
+        pads and masks to enforce all batch elements to be used.
+
+        Args:
+            x: Tensor or tensor dict of size [B, T, ...] where B is the
+                batch dimension, and T is the time or sequence dimension.
+                B is typically the number of parallel environments, and T
+                is typically the number of time steps or observations sampled
+                from each environment.
+            size: Size of the rolling window to create over `x`'s T dimension.
+                The new sequence dimension is placed in the 2nd dimension.
+
+        Returns:
+            A new tensor or tensor dict of shape
+            [B * T, size, ...].
+
+        """
 
     @staticmethod
     def apply_last(x: torch.Tensor | TensorDict, size: int, /) -> TensorDict:
-        ...
+        """Grab the last `size` elements of `x` along the time or sequence
+        dimension, and pad and mask to force the sequence to be of size `size`.
+
+        Args:
+            x: Tensor or tensor dict of size [B, T, ...] where B is the
+                batch dimension, and T is the time or sequence dimension.
+                B is typically the number of parallel environments, and T
+                is typically the number of time steps or observations sampled
+                from each environment.
+            size: Number of "last" samples to grab along the time or sequence
+                dimension T.
+
+        Returns:
+            A new tensor or tensor dict of shape [B, size, ...].
+
+        """
 
     @staticmethod
     def burn_size(size: int, /) -> int:

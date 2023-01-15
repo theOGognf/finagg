@@ -31,6 +31,14 @@ class Batch(Enum):
     #: Typically used by learning algorithms or for analyzing a trained model.
     VALUES = "values"
 
+    #: Key denoting elements that're inputs to a model and have corresponding
+    #: "padding_mask" elements.
+    INPUTS = "inputs"
+
+    #: Key denoting elements that're used for indicating padded elements
+    #: with respect to elements corresponding to an "inputs" key.
+    PADDING_MASK = "padding_mask"
+
     def __str__(self) -> str:
         """Return the string representation of the enum value."""
         return f"{self.value}"
