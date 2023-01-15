@@ -99,7 +99,7 @@ class _CompanyConcept(_API):
 
         """
         if bool(cik) == bool(ticker):
-            raise ValueError("Must provide a `cik` or a `ticker`")
+            raise ValueError("Must provide a `cik` or a `ticker`.")
 
         if ticker:
             cik = str(get_cik(ticker))
@@ -146,7 +146,7 @@ class _CompanyFacts(_API):
 
         """
         if bool(cik) == bool(ticker):
-            raise ValueError("Must provide a `cik` or a `ticker`")
+            raise ValueError("Must provide a `cik` or a `ticker`.")
 
         if ticker:
             cik = str(get_cik(ticker))
@@ -256,7 +256,7 @@ class _Submissions(_API):
 
         """
         if bool(cik) == bool(ticker):
-            raise ValueError("Must provide a `cik` or a `ticker`")
+            raise ValueError("Must provide a `cik` or a `ticker`.")
 
         if ticker:
             cik = str(get_cik(ticker))

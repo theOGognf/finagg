@@ -75,8 +75,12 @@ class Model(ABC, torch.nn.Module):
         self.action_spec = action_spec
         self.config = config if config else {}
         self.view_requirements = {
-            Batch.OBS.value: ViewRequirement(Batch.OBS.value, shift=0)
+            str(Batch.OBS): ViewRequirement(str(Batch.OBS), shift=0)
         }
+
+    def __call__(self, *args: Any, **kwds: Any) -> torch.Tensor | TensorDict:
+        """"""
+        return super().__call__(*args, **kwds)
 
     @abstractmethod
     def forward(self, batch: TensorDict) -> TensorDict:
@@ -105,3 +109,6 @@ class Model(ABC, torch.nn.Module):
         distribution components share parameters.
 
         """
+
+    def view_requirement_burn_size(self) -> int:
+        ...

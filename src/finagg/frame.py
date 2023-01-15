@@ -76,7 +76,7 @@ class FiscalFrame:
             raise TypeError(
                 f"can only add {int.__name__} and {FiscalDelta.__name__} "
                 f"to {self.__class__.__name__} but got "
-                f"`{other.__class__.__name__}` instead"
+                f"`{other.__class__.__name__}` instead."
             )
 
         if isinstance(other, tuple):
@@ -97,7 +97,7 @@ class FiscalFrame:
             raise TypeError(
                 f"can only compare type {self.__class__.__name__} "
                 f"to {self.__class__.__name__} and {tuple.__name__} but got "
-                f"`{other.__class__.__name__}` instead"
+                f"`{other.__class__.__name__}` instead."
             )
 
         if isinstance(other, tuple):
@@ -118,7 +118,7 @@ class FiscalFrame:
             raise TypeError(
                 f"can only subtract {int.__name__}, {FiscalDelta.__name__}, "
                 f"{tuple.__name__}, and {self.__class__.__name__} from "
-                f"{self.__class__.__name__} but got `{other.__class__.__name__}` instead"
+                f"{self.__class__.__name__} but got `{other.__class__.__name__}` instead."
             )
 
         if isinstance(other, tuple):

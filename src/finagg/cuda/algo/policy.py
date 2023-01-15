@@ -117,15 +117,19 @@ class Policy:
         # by the model. `mode` determines how to process the view
         # requirements as a view requirement is applied differently
         # when sampling many samples at once vs just one sample.
-        processed_batch = TensorDict(
-            {}, batch_size=batch.batch_size, device=batch.device
-        )
+        batch_sizes = {}
+        processed_batch = TensorDict({}, batch_size=[])
         for key, view_requirement in self.model.view_requirements.items():
             match kind:
                 case "all":
-                    processed_batch[key] = view_requirement.process_all(batch)
+                    item = view_requirement.process_all(batch)
                 case "last":
-                    processed_batch[key] = view_requirement.process_last(batch)
+                    item = view_requirement.process_last(batch)
+            processed_batch[key] = item
+            B_NEW = item.size(0)
+            batch_sizes[key] = B_NEW
+        batch_size = next(batch_sizes.values())
+        processed_batch.batch_size = batch_size
 
         # This is the same mechanism within `torch.no_grad`
         # for enabling/disabling gradients.
@@ -141,14 +145,14 @@ class Policy:
         out = (
             batch
             if inplace
-            else TensorDict({}, batch_size=batch.batch_size, device=batch.device)
+            else TensorDict({}, batch_size=batch_size, device=batch.device)
         )
-        out[Batch.FEATURES.value] = features
-        out[Batch.ACTIONS.value] = actions
+        out[str(Batch.FEATURES)] = features
+        out[str(Batch.ACTIONS)] = actions
         if return_logp:
-            out[Batch.LOGP.value] = dist.logp(actions)
+            out[str(Batch.LOGP)] = dist.logp(actions)
         if return_values:
-            out[Batch.VALUES.value] = self.model.value_function()
+            out[str(Batch.VALUES)] = self.model.value_function()
 
         torch.set_grad_enabled(prev)
         return out

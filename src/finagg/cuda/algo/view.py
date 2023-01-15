@@ -9,6 +9,11 @@ from tensordict import TensorDict
 class View(ABC):
     @staticmethod
     @abstractmethod
+    def burn_size(size: int, /) -> int:
+        ...
+
+    @staticmethod
+    @abstractmethod
     def process_all(
         x: torch.Tensor | TensorDict, size: int, /
     ) -> torch.Tensor | TensorDict:
@@ -19,22 +24,6 @@ class View(ABC):
     def process_last(
         x: torch.Tensor | TensorDict, size: int, /
     ) -> torch.Tensor | TensorDict:
-        ...
-
-
-def repeat_and_mask(
-    x: torch.Tensor, size: int, /, *, step: int = 1
-) -> tuple[torch.Tensor, torch.Tensor]:
-    ...
-
-
-class RepeatAndMask(View):
-    @staticmethod
-    def process_all(x: torch.Tensor | TensorDict, size: int, /) -> TensorDict:
-        ...
-
-    @staticmethod
-    def process_last(x: torch.Tensor | TensorDict, size: int, /) -> TensorDict:
         ...
 
 
@@ -68,9 +57,19 @@ def rolling_window(x: torch.Tensor, size: int, /, *, step: int = 1) -> torch.Ten
 
 class RollingWindow(View):
     """A view that creates a rolling window of an item's time or sequence
-    dimension.
+    dimension without masking (at the expense of losing some samples at
+    the beginning of each sequence).
 
     """
+
+    @staticmethod
+    def burn_size(size: int, /) -> int:
+        """This view doesn't perform any padding or masking and instead
+        burns-off a small amount of samples at the beginning of each
+        sequence in order to create sequences of the same length.
+
+        """
+        return size - 1
 
     @staticmethod
     def process_all(
@@ -133,6 +132,24 @@ class RollingWindow(View):
             return x.apply(lambda x: x[:, -size:, ...], batch_size=[B, size])
 
 
+class MaskedRollingWindow(View):
+    @staticmethod
+    def burn_size(size: int, /) -> int:
+        """This view pads the beginning of each sequence and provides masking
+        to avoid burning-off samples.
+
+        """
+        return size - size
+
+    @staticmethod
+    def process_all(x: torch.Tensor | TensorDict, size: int, /) -> TensorDict:
+        ...
+
+    @staticmethod
+    def process_last(x: torch.Tensor | TensorDict, size: int, /) -> TensorDict:
+        ...
+
+
 class ViewRequirement:
     """Batch preprocessing for creating overlapping sequences or time series
     observations of environments that's applied prior to feeding samples into a
@@ -154,9 +171,10 @@ class ViewRequirement:
                     time or sequence dimension at the cost of dropping
                     samples early into the sequence in order to force all
                     sequences to be the same size.
-                - "repeat_and_mask": Repeat all samples in the time or
-                    sequence dimension for each element in the batch dimension
-                    and provide a mask indicating which element is padding.
+                - "masked_rolling_window": The same as "rolling_window" but
+                    pad the beginning of each sequence to avoid dropping
+                    samples and provide a mask indicating which element is
+                    padding.
 
     """
 
@@ -174,41 +192,35 @@ class ViewRequirement:
     #:      element to have the same sequence size. Only use this method
     #:      if the view requirement's shift is much smaller than an
     #:      environment's horizon.
-    #:  - `RepeatAndMask`: Repeat all samples in the time or sequence
-    #:      dimension in the batch dimension and provide a mask indicating
-    #:      which element of the new time or sequence dimension is padding.
-    #:      This method consumes more memory and is slower (not by much),
-    #:      but it does not drop any samples. Use this method if the view
-    #:      requirement's shift is close to the same size as an environment's
-    #:      horizon.
+    #:  - `MaskedRollingWindow`: The same as `RollingWindow`, but it pads
+    #:      the beginning of each sequence so no samples are dropped. This
+    #:      method also provides a padding mask for each tensor or tensor
+    #:      dict to indicate which sequence element is padding.
     method: type[View]
 
     #: Number of additional previous samples in the time or sequence dimension
     #: to include in the view requirement's output. E.g., if shift is 1,
     #: then the last two samples in the time or sequence dimension will be
-    #: included for each batch element. A shift of `None` means no shift is
-    #: applied and all previous samples are returned.
-    shift: None | int
+    #: included for each batch element.
+    shift: int
 
     def __init__(
         self,
         key: str | tuple[str, ...],
         /,
         *,
-        shift: None | int = 0,
+        shift: int = 0,
         method: str = "rolling_window",
     ) -> None:
         self.key = key
         self.shift = shift
-        if shift is not None and shift < 0:
-            raise ValueError(
-                f"{self.__class__.__name__} `shift` must be 'None' or >= 0"
-            )
+        if shift < 0:
+            raise ValueError(f"{self.__class__.__name__} `shift` must be non-negative.")
         match method:
             case "rolling_window":
                 self.method = RollingWindow
-            case "repeat_and_mask":
-                self.method = RepeatAndMask
+            case "masked_rolling_window":
+                self.method = MaskedRollingWindow
 
     def process_all(self, batch: TensorDict) -> torch.Tensor | TensorDict:
         """Apply the view to all of the time or sequence elements.
@@ -229,19 +241,15 @@ class ViewRequirement:
         Returns:
             A tensor or tensor dict of size [B_NEW, `self.shift`, ...]
             where B_NEW <= B * T, depending on the view requirement method
-            applied. In the case where `self.shift` is `None`, the returned
-            tensor or tensor dict has size [B * T, T, ...]. In the case where
-            `self.shift` is `0`, the return tensor or tensor dict has size
-            [B * T, ...].
+            applied. In the case where `self.shift` is `0`, the return tensor
+            or tensor dict has size [B * T, ...].
 
         """
         item = batch[self.key]
-        if self.shift is None:
-            return item
 
         with torch.no_grad():
             if not self.shift:
-                return item[:, -1, ...]
+                return item.reshape(-1)
 
             return self.method.process_all(item, self.shift + 1)
 
@@ -259,15 +267,12 @@ class ViewRequirement:
                 from each environment.
 
         Returns:
-            A tensor or tensor dict of size [B, `self.shift`, ...]. In the
-            case where `self.shift` is `None`, the returned tensor or
-            tensor dict has size [B, T, ...]. In the case where `self.shift`
-            is `0`, the return tensor or tensor dict has size [B, ...].
+            A tensor or tensor dict of size [B, `self.shift + 1`, ...]. In the
+            case where `self.shift` is `0`, the returned tensor or tensor dict
+            has size [B, ...].
 
         """
         item = batch[self.key]
-        if self.shift is None:
-            return item
 
         with torch.no_grad():
             if not self.shift:

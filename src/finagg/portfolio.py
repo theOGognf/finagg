@@ -86,7 +86,7 @@ class Position:
 
         """
         if self.quantity < quantity:
-            raise ValueError("Invalid order - not enough shares")
+            raise ValueError("Invalid order - not enough shares.")
         self.quantity -= quantity
         self.cost_basis_total = self.average_cost_basis * self.quantity
         return cost * quantity
@@ -178,7 +178,7 @@ class Portfolio:
         """
         current_value = cost * quantity
         if self.cash < current_value:
-            raise ValueError("Invalid order - not enough cash")
+            raise ValueError("Invalid order - not enough cash.")
         self.cash -= current_value
         if symbol not in self.positions:
             self.positions[symbol] = Position(cost, quantity)
@@ -276,7 +276,7 @@ class Portfolio:
 
         """
         if self.cash < cash:
-            raise ValueError("Not enough cash to withdraw")
+            raise ValueError("Not enough cash to withdraw.")
         self.cash -= cash
         self.withdrawals_total += cash
         return self.cash

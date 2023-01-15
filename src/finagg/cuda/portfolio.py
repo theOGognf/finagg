@@ -88,7 +88,7 @@ class Position:
 
         """
         if torch.any(self.quantity < quantity):
-            raise ValueError("Invalid order - not enough shares")
+            raise ValueError("Invalid order - not enough shares.")
         self.quantity = self.quantity - quantity
         self.cost_basis_total = self.average_cost_basis * self.quantity
         return cost * quantity
@@ -164,7 +164,7 @@ class Portfolio:
         """
         current_value = cost * quantity
         if torch.any(self.cash < current_value):
-            raise ValueError("Invalid order - not enough cash")
+            raise ValueError("Invalid order - not enough cash.")
         self.cash = self.cash - current_value
         return self.position.buy(cost, quantity)
 
@@ -252,7 +252,7 @@ class Portfolio:
 
         """
         if torch.any(self.cash < cash):
-            raise ValueError("Not enough cash to withdraw")
+            raise ValueError("Not enough cash to withdraw.")
         self.cash = self.cash - cash
         self.withdrawals_total = self.withdrawals_total + cash
         return self.cash

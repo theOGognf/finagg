@@ -3,7 +3,7 @@
 from enum import Enum
 
 
-class Batch(str, Enum):
+class Batch(Enum):
     """Typical batch elements for convenience.
 
     Prefer to use this enumeration over strings just to keep batch element
@@ -30,3 +30,7 @@ class Batch(str, Enum):
     #: Key denoting value function approximation from a policy model.
     #: Typically used by learning algorithms or for analyzing a trained model.
     VALUES = "values"
+
+    def __str__(self) -> str:
+        """Return the string representation of the enum value."""
+        return f"{self.value}"
