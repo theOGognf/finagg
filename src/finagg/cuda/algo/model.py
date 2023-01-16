@@ -112,7 +112,7 @@ class Model(ABC, torch.nn.Module):
 
         """
         batch_sizes = {}
-        in_batch = TensorDict({}, batch_size=[])
+        in_batch = TensorDict({}, batch_size=[], device=batch.device)
         for key, view_requirement in self.view_requirements.items():
             match kind:
                 case "all":
