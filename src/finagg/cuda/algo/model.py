@@ -126,6 +126,17 @@ class Model(ABC, torch.nn.Module):
         in_batch.batch_size = batch_size
         return in_batch
 
+    @property
+    def burn_size(self) -> int:
+        """Return the model's burn size (also the burn size for all view
+        requirements.
+
+        """
+        burn_sizes = {}
+        for key, view_requirement in self.view_requirements.items():
+            burn_sizes[key] = view_requirement.burn_size
+        return next(iter(burn_sizes.values()))
+
     @abstractmethod
     def forward(self, batch: TensorDict) -> TensorDict:
         """Process a batch of tensors and return features to be fed into an
@@ -167,7 +178,7 @@ class Model(ABC, torch.nn.Module):
         # First check that the view requirements all have the same burn size.
         burn_sizes = {}
         for key, view_requirement in self.view_requirements.items():
-            burn_sizes[key] = view_requirement.burn_size()
+            burn_sizes[key] = view_requirement.burn_size
         if len(set(burn_sizes.values())) > 1:
             raise RuntimeError(
                 f"""{self} view requirements with burn sizes {burn_sizes}

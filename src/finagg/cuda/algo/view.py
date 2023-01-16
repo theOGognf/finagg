@@ -5,6 +5,8 @@ from typing import Protocol
 import torch
 from tensordict import TensorDict
 
+from .batch import Batch
+
 
 class View(Protocol):
     """A view requirement protocol for processing batch elements during policy
@@ -45,6 +47,40 @@ class View(Protocol):
         batch components have the same size.
 
         """
+
+
+def pad_last_sequence(x: torch.Tensor, size: int, /) -> TensorDict:
+    """Pad the given tensor `x` along the time or sequence dimension such
+    that the tensor's time or sequence dimension is of size `size` when
+    selecting the last `size` elements of the sequence.
+
+    Args:
+        x: Tensor of size [B, T, ...] where B is the batch dimension, and
+            T is the time or sequence dimension. B is typically the number
+            of parallel environments, and T is typically the number of time
+            steps or observations sampled from each environment.
+        size: Minimum size of the sequence to select over `x`'s T dimension.
+
+    Returns:
+        A tensor dict with key "inputs" corresponding to the padded (or not
+        padded) elements, and key "padding_mask" corresponding to booleans
+        indicating which elements of "inputs" are padding.
+
+    """
+    B, T = x.shape[:2]
+    pad = size - T
+    if pad > 0:
+        padding = torch.zeros_like(x)[:, :pad, ...]
+        x = torch.cat([padding, x], 1)[:, -size:...]
+        padding_mask = torch.zeros(B, size).bool()
+        padding_mask[:, :pad] = True
+    else:
+        x = x[:, -size:, ...]
+        padding_mask = torch.zeros(B, size).bool()
+    out = TensorDict({}, batch_size=[B, size])
+    out[str(Batch.INPUTS)] = x
+    out[str(Batch.PADDING_MASK)] = padding_mask
+    return out
 
 
 def rolling_window(x: torch.Tensor, size: int, /, *, step: int = 1) -> torch.Tensor:
@@ -156,7 +192,7 @@ class RollingWindow(View):
         return size - 1
 
 
-class MaskedRollingWindow(View):
+class PaddedRollingWindow(View):
     """A view that creates a rolling window of an item's time or sequence
     dimension with padding and masking to make all batch elements the same
     size.
@@ -175,7 +211,7 @@ class MaskedRollingWindow(View):
         becomes an additional batch element.
 
         The expanded batch dimension is always size B * T because this view
-        pads and masks to enforce all batch elements to be used.
+        pads and masks to enforce all seqeunce elements to be used.
 
         Args:
             x: Tensor or tensor dict of size [B, T, ...] where B is the
@@ -210,6 +246,11 @@ class MaskedRollingWindow(View):
             A new tensor or tensor dict of shape [B, size, ...].
 
         """
+        if isinstance(x, torch.Tensor):
+            return pad_last_sequence(x, size)
+        else:
+            B = x.size(0)
+            return x.apply(lambda x: pad_last_sequence(x, size), batch_size=[B, size])
 
     @staticmethod
     def burn_size(size: int, /) -> int:
@@ -241,7 +282,7 @@ class ViewRequirement:
                     time or sequence dimension at the cost of dropping
                     samples early into the sequence in order to force all
                     sequences to be the same size.
-                - "masked_rolling_window": The same as "rolling_window" but
+                - "padded_rolling_window": The same as "rolling_window" but
                     pad the beginning of each sequence to avoid dropping
                     samples and provide a mask indicating which element is
                     padding.
@@ -262,7 +303,7 @@ class ViewRequirement:
     #:      element to have the same sequence size. Only use this method
     #:      if the view requirement's shift is much smaller than an
     #:      environment's horizon.
-    #:  - `MaskedRollingWindow`: The same as `RollingWindow`, but it pads
+    #:  - `PaddedRollingWindow`: The same as `RollingWindow`, but it pads
     #:      the beginning of each sequence so no samples are dropped. This
     #:      method also provides a padding mask for each tensor or tensor
     #:      dict to indicate which sequence element is padding.
@@ -289,8 +330,8 @@ class ViewRequirement:
         match method:
             case "rolling_window":
                 self.method = RollingWindow
-            case "masked_rolling_window":
-                self.method = MaskedRollingWindow
+            case "padded_rolling_window":
+                self.method = PaddedRollingWindow
 
     def apply_all(self, batch: TensorDict) -> torch.Tensor | TensorDict:
         """Apply the view to all of the time or sequence elements.
@@ -350,6 +391,7 @@ class ViewRequirement:
 
             return self.method.apply_last(item, self.shift + 1)
 
+    @property
     def burn_size(self) -> int:
         """Return the burn size of the underlying view requirement method."""
         return self.method.burn_size(self.shift + 1)
