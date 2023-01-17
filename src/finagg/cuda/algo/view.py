@@ -105,8 +105,8 @@ def pad_whole_sequence(x: torch.Tensor, size: int, /) -> TensorDict:
     pad = RollingWindow.burn_size(size)
     padding = torch.zeros_like(x)[:, :pad, ...]
     x = torch.cat([padding, x], 1)
-    padding_mask = torch.zeros(B, T + pad, size, device=x.device, dtype=torch.bool)
-    padding_mask[:, :pad, :] = True
+    padding_mask = torch.zeros(B, T + pad, device=x.device, dtype=torch.bool)
+    padding_mask[:, :pad] = True
     out = TensorDict({}, batch_size=[B, T + pad])
     out[Batch.INPUTS.value] = x
     out[Batch.PADDING_MASK.value] = padding_mask
