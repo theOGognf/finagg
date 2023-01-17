@@ -75,7 +75,7 @@ class Model(ABC, torch.nn.Module):
         self.action_spec = action_spec
         self.config = config if config else {}
         self.view_requirements = {
-            str(Batch.OBS): ViewRequirement(str(Batch.OBS), shift=0)
+            Batch.OBS.value: ViewRequirement(Batch.OBS.value, shift=0)
         }
 
     def __call__(self, *args: Any, **kwds: Any) -> torch.Tensor | TensorDict:
@@ -195,13 +195,13 @@ class Model(ABC, torch.nn.Module):
         # Check the batch elements are all consistent with the tensor specs.
         last_batch = batch[:, -1, ...]
 
-        obs = last_batch[str(Batch.OBS)]
+        obs = last_batch[Batch.OBS.value]
         self.observation_spec.assert_is_in(obs)
 
-        features = last_batch[str(Batch.FEATURES)]
+        features = last_batch[Batch.FEATURES.value]
         self.feature_spec.assert_is_in(features)
 
-        actions = last_batch[str(Batch.ACTIONS)]
+        actions = last_batch[Batch.ACTIONS.value]
         self.action_spec.assert_is_in(actions)
 
     @abstractmethod

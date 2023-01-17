@@ -131,12 +131,12 @@ class Policy:
             if inplace
             else TensorDict({}, batch_size=in_batch.batch_size, device=batch.device)
         )
-        out[str(Batch.FEATURES)] = features
-        out[str(Batch.ACTIONS)] = actions
+        out[Batch.FEATURES.value] = features
+        out[Batch.ACTIONS.value] = actions
         if return_logp:
-            out[str(Batch.LOGP)] = dist.logp(actions)
+            out[Batch.LOGP.value] = dist.logp(actions)
         if return_values:
-            out[str(Batch.VALUES)] = self.model.value_function()
+            out[Batch.VALUES.value] = self.model.value_function()
 
         torch.set_grad_enabled(prev)
         return out

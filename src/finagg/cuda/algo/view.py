@@ -78,8 +78,38 @@ def pad_last_sequence(x: torch.Tensor, size: int, /) -> TensorDict:
         x = x[:, -size:, ...]
         padding_mask = torch.zeros(B, size, device=x.device, dtype=torch.bool)
     out = TensorDict({}, batch_size=[B, size])
-    out[str(Batch.INPUTS)] = x
-    out[str(Batch.PADDING_MASK)] = padding_mask
+    out[Batch.INPUTS.value] = x
+    out[Batch.PADDING_MASK.value] = padding_mask
+    return out
+
+
+def pad_whole_sequence(x: torch.Tensor, size: int, /) -> TensorDict:
+    """Pad the given tensor `x` along the time or sequence dimension such
+    that the tensor's time or sequence dimension is of size `size` after
+    applying `rolling_window` to the tensor.
+
+    Args:
+        x: Tensor of size [B, T, ...] where B is the batch dimension, and
+            T is the time or sequence dimension. B is typically the number
+            of parallel environments, and T is typically the number of time
+            steps or observations sampled from each environment.
+        size: Required sequence size for each batch element in `x`.
+
+    Returns:
+        A tensor dict with key "inputs" corresponding to the padded (or not
+        padded) elements, and key "padding_mask" corresponding to booleans
+        indicating which elements of "inputs" are padding.
+
+    """
+    B, T = x.shape[:2]
+    pad = RollingWindow.burn_size(size)
+    padding = torch.zeros_like(x)[:, :pad, ...]
+    x = torch.cat([padding, x], 1)
+    padding_mask = torch.zeros(B, T + pad, size, device=x.device, dtype=torch.bool)
+    padding_mask[:, :pad, :] = True
+    out = TensorDict({}, batch_size=[B, T + pad])
+    out[Batch.INPUTS.value] = x
+    out[Batch.PADDING_MASK.value] = padding_mask
     return out
 
 
@@ -198,7 +228,7 @@ class PaddedRollingWindow(View):
     size.
 
     This is effectively the same as `RollingWindow` but with padding and
-    masking.
+    masking applied beforehand.
 
     """
 
@@ -227,6 +257,17 @@ class PaddedRollingWindow(View):
             [B * T, size, ...].
 
         """
+        if isinstance(x, torch.Tensor):
+            return RollingWindow.apply_all(pad_whole_sequence(x, size), size)
+        else:
+            B_OLD, T_OLD = x.shape[:2]
+            T_NEW = T_OLD + RollingWindow.burn_size(size)
+            return RollingWindow.apply_all(
+                x.apply(
+                    lambda x: pad_whole_sequence(x, size), batch_size=[B_OLD, T_NEW]
+                ),
+                size,
+            )
 
     @staticmethod
     def apply_last(x: torch.Tensor | TensorDict, size: int, /) -> TensorDict:
