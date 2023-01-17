@@ -153,29 +153,14 @@ class Model(ABC, torch.nn.Module):
 
         """
 
-    def validate(self, batch: TensorDict) -> None:
-        """Helper for validating that a batch is compliant with a model's
-        tensor specs. This should really only needed to be called once
-        during training or deployment.
-
-        Args:
-            batch: Batch with output from the model. Expected to be of size
-                [B, T, ...] where B is the batch dimension, and T is the
-                time or sequence dimension. B is typically the number of
-                parallel environments being sampled for during massively
-                parallel training, and T is typically the number of time steps
-                or observations sampled from the environments. The B and T
-                dimensions are typically combined into one dimension during
-                application of the view requirements.
+    def validate_view_requirements(self) -> None:
+        """Helper for validating a model's view requirements.
 
         Raises:
-            - AssertionError if any of the elements within `batch` are not
-                consistent with the model's tensor specs.
-            - RuntimeError if the model's view requirements result in an
-                ambiguous batch size, making training and sampling impossible.
+            RuntimeError if the model's view requirements result in an
+            ambiguous batch size, making training and sampling impossible.
 
         """
-        # First check that the view requirements all have the same burn size.
         burn_sizes = {}
         for key, view_requirement in self.view_requirements.items():
             burn_sizes[key] = view_requirement.burn_size
@@ -191,18 +176,6 @@ class Model(ABC, torch.nn.Module):
                 
                 """
             )
-
-        # Check the batch elements are all consistent with the tensor specs.
-        last_batch = batch[:, -1, ...]
-
-        obs = last_batch[Batch.OBS.value]
-        self.observation_spec.assert_is_in(obs)
-
-        features = last_batch[Batch.FEATURES.value]
-        self.feature_spec.assert_is_in(features)
-
-        actions = last_batch[Batch.ACTIONS.value]
-        self.action_spec.assert_is_in(actions)
 
     @abstractmethod
     def value_function(self) -> torch.Tensor:
