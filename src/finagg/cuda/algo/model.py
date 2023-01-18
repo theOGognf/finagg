@@ -112,19 +112,19 @@ class Model(ABC, torch.nn.Module):
 
         """
         batch_sizes = {}
-        in_batch = TensorDict({}, batch_size=[], device=batch.device)
+        out_batch = TensorDict({}, batch_size=[], device=batch.device)
         for key, view_requirement in self.view_requirements.items():
             match kind:
                 case "all":
                     item = view_requirement.apply_all(batch)
                 case "last":
                     item = view_requirement.apply_last(batch)
-            in_batch[key] = item
+            out_batch[key] = item
             B_NEW = item.size(0)
             batch_sizes[key] = B_NEW
         batch_size = next(iter(batch_sizes.values()))
-        in_batch.batch_size = batch_size
-        return in_batch
+        out_batch.batch_size = batch_size
+        return out_batch
 
     @property
     def burn_size(self) -> int:

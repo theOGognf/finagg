@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 import requests
 
-import finagg
+import finagg.ratelimit
 
 LIMIT = 3
 PERIOD = 10
