@@ -146,42 +146,20 @@ def test_pad_whole_sequence(
     assert (pad_whole_sequence(inputs, SIZE) == expected).all()
 
 
-# PADDED_ROLLING_WINDOW_APPLY_ALL_CASE_0 = (
-#     ROLLING_WINDOW_CASE_0[0],
-#     ROLLING_WINDOW_CASE_0[1].reshape(-1, SIZE),
-# )
-
-# PADDED_ROLLING_WINDOW_APPLY_ALL_CASE_1 = (
-#     ROLLING_WINDOW_CASE_1[0],
-#     ROLLING_WINDOW_CASE_1[1].reshape(-1, SIZE, 1),
-# )
-
-
-# @pytest.mark.parametrize(
-#     "inputs,expected",
-#     [
-#         ROLLING_WINDOW_APPLY_ALL_CASE_0,
-#         ROLLING_WINDOW_APPLY_ALL_CASE_1,
-#     ],
-# )
-# def test_padded_rolling_window_apply_all(inputs: torch.Tensor, expected: TensorDict) -> None:
-#     assert (PaddedRollingWindow.apply_all(inputs, SIZE) == expected).all()
-
-
 B = 2
 T = 1
 TOTAL = B * T
 INPUTS = TensorDict({"x": torch.arange(TOTAL).reshape(B, T).float()}, batch_size=[B, T])
-EXPECTED_INPUT = TensorDict({}, batch_size=[B, SIZE])
-EXPECTED_INPUT["x"] = TensorDict({}, batch_size=[B, SIZE])
-EXPECTED_INPUT["x"][Batch.INPUTS.value] = torch.cat(
+EXPECTED = TensorDict({}, batch_size=[B, T + SIZE - 1])
+EXPECTED["x"] = TensorDict({}, batch_size=[B, T + SIZE - 1])
+EXPECTED["x"][Batch.INPUTS.value] = torch.cat(
     [torch.zeros(B, SIZE - 1), INPUTS["x"].squeeze(-1)], dim=1
 )
-EXPECTED_INPUT["x"][Batch.PADDING_MASK.value] = torch.zeros(B, SIZE).bool()
-EXPECTED_INPUT["x"][Batch.PADDING_MASK.value][:, 0] = True
-PADDED_ROLLING_WINDOW_APPLY_LAST_CASE_0 = (
+EXPECTED["x"][Batch.PADDING_MASK.value] = torch.zeros(B, T + SIZE - 1).bool()
+EXPECTED["x"][Batch.PADDING_MASK.value][:, : (SIZE - 1)] = True
+PADDED_ROLLING_WINDOW_APPLY_ALL_CASE_0 = (
     INPUTS,
-    EXPECTED_INPUT,
+    RollingWindow.apply_all(EXPECTED, SIZE),
 )
 
 B = 2
@@ -190,13 +168,61 @@ TOTAL = B * T
 INPUTS = TensorDict(
     {"x": torch.arange(TOTAL).reshape(B, T, 1).float()}, batch_size=[B, T]
 )
-EXPECTED_INPUT = TensorDict({}, batch_size=[B, SIZE])
-EXPECTED_INPUT["x"] = TensorDict({}, batch_size=[B, SIZE])
-EXPECTED_INPUT["x"][Batch.INPUTS.value] = INPUTS["x"][:, -SIZE:, ...]
-EXPECTED_INPUT["x"][Batch.PADDING_MASK.value] = torch.zeros(B, SIZE).bool()
+EXPECTED = TensorDict({}, batch_size=[B, T + SIZE - 1])
+EXPECTED["x"] = TensorDict({}, batch_size=[B, T + SIZE - 1])
+EXPECTED["x"][Batch.INPUTS.value] = torch.cat(
+    [torch.zeros(B, SIZE - 1, 1), INPUTS["x"]], dim=1
+)
+EXPECTED["x"][Batch.PADDING_MASK.value] = torch.zeros(B, T + SIZE - 1).bool()
+EXPECTED["x"][Batch.PADDING_MASK.value][:, : (SIZE - 1)] = True
+PADDED_ROLLING_WINDOW_APPLY_ALL_CASE_1 = (
+    INPUTS,
+    RollingWindow.apply_all(EXPECTED, SIZE),
+)
+
+
+@pytest.mark.parametrize(
+    "inputs,expected",
+    [
+        PADDED_ROLLING_WINDOW_APPLY_ALL_CASE_0,
+        PADDED_ROLLING_WINDOW_APPLY_ALL_CASE_1,
+    ],
+)
+def test_padded_rolling_window_apply_all(
+    inputs: TensorDict, expected: TensorDict
+) -> None:
+    assert (PaddedRollingWindow.apply_all(inputs, SIZE) == expected).all()
+
+
+B = 2
+T = 1
+TOTAL = B * T
+INPUTS = TensorDict({"x": torch.arange(TOTAL).reshape(B, T).float()}, batch_size=[B, T])
+EXPECTED = TensorDict({}, batch_size=[B, SIZE])
+EXPECTED["x"] = TensorDict({}, batch_size=[B, SIZE])
+EXPECTED["x"][Batch.INPUTS.value] = torch.cat(
+    [torch.zeros(B, SIZE - 1), INPUTS["x"].squeeze(-1)], dim=1
+)
+EXPECTED["x"][Batch.PADDING_MASK.value] = torch.zeros(B, SIZE).bool()
+EXPECTED["x"][Batch.PADDING_MASK.value][:, : (SIZE - 1)] = True
+PADDED_ROLLING_WINDOW_APPLY_LAST_CASE_0 = (
+    INPUTS,
+    EXPECTED,
+)
+
+B = 2
+T = 4
+TOTAL = B * T
+INPUTS = TensorDict(
+    {"x": torch.arange(TOTAL).reshape(B, T, 1).float()}, batch_size=[B, T]
+)
+EXPECTED = TensorDict({}, batch_size=[B, SIZE])
+EXPECTED["x"] = TensorDict({}, batch_size=[B, SIZE])
+EXPECTED["x"][Batch.INPUTS.value] = INPUTS["x"][:, -SIZE:, ...]
+EXPECTED["x"][Batch.PADDING_MASK.value] = torch.zeros(B, SIZE).bool()
 PADDED_ROLLING_WINDOW_APPLY_LAST_CASE_1 = (
     INPUTS,
-    EXPECTED_INPUT,
+    EXPECTED,
 )
 
 
