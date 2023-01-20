@@ -1,8 +1,23 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+    - id: check-added-large-files
+    - id: check-json
+    - id: check-yaml
+    - id: end-of-file-fixer
+    - id: forbid-submodules
+    - id: trailing-whitespace
+
   - repo: https://github.com/PyCQA/autoflake
     rev: v1.6.1
     hooks:
-    -   id: autoflake
+    - id: autoflake
+      args:
+        - --ignore-init-module-imports
+        - --in-place
+        - --remove-all-unused-imports
+        - --remove-unused-variables
 
   - repo: https://github.com/psf/black
     rev: 22.8.0
@@ -13,4 +28,3 @@ repos:
     rev: 5.10.1
     hooks:
       - id: isort
-  

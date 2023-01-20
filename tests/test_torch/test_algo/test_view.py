@@ -2,10 +2,11 @@ import pytest
 import torch
 from tensordict import TensorDict
 
-from finagg.cuda.algo.batch import Batch
-from finagg.cuda.algo.view import (
+from finagg.torch.algo.batch import Batch
+from finagg.torch.algo.view import (
     PaddedRollingWindow,
     RollingWindow,
+    ViewRequirement,
     pad_last_sequence,
     pad_whole_sequence,
     rolling_window,
@@ -317,9 +318,75 @@ def test_rolling_window_apply_last(inputs: TensorDict, expected: TensorDict) -> 
     assert (RollingWindow.apply_last(inputs, SIZE) == expected).all()
 
 
-# def test_view_requirement_apply_all() -> None:
-#     ...
+B = 20
+T = 5
+TOTAL = B * T
+INPUTS = TensorDict({"x": torch.arange(TOTAL).reshape(B, T)}, batch_size=[B, T])
+VIEW_REQUIREMENT_APPLY_ALL_CASE_0 = (INPUTS, INPUTS.reshape(-1))
+
+B = 20
+T = 5
+TOTAL = B * T
+INPUTS = TensorDict(
+    {
+        "x": TensorDict(
+            {"y": torch.arange(TOTAL).reshape(B, T, 1, 1)}, batch_size=[B, T]
+        )
+    },
+    batch_size=[B, T],
+)
+VIEW_REQUIREMENT_APPLY_ALL_CASE_1 = (INPUTS, INPUTS.reshape(-1))
 
 
-# def test_view_requirement_apply_last() -> None:
-#     ...
+@pytest.mark.parametrize(
+    "inputs,expected",
+    [
+        VIEW_REQUIREMENT_APPLY_ALL_CASE_0,
+        VIEW_REQUIREMENT_APPLY_ALL_CASE_1,
+    ],
+)
+def test_view_requirement_apply_all(
+    inputs: TensorDict, expected: torch.Tensor | TensorDict
+) -> None:
+    view_requirement = ViewRequirement("x", shift=0)
+    out = {}
+    out["x"] = view_requirement.apply_all(inputs)
+    out_batch = TensorDict(out, batch_size=out["x"].size(0))
+    assert (out_batch == expected).all()
+
+
+B = 20
+T = 5
+TOTAL = B * T
+INPUTS = TensorDict({"x": torch.arange(TOTAL).reshape(B, T)}, batch_size=[B, T])
+VIEW_REQUIREMENT_APPLY_LAST_CASE_0 = (INPUTS, INPUTS[:, -1, ...])
+
+B = 20
+T = 5
+TOTAL = B * T
+INPUTS = TensorDict(
+    {
+        "x": TensorDict(
+            {"y": torch.arange(TOTAL).reshape(B, T, 1, 1)}, batch_size=[B, T]
+        )
+    },
+    batch_size=[B, T],
+)
+VIEW_REQUIREMENT_APPLY_LAST_CASE_1 = (INPUTS, INPUTS[:, -1, ...])
+
+
+@pytest.mark.parametrize(
+    "inputs,expected",
+    [
+        VIEW_REQUIREMENT_APPLY_LAST_CASE_0,
+        VIEW_REQUIREMENT_APPLY_LAST_CASE_1,
+    ],
+)
+def test_view_requirement_apply_last(
+    inputs: TensorDict, expected: torch.Tensor | TensorDict
+) -> None:
+    view_requirement = ViewRequirement("x", shift=0)
+    out = {}
+    out["x"] = view_requirement.apply_last(inputs)
+    out_batch = TensorDict(out, batch_size=out["x"].size(0))
+    assert (out_batch == expected).all()

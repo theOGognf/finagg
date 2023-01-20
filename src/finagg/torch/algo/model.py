@@ -112,19 +112,18 @@ class Model(ABC, torch.nn.Module):
 
         """
         batch_sizes = {}
-        out_batch = TensorDict({}, batch_size=[], device=batch.device)
+        out = {}
         for key, view_requirement in self.view_requirements.items():
             match kind:
                 case "all":
                     item = view_requirement.apply_all(batch)
                 case "last":
                     item = view_requirement.apply_last(batch)
-            out_batch[key] = item
+            out[key] = item
             B_NEW = item.size(0)
             batch_sizes[key] = B_NEW
         batch_size = next(iter(batch_sizes.values()))
-        out_batch.batch_size = batch_size
-        return out_batch
+        return TensorDict(out, batch_size=batch_size, device=batch.device)
 
     @property
     def burn_size(self) -> int:
@@ -173,7 +172,7 @@ class Model(ABC, torch.nn.Module):
                     2) reformulate your model and observation function such
                         that view requirements are not necessary or are
                         handled internal to your environment
-                
+
                 """
             )
 
