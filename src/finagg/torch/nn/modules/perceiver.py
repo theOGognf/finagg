@@ -59,7 +59,7 @@ class PerceiverLayer(nn.Module):
         latent = self.cross_attention(
             q, kv, key_padding_mask=key_padding_mask, attention_mask=attention_mask
         )
-        return self.self_attention(latent)
+        return self.self_attention(latent)  # type: ignore
 
 
 class PerceiverIOLayer(nn.Module):
@@ -125,4 +125,4 @@ class PerceiverIOLayer(nn.Module):
             q, kv, key_padding_mask=key_padding_mask, attention_mask=attention_mask
         )
         output = self.decoder(output_query, latent)
-        return self.debedder(output)
+        return self.debedder(output)  # type: ignore

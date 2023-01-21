@@ -5,6 +5,8 @@ import torch.nn as nn
 
 
 class PositionalEmbedding(nn.Module):
+    dropout: nn.Dropout
+
     pe: torch.Tensor
 
     def __init__(
@@ -20,4 +22,4 @@ class PositionalEmbedding(nn.Module):
         self.register_buffer("pe", pe)
 
     def forward(self, x: torch.Tensor, /) -> torch.Tensor:
-        return self.dropout(x + self.pe[0, : x.size(1)])
+        return self.dropout(x + self.pe[0, : x.size(1)])  # type: ignore
