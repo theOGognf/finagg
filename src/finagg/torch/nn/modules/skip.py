@@ -13,7 +13,7 @@ class SequentialSkipConnection(nn.Module):
     uses that input.
 
     Args:
-        dim: Original input feature size.
+        embed_dim: Original input feature size.
         kind: Type of skip connection to apply.
             Options include:
                 - "residual" for a standard residual connection (summing outputs)
@@ -21,7 +21,7 @@ class SequentialSkipConnection(nn.Module):
                 - `None` for no skip connection
         fan_in: Whether to apply a linear layer after each skip connection
             automatically such that the output of the forward pass will
-            always have dimension `dim`.
+            always have dimension `embed_dim`.
 
     """
 
@@ -32,7 +32,7 @@ class SequentialSkipConnection(nn.Module):
     _layers: nn.ModuleList
 
     #: Whether to fan-in the outputs of each skip connection automatically.
-    #: The output features of the forward pass will always be `dim` in this
+    #: The output features of the forward pass will always be `embed_dim` in this
     #: case.
     fan_in: bool
 
@@ -42,13 +42,27 @@ class SequentialSkipConnection(nn.Module):
     kind: str
 
     def __init__(
-        self, dim: int, kind: None | str = "cat", fan_in: bool = False
+        self, embed_dim: int, kind: None | str = "cat", fan_in: bool = True
     ) -> None:
         super().__init__()
-        self._in_features = [dim]
+        self._in_features = [embed_dim]
         self._layers = torch.nn.ModuleList([])
         self.kind = kind
         self.fan_in = fan_in
+
+    @property
+    def _skip_features(self) -> int:
+        """Return the number of output features according to the number of input
+        features and the kind of skip connection.
+
+        """
+        match self.kind:
+            case "residual":
+                return self._in_features[-1]
+            case "cat":
+                return 2 * self._in_features[-1]
+            case None:
+                return self._in_features[-1]
 
     def append(self, module: nn.Module, /) -> int:
         """Append `module` to the skip connection.
@@ -64,7 +78,7 @@ class SequentialSkipConnection(nn.Module):
             Number of output features from the sequential skip connection.
 
         """
-        self._in_features.append(self.skip_features)
+        self._in_features.append(self._skip_features)
         self._layers.append(module)
         if self.fan_in:
             linear = nn.Linear(self._in_features[-1], self._in_features[0])
@@ -72,28 +86,28 @@ class SequentialSkipConnection(nn.Module):
             self._layers.append(linear)
         return self.out_features
 
-    def forward(self, x1: torch.Tensor, x2: torch.Tensor, /) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, y: torch.Tensor, /) -> torch.Tensor:
         """Perform a sequential skip connection, first applying a skip
-        connection to `x1` and `x2`, and then sequentially applying skip
+        connection to `x` and `y`, and then sequentially applying skip
         connections to the output and the output of the next layer.
 
         Args:
-            x1: Skip connection seed with shape [B, T, ...].
-            x2: Skip connection seed with same shape as `x1`.
+            x: Skip connection seed with shape [B, T, ...].
+            y: Skip connection seed with same shape as `y`.
 
         Returns:
             A tensor with shape depending on `fan_in` and `kind`.
 
         """
-        y = skip_connection(x1, x2, self.kind)
+        y = skip_connection(x, y, kind=self.kind)
         for i, layer in enumerate(self._layers):
             if self.fan_in:
                 if not (i % 2):
-                    y = skip_connection(y, layer(y), self.kind)
+                    y = skip_connection(y, layer(y), kind=self.kind)
                 else:
                     y = layer(y)
             else:
-                y = skip_connection(y, layer(y), self.kind)
+                y = skip_connection(y, layer(y), kind=self.kind)
         return y
 
     @property
@@ -111,18 +125,4 @@ class SequentialSkipConnection(nn.Module):
         if self.fan_in:
             return self._in_features[0]
 
-        return self.skip_features
-
-    @property
-    def skip_features(self) -> int:
-        """Return the number of output features according to the number of input
-        features and the kind of skip connection.
-
-        """
-        match self.kind:
-            case "residual":
-                return self._in_features[-1]
-            case "cat":
-                return 2 * self._in_features[-1]
-            case None:
-                return self._in_features[-1]
+        return self._skip_features

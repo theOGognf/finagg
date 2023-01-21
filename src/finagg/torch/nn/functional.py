@@ -6,7 +6,7 @@ import torch.nn.functional as F
 FINFO = torch.finfo()
 
 
-def bin_to_float_mask(mask: torch.Tensor, /) -> torch.Tensor:
+def binary_mask_to_float_mask(mask: torch.Tensor, /) -> torch.Tensor:
     """Convert `0` and `1` elements in a binary mask to `-inf` and `0`,
     respectively.
 
@@ -24,7 +24,7 @@ def bin_to_float_mask(mask: torch.Tensor, /) -> torch.Tensor:
     )
 
 
-def float_to_bin_mask(mask: torch.Tensor, /) -> torch.Tensor:
+def float_mask_to_binary_mask(mask: torch.Tensor, /) -> torch.Tensor:
     """Convert `0` and `-inf` elements into a boolean mask of `True` and
     `False`, respectively.
 
@@ -177,15 +177,25 @@ def masked_max(
 
 
 def skip_connection(
-    x1: torch.Tensor, x2: torch.Tensor, kind: None | str, /
+    x: torch.Tensor,
+    y: torch.Tensor,
+    /,
+    *,
+    kind: str = "cat",
+    dim: int = -1,
 ) -> torch.Tensor:
-    """Perform a sequential skip connection, first applying a skip
-    connection to `x1` and `x2`, and then sequentially applying skip
-    connections to the output and the output of the next layer.
+    """Perform a sequential skip connection to `x` and `y`.
 
     Args:
-        x1: Skip connection seed with shape [B, T, ...].
-        x2: Skip connection seed with same shape as `x1`.
+        x: Skip connection seed with shape [B, T, ...].
+        y: Skip connection seed with same shape as `x`.
+        kind: Type of skip connection to use.
+            Options include:
+                - "residual" for a standard residual connection (summing outputs)
+                - "cat" for concatenating outputs
+                - `None` for no skip connection
+        dim: Dimension to apply concatentation along. Only valid when
+            `kind` is "cat"
 
     Returns:
         A tensor with shape depending on `kind`.
@@ -193,8 +203,8 @@ def skip_connection(
     """
     match kind:
         case "residual":
-            return x1 + x2
+            return x + y
         case "cat":
-            return torch.cat([x1, x2], dim=-1)
+            return torch.cat([x, y], dim=dim)
         case None:
-            return x2
+            return y
