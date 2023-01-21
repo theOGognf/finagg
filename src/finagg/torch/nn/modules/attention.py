@@ -10,10 +10,15 @@ from .activations import get_activation
 from .skip import SequentialSkipConnection
 
 
-class SequenceSelection(nn.Module):
+class PointerNetwork(nn.Module):
     """3D attention applied to sequence encoders and decoders for selecting the
     next element from the encoder's sequence to be appended to the decoder's
     sequence.
+
+    An implementation of https://arxiv.org/pdf/1506.03134.pdf adapted from
+    https://towardsdatascience.com/pointer-networks-with-transformers-1a01d83f7543
+    which also adapted from
+    https://github.com/ast0414/pointer-networks-pytorch/blob/master/model.py.
 
     Args:
         embed_dim: Feature dimension of the encoders/decoders.
@@ -21,19 +26,19 @@ class SequenceSelection(nn.Module):
     """
 
     #: Weights applied to the encoder's output.
-    We: nn.Linear
+    W1: nn.Linear
 
     #: Weights applied to the decoder's output.
-    Wd: nn.Linear
+    W2: nn.Linear
 
     #: Weights applied to the blended encoder-decoder selection matrix.
-    Wde: nn.Linear
+    VT: nn.Linear
 
     def __init__(self, embed_dim: int, /) -> None:
         super().__init__()
-        self.We = nn.Linear(embed_dim, embed_dim, bias=False)
-        self.Wd = nn.Linear(embed_dim, embed_dim, bias=False)
-        self.Wde = nn.Linear(embed_dim, 1, bias=False)
+        self.W1 = nn.Linear(embed_dim, embed_dim, bias=False)
+        self.W2 = nn.Linear(embed_dim, embed_dim, bias=False)
+        self.VT = nn.Linear(embed_dim, 1, bias=False)
 
     def forward(
         self,
@@ -54,17 +59,20 @@ class SequenceSelection(nn.Module):
 
         Returns:
             Logits with shape [B, D, E] indicating the likelihood of selecting
-            an encoded sequence element for each decoder sequence element.
+            an encoded sequence element in E for each decoder sequence element in D.
             The last item in the D dimension, [:, -1, :], typically indicates
             the likelihoods of selecting each encoder sequence element for the
             next decoder sequence element (which is usually the desired output).
 
         """
+        # (B, D, E, C) <- (B, E, C)
         encoder_proj = (
-            self.We(encoder_out).unsqueeze(1).expand(-1, decoder_out.size(1), -1, -1)
+            self.W1(encoder_out).unsqueeze(1).expand(-1, decoder_out.size(1), -1, -1)
         )
-        decoder_proj = self.Wd(decoder_out).unsqueeze(2)
-        weights = self.Wde(torch.tanh(decoder_proj + encoder_proj)).squeeze(-1)
+        # (B, D, 1, C) <- (B, D, C)
+        decoder_proj = self.W2(decoder_out).unsqueeze(2)
+        # (B, D, E) <- (B, D, 1, C) + (B, D, E, C)
+        weights = self.VT(torch.tanh(decoder_proj + encoder_proj)).squeeze(-1)
         return masked_log_softmax(weights, mask=mask, dim=-1)
 
 

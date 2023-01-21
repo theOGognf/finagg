@@ -39,7 +39,7 @@ class SequentialSkipConnection(nn.Module):
     #: Kind of skip connection. "residual" for a standard residual connection
     #: (summing outputs), "cat" for concatenating outputs, and `None` for no
     #: skip connection (reduces to a regular, sequential module).
-    kind: str
+    kind: None | str
 
     def __init__(
         self, embed_dim: int, kind: None | str = "cat", fan_in: bool = True
@@ -63,6 +63,7 @@ class SequentialSkipConnection(nn.Module):
                 return 2 * self._in_features[-1]
             case None:
                 return self._in_features[-1]
+        raise NotImplementedError(f"No skip connection type for {self.kind}")
 
     def append(self, module: nn.Module, /) -> int:
         """Append `module` to the skip connection.

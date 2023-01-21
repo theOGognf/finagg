@@ -181,7 +181,7 @@ def skip_connection(
     y: torch.Tensor,
     /,
     *,
-    kind: str = "cat",
+    kind: None | str = "cat",
     dim: int = -1,
 ) -> torch.Tensor:
     """Perform a sequential skip connection to `x` and `y`.
@@ -208,3 +208,4 @@ def skip_connection(
             return torch.cat([x, y], dim=dim)
         case None:
             return y
+    raise NotImplementedError(f"No skip connection type for {kind}")
