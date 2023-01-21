@@ -1,3 +1,5 @@
+"""Perceiver definitions as described by https://arxiv.org/pdf/2107.14795.pdf."""
+
 import torch
 import torch.nn as nn
 

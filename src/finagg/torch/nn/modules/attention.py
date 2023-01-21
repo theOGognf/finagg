@@ -77,6 +77,36 @@ class PointerNetwork(nn.Module):
 
 
 class CrossAttention(nn.Module):
+    """Perform multihead attention keys to a query, mapping the keys of
+    sequence length K to the query of sequence length Q.
+
+    Args:
+        embed_dim: Key and query feature dimension.
+        num_heads: Number of attention heads.
+        activation_fn: Activation function ID.
+        attention_dropout: Sequence dropout in the attention heads.
+        hidden_dropout: Feedforward dropout after performing attention.
+        skip_kind: Kind of residual or skip connection to make between
+            the output of the multihead attention and the feedforward
+            module.
+        fan_in: Whether to apply downsampling within the skip connection
+            when using a `skip_kind` that increases hidden feature
+            dimensions.
+
+    """
+
+    #: Underlying multihead attention mechanism.
+    attention: nn.MultiheadAttention
+
+    #: Norm for the keys.
+    kv_norm: nn.LayerNorm
+
+    #: Norm for the queries.
+    q_norm: nn.LayerNorm
+
+    #: Skip connection for applying special residual connections.
+    skip_connection: SequentialSkipConnection
+
     def __init__(
         self,
         embed_dim: int,
@@ -116,6 +146,7 @@ class CrossAttention(nn.Module):
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
+        """Cross-attention helper."""
         attention, _ = self.attention(
             q,
             kv,
@@ -135,6 +166,21 @@ class CrossAttention(nn.Module):
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
+        """Apply multihead attention keys to a query, mapping the keys of
+        sequence length K to the query of sequence length Q.
+
+        Args:
+            q: Query with shape [B, Q, E].
+            kv: Keys with shape [B, K, E].
+            key_padding_mask: Mask with shape [B, K] indicating sequence
+                elements of `kv` that are PADDED or INVALID values.
+            attention_mask: Mask with shape [Q, K] that indicates whether
+                elements in Q can attend to elements in K.
+
+        Returns:
+            Values with shape [B, Q, E].
+
+        """
         qkv = self._attention_block(
             self.q_norm(q),
             self.kv_norm(kv),
@@ -145,6 +191,33 @@ class CrossAttention(nn.Module):
 
 
 class SelfAttention(nn.Module):
+    """Perform multihead attention keys to a a sequence, using it for the
+    queries, keys, and values.
+
+    Args:
+        embed_dim: Key and query feature dimension.
+        num_heads: Number of attention heads.
+        activation_fn: Activation function ID.
+        attention_dropout: Sequence dropout in the attention heads.
+        hidden_dropout: Feedforward dropout after performing attention.
+        skip_kind: Kind of residual or skip connection to make between
+            the output of the multihead attention and the feedforward
+            module.
+        fan_in: Whether to apply downsampling within the skip connection
+            when using a `skip_kind` that increases hidden feature
+            dimensions.
+
+    """
+
+    #: Underlying multihead attention mechanism.
+    attention: nn.MultiheadAttention
+
+    #: Skip connection for applying special residual connections.
+    skip_connection: SequentialSkipConnection
+
+    #: Norm for the queries/keys/values.
+    x_norm: nn.LayerNorm
+
     def __init__(
         self,
         embed_dim: int,
@@ -182,6 +255,7 @@ class SelfAttention(nn.Module):
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
+        """Self-attention helper."""
         attention, _ = self.attention(
             x,
             x,
@@ -200,6 +274,20 @@ class SelfAttention(nn.Module):
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
+        """Apply self-attention to `x`, attending sequence elements to
+        themselves.
+
+        Args:
+            x: Query with shape [B, X, E].
+            key_padding_mask: Mask with shape [B, X] indicating sequence
+                elements of `kv` that are PADDED or INVALID values.
+            attention_mask: Mask with shape [X, X] that indicates whether
+                elements in X can attend to other elements in X.
+
+        Returns:
+            Values with shape [B, X, E].
+
+        """
         qkv = self._attention_block(
             self.x_norm(x),
             key_padding_mask=key_padding_mask,
@@ -209,11 +297,17 @@ class SelfAttention(nn.Module):
 
 
 class SelfAttentionStack(nn.Module):
-    def __init__(self, attention: SelfAttention, num_layers: int, /) -> None:
+    """Stacks of self-attention to iteratively attend over a sequence.
+
+    Args:
+        module: Self-attention module to repeat.
+        num_layers: Number of layers of `module` to repeat.
+
+    """
+
+    def __init__(self, module: SelfAttention, num_layers: int, /) -> None:
         super().__init__()
-        self.layers = nn.ModuleList(
-            [copy.deepcopy(attention) for _ in range(num_layers)]
-        )
+        self.layers = nn.ModuleList([copy.deepcopy(module) for _ in range(num_layers)])
 
     def forward(
         self,
@@ -223,6 +317,20 @@ class SelfAttentionStack(nn.Module):
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
+        """Iteratively apply self-attention to `x`, attending sequence
+        elements to themselves.
+
+        Args:
+            x: Query with shape [B, X, E].
+            key_padding_mask: Mask with shape [B, X] indicating sequence
+                elements of `kv` that are PADDED or INVALID values.
+            attention_mask: Mask with shape [X, X] that indicates whether
+                elements in X can attend to other elements in X.
+
+        Returns:
+            Values with shape [B, X, E].
+
+        """
         out = x
         for layer in self.layers:
             out = layer(
