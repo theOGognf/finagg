@@ -83,6 +83,8 @@ class CrossAttention(nn.Module):
     Args:
         embed_dim: Key and query feature dimension.
         num_heads: Number of attention heads.
+        hidden_dim: Number of hidden features in the hidden layers
+            of the feedforward network that's after performing attention.
         activation_fn: Activation function ID.
         attention_dropout: Sequence dropout in the attention heads.
         hidden_dropout: Feedforward dropout after performing attention.
@@ -197,6 +199,8 @@ class SelfAttention(nn.Module):
     Args:
         embed_dim: Key and query feature dimension.
         num_heads: Number of attention heads.
+        hidden_dim: Number of hidden features in the hidden layers
+            of the feedforward network that's after performing attention.
         activation_fn: Activation function ID.
         attention_dropout: Sequence dropout in the attention heads.
         hidden_dropout: Feedforward dropout after performing attention.

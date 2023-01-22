@@ -7,14 +7,39 @@ from .attention import CrossAttention, SelfAttention, SelfAttentionStack
 
 
 class PerceiverLayer(nn.Module):
+    """Perciever layer as described by https://arxiv.org/pdf/2103.03206.pdf.
+
+    Useful for embedding several, variable-length sequences into a latent
+    array for dimensionality reduction. Allows inputs of different feature
+    sizes to be embedded into a constant size.
+
+    Args:
+        embed_dim: Feature dimension of the latent array and input sequence.
+            Each sequence is expected to be embedded by its own embedder, which
+            could just be a simple linear transform.
+        num_heads: Number of attention heads in the cross-attention and
+            self-attention modules.
+        hidden_dim: Number of hidden features in the hidden layers
+            of the feedforward networks that're after performing attention.
+        activation_fn: Activation function ID.
+        attention_dropout: Sequence dropout in the attention heads.
+        hidden_dropout: Feedforward dropout after performing attention.
+        skip_kind: Kind of residual or skip connection to make between
+            outputs of the multihead attentions and the feedforward
+            modules.
+        fan_in: Whether to apply downsampling within the skip connection
+            when using a `skip_kind` that increases hidden feature
+            dimensions.
+
+    """
+
     def __init__(
         self,
-        input_dim: int,
         embed_dim: int,
         /,
         *,
-        hidden_dim: int = 128,
         num_heads: int = 2,
+        hidden_dim: int = 128,
         num_layers: int = 2,
         activation_fn: str = "relu",
         attention_dropout: float = 0.0,
@@ -23,7 +48,6 @@ class PerceiverLayer(nn.Module):
         fan_in: bool = True,
     ) -> None:
         super().__init__()
-        self.embedder = nn.Linear(input_dim, embed_dim)
         self.cross_attention = CrossAttention(
             embed_dim,
             num_heads=num_heads,
@@ -57,7 +81,22 @@ class PerceiverLayer(nn.Module):
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
-        kv = self.embedder(kv)
+        """Apply cross-attention keys to a query, mapping the keys of
+        sequence length K to the query of sequence length Q.
+
+        Args:
+            q: Query with shape [B, Q, E]. Usually the latent array from
+                previous forward passes or perceiver layers.
+            kv: Keys with shape [B, K, E].
+            key_padding_mask: Mask with shape [B, K] indicating sequence
+                elements of `kv` that are PADDED or INVALID values.
+            attention_mask: Mask with shape [Q, K] that indicates whether
+                elements in Q can attend to elements in K.
+
+        Returns:
+            Values with shape [B, Q, E].
+
+        """
         latent = self.cross_attention(
             q, kv, key_padding_mask=key_padding_mask, attention_mask=attention_mask
         )
@@ -65,16 +104,44 @@ class PerceiverLayer(nn.Module):
 
 
 class PerceiverIOLayer(nn.Module):
+    """PercieverIO layer as described by https://arxiv.org/pdf/2107.14795.pdf.
+
+    In addition to the benefits of `PerceiverLayer`, this module attends a
+    latent array to a final output dimensionality to effectively apply
+    weighted averaging of sequences to a different dimension. Useful if the
+    latent array needs to be processed into several, different-sized
+    sequences for separate outputs.
+
+    Args:
+        embed_dim: Feature dimension of the latent array and input sequence.
+            Each sequence is expected to be embedded by its own embedder, which
+            could just be a simple linear transform.
+        output_seq_dim: Output sequence size to transform the latent array
+            sequence size to.
+        num_heads: Number of attention heads in the cross-attention and
+            self-attention modules.
+        hidden_dim: Number of hidden features in the hidden layers
+            of the feedforward networks that're after performing attention.
+        activation_fn: Activation function ID.
+        attention_dropout: Sequence dropout in the attention heads.
+        hidden_dropout: Feedforward dropout after performing attention.
+        skip_kind: Kind of residual or skip connection to make between
+            outputs of the multihead attentions and the feedforward
+            modules.
+        fan_in: Whether to apply downsampling within the skip connection
+            when using a `skip_kind` that increases hidden feature
+            dimensions.
+
+    """
+
     def __init__(
         self,
-        input_dim: int,
         embed_dim: int,
         output_seq_dim: int,
-        output_dim: int,
         /,
         *,
-        hidden_dim: int = 128,
         num_heads: int = 2,
+        hidden_dim: int = 128,
         num_layers: int = 2,
         activation_fn: str = "relu",
         attention_dropout: float = 0.0,
@@ -84,7 +151,6 @@ class PerceiverIOLayer(nn.Module):
     ) -> None:
         super().__init__()
         self.perceiver_layer = PerceiverLayer(
-            input_dim,
             embed_dim,
             hidden_dim=hidden_dim,
             num_heads=num_heads,
@@ -108,7 +174,6 @@ class PerceiverIOLayer(nn.Module):
             skip_kind=skip_kind,
             fan_in=fan_in,
         )
-        self.debedder = nn.Linear(embed_dim, output_dim)
 
     def forward(
         self,
@@ -119,6 +184,23 @@ class PerceiverIOLayer(nn.Module):
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
+        """Apply cross-attention keys to a query, mapping the keys of
+        sequence length K to the query of sequence length Q.
+
+        Args:
+            q: Query with shape [B, Q, E]. Usually the latent array from
+                previous forward passes or perceiver layers.
+            kv: Keys with shape [B, K, E].
+            key_padding_mask: Mask with shape [B, K] indicating sequence
+                elements of `kv` that are PADDED or INVALID values.
+            attention_mask: Mask with shape [Q, K] that indicates whether
+                elements in Q can attend to elements in K.
+
+        Returns:
+            Values with shape [B, O, E] where O is the output array sequence
+            size.
+
+        """
         B = q.size(0)
         output_query = self.output_query.unsqueeze(0).expand(
             B, *self.output_query.shape
@@ -126,5 +208,4 @@ class PerceiverIOLayer(nn.Module):
         latent = self.perceiver_layer(
             q, kv, key_padding_mask=key_padding_mask, attention_mask=attention_mask
         )
-        output = self.decoder(output_query, latent)
-        return self.debedder(output)  # type: ignore
+        return self.decoder(output_query, latent)  # type: ignore

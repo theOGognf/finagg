@@ -184,7 +184,7 @@ def skip_connection(
     kind: None | str = "cat",
     dim: int = -1,
 ) -> torch.Tensor:
-    """Perform a sequential skip connection to `x` and `y`.
+    """Perform a skip connection for `x` and `y`.
 
     Args:
         x: Skip connection seed with shape [B, T, ...].
