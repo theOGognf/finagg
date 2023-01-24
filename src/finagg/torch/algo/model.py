@@ -31,7 +31,6 @@ class Model(ABC, torch.nn.Module):
 
     Args:
         observation_spec: Spec defining the forward pass input.
-        feature_spec: Spec defining the forward pass output.
         action_spec: Spec defining the outputs of the policy's action
             distribution that this model is a component of.
         config: Model-specific configuration.
@@ -47,7 +46,8 @@ class Model(ABC, torch.nn.Module):
     config: dict[str, Any]
 
     #: Spec defining the forward pass output. Useful for passing inputs to an
-    #: action distribution or stroing values in the replay buffer.
+    #: action distribution or stroing values in the replay buffer. Defaults
+    #: to `action_spec`. This should be overwritten in a model's `__init__`.
     feature_spec: TensorSpec
 
     #: Spec defining the forward pass input. Useful for validating the forward
@@ -58,12 +58,12 @@ class Model(ABC, torch.nn.Module):
     #: policy prior to being passed to the forward pass. Useful for handling
     #: sequence shifting or masking so you don't have to.
     #: By default, observations are passed with no shifting.
+    #: This should be overwritten in a model's `__init__`.
     view_requirements: dict[str, ViewRequirement]
 
     def __init__(
         self,
         observation_spec: TensorSpec,
-        feature_spec: TensorSpec,
         action_spec: TensorSpec,
         /,
         *,
@@ -71,9 +71,9 @@ class Model(ABC, torch.nn.Module):
     ) -> None:
         super().__init__()
         self.observation_spec = observation_spec
-        self.feature_spec = feature_spec
         self.action_spec = action_spec
         self.config = config if config else {}
+        self.feature_spec = action_spec
         self.view_requirements = {
             Batch.OBS.value: ViewRequirement(Batch.OBS.value, shift=0)
         }

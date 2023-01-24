@@ -23,8 +23,6 @@ class Policy:
     Args:
         observation_spec: Spec defining observations from the environment
             and inputs to the model's forward pass.
-        feature_spec: Spec defining the model's forward pass output and
-            the inputs to the action distribution.
         action_spec: Spec defining the action distribution's outputs
             and the inputs to the environment.
         model_cls: Model class to use.
@@ -45,15 +43,12 @@ class Policy:
     def __init__(
         self,
         observation_spec: TensorSpec,
-        feature_spec: TensorSpec,
         action_spec: TensorSpec,
         model_cls: type[Model],
         model_config: dict[str, Any],
         dist_cls: type[Distribution],
     ) -> None:
-        self.model = model_cls(
-            observation_spec, feature_spec, action_spec, config=model_config
-        )
+        self.model = model_cls(observation_spec, action_spec, config=model_config)
         self.dist_cls = dist_cls
 
     def sample(
@@ -67,6 +62,7 @@ class Policy:
         requires_grad: bool = False,
         return_logp: bool = False,
         return_values: bool = False,
+        return_views: bool = False,
     ) -> TensorDict:
         """Use `batch` to sample from the policy, sampling actions from
         the model and optionally sampling additional values often used for
@@ -106,6 +102,12 @@ class Policy:
             return_values: Whether to return the value function approximation
                 in the given observations. Often enabled during a training
                 loop for aggregating training data a bit more efficiently.
+            return_views: Whether to return the observation view requirements
+                in the output batch. Even if this flag is enabled, new views
+                are only returned if the views are not already present in
+                the output batch (i.e., if `inplace` is `True` and the views
+                are already in the `batch`, then the returned batch will just
+                contain the original views).
 
         Returns:
             A tensor dict containing AT LEAST actions sampled from the policy.
@@ -113,7 +115,10 @@ class Policy:
             dict can vary.
 
         """
-        in_batch = self.model.apply_view_requirements(batch, kind=kind)
+        if Batch.VIEWS.value in batch:
+            in_batch = batch[Batch.VIEWS.value]
+        else:
+            in_batch = self.model.apply_view_requirements(batch, kind=kind)
 
         # This is the same mechanism within `torch.no_grad`
         # for enabling/disabling gradients.
@@ -137,6 +142,8 @@ class Policy:
             out[Batch.LOGP.value] = dist.logp(actions)
         if return_values:
             out[Batch.VALUES.value] = self.model.value_function()
+        if return_views:
+            out[Batch.VIEWS.value] = in_batch
 
         torch.set_grad_enabled(prev)
         return out

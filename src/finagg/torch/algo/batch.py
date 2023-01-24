@@ -39,6 +39,10 @@ class Batch(Enum):
     #: with respect to elements corresponding to an "inputs" key.
     PADDING_MASK = "padding_mask"
 
+    #: Key denoting view requirements applied to another key. These are
+    #: the preprocessed inputs to a model.
+    VIEWS = "views"
+
     def __str__(self) -> str:
         """Return the string representation of the enum value."""
         return f"{self.value}"
