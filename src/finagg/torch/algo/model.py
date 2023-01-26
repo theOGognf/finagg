@@ -1,14 +1,23 @@
 """Abstract model definition."""
 
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Any
 
 import torch
 from tensordict import TensorDict
-from torchrl.data import TensorSpec
+from torchrl.data import (
+    CompositeSpec,
+    DiscreteTensorSpec,
+    NdUnboundedContinuousTensorSpec,
+    TensorSpec,
+    UnboundedContinuousTensorSpec,
+)
 
 from .batch import Batch
 from .view import ViewRequirement
+
+FINFO = torch.finfo()
 
 
 class Model(ABC, torch.nn.Module):
@@ -73,7 +82,7 @@ class Model(ABC, torch.nn.Module):
         self.observation_spec = observation_spec
         self.action_spec = action_spec
         self.config = config if config else {}
-        self.feature_spec = action_spec
+        self.feature_spec = self.default_feature_spec(action_spec)
         self.view_requirements = {
             Batch.OBS.value: ViewRequirement(Batch.OBS.value, shift=0)
         }
@@ -135,6 +144,47 @@ class Model(ABC, torch.nn.Module):
         for key, view_requirement in self.view_requirements.items():
             burn_sizes[key] = view_requirement.burn_size
         return next(iter(burn_sizes.values()))
+
+    @staticmethod
+    def default_feature_spec(action_spec: TensorSpec) -> TensorSpec:
+        """Return a default feature spec given an action spec.
+
+        Useful for defining feature specs for simple and common action
+        specs. Custom models with complex action specs should define
+        their own custom feature specs as an attribute.
+
+        Args:
+            action_spec: Spec defining the outputs of the policy's action
+                distribution that this model is a component of. Typically
+                passed into `Model.__init__`.
+
+        Returns:
+            A spec defining the inputs to the policy's action distribution.
+            For simple distributions (categorical or diagonal gaussian),
+            this returns a spec defining the inputs to those distributions
+            (logits and mean/scales, respectively). For complex distributions,
+            this returns a copy of the action spec and the model is expected
+            to assign the correct feature spec within its own `__init__`.
+
+        """
+        match action_spec:
+            case DiscreteTensorSpec():
+                return CompositeSpec(
+                    logits=NdUnboundedContinuousTensorSpec(
+                        shape=action_spec.space.n, device=action_spec.device
+                    )
+                )
+            case UnboundedContinuousTensorSpec() | NdUnboundedContinuousTensorSpec():
+                return CompositeSpec(
+                    mean=NdUnboundedContinuousTensorSpec(
+                        shape=action_spec.shape, device=action_spec.device
+                    ),
+                    log_std=NdUnboundedContinuousTensorSpec(
+                        shape=action_spec.shape, device=action_spec.device
+                    ),
+                )
+            case _:
+                return deepcopy(action_spec)
 
     @abstractmethod
     def forward(self, batch: TensorDict) -> TensorDict:
