@@ -4,8 +4,8 @@ from typing import Any
 
 import torch
 from tensordict import TensorDict
-from torchrl.data import TensorSpec
 
+from ..specs import TensorSpec
 from .batch import Batch
 from .dist import Distribution
 from .model import Model
@@ -115,8 +115,8 @@ class Policy:
             dict can vary.
 
         """
-        if Batch.VIEWS.value in batch:
-            in_batch = batch[Batch.VIEWS.value]
+        if Batch.VIEWS in batch:
+            in_batch = batch[Batch.VIEWS]
         else:
             in_batch = self.model.apply_view_requirements(batch, kind=kind)
 
@@ -136,14 +136,14 @@ class Policy:
             if inplace
             else TensorDict({}, batch_size=in_batch.batch_size, device=batch.device)
         )
-        out[Batch.FEATURES.value] = features
-        out[Batch.ACTIONS.value] = actions
+        out[Batch.FEATURES] = features
+        out[Batch.ACTIONS] = actions
         if return_logp:
-            out[Batch.LOGP.value] = dist.logp(actions)
+            out[Batch.LOGP] = dist.logp(actions)
         if return_values:
-            out[Batch.VALUES.value] = self.model.value_function()
+            out[Batch.VALUES] = self.model.value_function()
         if return_views:
-            out[Batch.VIEWS.value] = in_batch
+            out[Batch.VIEWS] = in_batch
 
         torch.set_grad_enabled(prev)
         return out

@@ -78,8 +78,8 @@ def pad_last_sequence(x: torch.Tensor, size: int, /) -> TensorDict:
         x = x[:, -size:, ...]
         padding_mask = torch.zeros(B, size, device=x.device, dtype=torch.bool)
     out = TensorDict({}, batch_size=[B, size])
-    out[Batch.INPUTS.value] = x
-    out[Batch.PADDING_MASK.value] = padding_mask
+    out[Batch.INPUTS] = x
+    out[Batch.PADDING_MASK] = padding_mask
     return out
 
 
@@ -108,8 +108,8 @@ def pad_whole_sequence(x: torch.Tensor, size: int, /) -> TensorDict:
     padding_mask = torch.zeros(B, T + pad, device=x.device, dtype=torch.bool)
     padding_mask[:, :pad] = True
     out = TensorDict({}, batch_size=[B, T + pad])
-    out[Batch.INPUTS.value] = x
-    out[Batch.PADDING_MASK.value] = padding_mask
+    out[Batch.INPUTS] = x
+    out[Batch.PADDING_MASK] = padding_mask
     return out
 
 

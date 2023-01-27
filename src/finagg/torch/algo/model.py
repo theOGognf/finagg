@@ -83,9 +83,7 @@ class Model(ABC, torch.nn.Module):
         self.action_spec = action_spec
         self.config = config if config else {}
         self.feature_spec = self.default_feature_spec(action_spec)
-        self.view_requirements = {
-            Batch.OBS.value: ViewRequirement(Batch.OBS.value, shift=0)
-        }
+        self.view_requirements = {Batch.OBS: ViewRequirement(Batch.OBS, shift=0)}
 
     def __call__(self, *args: Any, **kwds: Any) -> torch.Tensor | TensorDict:
         """Call the model's forward pass. This just supplies a type signature."""

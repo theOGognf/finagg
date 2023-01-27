@@ -1,16 +1,7 @@
-"""Definitions related to batches of data passed between algorithm modules."""
-
-from enum import Enum
+"""Definitions related to data passed between algorithm modules."""
 
 
-class Batch(Enum):
-    """Typical batch elements for convenience.
-
-    Prefer to use this enumeration over strings just to keep batch element
-    access consistent across modules.
-
-    """
-
+class Batch:
     #: Key denoting observations from the environment.
     #: Typically processed by a policy model.
     OBS = "obs"
@@ -42,7 +33,3 @@ class Batch(Enum):
     #: Key denoting view requirements applied to another key. These are
     #: the preprocessed inputs to a model.
     VIEWS = "views"
-
-    def __str__(self) -> str:
-        """Return the string representation of the enum value."""
-        return f"{self.value}"
