@@ -6,14 +6,14 @@ from typing import Any
 
 import torch
 from tensordict import TensorDict
-from torchrl.data import (
+
+from ..specs import (
     CompositeSpec,
     DiscreteTensorSpec,
-    NdUnboundedContinuousTensorSpec,
+    MultiDiscreteTensorSpec,
     TensorSpec,
     UnboundedContinuousTensorSpec,
 )
-
 from .batch import Batch
 from .view import ViewRequirement
 
@@ -160,29 +160,36 @@ class Model(ABC, torch.nn.Module):
 
         Returns:
             A spec defining the inputs to the policy's action distribution.
-            For simple distributions (categorical or diagonal gaussian),
+            For simple distributions (e.g., categorical or diagonal gaussian),
             this returns a spec defining the inputs to those distributions
-            (logits and mean/scales, respectively). For complex distributions,
-            this returns a copy of the action spec and the model is expected
-            to assign the correct feature spec within its own `__init__`.
+            (e.g., logits and mean/scales, respectively). For complex
+            distributions, this returns a copy of the action spec and the model
+            is expected to assign the correct feature spec within its own
+            `__init__`.
 
         """
         match action_spec:
             case DiscreteTensorSpec():
                 return CompositeSpec(
-                    logits=NdUnboundedContinuousTensorSpec(
+                    logits=UnboundedContinuousTensorSpec(
                         shape=action_spec.space.n, device=action_spec.device
                     )
-                )
-            case UnboundedContinuousTensorSpec() | NdUnboundedContinuousTensorSpec():
+                )  # type: ignore
+            case MultiDiscreteTensorSpec():
                 return CompositeSpec(
-                    mean=NdUnboundedContinuousTensorSpec(
+                    logits=UnboundedContinuousTensorSpec(
+                        shape=action_spec.space.n, device=action_spec.device
+                    )
+                )  # type: ignore
+            case UnboundedContinuousTensorSpec():
+                return CompositeSpec(
+                    mean=UnboundedContinuousTensorSpec(
                         shape=action_spec.shape, device=action_spec.device
                     ),
-                    log_std=NdUnboundedContinuousTensorSpec(
+                    log_std=UnboundedContinuousTensorSpec(
                         shape=action_spec.shape, device=action_spec.device
                     ),
-                )
+                )  # type: ignore
             case _:
                 return deepcopy(action_spec)
 
