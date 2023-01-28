@@ -6,7 +6,7 @@ import torch
 from tensordict import TensorDict
 
 from ..specs import TensorSpec
-from .batch import Batch
+from .batch import DEVICE, Batch
 from .dist import Distribution
 from .model import Model
 
@@ -147,3 +147,8 @@ class Policy:
 
         torch.set_grad_enabled(prev)
         return out
+
+    def to(self, device: DEVICE, /) -> "Policy":
+        """Move the policy and its attributes to `device`."""
+        self.model.to(device)
+        return self

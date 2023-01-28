@@ -1,5 +1,9 @@
 """Definitions related to data passed between algorithm modules."""
 
+import torch
+
+DEVICE = int | str | torch.device
+
 
 class Batch:
     #: Key denoting observations from the environment.
