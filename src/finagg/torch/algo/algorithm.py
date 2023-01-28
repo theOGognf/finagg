@@ -1,7 +1,6 @@
 """Definitions related to RL training (mainly variants of PPO)."""
 
-from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypedDict
 
 import torch.optim as optim
 from tensordict import TensorDict
@@ -15,9 +14,14 @@ from .model import Model
 from .policy import Policy
 
 
-@dataclass
-class StepData:
-    ...
+class StepData(TypedDict):
+    entropy_loss: float
+
+    kl_loss: float
+
+    policy_loss: float
+
+    vf_loss: float
 
 
 class Algorithm:
