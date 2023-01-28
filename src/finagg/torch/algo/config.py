@@ -2,18 +2,17 @@
 
 from dataclasses import dataclass
 
-from ... import utils
 
-
-class Tags:
+@dataclass
+class AlgorithmConfig:
     ...
 
 
 @dataclass
-class AlgorithmConfig(utils.Taggable):
+class PolicyConfig:
     ...
 
 
 @dataclass
-class TrainerConfig(utils.Taggable):
+class TrainerConfig:
     ...
