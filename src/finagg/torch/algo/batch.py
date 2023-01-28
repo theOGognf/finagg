@@ -6,6 +6,10 @@ class Batch:
     #: Typically processed by a policy model.
     OBS = "obs"
 
+    #: Key denoting rewards from the environment.
+    #: Typically used by a learning algorithm.
+    REWARDS = "rewards"
+
     #: Key denoting features output from a policy model.
     #: Typically processed by a policy action distribution.
     FEATURES = "features"
@@ -33,3 +37,7 @@ class Batch:
     #: Key denoting view requirements applied to another key. These are
     #: the preprocessed inputs to a model.
     VIEWS = "views"
+
+    #: Key denoting advantages (action value function baselined by the state
+    #: value function).
+    ADVANTAGES = "advantages"
