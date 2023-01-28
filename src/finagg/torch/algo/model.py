@@ -17,8 +17,6 @@ from ..specs import (
 from .batch import Batch
 from .view import ViewRequirement
 
-FINFO = torch.finfo()
-
 
 class Model(ABC, torch.nn.Module):
     """Policy component that processes environment observations into
