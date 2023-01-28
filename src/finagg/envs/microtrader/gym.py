@@ -6,14 +6,16 @@ from typing import Any, Hashable, Iterable
 import gym
 import pandas as pd
 from gym.core import ActType, ObsType
-from pydantic import BaseModel, Field
+from pydantic import Field
+from pydantic.dataclasses import dataclass
 
 from ... import mixed
 from ...portfolio import Portfolio
 from . import wrappers
 
 
-class Config(BaseModel):
+@dataclass
+class Config:
     """Environment configuration."""
 
     #: Actor wrapper ID.

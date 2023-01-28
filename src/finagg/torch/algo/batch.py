@@ -45,3 +45,19 @@ class Batch:
     #: Key denoting advantages (action value function baselined by the state
     #: value function).
     ADVANTAGES = "advantages"
+
+    #: Key denoting KL divergence (a measure of distance between two probability
+    #: distributions) loss.
+    KL_LOSS = "kl_loss"
+
+    #: Key denoting entropy of a probability distribution (a measure of a
+    #: probability distribution's randomness) loss.
+    ENTROPY_LOSS = "entropy_loss"
+
+    #: Key denoting loss associated with a policy's model's ability to predict
+    #: values from the "values" key.
+    VF_LOSS = "vf_loss"
+
+    #: Key denoting loss associated with a learning algorithm's policy loss.
+    #: For PPO, this is a clipped policy loss ratio weighted by advantages.
+    POLICY_LOSS = "policy_loss"

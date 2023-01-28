@@ -31,6 +31,9 @@ class Policy:
 
     """
 
+    #: Hardware device the policy's model is on.
+    device: DEVICE
+
     #: Underlying policy action distribution that's parameterized by
     #: features produced by `model` and the `model` itself.
     dist_cls: type[Distribution]
@@ -47,9 +50,15 @@ class Policy:
         model_cls: type[Model],
         model_config: dict[str, Any],
         dist_cls: type[Distribution],
+        /,
+        *,
+        device: DEVICE = "cpu",
     ) -> None:
-        self.model = model_cls(observation_spec, action_spec, config=model_config)
+        self.model = model_cls(observation_spec, action_spec, config=model_config).to(
+            device
+        )
         self.dist_cls = dist_cls
+        self.device = device
 
     def sample(
         self,
@@ -151,4 +160,5 @@ class Policy:
     def to(self, device: DEVICE, /) -> "Policy":
         """Move the policy and its attributes to `device`."""
         self.model.to(device)
+        self.device = device
         return self

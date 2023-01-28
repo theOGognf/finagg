@@ -1,39 +1,31 @@
-from pydantic import BaseModel
+from dataclasses import Field, dataclass
+from typing import Sequence
 
 
-class AlgorithmConfig(BaseModel):
-    env: "EnvConfig"
-
-    policy: "PolicyConfig"
-
-    learning: "LearningConfig"
-
-    evaluation: "EvaluationConfig"
-
-    checkpoint: "CheckpointConfig"
-
-    logger: "LoggerConfig"
-
-
-class CheckpointConfig(BaseModel):
+class Tags:
     ...
 
 
-class EnvConfig(BaseModel):
+@dataclass
+class Taggable:
+    def group(self, tags: str | Sequence[str]) -> dict[str, Field]:
+        if isinstance(tags, str):
+            tags = [tags]
+
+        out = {}
+        for k, v in self.__dataclass_fields__:
+            if isinstance(v, Field):
+                if "tags" in v.metadata:
+                    if any([t in v.metadata["tags"] for t in tags]):
+                        out[k] = v
+        return out
+
+
+@dataclass
+class AlgorithmConfig(Taggable):
     ...
 
 
-class EvaluationConfig(BaseModel):
-    ...
-
-
-class LearningConfig(BaseModel):
-    ...
-
-
-class LoggerConfig(BaseModel):
-    ...
-
-
-class PolicyConfig(BaseModel):
+@dataclass
+class TrainerConfig(Taggable):
     ...
