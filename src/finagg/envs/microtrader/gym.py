@@ -79,12 +79,10 @@ class Sampler:
 
     def reset(self) -> tuple[dict[str, Any], bool]:
         """Sample a new set of features."""
-        tickers = list(mixed.store.get_ticker_set())
-        num_rows = 0
-        while num_rows < self.required_rows:
-            self.ticker = random.choice(tickers)
-            df = mixed.features.fundamental_features.from_store(self.ticker)
-            num_rows = len(df.index)
+        tickers = list(mixed.store.get_tickers_with_at_least(self.required_rows))
+        self.ticker = random.choice(tickers)
+        df = mixed.features.fundamental_features.from_store(self.ticker)
+        num_rows = len(df.index)
         if num_rows < self.required_rows:
             subsample = df
         else:
