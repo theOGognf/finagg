@@ -106,8 +106,11 @@ class Algorithm:
         self.vf_coeff = vf_coeff
         self.max_grad_norm = max_grad_norm
         self.device = device
+        self.buffered = False
 
-    def collect(self) -> TensorDict:
+    def collect(
+        self, *, env_config: None | dict[str, Any] = None, deterministic: bool = False
+    ) -> TensorDict:
         ...
 
     @property

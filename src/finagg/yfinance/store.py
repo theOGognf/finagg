@@ -9,6 +9,7 @@ from sqlalchemy import (
     Table,
     create_engine,
     distinct,
+    func,
     inspect,
     select,
 )
@@ -63,6 +64,23 @@ def get_ticker_set() -> set[str]:
     with engine.connect() as conn:
         tickers = set()
         for ticker in conn.execute(select(distinct(daily_features.c.ticker))):
+            (ticker,) = ticker
+            tickers.add(ticker)
+    return tickers
+
+
+def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
+    """Get all unique tickers in the feature SQL tables that have a minmum
+    number of rows.
+
+    """
+    with engine.connect() as conn:
+        tickers = set()
+        for ticker in conn.execute(
+            select(distinct(daily_features.c.ticker))
+            .group_by(daily_features.c.ticker)
+            .having(func.count(daily_features.c.date) > lower_bound)
+        ):
             (ticker,) = ticker
             tickers.add(ticker)
     return tickers
