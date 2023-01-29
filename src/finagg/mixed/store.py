@@ -71,6 +71,7 @@ def get_ticker_set() -> set[str]:
     return tickers
 
 
+@cache
 def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
     """Get all unique tickers in the feature SQL tables that have a minmum
     number of rows.
