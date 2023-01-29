@@ -1,0 +1,6 @@
+class EntropyScheduler:
+    ...
+
+
+class LRScheduler:
+    ...

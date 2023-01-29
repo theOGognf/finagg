@@ -1,27 +1,29 @@
 """Definitions related to RL training (mainly variants of PPO)."""
 
-from typing import Any, TypedDict
+from dataclasses import dataclass
+from typing import Any
 
 import torch.optim as optim
 from tensordict import TensorDict
 
 from ..specs import CompositeSpec, TensorSpec, UnboundedContinuousTensorSpec
 from .batch import DEVICE, Batch
-from .config import AlgorithmConfig
 from .dist import Distribution
 from .env import Env
 from .model import Model
 from .policy import Policy
+from .scheduler import EntropyScheduler, LRScheduler
 
 
-class StepData(TypedDict):
-    entropy_loss: float
+@dataclass
+class Losses:
+    entropy: float
 
-    kl_loss: float
+    kl_div: float
 
-    policy_loss: float
+    policy: float
 
-    vf_loss: float
+    vf: float
 
 
 class Algorithm:
@@ -74,21 +76,38 @@ class Algorithm:
         max_grad_norm: float = 5.0,
         device: DEVICE = "cpu",
     ) -> None:
-        self.env = env_cls(num_envs, device=device)
-        self.buffer = self.init_buffer()
-        self.policy = self.init_policy()
-        self.optimizer = self.init_optimizer()
-        self.lr_scheduler = self.init_lr_scheduler()
-        self.entropy_scheduler = self.init_entropy_scheduler()
+        self.env = env_cls(num_envs, config=env_config, device=device)
+        self.policy = self.init_policy(
+            self.env.observation_spec,
+            self.env.action_spec,
+            model_cls=model_cls,
+            model_config=model_config,
+            dist_cls=dist_cls,
+        )
+        self.buffer = self.init_buffer(
+            num_envs,
+            horizon,
+            self.env.observation_spec,
+            self.policy.feature_spec,
+            self.env.action_spec,
+        )
+        self.optimizer = self.init_optimizer(
+            self.policy.model,
+            optimizer_cls=optimizer_cls,
+            optimizer_config=optimizer_config,
+        )
+        self.lr_scheduler = self.init_lr_scheduler(
+            self.optimizer, lr_schedule=lr_schedule
+        )
+        self.entropy_scheduler = self.init_entropy_scheduler(
+            entropy_coeff, entropy_coeff_schedule=entropy_coeff_schedule
+        )
         self.kl_coeff = kl_coeff
         self.vf_coeff = vf_coeff
         self.max_grad_norm = max_grad_norm
         self.device = device
 
     def collect(self) -> TensorDict:
-        ...
-
-    def describe(self) -> AlgorithmConfig:
         ...
 
     @property
@@ -139,6 +158,34 @@ class Algorithm:
         return buffer_spec.zero([num_envs, horizon])
 
     @staticmethod
+    def init_entropy_scheduler(
+        entropy_coeff: float,
+        /,
+        *,
+        entropy_schedule: None | list[tuple[int, float]] = None,
+    ) -> EntropyScheduler:
+        ...
+
+    @staticmethod
+    def init_lr_scheduler(
+        optimizer: optim.Optimizer,
+        /,
+        *,
+        lr_schedule: None | list[tuple[int, float]] = None,
+    ) -> LRScheduler:
+        ...
+
+    @staticmethod
+    def init_optimizer(
+        model: Model,
+        /,
+        *,
+        optimizer_cls: None | type[optim.Optimizer] = None,
+        optimizer_config: None | dict[str, Any] = None,
+    ) -> optim.Optimizer:
+        ...
+
+    @staticmethod
     def init_policy(
         observation_spec: TensorSpec,
         action_spec: TensorSpec,
@@ -155,8 +202,14 @@ class Algorithm:
         """Number of environments ran in parallel."""
         return self.buffer.size(0)
 
-    def step(self) -> StepData:
-        ...
+    def step(self) -> Losses:
+        """Take a step with the algorithm, using collected environment
+        experiences to update the policy.
+
+        Returns:
+            Losses associated with the step.
+
+        """
 
     def to(self, device: DEVICE, /) -> "Algorithm":
         """Move the algorithm and its attributes to `device`."""

@@ -7,7 +7,6 @@ from tensordict import TensorDict
 
 from ..specs import TensorSpec
 from .batch import DEVICE, Batch
-from .config import PolicyConfig
 from .dist import Distribution
 from .model import Model
 
@@ -63,21 +62,22 @@ class Policy:
 
     @property
     def action_spec(self) -> TensorSpec:
+        """Return the action spec used for constructing the model."""
         return self.model.feature_spec
-
-    def describe(self) -> PolicyConfig:
-        ...
 
     @property
     def feature_spec(self) -> TensorSpec:
+        """Return the feature spec defined in the model."""
         return self.model.feature_spec
 
     @property
     def model_config(self) -> dict[str, Any]:
+        """Return the model config used for constructing the model."""
         return self.model.config
 
     @property
     def observation_spec(self) -> TensorSpec:
+        """Return the observation spec used for constructing the model."""
         return self.model.observation_spec
 
     def sample(
