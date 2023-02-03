@@ -140,7 +140,7 @@ class Algorithm:
     @property
     def horizon(self) -> int:
         """Max number of transitions to run for each environment."""
-        return self.buffer.size(1)
+        return int(self.buffer.size(1))
 
     @staticmethod
     def init_buffer(
@@ -221,7 +221,7 @@ class Algorithm:
     @property
     def num_envs(self) -> int:
         """Number of environments ran in parallel."""
-        return self.buffer.size(0)
+        return int(self.buffer.size(0))
 
     def step(self) -> Losses:
         """Take a step with the algorithm, using collected environment
