@@ -18,12 +18,23 @@ from .scheduler import EntropyScheduler, LRScheduler
 
 @dataclass
 class Losses:
+    """Collection of losses returned by `Algorithm.step`."""
+
+    #: Entropy of a probability distribution (a measure of a
+    #: probability distribution's randomness) loss. This is zero
+    #: if the entropy coefficient is zero.
     entropy: float
 
+    #: KL divergence (a measure of distance between two probability
+    #: distributions) loss. This is zero if the KL coefficient is zero.
     kl_div: float
 
+    #: Loss associated with a learning algorithm's policy loss.
+    #: For PPO, this is a clipped policy loss ratio weighted by advantages.
     policy: float
 
+    #: Loss associated with a policy's model's ability to predict
+    #: state values.
     vf: float
 
 
@@ -103,9 +114,7 @@ class Algorithm:
             self.env.action_spec,
         )
         self.optimizer = self.init_optimizer(
-            self.policy.model,
-            optimizer_cls=optimizer_cls,
-            optimizer_config=optimizer_config,
+            self.policy.model, cls=optimizer_cls, config=optimizer_config
         )
         self.lr_scheduler = LRScheduler(
             self.optimizer, schedule=lr_schedule, kind=lr_schedule_kind
@@ -180,10 +189,22 @@ class Algorithm:
         model: Model,
         /,
         *,
-        optimizer_cls: None | type[optim.Optimizer] = None,
-        optimizer_config: None | dict[str, Any] = None,
+        cls: type[optim.Optimizer] = DAdaptAdam,
+        config: None | dict[str, Any] = None,
     ) -> optim.Optimizer:
-        ...
+        """Initialize the optimizer given `model` and its config.
+
+        Args:
+            model: The policy's model to update with the optimizer.
+            cls: Type of optimizer to use.
+            config: Optimizer parameter default overrides.
+
+        Returns:
+            A new optimizer instance.
+
+        """
+        config = config or {}
+        return cls(model.parameters(), **config)
 
     @staticmethod
     def init_policy(
@@ -210,10 +231,16 @@ class Algorithm:
             Losses associated with the step.
 
         """
+        if not self.buffered:
+            raise RuntimeError(
+                f"{self.__class__.__name__} is not buffered. "
+                "Call `collect` once prior to `step`."
+            )
 
     def to(self, device: DEVICE, /) -> "Algorithm":
         """Move the algorithm and its attributes to `device`."""
         self.buffer.to(device)
+        self.env.to(device)
         self.policy.to(device)
         self.device = device
         return self

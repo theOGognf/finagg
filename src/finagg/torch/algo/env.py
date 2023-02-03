@@ -95,3 +95,6 @@ class Env(Protocol):
                 - "rewards": New environment rewards.
 
         """
+
+    def to(self, device: DEVICE, /) -> "Env":
+        """Move the environment and its attributes to `device`."""
