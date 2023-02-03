@@ -1,4 +1,4 @@
-"""Definitions related to RL training (mainly variants of PPO)."""
+"""Definitions related to RL algorithms (mainly variants of PPO)."""
 
 from dataclasses import dataclass
 from typing import Any
@@ -108,7 +108,7 @@ class Algorithm:
             horizon = min(horizon, self.env.max_horizon)
         self.buffer = self.init_buffer(
             num_envs,
-            horizon,
+            horizon + 1,
             self.env.observation_spec,
             self.policy.feature_spec,
             self.env.action_spec,
@@ -135,7 +135,67 @@ class Algorithm:
     def collect(
         self, *, env_config: None | dict[str, Any] = None, deterministic: bool = False
     ) -> TensorDict:
-        ...
+        """Collect environment transitions and policy samples in a buffer.
+
+        This is one of the main `Algorithm` methods. This is usually called
+        immediately prior to `step` to collect experiences used
+        for learning.
+
+        The environment is reset immediately prior to collecting
+        transitions according to the `horizons_per_reset` attribute. If
+        the environment isn't reset, then the last observation is used as
+        the initial observation.
+
+        This method sets the `buffered` flag to enable calling of the
+        `step` method to assure `step` isn't called with dummy data.
+
+        Args:
+            env_config: Optional config to pass to the environment's `reset`
+                method. This isn't used if the environment isn't scheduled
+                to be reset according to the `horizons_per_reset` attribute.
+            deterministic: Whether to sample from the policy deterministically.
+                This is usally `False` during learning and `True` during
+                evaluation.
+
+        Returns:
+            The reference to the buffer full of environment experiences and
+            sampled policy data (not a copy). Note, the observation key is
+            the only valid final time/sequence element in the returned buffer.
+            Other keys will contain null/zeroed data.
+
+        """
+        # Gather initial observation.
+        if not (self.horizons % self.horizons_per_reset):
+            self.buffer[Batch.OBS][:, 0, ...] = self.env.reset(config=env_config)
+        else:
+            self.buffer[Batch.OBS][:, 0, ...] = self.buffer[Batch.OBS][:, -1, ...]
+
+        for t in range(1, self.horizon):
+            # Sample the policy and step the environment.
+            in_batch = self.buffer[:, :t, ...]
+            sample_batch = self.policy.sample(
+                in_batch,
+                deterministic=deterministic,
+                inplace=False,
+                requires_grad=False,
+                return_logp=True,
+                return_values=True,
+                return_views=False,
+            )
+            out_batch = self.env.step(in_batch[Batch.ACTIONS])
+
+            # Update the buffer using sampled policy data and environment
+            # transition data.
+            self.buffer[Batch.FEATURES][:, t - 1, ...] = sample_batch[Batch.FEATURES]
+            self.buffer[Batch.ACTIONS][:, t - 1, ...] = sample_batch[Batch.ACTIONS]
+            self.buffer[Batch.LOGP][:, t - 1] = sample_batch[Batch.LOGP]
+            self.buffer[Batch.VALUES][:, t - 1] = sample_batch[Batch.VALUES]
+            self.buffer[Batch.REWARDS][:, t - 1] = out_batch[Batch.REWARDS]
+            self.buffer[Batch.OBS][:, t, ...] = out_batch[Batch.OBS]
+
+        self.horizons += 1
+        self.buffered = True
+        return self.buffer
 
     @property
     def horizon(self) -> int:
