@@ -6,6 +6,7 @@ from typing import Any
 import torch.optim as optim
 from tensordict import TensorDict
 
+from ..optim import DAdaptAdam
 from ..specs import CompositeSpec, TensorSpec, UnboundedContinuousTensorSpec
 from .batch import DEVICE, Batch
 from .dist import Distribution
@@ -65,12 +66,15 @@ class Algorithm:
         model_config: None | dict[str, Any] = None,
         dist_cls: None | type[Distribution] = None,
         horizon: None | int = None,
+        horizons_per_reset: int = 1,
         num_envs: int = 8192,
-        optimizer_cls: None | type[optim.Optimizer] = None,
+        optimizer_cls: type[optim.Optimizer] = DAdaptAdam,
         optimizer_config: None | dict[str, Any] = None,
         lr_schedule: None | list[tuple[int, float]] = None,
+        lr_schedule_kind: str = "step",
         entropy_coeff: float = 0.0,
         entropy_coeff_schedule: None | list[tuple[int, float]] = None,
+        entropy_coeff_schedule_kind: str = "step",
         kl_coeff: float = 1e-4,
         vf_coeff: float = 1.0,
         max_grad_norm: float = 5.0,
@@ -84,6 +88,13 @@ class Algorithm:
             model_config=model_config,
             dist_cls=dist_cls,
         )
+        if horizon is None:
+            if hasattr(self.env, "max_horizon"):
+                horizon = self.env.max_horizon
+            else:
+                horizon = 32
+        else:
+            horizon = min(horizon, self.env.max_horizon)
         self.buffer = self.init_buffer(
             num_envs,
             horizon,
@@ -96,12 +107,16 @@ class Algorithm:
             optimizer_cls=optimizer_cls,
             optimizer_config=optimizer_config,
         )
-        self.lr_scheduler = self.init_lr_scheduler(
-            self.optimizer, lr_schedule=lr_schedule
+        self.lr_scheduler = LRScheduler(
+            self.optimizer, schedule=lr_schedule, kind=lr_schedule_kind
         )
-        self.entropy_scheduler = self.init_entropy_scheduler(
-            entropy_coeff, entropy_coeff_schedule=entropy_coeff_schedule
+        self.entropy_scheduler = EntropyScheduler(
+            entropy_coeff,
+            schedule=entropy_coeff_schedule,
+            kind=entropy_coeff_schedule_kind,
         )
+        self.horizons = 0
+        self.horizons_per_reset = horizons_per_reset
         self.kl_coeff = kl_coeff
         self.vf_coeff = vf_coeff
         self.max_grad_norm = max_grad_norm
@@ -159,24 +174,6 @@ class Algorithm:
             }
         )  # type: ignore
         return buffer_spec.zero([num_envs, horizon])
-
-    @staticmethod
-    def init_entropy_scheduler(
-        entropy_coeff: float,
-        /,
-        *,
-        entropy_schedule: None | list[tuple[int, float]] = None,
-    ) -> EntropyScheduler:
-        ...
-
-    @staticmethod
-    def init_lr_scheduler(
-        optimizer: optim.Optimizer,
-        /,
-        *,
-        lr_schedule: None | list[tuple[int, float]] = None,
-    ) -> LRScheduler:
-        ...
 
     @staticmethod
     def init_optimizer(
