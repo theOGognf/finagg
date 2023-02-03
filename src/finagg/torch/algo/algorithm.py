@@ -39,7 +39,7 @@ class Losses:
 
 
 class Algorithm:
-    """An optimized PPO (https://arxiv.org/pdf/1707.06347.pdf)algorithm
+    """An optimized PPO (https://arxiv.org/pdf/1707.06347.pdf) algorithm
     with common tricks for stabilizing and accelerating learning.
 
     This algorithm assumes environments are parallelized much like
@@ -59,13 +59,101 @@ class Algorithm:
 
     """
 
+    #: Environment experiences buffer used for aggregating environment
+    #: transition data and policy sample data. The same buffer object
+    #: is shared whenever using `collect`, so it's important to use data
+    #: collected by `collect`. Otherwise, it'll be overwritten by
+    #: subsequent `collect` calls. Buffer dimensions are constructed
+    #: by `num_envs` and `horizon`.
     buffer: TensorDict
 
+    #: Flag indicating whether `collect` has been called at least once
+    #: prior to calling `step`. Ensures dummy buffer data isn't used
+    #: to update the policy.
+    buffered: bool
+
+    #: PPO hyperparameter indicating the max distance the policy can
+    #: update away from previously collected policy sample data with
+    #: respect to likelihoods of taking actions conditioned on
+    #: observations. This is the main innovation of PPO.
+    clip_param: float
+
+    #: Device the `env`, `buffer`, and `policy` all reside on.
     device: DEVICE
 
+    #: Entropy scheduler for updating the `entropy_coeff` after each `step`
+    #: call based on the number environment transitions collected and
+    #: learned on. By default, the entropy scheduler does not actually
+    #: update the entropy coefficient. The entropy scheduler only updates
+    #: the entropy coefficient if an `entropy_coeff_schedule` is provided.
+    entropy_scheduler: EntropyScheduler
+
+    #: Environment used for experience collection within the `collect` method.
+    #: It's ultimately on the environment to make learning efficient by
+    #: parallelizing simulations.
     env: Env
 
+    #: Generalized Advantage Estimation (GAE) hyperparameter for controlling
+    #: the variance and bias tradeoff when estimating the state value
+    #: function from collected environment transitions. A higher value
+    #: allows higher variance while a lower value allows higher bias
+    #: estimation but lower variance.
+    gae_lambda: float
+
+    #: Discount reward factor often used in the Bellman operator for
+    #: controlling the variance and bias tradeoff in collected experienced
+    #: rewards. Note, this does not control the bias/variance of the
+    #: state value estimation and only controls the weight future rewards
+    #: have on the total discounted return.
+    gamma: float
+
+    #: Running count of number of environment horizons reach (number of
+    #: calls to `collect`). Used for tracking when to reset `env` based
+    #: on `horizons_per_reset`.
+    horizons: int
+
+    #: Number of times `collect` can be called before resetting `env`.
+    #: Set this to a higher number if you want learning to occur across
+    #: horizons. Leave this as the default `1` if it doesn't matter that
+    #: experiences and learning only occurs within one horizon.
+    horizons_per_reset: int
+
+    kl_coeff: float
+
+    kl_target: float
+
+    #: Learning rate scheduler for updating `optimizer` learning rate after
+    #: each `step` call based on the number of environment transitions
+    #: collected and learned on. By default, the learning scheduler does not
+    #: actually alter the `optimizer` learning rate (it actually leaves it
+    #: constant). The learning rate scheduler only alters the learning rate
+    #: if a `learning_rate_schedule` is provided.
+    lr_scheduler: LRScheduler
+
+    #: Max gradient norm allowed when updating the policy's model within `step`.
+    max_grad_norm: float
+
+    #: PPO hyperparameter indicating the number of gradient steps to take
+    #: with the whole `buffer` when calling `step`.
+    num_sgd_iter: int
+
+    #: Underlying optimizer for updating the policy's model. Constructed from
+    #: `optimizer_cls` and `optimizer_config`. Defaults to a generally robust
+    #: optimizer that doesn't require much hyperparameter tuning.
+    optimizer: optim.Optimizer
+
+    #: Policy constructed from the `model_cls`, `model_config`, and `dist_cls`
+    #: kwargs. A default policy is constructed according to the environment's
+    #: observation and action specs if these policy args aren't provided.
+    #: The policy is what does all the action sampling within `collect` and
+    #: is what is updated within `step`.
     policy: Policy
+
+    sgd_minibatch_size: int
+
+    shuffle_minibatches: bool
+
+    vf_clip_param: float
 
     def __init__(
         self,
@@ -86,7 +174,15 @@ class Algorithm:
         entropy_coeff: float = 0.0,
         entropy_coeff_schedule: None | list[tuple[int, float]] = None,
         entropy_coeff_schedule_kind: str = "step",
+        gae_lambda: float = 0.95,
+        gamma: float = 0.95,
+        sgd_minibatch_size: float = -1,
+        num_sgd_iter: int = 4,
+        shuffle_minibatches: bool = True,
+        clip_param: float = 0.2,
+        vf_clip_param: float = 5.0,
         kl_coeff: float = 1e-4,
+        kl_target: float = 1e-2,
         vf_coeff: float = 1.0,
         max_grad_norm: float = 5.0,
         device: DEVICE = "cpu",
@@ -126,7 +222,15 @@ class Algorithm:
         )
         self.horizons = 0
         self.horizons_per_reset = horizons_per_reset
+        self.gae_lambda = gae_lambda
+        self.gamma = gamma
+        self.sgd_minibatch_size = sgd_minibatch_size
+        self.num_sgd_iter = num_sgd_iter
+        self.shuffle_minibatches = shuffle_minibatches
+        self.clip_param = clip_param
+        self.vf_clip_param = vf_clip_param
         self.kl_coeff = kl_coeff
+        self.kl_target = kl_target
         self.vf_coeff = vf_coeff
         self.max_grad_norm = max_grad_norm
         self.device = device
@@ -170,9 +274,9 @@ class Algorithm:
         else:
             self.buffer[Batch.OBS][:, 0, ...] = self.buffer[Batch.OBS][:, -1, ...]
 
-        for t in range(1, self.horizon):
+        for t in range(self.horizon):
             # Sample the policy and step the environment.
-            in_batch = self.buffer[:, :t, ...]
+            in_batch = self.buffer[:, : (t + 1), ...]
             sample_batch = self.policy.sample(
                 in_batch,
                 deterministic=deterministic,
@@ -182,16 +286,16 @@ class Algorithm:
                 return_values=True,
                 return_views=False,
             )
-            out_batch = self.env.step(in_batch[Batch.ACTIONS])
+            out_batch = self.env.step(sample_batch[Batch.ACTIONS])
 
             # Update the buffer using sampled policy data and environment
             # transition data.
-            self.buffer[Batch.FEATURES][:, t - 1, ...] = sample_batch[Batch.FEATURES]
-            self.buffer[Batch.ACTIONS][:, t - 1, ...] = sample_batch[Batch.ACTIONS]
-            self.buffer[Batch.LOGP][:, t - 1] = sample_batch[Batch.LOGP]
-            self.buffer[Batch.VALUES][:, t - 1] = sample_batch[Batch.VALUES]
-            self.buffer[Batch.REWARDS][:, t - 1] = out_batch[Batch.REWARDS]
-            self.buffer[Batch.OBS][:, t, ...] = out_batch[Batch.OBS]
+            self.buffer[Batch.FEATURES][:, t, ...] = sample_batch[Batch.FEATURES]
+            self.buffer[Batch.ACTIONS][:, t, ...] = sample_batch[Batch.ACTIONS]
+            self.buffer[Batch.LOGP][:, t] = sample_batch[Batch.LOGP]
+            self.buffer[Batch.VALUES][:, t] = sample_batch[Batch.VALUES]
+            self.buffer[Batch.REWARDS][:, t] = out_batch[Batch.REWARDS]
+            self.buffer[Batch.OBS][:, t + 1, ...] = out_batch[Batch.OBS]
 
         self.horizons += 1
         self.buffered = True

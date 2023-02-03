@@ -52,7 +52,7 @@ class Batch:
 
     #: Key denoting KL divergence (a measure of distance between two probability
     #: distributions) loss.
-    KL_LOSS = "kl_loss"
+    KL_DIV_LOSS = "kl_div_loss"
 
     #: Key denoting loss associated with a learning algorithm's policy loss.
     #: For PPO, this is a clipped policy loss ratio weighted by advantages.
