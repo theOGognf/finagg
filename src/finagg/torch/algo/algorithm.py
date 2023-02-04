@@ -17,25 +17,28 @@ from .scheduler import EntropyScheduler, KLUpdater, LRScheduler
 
 
 @dataclass
-class Losses:
+class StepData:
     """Collection of losses returned by `Algorithm.step`."""
 
     #: Entropy of a probability distribution (a measure of a
     #: probability distribution's randomness) loss. This is zero
     #: if the entropy coefficient is zero.
-    entropy: float
+    entropy_loss: float
 
     #: KL divergence (a measure of distance between two probability
     #: distributions) loss. This is zero if the KL coefficient is zero.
-    kl_div: float
+    kl_div_loss: float
 
     #: Loss associated with a learning algorithm's policy loss.
     #: For PPO, this is a clipped policy loss ratio weighted by advantages.
-    policy: float
+    policy_loss: float
 
     #: Loss associated with a policy's model's ability to predict
     #: state values.
-    vf: float
+    vf_loss: float
+
+    #: Weighted sum of all losses.
+    total_loss: float
 
 
 class Algorithm:
@@ -424,7 +427,7 @@ class Algorithm:
         """Number of environments ran in parallel."""
         return int(self.buffer.size(0))
 
-    def step(self) -> Losses:
+    def step(self) -> StepData:
         """Take a step with the algorithm, using collected environment
         experiences to update the policy.
 
