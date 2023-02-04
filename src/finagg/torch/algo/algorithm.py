@@ -13,7 +13,7 @@ from .dist import Distribution
 from .env import Env
 from .model import Model
 from .policy import Policy
-from .scheduler import EntropyScheduler, LRScheduler
+from .scheduler import EntropyScheduler, KLUpdater, LRScheduler
 
 
 @dataclass
@@ -67,6 +67,21 @@ class Algorithm:
         optimizer_config:
         lr_schedule:
         lr_schedule_kind:
+        entropy_coeff:
+        entropy_coeff_schedule:
+        entropy_coeff_schedule_kind:
+        gae_lambda:
+        gamma:
+        sgd_minibatch_size:
+        num_sgd_iter:
+        shuffle_minibatches:
+        clip_param:
+        vf_clip_param:
+        kl_coeff:
+        kl_target:
+        vf_coeff:
+        max_grad_norm:
+        device:
 
     """
 
@@ -129,16 +144,9 @@ class Algorithm:
     #: experiences and learning only occurs within one horizon.
     horizons_per_reset: int
 
-    #: Total loss weight associated with the KL divergence loss (a measure
-    #: of distance between two probability distributions). This is updated
-    #: according to `kl_target`.
-    kl_coeff: float
-
-    #: Target KL coefficient to use prior to increasing or decreasing
-    #: the `kl_coeff`. Used for keeping the KL divergence loss bounded
-    #: with respect to the total loss. A lower value will reduce the
-    #: effective weight of `kl_coeff`.
-    kl_target: float
+    #: KL divergence updater used for updating `kl_coeff` to make the sampled
+    #: mean KL divergence be close to `kl_target`.
+    kl_updater: KLUpdater
 
     #: Learning rate scheduler for updating `optimizer` learning rate after
     #: each `step` call based on the number of environment transitions
@@ -245,6 +253,7 @@ class Algorithm:
         self.lr_scheduler = LRScheduler(
             self.optimizer, schedule=lr_schedule, kind=lr_schedule_kind
         )
+        self.kl_updater = KLUpdater(kl_coeff, target=kl_target)
         self.entropy_scheduler = EntropyScheduler(
             entropy_coeff,
             schedule=entropy_coeff_schedule,
@@ -259,8 +268,6 @@ class Algorithm:
         self.shuffle_minibatches = shuffle_minibatches
         self.clip_param = clip_param
         self.vf_clip_param = vf_clip_param
-        self.kl_coeff = kl_coeff
-        self.kl_target = kl_target
         self.vf_coeff = vf_coeff
         self.max_grad_norm = max_grad_norm
         self.device = device
