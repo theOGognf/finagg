@@ -121,7 +121,7 @@ class EntropyScheduler:
     transition counts during learning.
 
     Args:
-        entropy_coeff: Entropy coefficient value. This value is ignored if a
+        coeff: Entropy coefficient value. This value is ignored if a
             `schedule` is provided.
         schedule: Optional schedule that overrides `entropy_coeff`. This object
             updates the value of `entropy_coeff` according to the number of
@@ -135,7 +135,7 @@ class EntropyScheduler:
     """
 
     #: Current entropy coefficient value.
-    entropy_coeff: float
+    coeff: float
 
     #: Backend value scheduler used. The type depends on if a `schedule` arg is
     #: provided and `kind`.
@@ -143,14 +143,14 @@ class EntropyScheduler:
 
     def __init__(
         self,
-        entropy_coeff: float,
+        coeff: float,
         /,
         *,
         schedule: None | list[tuple[int, float]] = None,
         kind: str = "step",
     ) -> None:
         if schedule is None:
-            self.scheduler = ConstantScheduler(entropy_coeff)
+            self.scheduler = ConstantScheduler(coeff)
         else:
             match kind:
                 case "interp":
@@ -163,7 +163,39 @@ class EntropyScheduler:
                     )
 
     def step(self, count: int, /) -> None:
-        self.entropy_coeff = self.scheduler.step(count)
+        self.coeff = self.scheduler.step(count)
+
+
+class KLUpdater:
+    """KL divergence coefficient updater (not necessarily a scheduler) that
+    increases the weight of the KL divergence loss if the KL divergence
+    is higher than a target KL divergence (thus, reducing the mean KL
+    divergence).
+
+    This implementation is based on RLlib's KL updater mixin:
+        https://github.com/ray-project/ray/blob/master/rllib/policy/torch_mixins.py
+
+    Args:
+        coeff: Initial KL divergence loss coefficient. This is updated
+            to make the mean KL divergence loss be close to `target`.
+            If the mean KL divergence is higher than `target`, then
+            `coeff` is increased to increase the weight of the KL
+            divergence in the loss, thus decreasing subsequent sampled
+            mean KL divergence losses.
+        target: Target KL divergence. The desired distance between new
+            and old policies.
+
+    """
+
+    def __init__(self, coeff: float, /, *, target: float = 1e-2) -> None:
+        self.coeff = coeff
+        self.target = target
+
+    def step(self, kl: float, /) -> None:
+        if kl > 2.0 * self.target:
+            self.coeff *= 1.5
+        elif kl < 0.5 * self.target:
+            self.coeff *= 0.5
 
 
 class LRScheduler:

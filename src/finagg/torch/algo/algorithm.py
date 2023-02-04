@@ -55,7 +55,18 @@ class Algorithm:
             associated with data transfers between devices
 
     Args:
-        ...
+        env_cls:
+        env_config:
+        model_cls:
+        model_config:
+        dist_cls:
+        horizon:
+        horizons_per_reset:
+        num_envs:
+        optimizer_cls:
+        optimizer_config:
+        lr_schedule:
+        lr_schedule_kind:
 
     """
 
@@ -118,8 +129,15 @@ class Algorithm:
     #: experiences and learning only occurs within one horizon.
     horizons_per_reset: int
 
+    #: Total loss weight associated with the KL divergence loss (a measure
+    #: of distance between two probability distributions). This is updated
+    #: according to `kl_target`.
     kl_coeff: float
 
+    #: Target KL coefficient to use prior to increasing or decreasing
+    #: the `kl_coeff`. Used for keeping the KL divergence loss bounded
+    #: with respect to the total loss. A lower value will reduce the
+    #: effective weight of `kl_coeff`.
     kl_target: float
 
     #: Learning rate scheduler for updating `optimizer` learning rate after
@@ -149,10 +167,22 @@ class Algorithm:
     #: is what is updated within `step`.
     policy: Policy
 
+    #: PPO hyperparameter indicating the minibatc size `buffer` is split into
+    #: when updating the policy's model in `step`. It's usually best to
+    #: maximize the minibatch size to reduce the variance associated with
+    #: updating the policy's model, but also accelerate the computations
+    #: when learning (assuming a CUDA device is being used). If `-1`, the
+    #: whole buffer is treated as one giant batch.
     sgd_minibatch_size: int
 
+    #: Whether to shuffle minibatches within `step`. Recommended, but not
+    #: necessary if the minibatch size is large enough (e.g., the buffer
+    #: is the batch).
     shuffle_minibatches: bool
 
+    #: PPO hyperparameter similar to `clip_param` but for the value function
+    #: estimate. A measure of max distance the model's value function is
+    #: allowed to update away from previous value function samples.
     vf_clip_param: float
 
     def __init__(
