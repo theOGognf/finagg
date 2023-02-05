@@ -1,6 +1,6 @@
 """Definitions regarding the union of a model and an action distribution."""
 
-from typing import Any
+from typing import Any, Literal
 
 import torch
 from tensordict import TensorDict
@@ -85,7 +85,7 @@ class Policy:
         batch: TensorDict,
         /,
         *,
-        kind: str = "last",
+        kind: Literal["last"] | Literal["all"] = "last",
         deterministic: bool = False,
         inplace: bool = False,
         requires_grad: bool = False,

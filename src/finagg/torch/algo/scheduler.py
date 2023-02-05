@@ -1,9 +1,11 @@
 """Schedulers for scheduling values, learning rates, and entropy."""
 
-from typing import Protocol
+from typing import Literal, Protocol, Union
 
 import numpy as np
 import torch.optim as optim
+
+SCHEDULE_KIND = Union[Literal["interp"], Literal["step"]]
 
 
 class Scheduler(Protocol):
@@ -123,9 +125,9 @@ class EntropyScheduler:
     Args:
         coeff: Entropy coefficient value. This value is ignored if a
             `schedule` is provided.
-        schedule: Optional schedule that overrides `entropy_coeff`. This object
-            updates the value of `entropy_coeff` according to the number of
-            environment transitions experienced during learning.
+        schedule: Optional schedule that overrides `entropy_coeff`. This determines
+            values of `entropy_coeff` according to the number of environment
+            transitions experienced during learning.
         kind: Kind of scheduler to use. Options include:
             - "step": jump to values and hold until a new environment transition
                 count is reached.
@@ -147,7 +149,7 @@ class EntropyScheduler:
         /,
         *,
         schedule: None | list[tuple[int, float]] = None,
-        kind: str = "step",
+        kind: SCHEDULE_KIND = "step",
     ) -> None:
         if schedule is None:
             self.scheduler = ConstantScheduler(coeff)
@@ -205,7 +207,7 @@ class LRScheduler:
     Args:
         optimizer: Optimizer to update with each `step`.
         schedule: Optional schedule that overrides the optimizer's learning rate.
-            This object updates the value of the learning rate according to the
+            This determines values of the learning rate according to the
             number of environment transitions experienced during learning.
         kind: Kind of scheduler to use. Options include:
             - "step": jump to values and hold until a new environment transition
@@ -228,7 +230,7 @@ class LRScheduler:
         /,
         *,
         schedule: None | list[tuple[int, float]] = None,
-        kind: str = "step",
+        kind: SCHEDULE_KIND = "step",
     ) -> None:
         self.optimizer = optimizer
         if schedule is None:

@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import Any
+from typing import Any, Literal
 
 import torch
 from tensordict import TensorDict
@@ -88,7 +88,7 @@ class Model(ABC, torch.nn.Module):
         return super().__call__(*args, **kwds)
 
     def apply_view_requirements(
-        self, batch: TensorDict, /, *, kind: str = "last"
+        self, batch: TensorDict, /, *, kind: Literal["last"] | Literal["all"] = "last"
     ) -> TensorDict:
         """Apply the model's view requirements, reshaping tensors as-needed.
 

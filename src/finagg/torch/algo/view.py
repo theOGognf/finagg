@@ -1,11 +1,13 @@
 """Definitions regarding applying views to batches of tensors or tensor dicts."""
 
-from typing import Protocol
+from typing import Literal, Protocol, Union
 
 import torch
 from tensordict import TensorDict
 
 from .batch import Batch
+
+VIEW_METHOD = Union[Literal["rolling_window"], Literal["padded_rolling_window"]]
 
 
 class View(Protocol):
@@ -362,7 +364,7 @@ class ViewRequirement:
         /,
         *,
         shift: int = 0,
-        method: str = "rolling_window",
+        method: VIEW_METHOD = "rolling_window",
     ) -> None:
         self.key = key
         self.shift = shift

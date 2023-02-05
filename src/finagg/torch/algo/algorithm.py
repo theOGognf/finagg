@@ -13,7 +13,7 @@ from .dist import Distribution
 from .env import Env
 from .model import Model
 from .policy import Policy
-from .scheduler import EntropyScheduler, KLUpdater, LRScheduler
+from .scheduler import SCHEDULE_KIND, EntropyScheduler, KLUpdater, LRScheduler
 
 
 @dataclass
@@ -59,6 +59,8 @@ class Algorithm:
 
     Args:
         env_cls: Highly parallelized environment for sampling experiences.
+            Instantiated with `env_config`. Will be stepped for `horizon`
+            each `collect` call.
         env_config: Initial environment config passed to `env_cls` for the
             environment instantiation. This is likely to be overwritten
             on the environment instance if reset with a new config.
@@ -74,7 +76,9 @@ class Algorithm:
             for discrete actions and a gaussian action distribution for
             continuous actions. Complex actions are not supported for default
             action distributions.
-        horizon:
+        horizon: Number of environment transitions to collect during `collect`.
+            The environment is reset based on `horizons_per_reset`. The
+            buffer's size is [B, T] where T is `horizon`.
         horizons_per_reset: Number of times `collect` can be called before
             resetting `env`. Set this to a higher number if you want learning
             to occur across horizons. Leave this as the default `1` if it
@@ -82,13 +86,13 @@ class Algorithm:
             one horizon.
         num_envs: Number of parallelized simulation environments for the
             environment instance. Passed during the environment's
-            instantiation.
+            instantiation. The buffer's size is [B, T] where B is `num_envs`.
         optimizer_cls: Custom optimizer class. Defaults to an optimizer
             that doesn't require much tuning.
         optimizer_config: Custom optimizer config unpacked into `optimizer_cls`
             during optimizer instantiation.
         lr_schedule: Optional schedule that overrides the optimizer's learning rate.
-            This object updates the value of the learning rate according to the
+            This deternmines the value of the learning rate according to the
             number of environment transitions experienced during learning.
             The learning rate is constant if this isn't provided.
         lr_schedule_kind: Kind of learning rate scheduler to use if `lr_schedule`
@@ -209,9 +213,9 @@ class Algorithm:
     #: when updating the policy's model in `step`. It's usually best to
     #: maximize the minibatch size to reduce the variance associated with
     #: updating the policy's model, but also accelerate the computations
-    #: when learning (assuming a CUDA device is being used). If `-1`, the
-    #: whole buffer is treated as one giant batch.
-    sgd_minibatch_size: int
+    #: when learning (assuming a CUDA device is being used). If `-1` or
+    #: `None`, the whole buffer is treated as one giant batch.
+    sgd_minibatch_size: None | int
 
     #: Whether to shuffle minibatches within `step`. Recommended, but not
     #: necessary if the minibatch size is large enough (e.g., the buffer
@@ -238,13 +242,13 @@ class Algorithm:
         optimizer_cls: type[optim.Optimizer] = DAdaptAdam,
         optimizer_config: None | dict[str, Any] = None,
         lr_schedule: None | list[tuple[int, float]] = None,
-        lr_schedule_kind: str = "step",
+        lr_schedule_kind: SCHEDULE_KIND = "step",
         entropy_coeff: float = 0.0,
         entropy_coeff_schedule: None | list[tuple[int, float]] = None,
-        entropy_coeff_schedule_kind: str = "step",
+        entropy_coeff_schedule_kind: SCHEDULE_KIND = "step",
         gae_lambda: float = 0.95,
         gamma: float = 0.95,
-        sgd_minibatch_size: float = -1,
+        sgd_minibatch_size: None | int = -1,
         num_sgd_iter: int = 4,
         shuffle_minibatches: bool = True,
         clip_param: float = 0.2,
@@ -346,6 +350,7 @@ class Algorithm:
             in_batch = self.buffer[:, : (t + 1), ...]
             sample_batch = self.policy.sample(
                 in_batch,
+                kind="last",
                 deterministic=deterministic,
                 inplace=False,
                 requires_grad=False,
@@ -467,6 +472,10 @@ class Algorithm:
                 f"{self.__class__.__name__} is not buffered. "
                 "Call `collect` once prior to `step`."
             )
+
+        views = self.policy.model.apply_view_requirements(self.buffer, kind="all")
+        self.buffer = self.buffer.reshape(self.num_envs * self.horizon)
+        self.buffer[Batch.VIEWS] = views
 
     def to(self, device: DEVICE, /) -> "Algorithm":
         """Move the algorithm and its attributes to `device`."""
