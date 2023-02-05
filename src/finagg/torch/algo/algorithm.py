@@ -557,6 +557,19 @@ class Algorithm:
         self.buffer = self.buffer.reshape(-1)
         self.buffer[Batch.VIEWS] = views
 
+        # Get some reward metrics for step data.
+        min_rewards = float(torch.min(self.buffer[Batch.REWARDS]))
+        max_rewards = float(torch.max(self.buffer[Batch.REWARDS]))
+        mean_rewards = float(torch.mean(self.buffer[Batch.REWARDS]))
+        std_rewards, mean_rewards = torch.std_mean(self.buffer[Batch.REWARDS])
+        std_rewards = float(std_rewards)
+        mean_rewards = float(mean_rewards)
+
+        # Free buffer elements that aren't used for the rest of the step.
+        del self.buffer[Batch.OBS]
+        del self.buffer[Batch.REWARDS]
+        del self.buffer[Batch.VALUES]
+
         # Main PPO loop.
         step_data: list[StepData] = []
         loader = DataLoader(
@@ -594,7 +607,7 @@ class Algorithm:
                 # Compute main, required losses.
                 vf_loss = torch.clamp(
                     torch.pow(
-                        sample_batch[Batch.VALUES] - minibatch[Batch.VALUES], 2.0
+                        minibatch[Batch.RETURNS] - sample_batch[Batch.VALUES], 2.0
                     ),
                     0.0,
                     self.vf_clip_param,
@@ -641,10 +654,10 @@ class Algorithm:
                         "losses/policy": float(policy_loss),
                         "losses/vf": float(vf_loss),
                         "losses/total": float(total_loss),
-                        "rewards/min": float(0.0),
-                        "rewards/max": float(0.0),
-                        "rewards/mean": float(0.0),
-                        "rewards/std": float(0.0),
+                        "rewards/min": min_rewards,
+                        "rewards/max": max_rewards,
+                        "rewards/mean": mean_rewards,
+                        "rewards/std": std_rewards,
                     }
                 )
 
