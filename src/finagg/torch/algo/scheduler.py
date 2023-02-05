@@ -125,8 +125,8 @@ class EntropyScheduler:
     Args:
         coeff: Entropy coefficient value. This value is ignored if a
             `schedule` is provided.
-        schedule: Optional schedule that overrides `entropy_coeff`. This determines
-            values of `entropy_coeff` according to the number of environment
+        schedule: Optional schedule that overrides `coeff`. This determines
+            values of `coeff` according to the number of environment
             transitions experienced during learning.
         kind: Kind of scheduler to use. Options include:
             - "step": jump to values and hold until a new environment transition

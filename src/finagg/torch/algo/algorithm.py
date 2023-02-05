@@ -29,6 +29,10 @@ StepData = TypedDict(
         "losses/policy": float,
         "losses/vf": float,
         "losses/total": float,
+        "rewards/min": float,
+        "rewards/max": float,
+        "rewards/mean": float,
+        "rewards/std": float,
     },
 )
 
@@ -93,21 +97,60 @@ class Algorithm:
                     count is reached.
                 - "interp": jump to values like "step", but interpolate between the
                     current value and the next value.
-        entropy_coeff:
-        entropy_coeff_schedule:
-        entropy_coeff_schedule_kind:
-        gae_lambda:
-        gamma:
-        sgd_minibatch_size:
-        num_sgd_iter:
-        shuffle_minibatches:
-        clip_param:
-        vf_clip_param:
-        kl_coeff:
-        kl_target:
-        vf_coeff:
-        max_grad_norm:
-        device:
+        entropy_coeff: Entropy coefficient value. Weight of the entropy loss w.r.t.
+            other components of total loss. This value is ignored if
+            `entropy_coeff_schedule` is provded.
+        entropy_coeff_schedule: Optional schedule that overrides `entropy_coeff`. This
+            determines values of `entropy_coeff` according to the number of environment
+            transitions experienced during learning.
+        entropy_coeff_schedule_kind: Kind of entropy scheduler to use. Options include:
+            - "step": jump to values and hold until a new environment transition
+                count is reached.
+            - "interp": jump to values like "step", but interpolate between the
+                current value and the next value.
+        gae_lambda: Generalized Advantage Estimation (GAE) hyperparameter for controlling
+            the variance and bias tradeoff when estimating the state value
+            function from collected environment transitions. A higher value
+            allows higher variance while a lower value allows higher bias
+            estimation but lower variance.
+        gamma: Discount reward factor often used in the Bellman operator for
+            controlling the variance and bias tradeoff in collected experienced
+            rewards. Note, this does not control the bias/variance of the
+            state value estimation and only controls the weight future rewards
+            have on the total discounted return.
+        sgd_minibatch_size: PPO hyperparameter indicating the minibatc size `buffer`
+            is split into when updating the policy's model in `step`. It's usually best to
+            maximize the minibatch size to reduce the variance associated with
+            updating the policy's model, but also accelerate the computations
+            when learning (assuming a CUDA device is being used). If `None`,
+            the whole buffer is treated as one giant batch.
+        num_sgd_iter: PPO hyperparameter indicating the number of gradient steps to take
+            with the whole `buffer` when calling `step`.
+        shuffle_minibatches: Whether to shuffle minibatches within `step`.
+            Recommended, but not necessary if the minibatch size is large enough
+            (e.g., the buffer is the batch).
+        clip_param: PPO hyperparameter indicating the max distance the policy can
+            update away from previously collected policy sample data with
+            respect to likelihoods of taking actions conditioned on
+            observations. This is the main innovation of PPO.
+        vf_clip_param: PPO hyperparameter similar to `clip_param` but for the
+            value function estimate. A measure of max distance the model's
+            value function is allowed to update away from previous value function
+            samples.
+        kl_coeff: KL divergence loss coefficient that weighs KL divergence loss w.r.t.
+            other loss components. KL divergence loss is ignored and not computed
+            unless this is `> 0`. This is updated to make the mean KL divergence loss
+            be close to `kl_target`. If the mean KL divergence is higher than `target`,
+            then `coeff` is increased to increase the weight of the KL divergence
+            in the loss, thus decreasing subsequent sampled mean KL divergence losses.
+        kl_target: Target KL divergence. The desired distance between new and old
+            policies. Used for updating `kl_coeff`.
+        vf_coeff: PPO hyperparameter similar to `clip_param` but for the value function
+            estimate. A measure of max distance the model's value function is
+            allowed to update away from previous value function samples.
+        max_grad_norm: Max gradient norm allowed when updating the policy's model
+            within `step`.
+        device: Device the `env`, `buffer`, and `policy` all reside on.
 
     """
 
@@ -205,8 +248,8 @@ class Algorithm:
     #: when updating the policy's model in `step`. It's usually best to
     #: maximize the minibatch size to reduce the variance associated with
     #: updating the policy's model, but also accelerate the computations
-    #: when learning (assuming a CUDA device is being used). If `-1` or
-    #: `None`, the whole buffer is treated as one giant batch.
+    #: when learning (assuming a CUDA device is being used). If `None`,
+    #: the whole buffer is treated as one giant batch.
     sgd_minibatch_size: None | int
 
     #: Whether to shuffle minibatches within `step`. Recommended, but not
@@ -475,7 +518,8 @@ class Algorithm:
         experiences to update the policy.
 
         Returns:
-            Losses associated with the step.
+            Data associated with the step and current algorithm hyperparameter
+            values.
 
         """
         if not self.buffered:
@@ -597,6 +641,10 @@ class Algorithm:
                         "losses/policy": float(policy_loss),
                         "losses/vf": float(vf_loss),
                         "losses/total": float(total_loss),
+                        "rewards/min": float(0.0),
+                        "rewards/max": float(0.0),
+                        "rewards/mean": float(0.0),
+                        "rewards/std": float(0.0),
                     }
                 )
 
