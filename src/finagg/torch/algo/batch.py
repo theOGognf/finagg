@@ -14,6 +14,9 @@ class Batch:
     #: Typically used by a learning algorithm.
     REWARDS = "rewards"
 
+    #: Key denoting discounted returns.
+    RETURNS = "returns"
+
     #: Key denoting features output from a policy model.
     #: Typically processed by a policy action distribution.
     FEATURES = "features"
@@ -48,16 +51,28 @@ class Batch:
 
     #: Key denoting entropy of a probability distribution (a measure of a
     #: probability distribution's randomness) loss.
-    ENTROPY_LOSS = "entropy_loss"
+    ENTROPY_LOSS = "losses/entropy"
 
     #: Key denoting KL divergence (a measure of distance between two probability
     #: distributions) loss.
-    KL_DIV_LOSS = "kl_div_loss"
+    KL_DIV_LOSS = "losses/kl_div"
 
     #: Key denoting loss associated with a learning algorithm's policy loss.
     #: For PPO, this is a clipped policy loss ratio weighted by advantages.
-    POLICY_LOSS = "policy_loss"
+    POLICY_LOSS = "losses/policy"
 
     #: Key denoting loss associated with a policy's model's ability to predict
     #: values from the "values" key.
-    VF_LOSS = "vf_loss"
+    VF_LOSS = "losses/vf"
+
+    #: Key denoting sum of all losses.
+    TOTAL_LOSS = "losses/total"
+
+    #: Key denoting entropy coefficient for the entropy loss.
+    ENTROPY_COEFF = "coefficients/entropy"
+
+    #: Key denoting KL divergence coefficient for the KL divergence loss.
+    KL_DIV_COEFF = "coefficients/kl_div"
+
+    #: Key denoting value function loss coefficient.
+    VF_COEFF = "coefficients/vf"

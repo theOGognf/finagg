@@ -90,6 +90,7 @@ class Policy:
         deterministic: bool = False,
         inplace: bool = False,
         requires_grad: bool = False,
+        return_actions: bool = True,
         return_logp: bool = False,
         return_values: bool = False,
         return_views: bool = False,
@@ -126,6 +127,8 @@ class Policy:
                 model during forward passes. This should only be enabled during
                 a training loop or when requiring gradients for explainability
                 or other analysis reasons.
+            return_actions: Whether to sample the policy's action distribution
+                and return the sampled actions.
             return_logp: Whether to return the log probability of taking the
                 sampled actions. Often enabled during a training loop for
                 aggregating training data a bit more efficiently.
@@ -155,10 +158,7 @@ class Policy:
         prev = torch.is_grad_enabled()
         torch.set_grad_enabled(requires_grad)
 
-        # Perform inference, sampling, and value approximation.
         features = self.model(in_batch)
-        dist = self.dist_cls(features, self.model)
-        actions = dist.deterministic_sample() if deterministic else dist.sample()
 
         # Store required outputs and get/store optional outputs.
         out = (
@@ -167,9 +167,12 @@ class Policy:
             else TensorDict({}, batch_size=in_batch.batch_size, device=batch.device)
         )
         out[Batch.FEATURES] = features
-        out[Batch.ACTIONS] = actions
-        if return_logp:
-            out[Batch.LOGP] = dist.logp(actions)
+        if return_actions:
+            dist = self.dist_cls(features, self.model)
+            actions = dist.deterministic_sample() if deterministic else dist.sample()
+            out[Batch.ACTIONS] = actions
+            if return_logp:
+                out[Batch.LOGP] = dist.logp(actions)
         if return_values:
             out[Batch.VALUES] = self.model.value_function()
         if return_views:

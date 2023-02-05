@@ -189,7 +189,19 @@ class KLUpdater:
 
     """
 
+    #: Current KL divergence coefficient value. Higher means more weight
+    #: applied to the KL divergence loss w.r.t. the total loss.
+    coeff: float
+
+    #: Initial KL divergence coefficient. Used for determining whether to
+    #: even call `step`.
+    initial_coeff: float
+
+    #: Target mean sampled KL divergence.
+    target: float
+
     def __init__(self, coeff: float, /, *, target: float = 1e-2) -> None:
+        self.initial_coeff = coeff
         self.coeff = coeff
         self.target = target
 
@@ -217,6 +229,10 @@ class LRScheduler:
 
     """
 
+    #: Current learning rate according to the schedule. `0` until `step` is
+    #: called for the first time.
+    coeff: float
+
     #: Backend optimizer whose learning rate is updated in-place.
     optimizer: optim.Optimizer
 
@@ -233,6 +249,7 @@ class LRScheduler:
         kind: SCHEDULE_KIND = "step",
     ) -> None:
         self.optimizer = optimizer
+        self.coeff = 0.0
         if schedule is None:
             self.scheduler = ConstantScheduler(0.0)
         else:
@@ -249,5 +266,6 @@ class LRScheduler:
 
     def step(self, count: int, /) -> None:
         if not isinstance(self.scheduler, ConstantScheduler):
+            self.coeff = self.scheduler.step(count)
             for pg in self.optimizer.param_groups:
-                pg["lr"] = self.scheduler.step(count)
+                pg["lr"] = self.coeff

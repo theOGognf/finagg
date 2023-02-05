@@ -1,10 +1,13 @@
 """Definitions related to RL algorithms (mainly variants of PPO)."""
 
-from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypedDict
 
+import pandas as pd
+import torch
+import torch.nn as nn
 import torch.optim as optim
 from tensordict import TensorDict
+from torch.utils.data import DataLoader
 
 from ..optim import DAdaptAdam
 from ..specs import CompositeSpec, TensorSpec, UnboundedContinuousTensorSpec
@@ -15,30 +18,19 @@ from .model import Model
 from .policy import Policy
 from .scheduler import SCHEDULE_KIND, EntropyScheduler, KLUpdater, LRScheduler
 
-
-@dataclass
-class StepData:
-    """Collection of losses returned by `Algorithm.step`."""
-
-    #: Entropy of a probability distribution (a measure of a
-    #: probability distribution's randomness) loss. This is zero
-    #: if the entropy coefficient is zero.
-    entropy_loss: float
-
-    #: KL divergence (a measure of distance between two probability
-    #: distributions) loss. This is zero if the KL coefficient is zero.
-    kl_div_loss: float
-
-    #: Loss associated with a learning algorithm's policy loss.
-    #: For PPO, this is a clipped policy loss ratio weighted by advantages.
-    policy_loss: float
-
-    #: Loss associated with a policy's model's ability to predict
-    #: state values.
-    vf_loss: float
-
-    #: Weighted sum of all losses.
-    total_loss: float
+StepData = TypedDict(
+    "StepData",
+    {
+        "coefficients/entropy": float,
+        "coefficients/kl_div": float,
+        "coefficients/vf": float,
+        "losses/entropy": float,
+        "losses/kl_div": float,
+        "losses/policy": float,
+        "losses/vf": float,
+        "losses/total": float,
+    },
+)
 
 
 class Algorithm:
@@ -354,6 +346,7 @@ class Algorithm:
                 deterministic=deterministic,
                 inplace=False,
                 requires_grad=False,
+                return_actions=True,
                 return_logp=True,
                 return_values=True,
                 return_views=False,
@@ -364,10 +357,26 @@ class Algorithm:
             # transition data.
             self.buffer[Batch.FEATURES][:, t, ...] = sample_batch[Batch.FEATURES]
             self.buffer[Batch.ACTIONS][:, t, ...] = sample_batch[Batch.ACTIONS]
-            self.buffer[Batch.LOGP][:, t] = sample_batch[Batch.LOGP]
-            self.buffer[Batch.VALUES][:, t] = sample_batch[Batch.VALUES]
-            self.buffer[Batch.REWARDS][:, t] = out_batch[Batch.REWARDS]
+            self.buffer[Batch.LOGP][:, t, ...] = sample_batch[Batch.LOGP]
+            self.buffer[Batch.VALUES][:, t, ...] = sample_batch[Batch.VALUES]
+            self.buffer[Batch.REWARDS][:, t, ...] = out_batch[Batch.REWARDS]
             self.buffer[Batch.OBS][:, t + 1, ...] = out_batch[Batch.OBS]
+
+        # Sample features and value function at last observation.
+        in_batch = self.buffer[:, :, ...]
+        sample_batch = self.policy.sample(
+            in_batch,
+            kind="last",
+            deterministic=deterministic,
+            inplace=False,
+            requires_grad=False,
+            return_actions=False,
+            return_logp=False,
+            return_values=True,
+            return_views=False,
+        )
+        self.buffer[Batch.FEATURES][:, -1, ...] = sample_batch[Batch.FEATURES]
+        self.buffer[Batch.VALUES][:, -1, ...] = sample_batch[Batch.VALUES]
 
         self.horizons += 1
         self.buffered = True
@@ -416,6 +425,8 @@ class Algorithm:
                 Batch.ACTIONS: action_spec,
                 Batch.LOGP: UnboundedContinuousTensorSpec(1),
                 Batch.VALUES: UnboundedContinuousTensorSpec(1),
+                Batch.ADVANTAGES: UnboundedContinuousTensorSpec(1),
+                Batch.RETURNS: UnboundedContinuousTensorSpec(1),
             }
         )  # type: ignore
         return buffer_spec.zero([num_envs, horizon])
@@ -473,9 +484,138 @@ class Algorithm:
                 "Call `collect` once prior to `step`."
             )
 
+        # Get number of environments and horizon. Remember, there's an extra
+        # sample in the horizon because we store the final environment observation
+        # for the next `collect` call and value function estimate for bootstrapping.
+        B = self.num_envs
+        T = self.horizon - 1
+
+        # Generalized Advantage Estimation (GAE) and returns bootstrapping.
+        prev_advantage = 0.0
+        for t in reversed(range(T)):
+            delta = self.buffer[Batch.REWARDS][:, t, ...] + (
+                self.gamma * self.buffer[Batch.VALUES][:, t + 1, ...]
+                - self.buffer[Batch.VALUES][:, t, ...]
+            )
+            self.buffer[Batch.ADVANTAGES][:, t, ...] = prev_advantage = delta + (
+                self.gamma * self.gae_lambda * prev_advantage
+            )
+        self.buffer[Batch.RETURNS] = (
+            self.buffer[Batch.ADVANTAGES] + self.buffer[Batch.VALUES]
+        )
+
+        # Batchify the buffer. Save the last sample for adding it back to the
+        # buffer. Remove the last sample afterwards since it contains dummy
+        # data.
+        final_obs = self.buffer[Batch.OBS][:, -1, ...]
+        self.buffer = self.buffer[:, :-1, ...]
         views = self.policy.model.apply_view_requirements(self.buffer, kind="all")
-        self.buffer = self.buffer.reshape(self.num_envs * self.horizon)
+        self.buffer = self.buffer.reshape(-1)
         self.buffer[Batch.VIEWS] = views
+
+        # Main PPO loop.
+        step_data: list[StepData] = []
+        loader = DataLoader(
+            self.buffer,
+            batch_size=self.sgd_minibatch_size,
+            shuffle=self.shuffle_minibatches,
+            collate_fn=lambda x: x,
+        )
+        for _ in range(self.num_sgd_iter):
+            for minibatch in loader:
+                sample_batch = self.policy.sample(
+                    minibatch,
+                    kind="all",
+                    deterministic=False,
+                    inplace=False,
+                    requires_grad=True,
+                    return_actions=False,
+                    return_logp=False,
+                    return_values=True,
+                    return_views=False,
+                )
+
+                # Get action distributions and their log probability ratios.
+                prev_action_dist = self.policy.dist_cls(
+                    minibatch[Batch.FEATURES], self.policy.model
+                )
+                curr_action_dist = self.policy.dist_cls(
+                    sample_batch[Batch.FEATURES], self.policy.model
+                )
+                logp_ratio = torch.exp(
+                    curr_action_dist.logp(minibatch[Batch.ACTIONS])
+                    - minibatch[Batch.LOGP]
+                )
+
+                # Compute main, required losses.
+                vf_loss = torch.clamp(
+                    torch.pow(
+                        sample_batch[Batch.VALUES] - minibatch[Batch.VALUES], 2.0
+                    ),
+                    0.0,
+                    self.vf_clip_param,
+                ).mean()
+                policy_loss = torch.min(
+                    minibatch[Batch.ADVANTAGES] * logp_ratio,
+                    minibatch[Batch.ADVANTAGES]
+                    * torch.clamp(logp_ratio, 1 - self.clip_param, 1 + self.clip_param),
+                ).mean()
+                entropy_loss = curr_action_dist.entropy().mean()
+
+                # Maximize entropy, maximize policy actions associated with high advantages,
+                # minimize discounted return estimation error.
+                total_loss = (
+                    self.vf_coeff * vf_loss
+                    - policy_loss
+                    - self.entropy_scheduler.coeff * entropy_loss
+                )
+
+                # Optional KL divergence loss.
+                if self.kl_updater.initial_coeff > 0:
+                    kl_div_loss = prev_action_dist.kl_div(curr_action_dist).mean()
+                    total_loss += self.kl_updater.coeff * kl_div_loss
+                    self.kl_updater.step(float(kl_div_loss))
+                else:
+                    kl_div_loss = torch.tensor(0.0, device=self.device)
+
+                # Optimize.
+                self.optimizer.zero_grad()
+                total_loss.backward()
+                nn.utils.clip_grad_norm_(
+                    self.policy.model.parameters(), self.max_grad_norm
+                )
+                self.optimizer.step()
+
+                # Update step data.
+                step_data.append(
+                    {
+                        "coefficients/entropy": float(self.entropy_scheduler.coeff),
+                        "coefficients/kl_div": float(self.kl_updater.coeff),
+                        "coefficients/vf": float(self.vf_coeff),
+                        "losses/entropy": float(entropy_loss),
+                        "losses/kl_div": float(kl_div_loss),
+                        "losses/policy": float(policy_loss),
+                        "losses/vf": float(vf_loss),
+                        "losses/total": float(total_loss),
+                    }
+                )
+
+        # Update schedulers.
+        self.lr_scheduler.step(B * T)
+        self.entropy_scheduler.step(B * T)
+
+        # Reset the buffer and buffered flag.
+        self.buffer = self.init_buffer(
+            B,
+            T + 1,
+            self.env.observation_spec,
+            self.policy.feature_spec,
+            self.env.action_spec,
+        )
+        self.buffer[:, -1, ...] = final_obs
+        self.buffered = False
+
+        return pd.DataFrame(step_data).mean(axis=0).to_dict()  # type: ignore
 
     def to(self, device: DEVICE, /) -> "Algorithm":
         """Move the algorithm and its attributes to `device`."""
