@@ -58,18 +58,45 @@ class Algorithm:
             associated with data transfers between devices
 
     Args:
-        env_cls:
-        env_config:
-        model_cls:
-        model_config:
-        dist_cls:
+        env_cls: Highly parallelized environment for sampling experiences.
+        env_config: Initial environment config passed to `env_cls` for the
+            environment instantiation. This is likely to be overwritten
+            on the environment instance if reset with a new config.
+        model_cls: Optional custom policy model definition. A model class
+            is provided for you based on the environment instance's specs
+            if you don't provide one. Defaults to a simple feedforward
+            neural network.
+        model_config: Optional policy model config unpacked into the model
+            during instantiation.
+        dist_cls: Custom policy action distribution class. An action
+            distribution class is provided for you based on the environment
+            instance's specs. Defaults to a categorical action distribution
+            for discrete actions and a gaussian action distribution for
+            continuous actions. Complex actions are not supported for default
+            action distributions.
         horizon:
-        horizons_per_reset:
-        num_envs:
-        optimizer_cls:
-        optimizer_config:
-        lr_schedule:
-        lr_schedule_kind:
+        horizons_per_reset: Number of times `collect` can be called before
+            resetting `env`. Set this to a higher number if you want learning
+            to occur across horizons. Leave this as the default `1` if it
+            doesn't matter that experiences and learning only occurs within
+            one horizon.
+        num_envs: Number of parallelized simulation environments for the
+            environment instance. Passed during the environment's
+            instantiation.
+        optimizer_cls: Custom optimizer class. Defaults to an optimizer
+            that doesn't require much tuning.
+        optimizer_config: Custom optimizer config unpacked into `optimizer_cls`
+            during optimizer instantiation.
+        lr_schedule: Optional schedule that overrides the optimizer's learning rate.
+            This object updates the value of the learning rate according to the
+            number of environment transitions experienced during learning.
+            The learning rate is constant if this isn't provided.
+        lr_schedule_kind: Kind of learning rate scheduler to use if `lr_schedule`
+            is provided. Options include:
+                - "step": jump to values and hold until a new environment transition
+                    count is reached.
+                - "interp": jump to values like "step", but interpolate between the
+                    current value and the next value.
         entropy_coeff:
         entropy_coeff_schedule:
         entropy_coeff_schedule_kind:
