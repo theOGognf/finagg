@@ -29,6 +29,8 @@ StepData = TypedDict(
         "losses/policy": float,
         "losses/vf": float,
         "losses/total": float,
+        "profiling/collect_ms": float,
+        "profiling/step_ms": float,
         "rewards/min": float,
         "rewards/max": float,
         "rewards/mean": float,
@@ -295,12 +297,13 @@ class Algorithm:
         device: DEVICE = "cpu",
     ) -> None:
         self.env = env_cls(num_envs, config=env_config, device=device)
-        self.policy = self.init_policy(
+        self.policy = Policy(
             self.env.observation_spec,
             self.env.action_spec,
             model_cls=model_cls,
             model_config=model_config,
             dist_cls=dist_cls,
+            device=device,
         )
         if horizon is None:
             if hasattr(self.env, "max_horizon"):
@@ -316,8 +319,9 @@ class Algorithm:
             self.policy.feature_spec,
             self.env.action_spec,
         )
-        self.optimizer = self.init_optimizer(
-            self.policy.model, cls=optimizer_cls, config=optimizer_config
+        optimizer_config = optimizer_config or {}
+        self.optimizer = optimizer_cls(
+            self.policy.model.parameters(), **optimizer_config
         )
         self.lr_scheduler = LRScheduler(
             self.optimizer, schedule=lr_schedule, kind=lr_schedule_kind
@@ -474,40 +478,6 @@ class Algorithm:
         )  # type: ignore
         return buffer_spec.zero([num_envs, horizon])
 
-    @staticmethod
-    def init_optimizer(
-        model: Model,
-        /,
-        *,
-        cls: type[optim.Optimizer] = DAdaptAdam,
-        config: None | dict[str, Any] = None,
-    ) -> optim.Optimizer:
-        """Initialize the optimizer given `model` and its config.
-
-        Args:
-            model: The policy's model to update with the optimizer.
-            cls: Type of optimizer to use.
-            config: Optimizer parameter default overrides.
-
-        Returns:
-            A new optimizer instance.
-
-        """
-        config = config or {}
-        return cls(model.parameters(), **config)
-
-    @staticmethod
-    def init_policy(
-        observation_spec: TensorSpec,
-        action_spec: TensorSpec,
-        /,
-        *,
-        model_cls: None | type[Model] = None,
-        model_config: None | dict[str, Any] = None,
-        dist_cls: None | type[Distribution] = None,
-    ) -> Policy:
-        ...
-
     @property
     def num_envs(self) -> int:
         """Number of environments ran in parallel."""
@@ -560,7 +530,6 @@ class Algorithm:
         # Get some reward metrics for step data.
         min_rewards = float(torch.min(self.buffer[Batch.REWARDS]))
         max_rewards = float(torch.max(self.buffer[Batch.REWARDS]))
-        mean_rewards = float(torch.mean(self.buffer[Batch.REWARDS]))
         std_rewards, mean_rewards = torch.std_mean(self.buffer[Batch.REWARDS])
         std_rewards = float(std_rewards)
         mean_rewards = float(mean_rewards)
@@ -646,9 +615,9 @@ class Algorithm:
                 # Update step data.
                 step_data.append(
                     {
-                        "coefficients/entropy": float(self.entropy_scheduler.coeff),
-                        "coefficients/kl_div": float(self.kl_updater.coeff),
-                        "coefficients/vf": float(self.vf_coeff),
+                        "coefficients/entropy": self.entropy_scheduler.coeff,
+                        "coefficients/kl_div": self.kl_updater.coeff,
+                        "coefficients/vf": self.vf_coeff,
                         "losses/entropy": float(entropy_loss),
                         "losses/kl_div": float(kl_div_loss),
                         "losses/policy": float(policy_loss),
