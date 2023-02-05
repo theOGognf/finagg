@@ -1,6 +1,6 @@
 """Definitions regarding the union of a model and an action distribution."""
 
-from typing import Any, Literal
+from typing import Any
 
 import torch
 from tensordict import TensorDict
@@ -9,6 +9,7 @@ from ..specs import TensorSpec
 from .batch import DEVICE, Batch
 from .dist import Distribution
 from .model import Model
+from .view import VIEW_KIND
 
 
 class Policy:
@@ -85,7 +86,7 @@ class Policy:
         batch: TensorDict,
         /,
         *,
-        kind: Literal["last"] | Literal["all"] = "last",
+        kind: VIEW_KIND = "last",
         deterministic: bool = False,
         inplace: bool = False,
         requires_grad: bool = False,

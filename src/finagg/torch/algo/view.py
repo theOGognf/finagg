@@ -7,6 +7,7 @@ from tensordict import TensorDict
 
 from .batch import Batch
 
+VIEW_KIND = Union[Literal["last"], Literal["all"]]
 VIEW_METHOD = Union[Literal["rolling_window"], Literal["padded_rolling_window"]]
 
 
