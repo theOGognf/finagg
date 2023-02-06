@@ -357,56 +357,72 @@ class Algorithm:
             policy samples.
 
         """
-        # Gather initial observation.
-        if not (self.horizons % self.horizons_per_reset):
-            self.buffer[DataKeys.OBS][:, 0, ...] = self.env.reset(config=env_config)
-        else:
-            self.buffer[DataKeys.OBS][:, 0, ...] = self.buffer[DataKeys.OBS][:, -1, ...]
+        with profile_ms() as collect_ms:
+            # Gather initial observation.
+            if not (self.horizons % self.horizons_per_reset):
+                self.buffer[DataKeys.OBS][:, 0, ...] = self.env.reset(config=env_config)
+            else:
+                self.buffer[DataKeys.OBS][:, 0, ...] = self.buffer[DataKeys.OBS][
+                    :, -1, ...
+                ]
 
-        for t in range(self.horizon):
-            # Sample the policy and step the environment.
-            in_batch = self.buffer[:, : (t + 1), ...]
+            for t in range(self.horizon):
+                # Sample the policy and step the environment.
+                in_batch = self.buffer[:, : (t + 1), ...]
+                sample_batch = self.policy.sample(
+                    in_batch,
+                    kind="last",
+                    deterministic=deterministic,
+                    inplace=False,
+                    requires_grad=False,
+                    return_actions=True,
+                    return_logp=True,
+                    return_values=True,
+                    return_views=False,
+                )
+                out_batch = self.env.step(sample_batch[DataKeys.ACTIONS])
+
+                # Update the buffer using sampled policy data and environment
+                # transition data.
+                self.buffer[DataKeys.FEATURES][:, t, ...] = sample_batch[
+                    DataKeys.FEATURES
+                ]
+                self.buffer[DataKeys.ACTIONS][:, t, ...] = sample_batch[
+                    DataKeys.ACTIONS
+                ]
+                self.buffer[DataKeys.LOGP][:, t, ...] = sample_batch[DataKeys.LOGP]
+                self.buffer[DataKeys.VALUES][:, t, ...] = sample_batch[DataKeys.VALUES]
+                self.buffer[DataKeys.REWARDS][:, t, ...] = out_batch[DataKeys.REWARDS]
+                self.buffer[DataKeys.OBS][:, t + 1, ...] = out_batch[DataKeys.OBS]
+
+            # Sample features and value function at last observation.
+            in_batch = self.buffer[:, :, ...]
             sample_batch = self.policy.sample(
                 in_batch,
                 kind="last",
                 deterministic=deterministic,
                 inplace=False,
                 requires_grad=False,
-                return_actions=True,
-                return_logp=True,
+                return_actions=False,
+                return_logp=False,
                 return_values=True,
                 return_views=False,
             )
-            out_batch = self.env.step(sample_batch[DataKeys.ACTIONS])
+            self.buffer[DataKeys.FEATURES][:, -1, ...] = sample_batch[DataKeys.FEATURES]
+            self.buffer[DataKeys.VALUES][:, -1, ...] = sample_batch[DataKeys.VALUES]
 
-            # Update the buffer using sampled policy data and environment
-            # transition data.
-            self.buffer[DataKeys.FEATURES][:, t, ...] = sample_batch[DataKeys.FEATURES]
-            self.buffer[DataKeys.ACTIONS][:, t, ...] = sample_batch[DataKeys.ACTIONS]
-            self.buffer[DataKeys.LOGP][:, t, ...] = sample_batch[DataKeys.LOGP]
-            self.buffer[DataKeys.VALUES][:, t, ...] = sample_batch[DataKeys.VALUES]
-            self.buffer[DataKeys.REWARDS][:, t, ...] = out_batch[DataKeys.REWARDS]
-            self.buffer[DataKeys.OBS][:, t + 1, ...] = out_batch[DataKeys.OBS]
+            self.horizons += 1
+            self.buffered = True
 
-        # Sample features and value function at last observation.
-        in_batch = self.buffer[:, :, ...]
-        sample_batch = self.policy.sample(
-            in_batch,
-            kind="last",
-            deterministic=deterministic,
-            inplace=False,
-            requires_grad=False,
-            return_actions=False,
-            return_logp=False,
-            return_values=True,
-            return_views=False,
-        )
-        self.buffer[DataKeys.FEATURES][:, -1, ...] = sample_batch[DataKeys.FEATURES]
-        self.buffer[DataKeys.VALUES][:, -1, ...] = sample_batch[DataKeys.VALUES]
-
-        self.horizons += 1
-        self.buffered = True
-        return {""}
+            # Aggregate some metrics.
+            collect_stats: CollectStats = {
+                "rewards/min": float(torch.min(self.buffer[DataKeys.REWARDS])),
+                "rewards/max": float(torch.max(self.buffer[DataKeys.REWARDS])),
+                "rewards/mean": float(torch.mean(self.buffer[DataKeys.REWARDS])),
+                "rewards/std": float(torch.std(self.buffer[DataKeys.REWARDS])),
+            }
+        collect_stats["profiling/collect_ms"] = collect_ms()
+        return collect_stats
 
     @property
     def horizon(self) -> int:
