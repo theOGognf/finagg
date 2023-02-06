@@ -6,7 +6,7 @@ import torch
 from tensordict import TensorDict
 
 from ..specs import TensorSpec
-from .batch import DEVICE
+from .data import DEVICE
 
 
 class Env(Protocol):

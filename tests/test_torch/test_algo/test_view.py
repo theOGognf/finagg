@@ -2,7 +2,7 @@ import pytest
 import torch
 from tensordict import TensorDict
 
-from finagg.torch.algo.batch import Batch
+from finagg.torch.algo.data import DataKeys
 from finagg.torch.algo.view import (
     PaddedRollingWindow,
     RollingWindow,
@@ -23,8 +23,8 @@ PAD_LAST_SEQUENCE_CASE_0 = (
     torch.arange(B * T).reshape(B, T).float(),
     TensorDict(
         {
-            Batch.INPUTS: INPUTS,
-            Batch.PADDING_MASK: PADDING_MASK,
+            DataKeys.INPUTS: INPUTS,
+            DataKeys.PADDING_MASK: PADDING_MASK,
         },
         batch_size=[B, SIZE],
     ),
@@ -39,8 +39,8 @@ PAD_LAST_SEQUENCE_CASE_1 = (
     torch.arange(TOTAL).reshape(B, T, 2).float(),
     TensorDict(
         {
-            Batch.INPUTS: INPUTS,
-            Batch.PADDING_MASK: PADDING_MASK,
+            DataKeys.INPUTS: INPUTS,
+            DataKeys.PADDING_MASK: PADDING_MASK,
         },
         batch_size=[B, SIZE],
     ),
@@ -55,8 +55,8 @@ PAD_LAST_SEQUENCE_CASE_2 = (
     torch.arange(TOTAL).reshape(B, T, 1, 1, 1).float(),
     TensorDict(
         {
-            Batch.INPUTS: INPUTS,
-            Batch.PADDING_MASK: PADDING_MASK,
+            DataKeys.INPUTS: INPUTS,
+            DataKeys.PADDING_MASK: PADDING_MASK,
         },
         batch_size=[B, SIZE],
     ),
@@ -86,8 +86,8 @@ PAD_WHOLE_SEQUENCE_CASE_0 = (
     torch.arange(TOTAL).reshape(B, T).float(),
     TensorDict(
         {
-            Batch.INPUTS: INPUTS,
-            Batch.PADDING_MASK: PADDING_MASK,
+            DataKeys.INPUTS: INPUTS,
+            DataKeys.PADDING_MASK: PADDING_MASK,
         },
         batch_size=[B, T + (SIZE - 1)],
     ),
@@ -105,8 +105,8 @@ PAD_WHOLE_SEQUENCE_CASE_1 = (
     torch.arange(TOTAL).reshape(B, T, 2).float(),
     TensorDict(
         {
-            Batch.INPUTS: INPUTS,
-            Batch.PADDING_MASK: PADDING_MASK,
+            DataKeys.INPUTS: INPUTS,
+            DataKeys.PADDING_MASK: PADDING_MASK,
         },
         batch_size=[B, T + (SIZE - 1)],
     ),
@@ -125,8 +125,8 @@ PAD_WHOLE_SEQUENCE_CASE_2 = (
     torch.arange(TOTAL).reshape(B, T, 1, 1, 1).float(),
     TensorDict(
         {
-            Batch.INPUTS: INPUTS,
-            Batch.PADDING_MASK: PADDING_MASK,
+            DataKeys.INPUTS: INPUTS,
+            DataKeys.PADDING_MASK: PADDING_MASK,
         },
         batch_size=[B, T + (SIZE - 1)],
     ),
@@ -153,11 +153,11 @@ TOTAL = B * T
 INPUTS = TensorDict({"x": torch.arange(TOTAL).reshape(B, T).float()}, batch_size=[B, T])
 EXPECTED = TensorDict({}, batch_size=[B, T + SIZE - 1])
 EXPECTED["x"] = TensorDict({}, batch_size=[B, T + SIZE - 1])
-EXPECTED["x"][Batch.INPUTS] = torch.cat(
+EXPECTED["x"][DataKeys.INPUTS] = torch.cat(
     [torch.zeros(B, SIZE - 1), INPUTS["x"].squeeze(-1)], dim=1
 )
-EXPECTED["x"][Batch.PADDING_MASK] = torch.zeros(B, T + SIZE - 1).bool()
-EXPECTED["x"][Batch.PADDING_MASK][:, : (SIZE - 1)] = True
+EXPECTED["x"][DataKeys.PADDING_MASK] = torch.zeros(B, T + SIZE - 1).bool()
+EXPECTED["x"][DataKeys.PADDING_MASK][:, : (SIZE - 1)] = True
 PADDED_ROLLING_WINDOW_APPLY_ALL_CASE_0 = (
     INPUTS,
     RollingWindow.apply_all(EXPECTED, SIZE),
@@ -171,11 +171,11 @@ INPUTS = TensorDict(
 )
 EXPECTED = TensorDict({}, batch_size=[B, T + SIZE - 1])
 EXPECTED["x"] = TensorDict({}, batch_size=[B, T + SIZE - 1])
-EXPECTED["x"][Batch.INPUTS] = torch.cat(
+EXPECTED["x"][DataKeys.INPUTS] = torch.cat(
     [torch.zeros(B, SIZE - 1, 1), INPUTS["x"]], dim=1
 )
-EXPECTED["x"][Batch.PADDING_MASK] = torch.zeros(B, T + SIZE - 1).bool()
-EXPECTED["x"][Batch.PADDING_MASK][:, : (SIZE - 1)] = True
+EXPECTED["x"][DataKeys.PADDING_MASK] = torch.zeros(B, T + SIZE - 1).bool()
+EXPECTED["x"][DataKeys.PADDING_MASK][:, : (SIZE - 1)] = True
 PADDED_ROLLING_WINDOW_APPLY_ALL_CASE_1 = (
     INPUTS,
     RollingWindow.apply_all(EXPECTED, SIZE),
@@ -201,11 +201,11 @@ TOTAL = B * T
 INPUTS = TensorDict({"x": torch.arange(TOTAL).reshape(B, T).float()}, batch_size=[B, T])
 EXPECTED = TensorDict({}, batch_size=[B, SIZE])
 EXPECTED["x"] = TensorDict({}, batch_size=[B, SIZE])
-EXPECTED["x"][Batch.INPUTS] = torch.cat(
+EXPECTED["x"][DataKeys.INPUTS] = torch.cat(
     [torch.zeros(B, SIZE - 1), INPUTS["x"].squeeze(-1)], dim=1
 )
-EXPECTED["x"][Batch.PADDING_MASK] = torch.zeros(B, SIZE).bool()
-EXPECTED["x"][Batch.PADDING_MASK][:, : (SIZE - 1)] = True
+EXPECTED["x"][DataKeys.PADDING_MASK] = torch.zeros(B, SIZE).bool()
+EXPECTED["x"][DataKeys.PADDING_MASK][:, : (SIZE - 1)] = True
 PADDED_ROLLING_WINDOW_APPLY_LAST_CASE_0 = (
     INPUTS,
     EXPECTED,
@@ -219,8 +219,8 @@ INPUTS = TensorDict(
 )
 EXPECTED = TensorDict({}, batch_size=[B, SIZE])
 EXPECTED["x"] = TensorDict({}, batch_size=[B, SIZE])
-EXPECTED["x"][Batch.INPUTS] = INPUTS["x"][:, -SIZE:, ...]
-EXPECTED["x"][Batch.PADDING_MASK] = torch.zeros(B, SIZE).bool()
+EXPECTED["x"][DataKeys.INPUTS] = INPUTS["x"][:, -SIZE:, ...]
+EXPECTED["x"][DataKeys.PADDING_MASK] = torch.zeros(B, SIZE).bool()
 PADDED_ROLLING_WINDOW_APPLY_LAST_CASE_1 = (
     INPUTS,
     EXPECTED,

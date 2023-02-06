@@ -3,6 +3,9 @@
 import os
 import pathlib
 import re
+import time
+from contextlib import contextmanager
+from typing import Callable, Generator
 
 import numpy as np
 import pandas as pd
@@ -39,6 +42,13 @@ def join_with(s: str | list[str], /, delim: str) -> str:
     if isinstance(s, str):
         s = [s]
     return delim.join(s)
+
+
+@contextmanager
+def profile_ms() -> Generator[Callable[[], float], None, None]:
+    """Profiling context manager in milliseconds."""
+    start = time.perf_counter_ns()
+    yield lambda: 1e6 * (time.perf_counter_ns() - start)
 
 
 def quantile_clip(

@@ -1,6 +1,6 @@
 """Definitions related to RL algorithms (mainly variants of PPO)."""
 
-from typing import Any, TypedDict
+from typing import Any
 
 import pandas as pd
 import torch
@@ -9,34 +9,15 @@ import torch.optim as optim
 from tensordict import TensorDict
 from torch.utils.data import DataLoader
 
+from ...utils import profile_ms
 from ..optim import DAdaptAdam
 from ..specs import CompositeSpec, TensorSpec, UnboundedContinuousTensorSpec
-from .batch import DEVICE, Batch
+from .data import DEVICE, CollectStats, DataKeys, StepStats
 from .dist import Distribution
 from .env import Env
 from .model import Model
 from .policy import Policy
 from .scheduler import SCHEDULE_KIND, EntropyScheduler, KLUpdater, LRScheduler
-
-StepData = TypedDict(
-    "StepData",
-    {
-        "coefficients/entropy": float,
-        "coefficients/kl_div": float,
-        "coefficients/vf": float,
-        "losses/entropy": float,
-        "losses/kl_div": float,
-        "losses/policy": float,
-        "losses/vf": float,
-        "losses/total": float,
-        "profiling/collect_ms": float,
-        "profiling/step_ms": float,
-        "rewards/min": float,
-        "rewards/max": float,
-        "rewards/mean": float,
-        "rewards/std": float,
-    },
-)
 
 
 class Algorithm:
@@ -285,7 +266,7 @@ class Algorithm:
         entropy_coeff_schedule_kind: SCHEDULE_KIND = "step",
         gae_lambda: float = 0.95,
         gamma: float = 0.95,
-        sgd_minibatch_size: None | int = -1,
+        sgd_minibatch_size: None | int = None,
         num_sgd_iter: int = 4,
         shuffle_minibatches: bool = True,
         clip_param: float = 0.2,
@@ -348,7 +329,7 @@ class Algorithm:
 
     def collect(
         self, *, env_config: None | dict[str, Any] = None, deterministic: bool = False
-    ) -> TensorDict:
+    ) -> CollectStats:
         """Collect environment transitions and policy samples in a buffer.
 
         This is one of the main `Algorithm` methods. This is usually called
@@ -372,17 +353,15 @@ class Algorithm:
                 evaluation.
 
         Returns:
-            The reference to the buffer full of environment experiences and
-            sampled policy data (not a copy). Note, the observation key is
-            the only valid final time/sequence element in the returned buffer.
-            Other keys will contain null/zeroed data.
+            Summary statistics related to the collected experiences and
+            policy samples.
 
         """
         # Gather initial observation.
         if not (self.horizons % self.horizons_per_reset):
-            self.buffer[Batch.OBS][:, 0, ...] = self.env.reset(config=env_config)
+            self.buffer[DataKeys.OBS][:, 0, ...] = self.env.reset(config=env_config)
         else:
-            self.buffer[Batch.OBS][:, 0, ...] = self.buffer[Batch.OBS][:, -1, ...]
+            self.buffer[DataKeys.OBS][:, 0, ...] = self.buffer[DataKeys.OBS][:, -1, ...]
 
         for t in range(self.horizon):
             # Sample the policy and step the environment.
@@ -398,16 +377,16 @@ class Algorithm:
                 return_values=True,
                 return_views=False,
             )
-            out_batch = self.env.step(sample_batch[Batch.ACTIONS])
+            out_batch = self.env.step(sample_batch[DataKeys.ACTIONS])
 
             # Update the buffer using sampled policy data and environment
             # transition data.
-            self.buffer[Batch.FEATURES][:, t, ...] = sample_batch[Batch.FEATURES]
-            self.buffer[Batch.ACTIONS][:, t, ...] = sample_batch[Batch.ACTIONS]
-            self.buffer[Batch.LOGP][:, t, ...] = sample_batch[Batch.LOGP]
-            self.buffer[Batch.VALUES][:, t, ...] = sample_batch[Batch.VALUES]
-            self.buffer[Batch.REWARDS][:, t, ...] = out_batch[Batch.REWARDS]
-            self.buffer[Batch.OBS][:, t + 1, ...] = out_batch[Batch.OBS]
+            self.buffer[DataKeys.FEATURES][:, t, ...] = sample_batch[DataKeys.FEATURES]
+            self.buffer[DataKeys.ACTIONS][:, t, ...] = sample_batch[DataKeys.ACTIONS]
+            self.buffer[DataKeys.LOGP][:, t, ...] = sample_batch[DataKeys.LOGP]
+            self.buffer[DataKeys.VALUES][:, t, ...] = sample_batch[DataKeys.VALUES]
+            self.buffer[DataKeys.REWARDS][:, t, ...] = out_batch[DataKeys.REWARDS]
+            self.buffer[DataKeys.OBS][:, t + 1, ...] = out_batch[DataKeys.OBS]
 
         # Sample features and value function at last observation.
         in_batch = self.buffer[:, :, ...]
@@ -422,12 +401,12 @@ class Algorithm:
             return_values=True,
             return_views=False,
         )
-        self.buffer[Batch.FEATURES][:, -1, ...] = sample_batch[Batch.FEATURES]
-        self.buffer[Batch.VALUES][:, -1, ...] = sample_batch[Batch.VALUES]
+        self.buffer[DataKeys.FEATURES][:, -1, ...] = sample_batch[DataKeys.FEATURES]
+        self.buffer[DataKeys.VALUES][:, -1, ...] = sample_batch[DataKeys.VALUES]
 
         self.horizons += 1
         self.buffered = True
-        return self.buffer
+        return {""}
 
     @property
     def horizon(self) -> int:
@@ -466,14 +445,14 @@ class Algorithm:
         """
         buffer_spec = CompositeSpec(
             {
-                Batch.OBS: observation_spec,
-                Batch.REWARDS: UnboundedContinuousTensorSpec(1),
-                Batch.FEATURES: feature_spec,
-                Batch.ACTIONS: action_spec,
-                Batch.LOGP: UnboundedContinuousTensorSpec(1),
-                Batch.VALUES: UnboundedContinuousTensorSpec(1),
-                Batch.ADVANTAGES: UnboundedContinuousTensorSpec(1),
-                Batch.RETURNS: UnboundedContinuousTensorSpec(1),
+                DataKeys.OBS: observation_spec,
+                DataKeys.REWARDS: UnboundedContinuousTensorSpec(1),
+                DataKeys.FEATURES: feature_spec,
+                DataKeys.ACTIONS: action_spec,
+                DataKeys.LOGP: UnboundedContinuousTensorSpec(1),
+                DataKeys.VALUES: UnboundedContinuousTensorSpec(1),
+                DataKeys.ADVANTAGES: UnboundedContinuousTensorSpec(1),
+                DataKeys.RETURNS: UnboundedContinuousTensorSpec(1),
             }
         )  # type: ignore
         return buffer_spec.zero([num_envs, horizon])
@@ -483,7 +462,7 @@ class Algorithm:
         """Number of environments ran in parallel."""
         return int(self.buffer.size(0))
 
-    def step(self) -> StepData:
+    def step(self) -> StepStats:
         """Take a step with the algorithm, using collected environment
         experiences to update the policy.
 
@@ -498,154 +477,152 @@ class Algorithm:
                 "Call `collect` once prior to `step`."
             )
 
-        # Get number of environments and horizon. Remember, there's an extra
-        # sample in the horizon because we store the final environment observation
-        # for the next `collect` call and value function estimate for bootstrapping.
-        B = self.num_envs
-        T = self.horizon - 1
+        with profile_ms() as step_ms:
+            # Get number of environments and horizon. Remember, there's an extra
+            # sample in the horizon because we store the final environment observation
+            # for the next `collect` call and value function estimate for bootstrapping.
+            B = self.num_envs
+            T = self.horizon - 1
 
-        # Generalized Advantage Estimation (GAE) and returns bootstrapping.
-        prev_advantage = 0.0
-        for t in reversed(range(T)):
-            delta = self.buffer[Batch.REWARDS][:, t, ...] + (
-                self.gamma * self.buffer[Batch.VALUES][:, t + 1, ...]
-                - self.buffer[Batch.VALUES][:, t, ...]
+            # Generalized Advantage Estimation (GAE) and returns bootstrapping.
+            prev_advantage = 0.0
+            for t in reversed(range(T)):
+                delta = self.buffer[DataKeys.REWARDS][:, t, ...] + (
+                    self.gamma * self.buffer[DataKeys.VALUES][:, t + 1, ...]
+                    - self.buffer[DataKeys.VALUES][:, t, ...]
+                )
+                self.buffer[DataKeys.ADVANTAGES][:, t, ...] = prev_advantage = delta + (
+                    self.gamma * self.gae_lambda * prev_advantage
+                )
+            self.buffer[DataKeys.RETURNS] = (
+                self.buffer[DataKeys.ADVANTAGES] + self.buffer[DataKeys.VALUES]
             )
-            self.buffer[Batch.ADVANTAGES][:, t, ...] = prev_advantage = delta + (
-                self.gamma * self.gae_lambda * prev_advantage
+
+            # Batchify the buffer. Save the last sample for adding it back to the
+            # buffer. Remove the last sample afterwards since it contains dummy
+            # data.
+            final_obs = self.buffer[DataKeys.OBS][:, -1, ...]
+            self.buffer = self.buffer[:, :-1, ...]
+            views = self.policy.model.apply_view_requirements(self.buffer, kind="all")
+            self.buffer = self.buffer.reshape(-1)
+            self.buffer[DataKeys.VIEWS] = views
+
+            # Free buffer elements that aren't used for the rest of the step.
+            del self.buffer[DataKeys.OBS]
+            del self.buffer[DataKeys.REWARDS]
+            del self.buffer[DataKeys.VALUES]
+
+            # Main PPO loop.
+            step_stats_per_batch: list[StepStats] = []
+            loader = DataLoader(
+                self.buffer,
+                batch_size=self.sgd_minibatch_size,
+                shuffle=self.shuffle_minibatches,
+                collate_fn=lambda x: x,
             )
-        self.buffer[Batch.RETURNS] = (
-            self.buffer[Batch.ADVANTAGES] + self.buffer[Batch.VALUES]
-        )
+            for _ in range(self.num_sgd_iter):
+                for minibatch in loader:
+                    sample_batch = self.policy.sample(
+                        minibatch,
+                        kind="all",
+                        deterministic=False,
+                        inplace=False,
+                        requires_grad=True,
+                        return_actions=False,
+                        return_logp=False,
+                        return_values=True,
+                        return_views=False,
+                    )
 
-        # Batchify the buffer. Save the last sample for adding it back to the
-        # buffer. Remove the last sample afterwards since it contains dummy
-        # data.
-        final_obs = self.buffer[Batch.OBS][:, -1, ...]
-        self.buffer = self.buffer[:, :-1, ...]
-        views = self.policy.model.apply_view_requirements(self.buffer, kind="all")
-        self.buffer = self.buffer.reshape(-1)
-        self.buffer[Batch.VIEWS] = views
+                    # Get action distributions and their log probability ratios.
+                    prev_action_dist = self.policy.dist_cls(
+                        minibatch[DataKeys.FEATURES], self.policy.model
+                    )
+                    curr_action_dist = self.policy.dist_cls(
+                        sample_batch[DataKeys.FEATURES], self.policy.model
+                    )
+                    logp_ratio = torch.exp(
+                        curr_action_dist.logp(minibatch[DataKeys.ACTIONS])
+                        - minibatch[DataKeys.LOGP]
+                    )
 
-        # Get some reward metrics for step data.
-        min_rewards = float(torch.min(self.buffer[Batch.REWARDS]))
-        max_rewards = float(torch.max(self.buffer[Batch.REWARDS]))
-        std_rewards, mean_rewards = torch.std_mean(self.buffer[Batch.REWARDS])
-        std_rewards = float(std_rewards)
-        mean_rewards = float(mean_rewards)
+                    # Compute main, required losses.
+                    vf_loss = torch.clamp(
+                        torch.pow(
+                            minibatch[DataKeys.RETURNS] - sample_batch[DataKeys.VALUES],
+                            2.0,
+                        ),
+                        0.0,
+                        self.vf_clip_param,
+                    ).mean()
+                    policy_loss = torch.min(
+                        minibatch[DataKeys.ADVANTAGES] * logp_ratio,
+                        minibatch[DataKeys.ADVANTAGES]
+                        * torch.clamp(
+                            logp_ratio, 1 - self.clip_param, 1 + self.clip_param
+                        ),
+                    ).mean()
+                    entropy_loss = curr_action_dist.entropy().mean()
 
-        # Free buffer elements that aren't used for the rest of the step.
-        del self.buffer[Batch.OBS]
-        del self.buffer[Batch.REWARDS]
-        del self.buffer[Batch.VALUES]
+                    # Maximize entropy, maximize policy actions associated with high advantages,
+                    # minimize discounted return estimation error.
+                    total_loss = (
+                        self.vf_coeff * vf_loss
+                        - policy_loss
+                        - self.entropy_scheduler.coeff * entropy_loss
+                    )
 
-        # Main PPO loop.
-        step_data: list[StepData] = []
-        loader = DataLoader(
-            self.buffer,
-            batch_size=self.sgd_minibatch_size,
-            shuffle=self.shuffle_minibatches,
-            collate_fn=lambda x: x,
-        )
-        for _ in range(self.num_sgd_iter):
-            for minibatch in loader:
-                sample_batch = self.policy.sample(
-                    minibatch,
-                    kind="all",
-                    deterministic=False,
-                    inplace=False,
-                    requires_grad=True,
-                    return_actions=False,
-                    return_logp=False,
-                    return_values=True,
-                    return_views=False,
-                )
+                    # Optional KL divergence loss.
+                    if self.kl_updater.initial_coeff > 0:
+                        kl_div_loss = prev_action_dist.kl_div(curr_action_dist).mean()
+                        total_loss += self.kl_updater.coeff * kl_div_loss
+                        self.kl_updater.step(float(kl_div_loss))
+                    else:
+                        kl_div_loss = torch.tensor(0.0, device=self.device)
 
-                # Get action distributions and their log probability ratios.
-                prev_action_dist = self.policy.dist_cls(
-                    minibatch[Batch.FEATURES], self.policy.model
-                )
-                curr_action_dist = self.policy.dist_cls(
-                    sample_batch[Batch.FEATURES], self.policy.model
-                )
-                logp_ratio = torch.exp(
-                    curr_action_dist.logp(minibatch[Batch.ACTIONS])
-                    - minibatch[Batch.LOGP]
-                )
+                    # Optimize.
+                    self.optimizer.zero_grad()
+                    total_loss.backward()
+                    nn.utils.clip_grad_norm_(
+                        self.policy.model.parameters(), self.max_grad_norm
+                    )
+                    self.optimizer.step()
 
-                # Compute main, required losses.
-                vf_loss = torch.clamp(
-                    torch.pow(
-                        minibatch[Batch.RETURNS] - sample_batch[Batch.VALUES], 2.0
-                    ),
-                    0.0,
-                    self.vf_clip_param,
-                ).mean()
-                policy_loss = torch.min(
-                    minibatch[Batch.ADVANTAGES] * logp_ratio,
-                    minibatch[Batch.ADVANTAGES]
-                    * torch.clamp(logp_ratio, 1 - self.clip_param, 1 + self.clip_param),
-                ).mean()
-                entropy_loss = curr_action_dist.entropy().mean()
+                    # Update step data.
+                    step_stats_per_batch.append(
+                        {
+                            "coefficients/entropy": self.entropy_scheduler.coeff,
+                            "coefficients/kl_div": self.kl_updater.coeff,
+                            "coefficients/vf": self.vf_coeff,
+                            "losses/entropy": float(entropy_loss),
+                            "losses/kl_div": float(kl_div_loss),
+                            "losses/policy": float(policy_loss),
+                            "losses/vf": float(vf_loss),
+                            "losses/total": float(total_loss),
+                        }
+                    )
 
-                # Maximize entropy, maximize policy actions associated with high advantages,
-                # minimize discounted return estimation error.
-                total_loss = (
-                    self.vf_coeff * vf_loss
-                    - policy_loss
-                    - self.entropy_scheduler.coeff * entropy_loss
-                )
+            # Update schedulers.
+            self.lr_scheduler.step(B * T)
+            self.entropy_scheduler.step(B * T)
 
-                # Optional KL divergence loss.
-                if self.kl_updater.initial_coeff > 0:
-                    kl_div_loss = prev_action_dist.kl_div(curr_action_dist).mean()
-                    total_loss += self.kl_updater.coeff * kl_div_loss
-                    self.kl_updater.step(float(kl_div_loss))
-                else:
-                    kl_div_loss = torch.tensor(0.0, device=self.device)
+            # Reset the buffer and buffered flag.
+            self.buffer = self.init_buffer(
+                B,
+                T + 1,
+                self.env.observation_spec,
+                self.policy.feature_spec,
+                self.env.action_spec,
+            )
+            self.buffer[:, -1, ...] = final_obs
+            self.buffered = False
 
-                # Optimize.
-                self.optimizer.zero_grad()
-                total_loss.backward()
-                nn.utils.clip_grad_norm_(
-                    self.policy.model.parameters(), self.max_grad_norm
-                )
-                self.optimizer.step()
-
-                # Update step data.
-                step_data.append(
-                    {
-                        "coefficients/entropy": self.entropy_scheduler.coeff,
-                        "coefficients/kl_div": self.kl_updater.coeff,
-                        "coefficients/vf": self.vf_coeff,
-                        "losses/entropy": float(entropy_loss),
-                        "losses/kl_div": float(kl_div_loss),
-                        "losses/policy": float(policy_loss),
-                        "losses/vf": float(vf_loss),
-                        "losses/total": float(total_loss),
-                        "rewards/min": min_rewards,
-                        "rewards/max": max_rewards,
-                        "rewards/mean": mean_rewards,
-                        "rewards/std": std_rewards,
-                    }
-                )
-
-        # Update schedulers.
-        self.lr_scheduler.step(B * T)
-        self.entropy_scheduler.step(B * T)
-
-        # Reset the buffer and buffered flag.
-        self.buffer = self.init_buffer(
-            B,
-            T + 1,
-            self.env.observation_spec,
-            self.policy.feature_spec,
-            self.env.action_spec,
-        )
-        self.buffer[:, -1, ...] = final_obs
-        self.buffered = False
-
-        return pd.DataFrame(step_data).mean(axis=0).to_dict()  # type: ignore
+            # Update algo stats.
+            step_stats: StepStats = (
+                pd.DataFrame(step_stats_per_batch).mean(axis=0).to_dict()
+            )
+        step_stats["profiling/step_ms"] = step_ms()
+        return step_stats
 
     def to(self, device: DEVICE, /) -> "Algorithm":
         """Move the algorithm and its attributes to `device`."""

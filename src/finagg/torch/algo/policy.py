@@ -6,7 +6,7 @@ import torch
 from tensordict import TensorDict
 
 from ..specs import TensorSpec
-from .batch import DEVICE, Batch
+from .data import DEVICE, DataKeys
 from .dist import Distribution
 from .model import Model
 from .view import VIEW_KIND
@@ -48,11 +48,11 @@ class Policy:
         self,
         observation_spec: TensorSpec,
         action_spec: TensorSpec,
-        model_cls: type[Model],
-        model_config: dict[str, Any],
-        dist_cls: type[Distribution],
         /,
         *,
+        model_cls: None | type[Model] = None,
+        model_config: None | dict[str, Any] = None,
+        dist_cls: None | type[Distribution] = None,
         device: DEVICE = "cpu",
     ) -> None:
         self.model = model_cls(observation_spec, action_spec, config=model_config).to(
@@ -148,8 +148,8 @@ class Policy:
             dict can vary.
 
         """
-        if Batch.VIEWS in batch:
-            in_batch = batch[Batch.VIEWS]
+        if DataKeys.VIEWS in batch:
+            in_batch = batch[DataKeys.VIEWS]
         else:
             in_batch = self.model.apply_view_requirements(batch, kind=kind)
 
@@ -166,17 +166,17 @@ class Policy:
             if inplace
             else TensorDict({}, batch_size=in_batch.batch_size, device=batch.device)
         )
-        out[Batch.FEATURES] = features
+        out[DataKeys.FEATURES] = features
         if return_actions:
             dist = self.dist_cls(features, self.model)
             actions = dist.deterministic_sample() if deterministic else dist.sample()
-            out[Batch.ACTIONS] = actions
+            out[DataKeys.ACTIONS] = actions
             if return_logp:
-                out[Batch.LOGP] = dist.logp(actions)
+                out[DataKeys.LOGP] = dist.logp(actions)
         if return_values:
-            out[Batch.VALUES] = self.model.value_function()
+            out[DataKeys.VALUES] = self.model.value_function()
         if return_views:
-            out[Batch.VIEWS] = in_batch
+            out[DataKeys.VIEWS] = in_batch
 
         torch.set_grad_enabled(prev)
         return out
