@@ -109,3 +109,24 @@ class Categorical(TorchDistributionWrapper):
 
     def deterministic_sample(self) -> torch.Tensor:
         return self.dist.mode  # type: ignore[no-any-return]
+
+
+class DiagGaussian(TorchDistributionWrapper):
+
+    dist: torch.distributions.Normal
+
+    def __init__(self, features: TensorDict, model: Model) -> None:
+        super().__init__(features, model)
+        self.dist = torch.distributions.Normal(loc=features["mean"], scale=torch.exp(features["log_std"]))  # type: ignore[no-untyped-call]
+
+    def deterministic_sample(self) -> torch.Tensor:
+        return self.dist.mode  # type: ignore[no-any-return]
+
+    def entropy(self) -> torch.Tensor:
+        return super().entropy().sum(-1)
+
+    def kl_div(self, other: Self) -> torch.Tensor:
+        return super().kl_div(other).sum(-1)
+
+    def logp(self, samples: torch.Tensor) -> torch.Tensor:
+        return super().logp(samples).sum(-1)
