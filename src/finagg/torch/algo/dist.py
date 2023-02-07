@@ -7,15 +7,11 @@ import torch
 from tensordict import TensorDict
 from typing_extensions import Self
 
-from ..specs import (
-    CompositeSpec,
-    DiscreteTensorSpec,
-    TensorSpec,
-    UnboundedContinuousTensorSpec,
-)
+from ..specs import CompositeSpec, DiscreteTensorSpec, UnboundedContinuousTensorSpec
 from .model import Model
 
-_S = TypeVar("_S")
+_ActionSpec = TypeVar("_ActionSpec")
+_FeatureSpec = TypeVar("_FeatureSpec")
 
 
 class Distribution(ABC):
@@ -84,7 +80,7 @@ class Distribution(ABC):
         """Draw a stochastic sample from the probability distribution."""
 
 
-class TorchDistributionWrapper(Distribution, Generic[_S]):
+class TorchDistributionWrapper(Distribution, Generic[_ActionSpec, _FeatureSpec]):
     """Wrapper class for `torch.distributions`.
 
     This is taken directly from RLlib:
@@ -106,7 +102,7 @@ class TorchDistributionWrapper(Distribution, Generic[_S]):
 
     @abstractmethod
     @staticmethod
-    def required_feature_spec(action_spec: _S, /) -> TensorSpec:
+    def required_feature_spec(action_spec: _ActionSpec, /) -> _FeatureSpec:
         """Define feature spec requirements for the distribution given an
         action spec.
 
@@ -119,7 +115,7 @@ class TorchDistributionWrapper(Distribution, Generic[_S]):
         return self.dist.sample()  # type: ignore[no-any-return, no-untyped-call]
 
 
-class Categorical(TorchDistributionWrapper[DiscreteTensorSpec]):
+class Categorical(TorchDistributionWrapper[DiscreteTensorSpec, CompositeSpec]):
 
     dist: torch.distributions.Categorical
 
@@ -131,7 +127,7 @@ class Categorical(TorchDistributionWrapper[DiscreteTensorSpec]):
         return self.dist.mode  # type: ignore[no-any-return]
 
     @staticmethod
-    def required_feature_spec(action_spec: DiscreteTensorSpec, /) -> TensorSpec:
+    def required_feature_spec(action_spec: DiscreteTensorSpec, /) -> CompositeSpec:
         return CompositeSpec(
             logits=UnboundedContinuousTensorSpec(
                 shape=action_spec.space.n, device=action_spec.device
@@ -139,7 +135,9 @@ class Categorical(TorchDistributionWrapper[DiscreteTensorSpec]):
         )  # type: ignore[no-untyped-call]
 
 
-class DiagGaussian(TorchDistributionWrapper[UnboundedContinuousTensorSpec]):
+class DiagGaussian(
+    TorchDistributionWrapper[UnboundedContinuousTensorSpec, CompositeSpec]
+):
 
     dist: torch.distributions.Normal
 
@@ -162,7 +160,7 @@ class DiagGaussian(TorchDistributionWrapper[UnboundedContinuousTensorSpec]):
     @staticmethod
     def required_feature_spec(
         action_spec: UnboundedContinuousTensorSpec, /
-    ) -> TensorSpec:
+    ) -> CompositeSpec:
         return CompositeSpec(
             mean=UnboundedContinuousTensorSpec(
                 shape=action_spec.shape, device=action_spec.device
