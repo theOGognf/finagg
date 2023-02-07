@@ -357,7 +357,7 @@ class Algorithm:
             policy samples.
 
         """
-        with profile_ms() as collect_ms:
+        with profile_ms() as collect_timer:
             # Gather initial observation.
             if not (self.horizons % self.horizons_per_reset):
                 self.buffer[DataKeys.OBS][:, 0, ...] = self.env.reset(config=env_config)
@@ -421,7 +421,7 @@ class Algorithm:
                 "rewards/mean": float(torch.mean(self.buffer[DataKeys.REWARDS])),
                 "rewards/std": float(torch.std(self.buffer[DataKeys.REWARDS])),
             }
-        collect_stats["profiling/collect_ms"] = collect_ms()
+        collect_stats["profiling/collect_ms"] = collect_timer()
         return collect_stats
 
     @property
@@ -483,8 +483,7 @@ class Algorithm:
         experiences to update the policy.
 
         Returns:
-            Data associated with the step and current algorithm hyperparameter
-            values.
+            Data associated with the step (losses, loss coefficients, etc.).
 
         """
         if not self.buffered:
@@ -493,7 +492,7 @@ class Algorithm:
                 "Call `collect` once prior to `step`."
             )
 
-        with profile_ms() as step_ms:
+        with profile_ms() as step_timer:
             # Get number of environments and horizon. Remember, there's an extra
             # sample in the horizon because we store the final environment observation
             # for the next `collect` call and value function estimate for bootstrapping.
@@ -637,7 +636,7 @@ class Algorithm:
             step_stats: StepStats = (
                 pd.DataFrame(step_stats_per_batch).mean(axis=0).to_dict()
             )
-        step_stats["profiling/step_ms"] = step_ms()
+        step_stats["profiling/step_ms"] = step_timer()
         return step_stats
 
     def to(self, device: DEVICE, /) -> "Algorithm":

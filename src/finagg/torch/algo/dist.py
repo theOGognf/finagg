@@ -44,7 +44,7 @@ class Distribution(ABC):
         self.model = model
 
     @abstractmethod
-    def deterministic_sample(self) -> TensorDict:
+    def deterministic_sample(self) -> torch.Tensor | TensorDict:
         """Draw a deterministic sample from the probability distribution."""
 
     @abstractmethod
@@ -63,12 +63,48 @@ class Distribution(ABC):
         """
 
     @abstractmethod
-    def logp(self, samples: TensorDict) -> torch.Tensor:
+    def logp(self, samples: torch.Tensor | TensorDict) -> torch.Tensor:
         """Compute the log probability of sampling `samples` from the probability
         distribution.
 
         """
 
     @abstractmethod
-    def sample(self) -> TensorDict:
+    def sample(self) -> torch.Tensor | TensorDict:
         """Draw a stochastic sample from the probability distribution."""
+
+
+class TorchDistributionWrapper(Distribution):
+    """Wrapper class for `torch.distributions`.
+
+    This is taken directly from RLlib:
+        https://github.com/ray-project/ray/blob/master/rllib/models/torch/torch_action_dist.py
+
+    """
+
+    #: Underlying PyTorch distribution.
+    dist: torch.distributions.Distribution
+
+    def entropy(self) -> torch.Tensor:
+        return self.dist.entropy()
+
+    def kl_div(self, other: "TorchDistributionWrapper") -> torch.Tensor:
+        return torch.distributions.kl.kl_divergence(self.dist, other.dist)
+
+    def logp(self, samples: torch.Tensor) -> torch.Tensor:
+        return self.dist.log_prob(samples)
+
+    def sample(self) -> torch.Tensor:
+        return self.dist.sample()
+
+
+class Categorical(TorchDistributionWrapper):
+
+    dist: torch.distributions.Categorical
+
+    def __init__(self, features: TensorDict, model: Model) -> None:
+        super().__init__(features, model)
+        self.dist = torch.distributions.Categorical(logits=features["logits"])
+
+    def deterministic_sample(self) -> torch.Tensor:
+        return self.dist.mode
