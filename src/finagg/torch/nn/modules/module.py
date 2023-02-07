@@ -9,7 +9,7 @@ _P = ParamSpec("_P")
 _T = TypeVar("_T")
 
 
-class Module(ABC, nn.Module, Generic[_P, _T]):
+class Module(ABC, Generic[_P, _T], nn.Module):
     """Workaround for `torch.nn.Module` variadic generics."""
 
     def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> _T:

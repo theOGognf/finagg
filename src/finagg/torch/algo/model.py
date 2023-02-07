@@ -1,12 +1,13 @@
 """Abstract model definition."""
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from copy import deepcopy
 from typing import Any
 
 import torch
 from tensordict import TensorDict
 
+from ..nn import Module
 from ..specs import (
     CompositeSpec,
     DiscreteTensorSpec,
@@ -18,7 +19,14 @@ from .data import DataKeys
 from .view import VIEW_KIND, ViewRequirement
 
 
-class Model(ABC, torch.nn.Module):
+class Model(
+    Module[
+        [
+            TensorDict,
+        ],
+        TensorDict,
+    ]
+):
     """Policy component that processes environment observations into
     a value function approximation and features to be consumed by an
     action distribution for action sampling.
@@ -79,13 +87,9 @@ class Model(ABC, torch.nn.Module):
         super().__init__()
         self.observation_spec = observation_spec
         self.action_spec = action_spec
-        self.config = config if config else {}
+        self.config = config or {}
         self.feature_spec = self.default_feature_spec(action_spec)
         self.view_requirements = {DataKeys.OBS: ViewRequirement(DataKeys.OBS, shift=0)}
-
-    def __call__(self, *args: Any, **kwds: Any) -> torch.Tensor | TensorDict:
-        """Call the model's forward pass. This just supplies a type signature."""
-        return super().__call__(*args, **kwds)
 
     def apply_view_requirements(
         self, batch: TensorDict, /, *, kind: VIEW_KIND = "last"
