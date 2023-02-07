@@ -1,6 +1,7 @@
 """Abstract and canned action distributions."""
 
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
 
 import torch
 from tensordict import TensorDict
@@ -13,6 +14,8 @@ from ..specs import (
     UnboundedContinuousTensorSpec,
 )
 from .model import Model
+
+_S = TypeVar("_S")
 
 
 class Distribution(ABC):
@@ -76,20 +79,12 @@ class Distribution(ABC):
 
         """
 
-    @classmethod
-    def required_feature_spec(cls, action_spec: TensorSpec, /) -> TensorSpec:
-        """Return the feature spec required by the distribution according to
-        an action spec.
-
-        """
-        raise NotImplementedError(f"{cls} does not support `required_feature_spec`")
-
     @abstractmethod
     def sample(self) -> torch.Tensor | TensorDict:
         """Draw a stochastic sample from the probability distribution."""
 
 
-class TorchDistributionWrapper(Distribution):
+class TorchDistributionWrapper(Distribution, Generic[_S]):
     """Wrapper class for `torch.distributions`.
 
     This is taken directly from RLlib:
@@ -109,11 +104,22 @@ class TorchDistributionWrapper(Distribution):
     def logp(self, samples: torch.Tensor) -> torch.Tensor:
         return self.dist.log_prob(samples)  # type: ignore[no-any-return, no-untyped-call]
 
+    @abstractmethod
+    @staticmethod
+    def required_feature_spec(action_spec: _S, /) -> TensorSpec:
+        """Define feature spec requirements for the distribution given an
+        action spec.
+
+        Wrapper distributions only support one action spec type given by
+        the generic `_S`.
+
+        """
+
     def sample(self) -> torch.Tensor:
         return self.dist.sample()  # type: ignore[no-any-return, no-untyped-call]
 
 
-class Categorical(TorchDistributionWrapper):
+class Categorical(TorchDistributionWrapper[DiscreteTensorSpec]):
 
     dist: torch.distributions.Categorical
 
@@ -124,20 +130,16 @@ class Categorical(TorchDistributionWrapper):
     def deterministic_sample(self) -> torch.Tensor:
         return self.dist.mode  # type: ignore[no-any-return]
 
-    @classmethod
-    def required_feature_spec(cls, action_spec: TensorSpec, /) -> TensorSpec:
-        match action_spec:
-            case DiscreteTensorSpec():
-                return CompositeSpec(
-                    logits=UnboundedContinuousTensorSpec(
-                        shape=action_spec.space.n, device=action_spec.device
-                    )
-                )  # type: ignore[no-untyped-call]
-            case _:
-                raise TypeError(f"{cls.__name__} does not support {action_spec}")
+    @staticmethod
+    def required_feature_spec(action_spec: DiscreteTensorSpec, /) -> TensorSpec:
+        return CompositeSpec(
+            logits=UnboundedContinuousTensorSpec(
+                shape=action_spec.space.n, device=action_spec.device
+            )
+        )  # type: ignore[no-untyped-call]
 
 
-class DiagGaussian(TorchDistributionWrapper):
+class DiagGaussian(TorchDistributionWrapper[UnboundedContinuousTensorSpec]):
 
     dist: torch.distributions.Normal
 
@@ -157,17 +159,15 @@ class DiagGaussian(TorchDistributionWrapper):
     def logp(self, samples: torch.Tensor) -> torch.Tensor:
         return super().logp(samples).sum(-1)
 
-    @classmethod
-    def required_feature_spec(cls, action_spec: TensorSpec, /) -> TensorSpec:
-        match action_spec:
-            case UnboundedContinuousTensorSpec():
-                return CompositeSpec(
-                    mean=UnboundedContinuousTensorSpec(
-                        shape=action_spec.shape, device=action_spec.device
-                    ),
-                    log_std=UnboundedContinuousTensorSpec(
-                        shape=action_spec.shape, device=action_spec.device
-                    ),
-                )  # type: ignore[no-untyped-call]
-            case _:
-                raise TypeError(f"{cls.__name__} does not support {action_spec}")
+    @staticmethod
+    def required_feature_spec(
+        action_spec: UnboundedContinuousTensorSpec, /
+    ) -> TensorSpec:
+        return CompositeSpec(
+            mean=UnboundedContinuousTensorSpec(
+                shape=action_spec.shape, device=action_spec.device
+            ),
+            log_std=UnboundedContinuousTensorSpec(
+                shape=action_spec.shape, device=action_spec.device
+            ),
+        )  # type: ignore[no-untyped-call]
