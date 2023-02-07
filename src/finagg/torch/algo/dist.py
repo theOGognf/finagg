@@ -100,8 +100,8 @@ class TorchDistributionWrapper(Distribution, Generic[_ActionSpec, _FeatureSpec])
     def logp(self, samples: torch.Tensor) -> torch.Tensor:
         return self.dist.log_prob(samples)  # type: ignore[no-any-return, no-untyped-call]
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def required_feature_spec(action_spec: _ActionSpec, /) -> _FeatureSpec:
         """Define feature spec requirements for the distribution given an
         action spec.
