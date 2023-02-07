@@ -8,14 +8,9 @@ import torch
 from tensordict import TensorDict
 
 from ..nn import Module
-from ..specs import (
-    CompositeSpec,
-    DiscreteTensorSpec,
-    MultiDiscreteTensorSpec,
-    TensorSpec,
-    UnboundedContinuousTensorSpec,
-)
+from ..specs import DiscreteTensorSpec, TensorSpec, UnboundedContinuousTensorSpec
 from .data import DataKeys
+from .dist import Categorical, DiagGaussian
 from .view import VIEW_KIND, ViewRequirement
 
 
@@ -170,26 +165,9 @@ class Model(
         """
         match action_spec:
             case DiscreteTensorSpec():
-                return CompositeSpec(
-                    logits=UnboundedContinuousTensorSpec(
-                        shape=action_spec.space.n, device=action_spec.device
-                    )
-                )  # type: ignore[no-untyped-call]
-            case MultiDiscreteTensorSpec():
-                return CompositeSpec(
-                    logits=UnboundedContinuousTensorSpec(
-                        shape=action_spec.space.n, device=action_spec.device
-                    )
-                )  # type: ignore[no-untyped-call]
+                return Categorical.required_feature_spec(action_spec)
             case UnboundedContinuousTensorSpec():
-                return CompositeSpec(
-                    mean=UnboundedContinuousTensorSpec(
-                        shape=action_spec.shape, device=action_spec.device
-                    ),
-                    log_std=UnboundedContinuousTensorSpec(
-                        shape=action_spec.shape, device=action_spec.device
-                    ),
-                )  # type: ignore[no-untyped-call]
+                return DiagGaussian.required_feature_spec(action_spec)
             case _:
                 return deepcopy(action_spec)
 

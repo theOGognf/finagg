@@ -33,7 +33,7 @@ class Position:
     def __eq__(self, __o: object) -> torch.Tensor:  # type: ignore[override]
         """Compare the position's cost basis."""
         if not isinstance(__o, torch.Tensor | Position):
-            raise NotImplementedError(
+            raise TypeError(
                 "Can only compare "
                 f"{self.__class__.__name__} to [{torch.Tensor.__name__}, {Position.__name__}]"
             )
@@ -46,7 +46,7 @@ class Position:
     def __lt__(self, __o: object) -> torch.Tensor:
         """Compare the position's cost basis."""
         if not isinstance(__o, torch.Tensor | Position):
-            raise NotImplementedError(
+            raise TypeError(
                 "Can only compare "
                 f"{self.__class__.__name__} to [{torch.Tensor.__name__}, {Position.__name__}]"
             )

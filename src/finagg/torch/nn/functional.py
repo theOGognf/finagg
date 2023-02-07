@@ -207,4 +207,4 @@ def skip_connection(
             return torch.cat([x, y], dim=dim)
         case None:
             return y
-    raise NotImplementedError(f"No skip connection type for {kind}")
+    raise ValueError(f"No skip connection type for {kind}")

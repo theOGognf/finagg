@@ -6,6 +6,12 @@ import torch
 from tensordict import TensorDict
 from typing_extensions import Self
 
+from ..specs import (
+    CompositeSpec,
+    DiscreteTensorSpec,
+    TensorSpec,
+    UnboundedContinuousTensorSpec,
+)
 from .model import Model
 
 
@@ -70,6 +76,14 @@ class Distribution(ABC):
 
         """
 
+    @classmethod
+    def required_feature_spec(cls, action_spec: TensorSpec, /) -> TensorSpec:
+        """Return the feature spec required by the distribution according to
+        an action spec.
+
+        """
+        raise NotImplementedError(f"{cls} does not support `required_feature_spec`")
+
     @abstractmethod
     def sample(self) -> torch.Tensor | TensorDict:
         """Draw a stochastic sample from the probability distribution."""
@@ -110,6 +124,18 @@ class Categorical(TorchDistributionWrapper):
     def deterministic_sample(self) -> torch.Tensor:
         return self.dist.mode  # type: ignore[no-any-return]
 
+    @classmethod
+    def required_feature_spec(cls, action_spec: TensorSpec, /) -> TensorSpec:
+        match action_spec:
+            case DiscreteTensorSpec():
+                return CompositeSpec(
+                    logits=UnboundedContinuousTensorSpec(
+                        shape=action_spec.space.n, device=action_spec.device
+                    )
+                )  # type: ignore[no-untyped-call]
+            case _:
+                raise TypeError(f"{cls.__name__} does not support {action_spec}")
+
 
 class DiagGaussian(TorchDistributionWrapper):
 
@@ -130,3 +156,18 @@ class DiagGaussian(TorchDistributionWrapper):
 
     def logp(self, samples: torch.Tensor) -> torch.Tensor:
         return super().logp(samples).sum(-1)
+
+    @classmethod
+    def required_feature_spec(cls, action_spec: TensorSpec, /) -> TensorSpec:
+        match action_spec:
+            case UnboundedContinuousTensorSpec():
+                return CompositeSpec(
+                    mean=UnboundedContinuousTensorSpec(
+                        shape=action_spec.shape, device=action_spec.device
+                    ),
+                    log_std=UnboundedContinuousTensorSpec(
+                        shape=action_spec.shape, device=action_spec.device
+                    ),
+                )  # type: ignore[no-untyped-call]
+            case _:
+                raise TypeError(f"{cls.__name__} does not support {action_spec}")

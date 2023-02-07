@@ -64,7 +64,7 @@ class SequentialSkipConnection(Module[[torch.Tensor, torch.Tensor], torch.Tensor
                 return 2 * self._in_features[-1]
             case None:
                 return self._in_features[-1]
-        raise NotImplementedError(f"No skip connection type for {self.kind}")
+        raise ValueError(f"No skip connection type for {self.kind}")
 
     def append(self, module: nn.Module, /) -> int:
         """Append `module` to the skip connection.
