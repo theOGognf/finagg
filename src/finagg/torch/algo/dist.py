@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 import torch
 from tensordict import TensorDict
+from typing_extensions import Self
 
 from .model import Model
 
@@ -55,7 +56,7 @@ class Distribution(ABC):
         """
 
     @abstractmethod
-    def kl_div(self, other_dist: "Distribution") -> torch.Tensor:
+    def kl_div(self, other: Self) -> torch.Tensor:
         """Compute the KL-divergence (a measurement of the difference
         between two distributions) between two distributions (often of the
         same type).
@@ -88,7 +89,7 @@ class TorchDistributionWrapper(Distribution):
     def entropy(self) -> torch.Tensor:
         return self.dist.entropy()  # type: ignore
 
-    def kl_div(self, other: "TorchDistributionWrapper") -> torch.Tensor:  # type: ignore[override]
+    def kl_div(self, other: Self) -> torch.Tensor:
         return torch.distributions.kl.kl_divergence(self.dist, other.dist)
 
     def logp(self, samples: torch.Tensor) -> torch.Tensor:

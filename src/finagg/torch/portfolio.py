@@ -30,7 +30,7 @@ class Position:
         self.average_cost_basis = cost
         self.quantity = quantity
 
-    def __eq__(self, __o: object) -> torch.Tensor:  # type: ignore
+    def __eq__(self, __o: object) -> torch.Tensor:  # type: ignore[override]
         """Compare the position's cost basis."""
         if not isinstance(__o, torch.Tensor | Position):
             raise NotImplementedError(
