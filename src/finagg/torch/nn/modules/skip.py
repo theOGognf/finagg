@@ -4,9 +4,10 @@ import torch
 import torch.nn as nn
 
 from ..functional import skip_connection
+from .module import Module
 
 
-class SequentialSkipConnection(nn.Module):
+class SequentialSkipConnection(Module[[torch.Tensor, torch.Tensor], torch.Tensor]):
     """Sequential skip connection.
 
     Apply a skip connection to an input and the output of a layer that

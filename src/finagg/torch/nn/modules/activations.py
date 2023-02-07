@@ -4,8 +4,17 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .module import Module
 
-class SquaredReLU(nn.Module):
+
+class SquaredReLU(
+    Module[
+        [
+            torch.Tensor,
+        ],
+        torch.Tensor,
+    ]
+):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return torch.pow(F.relu(x), 2)
 

@@ -7,10 +7,13 @@ import torch.nn as nn
 
 from ..functional import masked_log_softmax
 from .activations import get_activation
+from .module import Module
 from .skip import SequentialSkipConnection
 
 
-class PointerNetwork(nn.Module):
+class PointerNetwork(
+    Module[[torch.Tensor, torch.Tensor, None | torch.Tensor], torch.Tensor]
+):
     """3D attention applied to sequence encoders and decoders for selecting the
     next element from the encoder's sequence to be appended to the decoder's
     sequence.
@@ -44,8 +47,6 @@ class PointerNetwork(nn.Module):
         self,
         decoder_out: torch.Tensor,
         encoder_out: torch.Tensor,
-        /,
-        *,
         mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
         """Select valid values from `encoder_out` as indicated by `mask` using
@@ -76,7 +77,12 @@ class PointerNetwork(nn.Module):
         return masked_log_softmax(weights, mask=mask, dim=-1)
 
 
-class CrossAttention(nn.Module):
+class CrossAttention(
+    Module[
+        [torch.Tensor, torch.Tensor, None | torch.Tensor, None | torch.Tensor],
+        torch.Tensor,
+    ]
+):
     """Perform multihead attention keys to a query, mapping the keys of
     sequence length K to the query of sequence length Q.
 
@@ -163,8 +169,6 @@ class CrossAttention(nn.Module):
         self,
         q: torch.Tensor,
         kv: torch.Tensor,
-        /,
-        *,
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
@@ -189,10 +193,15 @@ class CrossAttention(nn.Module):
             key_padding_mask=key_padding_mask,
             attention_mask=attention_mask,
         )
-        return self.skip_connection(q, qkv)  # type: ignore[no-any-return]
+        return self.skip_connection(q, qkv)
 
 
-class SelfAttention(nn.Module):
+class SelfAttention(
+    Module[
+        [torch.Tensor, None | torch.Tensor, None | torch.Tensor],
+        torch.Tensor,
+    ]
+):
     """Perform multihead attention keys to a a sequence, using it for the
     queries, keys, and values.
 
@@ -273,8 +282,6 @@ class SelfAttention(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        /,
-        *,
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
@@ -297,10 +304,12 @@ class SelfAttention(nn.Module):
             key_padding_mask=key_padding_mask,
             attention_mask=attention_mask,
         )
-        return self.skip_connection(x, qkv)  # type: ignore[no-any-return]
+        return self.skip_connection(x, qkv)
 
 
-class SelfAttentionStack(nn.Module):
+class SelfAttentionStack(
+    Module[[torch.Tensor, None | torch.Tensor, None | torch.Tensor], torch.Tensor]
+):
     """Stacks of self-attention to iteratively attend over a sequence.
 
     Args:
@@ -316,8 +325,6 @@ class SelfAttentionStack(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        /,
-        *,
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:

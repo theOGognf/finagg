@@ -5,8 +5,17 @@ import math
 import torch
 import torch.nn as nn
 
+from .module import Module
 
-class PositionalEmbedding(nn.Module):
+
+class PositionalEmbedding(
+    Module[
+        [
+            torch.Tensor,
+        ],
+        torch.Tensor,
+    ]
+):
     """Apply positional embeddings to an input sequence.
 
     Positional embeddings that help distinguish values at different parts

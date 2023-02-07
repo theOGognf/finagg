@@ -4,9 +4,15 @@ import torch
 import torch.nn as nn
 
 from .attention import CrossAttention, SelfAttention, SelfAttentionStack
+from .module import Module
 
 
-class PerceiverLayer(nn.Module):
+class PerceiverLayer(
+    Module[
+        [torch.Tensor, torch.Tensor, None | torch.Tensor, None | torch.Tensor],
+        torch.Tensor,
+    ]
+):
     """Perciever layer as described by https://arxiv.org/pdf/2103.03206.pdf.
 
     Useful for embedding several, variable-length sequences into a latent
@@ -76,8 +82,6 @@ class PerceiverLayer(nn.Module):
         self,
         q: torch.Tensor,
         kv: torch.Tensor,
-        /,
-        *,
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
@@ -97,13 +101,16 @@ class PerceiverLayer(nn.Module):
             Values with shape [B, Q, E].
 
         """
-        latent = self.cross_attention(
-            q, kv, key_padding_mask=key_padding_mask, attention_mask=attention_mask
-        )
-        return self.self_attention(latent)  # type: ignore[no-any-return]
+        latent = self.cross_attention(q, kv, key_padding_mask, attention_mask)
+        return self.self_attention(latent, None, None)
 
 
-class PerceiverIOLayer(nn.Module):
+class PerceiverIOLayer(
+    Module[
+        [torch.Tensor, torch.Tensor, None | torch.Tensor, None | torch.Tensor],
+        torch.Tensor,
+    ]
+):
     """PercieverIO layer as described by https://arxiv.org/pdf/2107.14795.pdf.
 
     In addition to the benefits of `PerceiverLayer`, this module attends a
@@ -179,8 +186,6 @@ class PerceiverIOLayer(nn.Module):
         self,
         q: torch.Tensor,
         kv: torch.Tensor,
-        /,
-        *,
         key_padding_mask: None | torch.Tensor = None,
         attention_mask: None | torch.Tensor = None,
     ) -> torch.Tensor:
@@ -205,7 +210,5 @@ class PerceiverIOLayer(nn.Module):
         output_query = self.output_query.unsqueeze(0).expand(
             B, *self.output_query.shape
         )
-        latent = self.perceiver_layer(
-            q, kv, key_padding_mask=key_padding_mask, attention_mask=attention_mask
-        )
-        return self.decoder(output_query, latent)  # type: ignore[no-any-return]
+        latent = self.perceiver_layer(q, kv, key_padding_mask, attention_mask)
+        return self.decoder(output_query, latent, None, None)
