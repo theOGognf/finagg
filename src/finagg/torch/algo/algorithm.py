@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 from tensordict import TensorDict
 from torch.utils.data import DataLoader
+from typing_extensions import Self
 
 from ...utils import profile_ms
 from ..optim import DAdaptAdam
@@ -639,7 +640,7 @@ class Algorithm:
         step_stats["profiling/step_ms"] = step_timer()
         return step_stats
 
-    def to(self, device: DEVICE, /) -> "Algorithm":
+    def to(self, device: DEVICE, /) -> Self:
         """Move the algorithm and its attributes to `device`."""
         self.buffer.to(device)
         self.env.to(device)

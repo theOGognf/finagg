@@ -5,7 +5,7 @@ from typing import Literal, Protocol
 import numpy as np
 import torch.optim as optim
 
-SCHEDULE_KIND = Literal["interp"] | Literal["step"]
+SCHEDULE_KIND = Literal["interp", "step"]
 
 
 class Scheduler(Protocol):

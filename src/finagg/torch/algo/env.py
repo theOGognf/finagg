@@ -4,6 +4,7 @@ from typing import Any, Protocol
 
 import torch
 from tensordict import TensorDict
+from typing_extensions import Self
 
 from ..specs import TensorSpec
 from .data import DEVICE
@@ -96,5 +97,5 @@ class Env(Protocol):
 
         """
 
-    def to(self, device: DEVICE, /) -> "Env":
+    def to(self, device: DEVICE, /) -> Self:
         """Move the environment and its attributes to `device`."""

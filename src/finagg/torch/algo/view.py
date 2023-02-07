@@ -7,8 +7,8 @@ from tensordict import TensorDict
 
 from .data import DataKeys
 
-VIEW_KIND = Literal["last"] | Literal["all"]
-VIEW_METHOD = Literal["rolling_window"] | Literal["padded_rolling_window"]
+VIEW_KIND = Literal["last", "all"]
+VIEW_METHOD = Literal["rolling_window", "padded_rolling_window"]
 
 
 class View(Protocol):

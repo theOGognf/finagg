@@ -35,6 +35,7 @@ from typing import (
 import numpy as np
 import torch
 from tensordict.tensordict import TensorDict, TensorDictBase
+from typing_extensions import Self
 
 
 def get_binary_env_var(key: str) -> bool:
@@ -432,11 +433,11 @@ class TensorSpec:
         return torch.zeros((*shape, *self.shape), dtype=self.dtype, device=self.device)
 
     @abc.abstractmethod
-    def to(self, dest: Union[torch.dtype, DEVICE_TYPING]) -> "TensorSpec":
+    def to(self, dest: Union[torch.dtype, DEVICE_TYPING]) -> Self:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def clone(self) -> "TensorSpec":
+    def clone(self) -> Self:
         raise NotImplementedError
 
     def __repr__(self):

@@ -4,6 +4,7 @@ from typing import Any
 
 import torch
 from tensordict import TensorDict
+from typing_extensions import Self
 
 from ..specs import TensorSpec
 from .data import DEVICE, DataKeys
@@ -181,7 +182,7 @@ class Policy:
         torch.set_grad_enabled(prev)
         return out
 
-    def to(self, device: DEVICE, /) -> "Policy":
+    def to(self, device: DEVICE, /) -> Self:
         """Move the policy and its attributes to `device`."""
         self.model.to(device)
         self.device = device
