@@ -153,8 +153,9 @@ TOTAL = B * T
 INPUTS = TensorDict({"x": torch.arange(TOTAL).reshape(B, T).float()}, batch_size=[B, T])
 EXPECTED = TensorDict({}, batch_size=[B, T + SIZE - 1])
 EXPECTED["x"] = TensorDict({}, batch_size=[B, T + SIZE - 1])
+print(INPUTS["x"].shape)
 EXPECTED["x"][DataKeys.INPUTS] = torch.cat(
-    [torch.zeros(B, SIZE - 1), INPUTS["x"].squeeze(-1)], dim=1
+    [torch.zeros(B, SIZE - 1), INPUTS["x"]], dim=1
 )
 EXPECTED["x"][DataKeys.PADDING_MASK] = torch.zeros(B, T + SIZE - 1).bool()
 EXPECTED["x"][DataKeys.PADDING_MASK][:, : (SIZE - 1)] = True
@@ -202,7 +203,7 @@ INPUTS = TensorDict({"x": torch.arange(TOTAL).reshape(B, T).float()}, batch_size
 EXPECTED = TensorDict({}, batch_size=[B, SIZE])
 EXPECTED["x"] = TensorDict({}, batch_size=[B, SIZE])
 EXPECTED["x"][DataKeys.INPUTS] = torch.cat(
-    [torch.zeros(B, SIZE - 1), INPUTS["x"].squeeze(-1)], dim=1
+    [torch.zeros(B, SIZE - 1), INPUTS["x"]], dim=1
 )
 EXPECTED["x"][DataKeys.PADDING_MASK] = torch.zeros(B, SIZE).bool()
 EXPECTED["x"][DataKeys.PADDING_MASK][:, : (SIZE - 1)] = True

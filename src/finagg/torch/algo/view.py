@@ -1,14 +1,14 @@
 """Definitions regarding applying views to batches of tensors or tensor dicts."""
 
-from typing import Literal, Protocol, Union
+from typing import Literal, Protocol
 
 import torch
 from tensordict import TensorDict
 
 from .data import DataKeys
 
-VIEW_KIND = Union[Literal["last"], Literal["all"]]
-VIEW_METHOD = Union[Literal["rolling_window"], Literal["padded_rolling_window"]]
+VIEW_KIND = Literal["last"] | Literal["all"]
+VIEW_METHOD = Literal["rolling_window"] | Literal["padded_rolling_window"]
 
 
 class View(Protocol):

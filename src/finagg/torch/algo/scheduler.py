@@ -1,11 +1,11 @@
 """Schedulers for scheduling values, learning rates, and entropy."""
 
-from typing import Literal, Protocol, Union
+from typing import Literal, Protocol
 
 import numpy as np
 import torch.optim as optim
 
-SCHEDULE_KIND = Union[Literal["interp"], Literal["step"]]
+SCHEDULE_KIND = Literal["interp"] | Literal["step"]
 
 
 class Scheduler(Protocol):
