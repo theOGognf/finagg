@@ -471,7 +471,7 @@ class Algorithm:
                 DataKeys.ADVANTAGES: UnboundedContinuousTensorSpec(1),
                 DataKeys.RETURNS: UnboundedContinuousTensorSpec(1),
             }
-        )  # type: ignore
+        )  # type: ignore[no-untyped-call]
         return buffer_spec.zero([num_envs, horizon])
 
     @property

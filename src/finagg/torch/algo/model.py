@@ -170,13 +170,13 @@ class Model(ABC, torch.nn.Module):
                     logits=UnboundedContinuousTensorSpec(
                         shape=action_spec.space.n, device=action_spec.device
                     )
-                )  # type: ignore
+                )  # type: ignore[no-untyped-call]
             case MultiDiscreteTensorSpec():
                 return CompositeSpec(
                     logits=UnboundedContinuousTensorSpec(
                         shape=action_spec.space.n, device=action_spec.device
                     )
-                )  # type: ignore
+                )  # type: ignore[no-untyped-call]
             case UnboundedContinuousTensorSpec():
                 return CompositeSpec(
                     mean=UnboundedContinuousTensorSpec(
@@ -185,7 +185,7 @@ class Model(ABC, torch.nn.Module):
                     log_std=UnboundedContinuousTensorSpec(
                         shape=action_spec.shape, device=action_spec.device
                     ),
-                )  # type: ignore
+                )  # type: ignore[no-untyped-call]
             case _:
                 return deepcopy(action_spec)
 

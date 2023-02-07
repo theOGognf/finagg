@@ -87,16 +87,16 @@ class TorchDistributionWrapper(Distribution):
     dist: torch.distributions.Distribution
 
     def entropy(self) -> torch.Tensor:
-        return self.dist.entropy()  # type: ignore
+        return self.dist.entropy()  # type: ignore[no-any-return, no-untyped-call]
 
     def kl_div(self, other: Self) -> torch.Tensor:
         return torch.distributions.kl.kl_divergence(self.dist, other.dist)
 
     def logp(self, samples: torch.Tensor) -> torch.Tensor:
-        return self.dist.log_prob(samples)  # type: ignore
+        return self.dist.log_prob(samples)  # type: ignore[no-any-return, no-untyped-call]
 
     def sample(self) -> torch.Tensor:
-        return self.dist.sample()  # type: ignore
+        return self.dist.sample()  # type: ignore[no-any-return, no-untyped-call]
 
 
 class Categorical(TorchDistributionWrapper):
@@ -105,7 +105,7 @@ class Categorical(TorchDistributionWrapper):
 
     def __init__(self, features: TensorDict, model: Model) -> None:
         super().__init__(features, model)
-        self.dist = torch.distributions.Categorical(logits=features["logits"])  # type: ignore
+        self.dist = torch.distributions.Categorical(logits=features["logits"])  # type: ignore[no-untyped-call]
 
     def deterministic_sample(self) -> torch.Tensor:
-        return self.dist.mode  # type: ignore
+        return self.dist.mode  # type: ignore[no-any-return]

@@ -157,7 +157,7 @@ class CrossAttention(nn.Module):
             attn_mask=attention_mask,
             need_weights=False,
         )
-        return attention  # type: ignore
+        return attention  # type: ignore[no-any-return]
 
     def forward(
         self,
@@ -189,7 +189,7 @@ class CrossAttention(nn.Module):
             key_padding_mask=key_padding_mask,
             attention_mask=attention_mask,
         )
-        return self.skip_connection(q, qkv)  # type: ignore
+        return self.skip_connection(q, qkv)  # type: ignore[no-any-return]
 
 
 class SelfAttention(nn.Module):
@@ -268,7 +268,7 @@ class SelfAttention(nn.Module):
             attn_mask=attention_mask,
             need_weights=False,
         )
-        return attention  # type: ignore
+        return attention  # type: ignore[no-any-return]
 
     def forward(
         self,
@@ -297,7 +297,7 @@ class SelfAttention(nn.Module):
             key_padding_mask=key_padding_mask,
             attention_mask=attention_mask,
         )
-        return self.skip_connection(x, qkv)  # type: ignore
+        return self.skip_connection(x, qkv)  # type: ignore[no-any-return]
 
 
 class SelfAttentionStack(nn.Module):

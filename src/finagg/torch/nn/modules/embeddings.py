@@ -49,4 +49,4 @@ class PositionalEmbedding(nn.Module):
             Tensor with added positional embeddings.
 
         """
-        return self.dropout(x + self.pe[0, : x.size(1)])  # type: ignore
+        return self.dropout(x + self.pe[0, : x.size(1)])  # type: ignore[no-any-return]

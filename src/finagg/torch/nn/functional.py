@@ -118,8 +118,8 @@ def masked_categorical_sample(
         while mask.dim() < x.dim():
             mask = mask.unsqueeze(-1)
         x = x + torch.clamp(torch.log(mask), FINFO.min, FINFO.max)
-    dist = torch.distributions.Categorical(logits=x)  # type: ignore
-    samples = dist.sample().unsqueeze(-1)  # type: ignore
+    dist = torch.distributions.Categorical(logits=x)  # type: ignore[no-untyped-call]
+    samples = dist.sample().unsqueeze(-1)  # type: ignore[no-untyped-call]
     return x.gather(dim, samples), samples
 
 
@@ -153,7 +153,6 @@ def masked_max(
     *,
     mask: None | torch.Tensor = None,
     dim: int = 1,
-    keepdim: bool = False,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Apply a masked max to `x` along `dim`.
 
@@ -163,7 +162,6 @@ def masked_max(
         x: Tensor with shape [B, T, ...] to apply pooling to.
         mask: Mask with shape [B, T] indicating UNPADDED or VALID values.
         dim: Dimension to pool along.
-        keepdim: Whether to keep the pooled dimension.
 
     Returns:
         Masked max of `x` along `dim` and the indices of those maximums.
@@ -173,7 +171,8 @@ def masked_max(
         while mask.dim() < x.dim():
             mask = mask.unsqueeze(-1)
         x = x.masked_fill(~mask.bool(), FINFO.min)
-    return x.max(dim=dim, keepdim=keepdim)  # type: ignore
+    idx = x.argmax(dim=dim, keepdim=True)
+    return x.gather(dim, idx), idx
 
 
 def skip_connection(
