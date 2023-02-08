@@ -1,5 +1,7 @@
 """Activation function registry for convenience."""
 
+from typing import Any
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -40,6 +42,6 @@ ACTIVATIONS: dict[str, type[nn.Module]] = {
 }
 
 
-def get_activation(name: str, /) -> nn.Module:
+def get_activation(name: str, /, **params: Any) -> nn.Module:
     """Return an activation instance by its `name`."""
-    return ACTIVATIONS[name]()
+    return ACTIVATIONS[name](**params)

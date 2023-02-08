@@ -243,7 +243,18 @@ class DefaultModel(Model, Generic[_ObservationSpec, _ActionSpec]):
         observation_spec: _ObservationSpec,
         action_spec: _ActionSpec,
         /,
-        *,
-        config: None | dict[str, Any] = None,
+        **config: Any,
     ) -> None:
-        super().__init__(observation_spec, action_spec, config=config)
+        super().__init__(observation_spec, action_spec, **config)
+
+
+class DefaultContinuousModel(
+    DefaultModel[UnboundedContinuousTensorSpec, UnboundedContinuousTensorSpec]
+):
+    ...
+
+
+class DefaultDiscreteModel(
+    DefaultModel[UnboundedContinuousTensorSpec, DiscreteTensorSpec]
+):
+    ...

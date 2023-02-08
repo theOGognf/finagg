@@ -209,7 +209,7 @@ class RateLimitGuard(Generic[_P]):
 
 
 def guard(
-    limits: Sequence[RateLimit], *, warn: bool = False
+    limits: Sequence[RateLimit], /, *, warn: bool = False
 ) -> Callable[[Callable[_P, requests.Response],], RateLimitGuard[_P]]:
     """Apply `limits` to a requests-style getter."""
 

@@ -11,6 +11,7 @@ from .functional import (
     skip_connection,
 )
 from .modules import (
+    MLP,
     CrossAttention,
     Module,
     PerceiverIOLayer,
