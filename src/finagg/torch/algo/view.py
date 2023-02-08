@@ -377,7 +377,7 @@ class ViewRequirement:
             case "padded_rolling_window":
                 self.method = PaddedRollingWindow
 
-    def apply_all(self, batch: TensorDict) -> torch.Tensor | TensorDict:
+    def apply_all(self, batch: TensorDict, /) -> torch.Tensor | TensorDict:
         """Apply the view to all of the time or sequence elements.
 
         This method expands the elements of `batch`'s first two dimensions
@@ -408,7 +408,7 @@ class ViewRequirement:
 
             return self.method.apply_all(item, self.shift + 1)
 
-    def apply_last(self, batch: TensorDict) -> torch.Tensor | TensorDict:
+    def apply_last(self, batch: TensorDict, /) -> torch.Tensor | TensorDict:
         """Apply the view to just the last time or sequence elements.
 
         This method is typically used for sampling a model's features

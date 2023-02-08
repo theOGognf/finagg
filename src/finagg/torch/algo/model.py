@@ -2,7 +2,7 @@
 
 from abc import abstractmethod
 from copy import deepcopy
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 import torch
 from tensordict import TensorDict
@@ -12,6 +12,9 @@ from ..specs import DiscreteTensorSpec, TensorSpec, UnboundedContinuousTensorSpe
 from .data import DataKeys
 from .dist import Categorical, DiagGaussian
 from .view import VIEW_KIND, ViewRequirement
+
+_ObservationSpec = TypeVar("_ObservationSpec", bound=TensorSpec)
+_ActionSpec = TypeVar("_ActionSpec", bound=TensorSpec)
 
 
 class Model(
@@ -141,7 +144,7 @@ class Model(
         return next(iter(burn_sizes.values()))
 
     @staticmethod
-    def default_feature_spec(action_spec: TensorSpec) -> TensorSpec:
+    def default_feature_spec(action_spec: TensorSpec, /) -> TensorSpec:
         """Return a default feature spec given an action spec.
 
         Useful for defining feature specs for simple and common action
@@ -171,8 +174,18 @@ class Model(
             case _:
                 return deepcopy(action_spec)
 
+    @staticmethod
+    def default_model(
+        observation_spec: TensorSpec,
+        action_spec: TensorSpec,
+        /,
+        *,
+        config: None | dict[str, Any] = None,
+    ) -> "Model":
+        ...
+
     @abstractmethod
-    def forward(self, batch: TensorDict) -> TensorDict:
+    def forward(self, batch: TensorDict, /) -> TensorDict:
         """Process a batch of tensors and return features to be fed into an
         action distribution.
 
@@ -222,3 +235,17 @@ class Model(
         distribution components share parameters.
 
         """
+
+
+class DefaultModel(Model, Generic[_ObservationSpec, _ActionSpec]):
+    """Generic model for constructing models from fixed observation and action specs."""
+
+    def __init__(
+        self,
+        observation_spec: _ObservationSpec,
+        action_spec: _ActionSpec,
+        /,
+        *,
+        config: None | dict[str, Any] = None,
+    ) -> None:
+        super().__init__(observation_spec, action_spec, config=config)

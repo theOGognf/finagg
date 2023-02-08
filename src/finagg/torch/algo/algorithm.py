@@ -634,11 +634,9 @@ class Algorithm:
             self.buffered = False
 
             # Update algo stats.
-            step_stats: StepStats = (
-                pd.DataFrame(step_stats_per_batch).mean(axis=0).to_dict()
-            )
+            step_stats = pd.DataFrame(step_stats_per_batch).mean(axis=0).to_dict()
         step_stats["profiling/step_ms"] = step_timer()
-        return step_stats
+        return step_stats  # type: ignore[return-value]
 
     def to(self, device: DEVICE, /) -> Self:
         """Move the algorithm and its attributes to `device`."""

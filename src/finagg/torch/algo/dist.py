@@ -7,11 +7,16 @@ import torch
 from tensordict import TensorDict
 from typing_extensions import Self
 
-from ..specs import CompositeSpec, DiscreteTensorSpec, UnboundedContinuousTensorSpec
+from ..specs import (
+    CompositeSpec,
+    DiscreteTensorSpec,
+    TensorSpec,
+    UnboundedContinuousTensorSpec,
+)
 from .model import Model
 
-_ActionSpec = TypeVar("_ActionSpec")
-_FeatureSpec = TypeVar("_FeatureSpec")
+_ActionSpec = TypeVar("_ActionSpec", bound=TensorSpec)
+_FeatureSpec = TypeVar("_FeatureSpec", bound=TensorSpec)
 
 
 class Distribution(ABC):
