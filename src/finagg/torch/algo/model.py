@@ -79,13 +79,12 @@ class Model(
         observation_spec: TensorSpec,
         action_spec: TensorSpec,
         /,
-        *,
-        config: None | dict[str, Any] = None,
+        **config: Any,
     ) -> None:
         super().__init__()
         self.observation_spec = observation_spec
         self.action_spec = action_spec
-        self.config = config or {}
+        self.config = config
         self.feature_spec = self.default_feature_spec(action_spec)
         self.view_requirements = {DataKeys.OBS: ViewRequirement(DataKeys.OBS, shift=0)}
 
@@ -179,8 +178,7 @@ class Model(
         observation_spec: TensorSpec,
         action_spec: TensorSpec,
         /,
-        *,
-        config: None | dict[str, Any] = None,
+        **config: Any,
     ) -> "Model":
         ...
 

@@ -15,8 +15,11 @@ from ..specs import (
 )
 from .model import Model
 
-_ActionSpec = TypeVar("_ActionSpec", bound=TensorSpec)
 _FeatureSpec = TypeVar("_FeatureSpec", bound=TensorSpec)
+_TorchDistribution = TypeVar(
+    "_TorchDistribution", bound=torch.distributions.Distribution
+)
+_ActionSpec = TypeVar("_ActionSpec", bound=TensorSpec)
 
 
 class Distribution(ABC):
@@ -85,7 +88,9 @@ class Distribution(ABC):
         """Draw a stochastic sample from the probability distribution."""
 
 
-class TorchDistributionWrapper(Distribution, Generic[_ActionSpec, _FeatureSpec]):
+class TorchDistributionWrapper(
+    Distribution, Generic[_FeatureSpec, _TorchDistribution, _ActionSpec]
+):
     """Wrapper class for `torch.distributions`.
 
     This is taken directly from RLlib:
@@ -94,7 +99,7 @@ class TorchDistributionWrapper(Distribution, Generic[_ActionSpec, _FeatureSpec])
     """
 
     #: Underlying PyTorch distribution.
-    dist: torch.distributions.Distribution
+    dist: _TorchDistribution
 
     def entropy(self) -> torch.Tensor:
         return self.dist.entropy()  # type: ignore[no-any-return, no-untyped-call]
@@ -120,10 +125,11 @@ class TorchDistributionWrapper(Distribution, Generic[_ActionSpec, _FeatureSpec])
         return self.dist.sample()  # type: ignore[no-any-return, no-untyped-call]
 
 
-class Categorical(TorchDistributionWrapper[DiscreteTensorSpec, CompositeSpec]):
-
-    dist: torch.distributions.Categorical
-
+class Categorical(
+    TorchDistributionWrapper[
+        CompositeSpec, torch.distributions.Categorical, DiscreteTensorSpec
+    ]
+):
     def __init__(self, features: TensorDict, model: Model) -> None:
         super().__init__(features, model)
         self.dist = torch.distributions.Categorical(logits=features["logits"])  # type: ignore[no-untyped-call]
@@ -141,11 +147,10 @@ class Categorical(TorchDistributionWrapper[DiscreteTensorSpec, CompositeSpec]):
 
 
 class DiagGaussian(
-    TorchDistributionWrapper[UnboundedContinuousTensorSpec, CompositeSpec]
+    TorchDistributionWrapper[
+        CompositeSpec, torch.distributions.Normal, UnboundedContinuousTensorSpec
+    ]
 ):
-
-    dist: torch.distributions.Normal
-
     def __init__(self, features: TensorDict, model: Model) -> None:
         super().__init__(features, model)
         self.dist = torch.distributions.Normal(loc=features["mean"], scale=torch.exp(features["log_std"]))  # type: ignore[no-untyped-call]

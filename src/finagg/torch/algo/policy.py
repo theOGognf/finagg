@@ -56,9 +56,7 @@ class Policy:
         dist_cls: None | type[Distribution] = None,
         device: DEVICE = "cpu",
     ) -> None:
-        self.model = model_cls(observation_spec, action_spec, config=model_config).to(
-            device
-        )
+        self.model = model_cls(observation_spec, action_spec, **model_config).to(device)
         self.dist_cls = dist_cls
         self.device = device
 
