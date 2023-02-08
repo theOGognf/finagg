@@ -14,10 +14,8 @@ from ...utils import profile_ms
 from ..optim import DAdaptAdam
 from ..specs import CompositeSpec, TensorSpec, UnboundedContinuousTensorSpec
 from .data import DEVICE, CollectStats, DataKeys, StepStats
-from .dist import Distribution
 from .env import Env
-from .model import Model
-from .policy import Policy
+from .policy import Distribution, Model, Policy
 from .scheduler import SCHEDULE_KIND, EntropyScheduler, KLUpdater, LRScheduler
 
 
