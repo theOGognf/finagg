@@ -404,7 +404,10 @@ class ViewRequirement:
 
         with torch.no_grad():
             if not self.shift:
-                return item.reshape(-1)
+                if isinstance(item, torch.Tensor):
+                    return item.flatten(end_dim=1)
+                else:
+                    return item.reshape(-1)
 
             return self.method.apply_all(item, self.shift + 1)
 
