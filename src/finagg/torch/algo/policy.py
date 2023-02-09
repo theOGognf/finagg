@@ -202,17 +202,19 @@ class Model(
             A default model instance.
 
         """
-        if isinstance(observation_spec, UnboundedContinuousTensorSpec) and isinstance(
-            action_spec, UnboundedContinuousTensorSpec
-        ):
-            return DefaultContinuousModel(observation_spec, action_spec, **config)
-        if isinstance(observation_spec, UnboundedContinuousTensorSpec) and isinstance(
-            action_spec, DiscreteTensorSpec
-        ):
-            return DefaultDiscreteModel(observation_spec, action_spec, **config)
-        raise ValueError(
-            f"{(observation_spec, action_spec)} has no default model support"
-        )
+        if not isinstance(observation_spec, UnboundedContinuousTensorSpec):
+            raise TypeError(
+                f"Observation spec {observation_spec} has no default model support"
+            )
+        match action_spec:
+            case UnboundedContinuousTensorSpec():
+                return DefaultContinuousModel(observation_spec, action_spec, **config)
+            case DiscreteTensorSpec():
+                return DefaultDiscreteModel(observation_spec, action_spec, **config)
+            case _:
+                raise TypeError(
+                    f"Action spec {action_spec} has no default model support"
+                )
 
     @abstractmethod
     def forward(self, batch: TensorDict, /) -> TensorDict:
@@ -453,6 +455,27 @@ class Distribution(ABC):
         self.features = features
         self.model = model
 
+    @staticmethod
+    def default_dist_cls(action_spec: TensorSpec, /) -> type["Distribution"]:
+        """Return a default distribution given an action spec.
+
+        Args:
+            action_spec: Spec defining required environment inputs.
+
+        Returns:
+            A distribution for simple, supported action specs.
+
+        """
+        match action_spec:
+            case DiscreteTensorSpec():
+                return Categorical
+            case UnboundedContinuousTensorSpec():
+                return DiagGaussian
+            case _:
+                raise TypeError(
+                    f"Action spec {action_spec} has no default distribution support"
+                )
+
     @abstractmethod
     def deterministic_sample(self) -> torch.Tensor | TensorDict:
         """Draw a deterministic sample from the probability distribution."""
@@ -606,6 +629,9 @@ class Policy:
     #: consumed by an action distribution for action sampling.
     model: Model
 
+    #: Model kwarg overrides when instantiating the model.
+    model_config: dict[str, Any]
+
     def __init__(
         self,
         observation_spec: TensorSpec,
@@ -617,24 +643,30 @@ class Policy:
         dist_cls: None | type[Distribution] = None,
         device: DEVICE = "cpu",
     ) -> None:
-        self.model = model_cls(observation_spec, action_spec, **model_config).to(device)
-        self.dist_cls = dist_cls
+        self.model_config = model_config or {}
+        if model_cls is None:
+            self.model = Model.default_model(
+                observation_spec, action_spec, **self.model_config
+            ).to(device)
+        else:
+            self.model = model_cls(
+                observation_spec, action_spec, **self.model_config
+            ).to(device)
+        if dist_cls is None:
+            self.dist_cls = Distribution.default_dist_cls(action_spec)
+        else:
+            self.dist_cls = dist_cls
         self.device = device
 
     @property
     def action_spec(self) -> TensorSpec:
         """Return the action spec used for constructing the model."""
-        return self.model.feature_spec
+        return self.model.action_spec
 
     @property
     def feature_spec(self) -> TensorSpec:
         """Return the feature spec defined in the model."""
         return self.model.feature_spec
-
-    @property
-    def model_config(self) -> dict[str, Any]:
-        """Return the model config used for constructing the model."""
-        return self.model.config
 
     @property
     def observation_spec(self) -> TensorSpec:
