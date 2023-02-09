@@ -190,7 +190,29 @@ class Model(
         /,
         **config: Any,
     ) -> "Model":
-        ...
+        """Return a default model instance based on the given observation and
+        action specs.
+
+        Args:
+            observation_spec: Environment observation spec.
+            action_spec: Environment action spec.
+            config: Default model options.
+
+        Returns:
+            A default model instance.
+
+        """
+        if isinstance(observation_spec, UnboundedContinuousTensorSpec) and isinstance(
+            action_spec, UnboundedContinuousTensorSpec
+        ):
+            return DefaultContinuousModel(observation_spec, action_spec, **config)
+        if isinstance(observation_spec, UnboundedContinuousTensorSpec) and isinstance(
+            action_spec, DiscreteTensorSpec
+        ):
+            return DefaultDiscreteModel(observation_spec, action_spec, **config)
+        raise ValueError(
+            f"{(observation_spec, action_spec)} has no default model support"
+        )
 
     @abstractmethod
     def forward(self, batch: TensorDict, /) -> TensorDict:
