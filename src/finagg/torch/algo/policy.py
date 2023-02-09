@@ -388,7 +388,7 @@ class DefaultDiscreteModel(
             ),
             get_activation(activation_fn),
         )
-        feature_head = nn.Linear(hiddens[-1], 1)
+        feature_head = nn.Linear(hiddens[-1], action_spec.space.n)
         nn.init.uniform_(feature_head.weight, a=-1e-3, b=1e-3)
         nn.init.zeros_(feature_head.bias)
         self.feature_model.append(feature_head)
@@ -729,7 +729,7 @@ class Policy:
             dict can vary.
 
         """
-        if DataKeys.VIEWS in batch:
+        if DataKeys.VIEWS in batch.keys():
             in_batch = batch[DataKeys.VIEWS]
         else:
             in_batch = self.model.apply_view_requirements(batch, kind=kind)
