@@ -15,7 +15,6 @@ class MLP(nn.Sequential, Module[[torch.Tensor], torch.Tensor]):
     Args:
         input_dim: Input layer dimension.
         hiddens: Hidden layer dimensions.
-        otuput_dim: Output layer dimension.
         activation_fn: Hidden activation function that immediately follows
             the linear layer or the norm layer (if one exists).
         norm_layer: Optional normalization layer type that immediately
@@ -30,7 +29,6 @@ class MLP(nn.Sequential, Module[[torch.Tensor], torch.Tensor]):
         self,
         input_dim: int,
         hiddens: Sequence[int],
-        output_dim: int,
         /,
         *,
         activation_fn: str = "relu",
@@ -42,7 +40,7 @@ class MLP(nn.Sequential, Module[[torch.Tensor], torch.Tensor]):
         params = {"inplace": inplace} if inplace else {}
         layers: list[nn.Module] = []
         in_dim = input_dim
-        for hidden_dim in hiddens:
+        for hidden_dim in hiddens[:-1]:
             layers.append(nn.Linear(in_dim, hidden_dim, bias=bias))
             if norm_layer is not None:
                 layers.append(norm_layer(hidden_dim))
@@ -50,5 +48,5 @@ class MLP(nn.Sequential, Module[[torch.Tensor], torch.Tensor]):
             if dropout:
                 layers.append(nn.Dropout(p=dropout, **params))
             in_dim = hidden_dim
-        layers.append(nn.Linear(in_dim, output_dim, bias=bias))
+        layers.append(nn.Linear(in_dim, hiddens[-1], bias=bias))
         super().__init__(*layers)

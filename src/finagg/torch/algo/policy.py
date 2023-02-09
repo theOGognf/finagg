@@ -2,13 +2,14 @@
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, Sequence, TypeVar
 
 import torch
+import torch.nn as nn
 from tensordict import TensorDict
 from typing_extensions import Self
 
-from ..nn import Module
+from ..nn import MLP, Module, get_activation
 from ..specs import (
     CompositeSpec,
     DiscreteTensorSpec,
@@ -260,7 +261,71 @@ class DefaultModel(Model, Generic[_ObservationSpec, _ActionSpec]):
 class DefaultContinuousModel(
     DefaultModel[UnboundedContinuousTensorSpec, UnboundedContinuousTensorSpec]
 ):
-    ...
+    """Default model for continuous observations and action 1D spaces."""
+
+    #: Output head for action log std for a normal distribution.
+    action_log_std: nn.Linear
+
+    #: Output head for action mean for a normal distribution.
+    action_mean: nn.Linear
+
+    #: Transform observations to inputs for output heads.
+    latent_model: nn.Sequential
+
+    #: Value function model, independent of action params.
+    vf_model: nn.Sequential
+
+    def __init__(
+        self,
+        observation_spec: UnboundedContinuousTensorSpec,
+        action_spec: UnboundedContinuousTensorSpec,
+        /,
+        *,
+        hiddens: Sequence[int] = (256, 256),
+        activation_fn: str = "relu",
+        bias: bool = True,
+    ) -> None:
+        super().__init__(observation_spec, action_spec)
+        self.latent_model = nn.Sequential(
+            MLP(
+                observation_spec.shape[0],
+                hiddens,
+                activation_fn=activation_fn,
+                bias=bias,
+            ),
+            get_activation(activation_fn),
+        )
+        self.action_mean = nn.Linear(hiddens[-1], action_spec.shape[0], bias=True)
+        nn.init.uniform_(self.action_mean.weight, a=-1e-3, b=1e-3)
+        nn.init.zeros_(self.action_mean.bias)
+        self.action_log_std = nn.Linear(hiddens[-1], action_spec.shape[0], bias=True)
+        nn.init.uniform_(self.action_log_std.weight, a=-1e-3, b=1e-3)
+        nn.init.ones_(self.action_log_std.bias)
+        self.vf_model = nn.Sequential(
+            MLP(
+                observation_spec.shape[0],
+                hiddens,
+                activation_fn=activation_fn,
+                bias=bias,
+            ),
+            get_activation(activation_fn),
+            nn.Linear(hiddens[-1], 1),
+        )
+
+    def forward(self, batch: TensorDict, /) -> TensorDict:
+        obs = batch["obs"]
+        latents = self.latent_model(obs)
+        action_mean = self.action_mean(latents)
+        action_log_std = self.action_log_std(latents)
+        self._value = self.vf_model(obs)
+        return TensorDict(
+            {"mean": action_mean, "log_std": action_log_std},
+            batch_size=batch.batch_size,
+        )
+
+    def value_function(self) -> torch.Tensor:
+        assert self._value is not None
+        return self._value
 
 
 class DefaultDiscreteModel(
@@ -362,9 +427,6 @@ class TorchDistributionWrapper(
     def required_feature_spec(action_spec: _ActionSpec, /) -> _FeatureSpec:
         """Define feature spec requirements for the distribution given an
         action spec.
-
-        Wrapper distributions only support one action spec type given by
-        the generic `_S`.
 
         """
 
