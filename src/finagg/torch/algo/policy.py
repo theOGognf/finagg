@@ -263,6 +263,9 @@ class DefaultContinuousModel(
 ):
     """Default model for continuous observations and action 1D spaces."""
 
+    #: Value function estimate set after `forward`.
+    _value: None | torch.Tensor
+
     #: Output head for action log std for a normal distribution.
     action_log_std: nn.Linear
 
@@ -311,6 +314,7 @@ class DefaultContinuousModel(
             get_activation(activation_fn),
             nn.Linear(hiddens[-1], 1),
         )
+        self._value = None
 
     def forward(self, batch: TensorDict, /) -> TensorDict:
         obs = batch["obs"]
