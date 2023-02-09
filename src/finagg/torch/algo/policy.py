@@ -261,7 +261,7 @@ class DefaultModel(Model, Generic[_ObservationSpec, _ActionSpec]):
 class DefaultContinuousModel(
     DefaultModel[UnboundedContinuousTensorSpec, UnboundedContinuousTensorSpec]
 ):
-    """Default model for continuous observations and action 1D spaces."""
+    """Default model for 1D continuous observations and action spaces."""
 
     #: Value function estimate set after `forward`.
     _value: None | torch.Tensor
@@ -335,7 +335,65 @@ class DefaultContinuousModel(
 class DefaultDiscreteModel(
     DefaultModel[UnboundedContinuousTensorSpec, DiscreteTensorSpec]
 ):
-    ...
+    """Default model for 1D continuous observations and discrete action spaces."""
+
+    #: Value function estimate set after `forward`.
+    _value: None | torch.Tensor
+
+    #: Transform observations to features for action distributions.
+    feature_model: nn.Sequential
+
+    #: Value function model, independent of action params.
+    vf_model: nn.Sequential
+
+    def __init__(
+        self,
+        observation_spec: UnboundedContinuousTensorSpec,
+        action_spec: UnboundedContinuousTensorSpec,
+        /,
+        *,
+        hiddens: Sequence[int] = (256, 256),
+        activation_fn: str = "relu",
+        bias: bool = True,
+    ) -> None:
+        super().__init__(observation_spec, action_spec)
+        self.feature_model = nn.Sequential(
+            MLP(
+                observation_spec.shape[0],
+                hiddens,
+                activation_fn=activation_fn,
+                bias=bias,
+            ),
+            get_activation(activation_fn),
+        )
+        feature_head = nn.Linear(hiddens[-1], 1)
+        nn.init.uniform_(feature_head.weight, a=-1e-3, b=1e-3)
+        nn.init.zeros_(feature_head.bias)
+        self.feature_model.append(feature_head)
+        self.vf_model = nn.Sequential(
+            MLP(
+                observation_spec.shape[0],
+                hiddens,
+                activation_fn=activation_fn,
+                bias=bias,
+            ),
+            get_activation(activation_fn),
+            nn.Linear(hiddens[-1], 1),
+        )
+        self._value = None
+
+    def forward(self, batch: TensorDict, /) -> TensorDict:
+        obs = batch["obs"]
+        features = self.feature_model(obs)
+        self._value = self.vf_model(obs)
+        return TensorDict(
+            {"logits": features},
+            batch_size=batch.batch_size,
+        )
+
+    def value_function(self) -> torch.Tensor:
+        assert self._value is not None
+        return self._value
 
 
 class Distribution(ABC):
