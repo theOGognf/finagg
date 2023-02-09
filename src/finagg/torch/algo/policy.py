@@ -184,22 +184,20 @@ class Model(
                 return deepcopy(action_spec)
 
     @staticmethod
-    def default_model(
+    def default_model_cls(
         observation_spec: TensorSpec,
         action_spec: TensorSpec,
         /,
-        **config: Any,
-    ) -> "Model":
-        """Return a default model instance based on the given observation and
+    ) -> type["Model"]:
+        """Return a default model class based on the given observation and
         action specs.
 
         Args:
             observation_spec: Environment observation spec.
             action_spec: Environment action spec.
-            config: Default model options.
 
         Returns:
-            A default model instance.
+            A default model class.
 
         """
         if not isinstance(observation_spec, UnboundedContinuousTensorSpec):
@@ -208,9 +206,9 @@ class Model(
             )
         match action_spec:
             case UnboundedContinuousTensorSpec():
-                return DefaultContinuousModel(observation_spec, action_spec, **config)
+                return DefaultContinuousModel
             case DiscreteTensorSpec():
-                return DefaultDiscreteModel(observation_spec, action_spec, **config)
+                return DefaultDiscreteModel
             case _:
                 raise TypeError(
                     f"Action spec {action_spec} has no default model support"
@@ -643,19 +641,10 @@ class Policy:
         dist_cls: None | type[Distribution] = None,
         device: DEVICE = "cpu",
     ) -> None:
+        model_cls = model_cls or Model.default_model_cls(observation_spec, action_spec)
         self.model_config = model_config or {}
-        if model_cls is None:
-            self.model = Model.default_model(
-                observation_spec, action_spec, **self.model_config
-            ).to(device)
-        else:
-            self.model = model_cls(
-                observation_spec, action_spec, **self.model_config
-            ).to(device)
-        if dist_cls is None:
-            self.dist_cls = Distribution.default_dist_cls(action_spec)
-        else:
-            self.dist_cls = dist_cls
+        self.model = model_cls(observation_spec, action_spec, **self.model_config)
+        self.dist_cls = dist_cls or Distribution.default_dist_cls(action_spec)
         self.device = device
 
     @property
