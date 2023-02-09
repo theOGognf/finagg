@@ -349,7 +349,7 @@ class DefaultDiscreteModel(
     def __init__(
         self,
         observation_spec: UnboundedContinuousTensorSpec,
-        action_spec: UnboundedContinuousTensorSpec,
+        action_spec: DiscreteTensorSpec,
         /,
         *,
         hiddens: Sequence[int] = (256, 256),
