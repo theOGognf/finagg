@@ -2,17 +2,7 @@
 
 from functools import cache
 
-from sqlalchemy import (
-    Column,
-    Float,
-    MetaData,
-    String,
-    Table,
-    create_engine,
-    distinct,
-    inspect,
-    select,
-)
+from sqlalchemy import Column, Float, MetaData, String, Table, create_engine, inspect
 from sqlalchemy.engine import Engine, Inspector
 
 from .. import backend
@@ -63,7 +53,7 @@ def get_ticker_set() -> set[str]:
     """Get all unique tickers in the feature SQL tables."""
     with engine.connect() as conn:
         tickers = set()
-        for ticker in conn.execute(select(distinct(prices.c.ticker))):
+        for ticker in conn.execute(prices.select().distinct(prices.c.ticker)):
             (ticker,) = ticker
-            tickers.add(ticker)
+            tickers.add(str(ticker))
     return tickers

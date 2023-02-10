@@ -62,7 +62,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
 
     raw_tickers_to_inserts = {}
     skipped_raw_tickers = set()
-    with sql.engine.connect() as conn:
+    with sql.engine.begin() as conn:
         with mp.Pool(processes=processes) as pool:
             with tqdm.tqdm(
                 total=len(tickers),

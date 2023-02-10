@@ -2,17 +2,7 @@
 
 from functools import cache
 
-from sqlalchemy import (
-    Column,
-    MetaData,
-    String,
-    Table,
-    create_engine,
-    distinct,
-    func,
-    inspect,
-    select,
-)
+from sqlalchemy import Column, MetaData, String, Table, create_engine, func, inspect
 from sqlalchemy.engine import Engine, Inspector
 
 from .. import backend
@@ -63,9 +53,11 @@ def get_ticker_set() -> set[str]:
     """Get all unique tickers in the feature SQL tables."""
     with engine.connect() as conn:
         tickers = set()
-        for ticker in conn.execute(select(distinct(daily_features.c.ticker))):
+        for ticker in conn.execute(
+            daily_features.select().distinct(daily_features.c.ticker)
+        ):
             (ticker,) = ticker
-            tickers.add(ticker)
+            tickers.add(str(ticker))
     return tickers
 
 
@@ -78,10 +70,11 @@ def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
     with engine.connect() as conn:
         tickers = set()
         for ticker in conn.execute(
-            select(distinct(daily_features.c.ticker))
+            daily_features.select()
+            .distinct(daily_features.c.ticker)
             .group_by(daily_features.c.ticker)
             .having(func.count(daily_features.c.date) > lower_bound)
         ):
             (ticker,) = ticker
-            tickers.add(ticker)
+            tickers.add(str(ticker))
     return tickers

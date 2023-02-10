@@ -69,9 +69,9 @@ def run(
             else:
                 tickers_to_inserts[ticker] = 0
                 for concept in concepts:
-                    tag = concept.pop("tag")
-                    taxonomy = concept.pop("taxonomy", "us-gaap")
-                    units = concept.pop("units", "USD")
+                    tag = concept["tag"]
+                    taxonomy = concept.get("taxonomy", "us-gaap")
+                    units = concept.get("units", "USD")
                     df = api.company_concept.get(
                         tag, ticker=ticker, taxonomy=taxonomy, units=units
                     )

@@ -40,7 +40,7 @@ def run(
 
     sql.metadata.create_all(engine)
 
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         indices_to_inserts = {"djia": 0, "sp500": 0, "nasdaq100": 0}
         if djia:
             df = api.djia.get()

@@ -41,7 +41,7 @@ def run(
 
     sql.metadata.create_all(engine)
 
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         series_to_inserts = {}
         for series_id in series_ids:
             df = api.series.observations.get(
