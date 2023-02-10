@@ -2,7 +2,16 @@
 
 from functools import cache
 
-from sqlalchemy import Column, MetaData, String, Table, create_engine, func, inspect
+from sqlalchemy import (
+    Column,
+    Float,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+    func,
+    inspect,
+)
 from sqlalchemy.engine import Engine, Inspector
 
 from .. import backend
@@ -32,18 +41,14 @@ def _define_db(
         engine = backend.engine
         inspector = backend.inspector
     metadata = MetaData()
-    if inspector.has_table("fundamental_features"):
-        fundamental_features = Table(
-            "fundamental_features",
-            metadata,
-            Column("ticker", String, primary_key=True, doc="Unique company ticker."),
-            Column(
-                "date", String, primary_key=True, doc="Filing and stock price dates."
-            ),
-            autoload_with=engine,
-        )
-    else:
-        fundamental_features = None
+    fundamental_features = Table(
+        "fundamental_features",
+        metadata,
+        Column("ticker", String, primary_key=True, doc="Unique company ticker."),
+        Column("date", String, primary_key=True, doc="Filing and stock price dates."),
+        Column("name", String, primary_key=True, doc="Feature name."),
+        Column("value", Float, doc="Feature value."),
+    )
     return (engine, metadata), inspector, (fundamental_features,)
 
 
@@ -64,7 +69,7 @@ def get_ticker_set() -> set[str]:
 
 
 @cache
-def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
+def get_tickers_with_at_least(lb: int, /) -> set[str]:
     """Get all unique tickers in the feature SQL tables that have a minmum
     number of rows.
 
@@ -75,7 +80,7 @@ def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
             fundamental_features.select()
             .distinct(fundamental_features.c.ticker)
             .group_by(fundamental_features.c.ticker)
-            .having(func.count(fundamental_features.c.date) >= lower_bound)
+            .having(func.count(fundamental_features.c.date) >= lb)
         ):
             (ticker,) = ticker
             tickers.add(str(ticker))

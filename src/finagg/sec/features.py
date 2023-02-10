@@ -1,7 +1,6 @@
 """Features from SEC sources."""
 
 import pandas as pd
-from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
 
 from .. import utils
@@ -52,37 +51,6 @@ class _QuarterlyFeatures:
         {"tag": "OperatingIncomeLoss", "taxonomy": "us-gaap", "units": "USD"},
         {"tag": "StockholdersEquity", "taxonomy": "us-gaap", "units": "USD"},
     )
-
-    #: Name of feature store SQL table.
-    table_name = "quarterly_features"
-
-    @classmethod
-    def _create_table(
-        cls,
-        engine: Engine,
-        metadata: MetaData,
-        column_names: pd.Index,
-        /,
-    ) -> None:
-        """Create the feature store SQL table."""
-        primary_keys = {"ticker", "filed"}
-        table_columns = [
-            Column("ticker", String, primary_key=True, doc="Unique company ticker."),
-            Column("filed", String, primary_key=True, doc="Filing date."),
-        ]
-
-        for name in column_names:
-            if name not in primary_keys:
-                column = Column(name, Float)
-                table_columns.append(column)
-
-        quarterly_features = Table(
-            cls.table_name,
-            metadata,
-            *table_columns,
-        )
-        quarterly_features.create(bind=engine)
-        store.quarterly_features = quarterly_features
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
@@ -158,7 +126,6 @@ class _QuarterlyFeatures:
         start: None | str = None,
         end: None | str = None,
         engine: Engine = sql.engine,
-        metadata: MetaData = sql.metadata,
     ) -> pd.DataFrame:
         """Get quarterly features from local SEC SQL tables.
 
@@ -173,14 +140,13 @@ class _QuarterlyFeatures:
             end: The end date of the observation period.
                 Defaults to the last recorded date.
             engine: Raw store database engine.
-            metadata: Metadata associated with the tables.
 
         Returns:
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
 
         """
-        table: Table = metadata.tables["tags"]
+        table = sql.tags
         with engine.begin() as conn:
             stmt = table.c.cik == api.get_cik(ticker)
             stmt &= table.c.tag.in_([concept["tag"] for concept in cls.concepts])
@@ -200,7 +166,6 @@ class _QuarterlyFeatures:
         start: None | str = None,
         end: None | str = None,
         engine: Engine = store.engine,
-        metadata: MetaData = store.metadata,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -215,14 +180,13 @@ class _QuarterlyFeatures:
             end: The end date of the observation period.
                 Defaults to the last recorded date.
             engine: Feature store database engine.
-            metadata: Metadata associated with the tables.
 
         Returns:
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
 
         """
-        table: Table = metadata.tables[cls.table_name]
+        table = store.quarterly_features
         with engine.begin() as conn:
             stmt = table.c.ticker == ticker
             if start:
@@ -241,7 +205,6 @@ class _QuarterlyFeatures:
         /,
         *,
         engine: Engine = store.engine,
-        metadata: MetaData = store.metadata,
     ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
@@ -254,7 +217,6 @@ class _QuarterlyFeatures:
             df: Dataframe to store completely as rows in a local SQL
                 table.
             engine: Feature store database engine.
-            metadata: Metadata associated with the tables.
 
         Returns:
             Number of rows written to the SQL table.
@@ -262,10 +224,7 @@ class _QuarterlyFeatures:
         """
         df = df.reset_index(names="filed")
         df["ticker"] = ticker
-        inspector = store.inspector if engine is store.engine else inspect(engine)
-        if not inspector.has_table(cls.table_name):
-            cls._create_table(engine, metadata, df.columns)
-        table: Table = metadata.tables[cls.table_name]
+        table = store.quarterly_features
         with engine.begin() as conn:
             conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)

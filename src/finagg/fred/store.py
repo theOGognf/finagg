@@ -1,7 +1,7 @@
 """SQLAlchemy interfaces for mixed features."""
 
 
-from sqlalchemy import Column, MetaData, String, Table, create_engine, inspect
+from sqlalchemy import Column, Float, MetaData, String, Table, create_engine, inspect
 from sqlalchemy.engine import Engine, Inspector
 
 from .. import backend
@@ -31,20 +31,18 @@ def _define_db(
         engine = backend.engine
         inspector = backend.inspector
     metadata = MetaData()
-    if inspector.has_table("economic_features"):
-        economic_features = Table(
-            "economic_features",
-            metadata,
-            Column(
-                "date",
-                String,
-                primary_key=True,
-                doc="Economic data series release date.",
-            ),
-            autoload_with=engine,
-        )
-    else:
-        economic_features = None
+    economic_features = Table(
+        "economic_features",
+        metadata,
+        Column(
+            "date",
+            String,
+            primary_key=True,
+            doc="Economic data series release date.",
+        ),
+        Column("name", String, primary_key=True, doc="Feature name."),
+        Column("value", Float, doc="Feature value."),
+    )
     return (engine, metadata), inspector, (economic_features,)
 
 

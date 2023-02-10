@@ -2,7 +2,16 @@
 
 from functools import cache
 
-from sqlalchemy import Column, MetaData, String, Table, create_engine, func, inspect
+from sqlalchemy import (
+    Column,
+    Float,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+    func,
+    inspect,
+)
 from sqlalchemy.engine import Engine, Inspector
 
 from .. import backend
@@ -37,10 +46,9 @@ def _define_db(
             metadata,
             Column("ticker", String, primary_key=True, doc="Unique company ticker."),
             Column("filed", String, primary_key=True, doc="Filing date."),
-            autoload_with=engine,
+            Column("name", String, primary_key=True, doc="Feature name."),
+            Column("value", Float, doc="Feature value."),
         )
-    else:
-        quarterly_features = None
     return (engine, metadata), inspector, (quarterly_features,)
 
 
@@ -61,7 +69,7 @@ def get_ticker_set() -> set[str]:
 
 
 @cache
-def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
+def get_tickers_with_at_least(lb: int, /) -> set[str]:
     """Get all unique tickers in the feature SQL tables that have a minmum
     number of rows.
 
@@ -72,7 +80,7 @@ def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
             quarterly_features.select()
             .distinct(quarterly_features.c.ticker)
             .group_by(quarterly_features.c.ticker)
-            .having(func.count(quarterly_features.c.filed) >= lower_bound)
+            .having(func.count(quarterly_features.c.filed) >= lb)
         ):
             (ticker,) = ticker
             tickers.add(str(ticker))

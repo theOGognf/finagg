@@ -69,7 +69,7 @@ def get_ticker_set() -> set[str]:
 
 
 @cache
-def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
+def get_tickers_with_at_least(lb: int, /) -> set[str]:
     """Get all unique tickers in the feature SQL tables that have a minmum
     number of rows.
 
@@ -80,7 +80,7 @@ def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
             daily_features.select()
             .distinct(daily_features.c.ticker)
             .group_by(daily_features.c.ticker)
-            .having(func.count(daily_features.c.date) >= lower_bound)
+            .having(func.count(daily_features.c.date) >= lb)
         ):
             (ticker,) = ticker
             tickers.add(str(ticker))

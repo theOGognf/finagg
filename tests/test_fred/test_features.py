@@ -15,17 +15,19 @@ def resources() -> tuple[Engine, MetaData]:
 
 
 def test_economic_features_to_from_store(resources: tuple[Engine, MetaData]) -> None:
-    engine, metadata = resources
+    engine, _ = resources
     df1 = finagg.fred.features.economic_features.from_api()
     finagg.fred.features.economic_features.to_store(
-        df1, engine=engine, metadata=metadata
+        df1,
+        engine=engine,
     )
     with pytest.raises(IntegrityError):
         finagg.fred.features.economic_features.to_store(
-            df1, engine=engine, metadata=metadata
+            df1,
+            engine=engine,
         )
 
     df2 = finagg.fred.features.economic_features.from_store(
-        engine=engine, metadata=metadata
+        engine=engine,
     )
     pd.testing.assert_frame_equal(df1, df2)
