@@ -51,7 +51,7 @@ def _define_db(
 @cache
 def get_ticker_set() -> set[str]:
     """Get all unique tickers in the feature SQL tables."""
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         tickers = set()
         for ticker in conn.execute(prices.select().distinct(prices.c.ticker)):
             (ticker,) = ticker

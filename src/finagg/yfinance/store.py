@@ -51,7 +51,7 @@ def _define_db(
 @cache
 def get_ticker_set() -> set[str]:
     """Get all unique tickers in the feature SQL tables."""
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         tickers = set()
         for ticker in conn.execute(
             daily_features.select().distinct(daily_features.c.ticker)
@@ -67,7 +67,7 @@ def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
     number of rows.
 
     """
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         tickers = set()
         for ticker in conn.execute(
             daily_features.select()

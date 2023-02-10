@@ -3,7 +3,6 @@
 import pandas as pd
 from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import and_
 
 from .. import utils
 from . import api, sql, store
@@ -182,16 +181,14 @@ class _QuarterlyFeatures:
 
         """
         table: Table = metadata.tables["tags"]
-        with engine.connect() as conn:
+        with engine.begin() as conn:
             stmt = table.c.cik == api.get_cik(ticker)
-            stmt = and_(
-                stmt, table.c.tag.in_([concept["tag"] for concept in cls.concepts])
-            )
+            stmt &= table.c.tag.in_([concept["tag"] for concept in cls.concepts])
             if start:
-                stmt = and_(stmt, table.c.filed >= start)
+                stmt &= table.c.filed >= start
             if end:
-                stmt = and_(stmt, table.c.filed <= end)
-            df = pd.DataFrame(conn.execute(table.select(stmt)))
+                stmt &= table.c.filed <= end
+            df = pd.DataFrame(conn.execute(table.select().where(stmt)))
         return cls._normalize(df)
 
     @classmethod
@@ -226,13 +223,13 @@ class _QuarterlyFeatures:
 
         """
         table: Table = metadata.tables[cls.table_name]
-        with engine.connect() as conn:
+        with engine.begin() as conn:
             stmt = table.c.ticker == ticker
             if start:
-                stmt = and_(stmt, table.c.filed >= start)
+                stmt &= table.c.filed >= start
             if end:
-                stmt = and_(stmt, table.c.filed <= end)
-            df = pd.DataFrame(conn.execute(table.select(stmt)))
+                stmt &= table.c.filed <= end
+            df = pd.DataFrame(conn.execute(table.select().where(stmt)))
         df = df.set_index("filed").drop(columns="ticker")
         return df
 
@@ -269,8 +266,8 @@ class _QuarterlyFeatures:
         if not inspector.has_table(cls.table_name):
             cls._create_table(engine, metadata, df.columns)
         table: Table = metadata.tables[cls.table_name]
-        with engine.connect() as conn:
-            conn.execute(table.insert(), df.to_dict(orient="records"))
+        with engine.begin() as conn:
+            conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 

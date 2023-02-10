@@ -58,7 +58,7 @@ def run(
 
     sql.metadata.create_all(engine)
 
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         tickers_to_inserts = {}
         for ticker in unique_tickers:
             if concepts is None:

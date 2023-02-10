@@ -3,7 +3,6 @@
 import pandas as pd
 from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import and_
 
 from .. import utils
 from . import api, sql, store
@@ -108,12 +107,12 @@ class _DailyFeatures:
 
         """
         table: Table = metadata.tables["prices"]
-        with engine.connect() as conn:
+        with engine.begin() as conn:
             stmt = table.c.ticker == ticker
             if start:
-                stmt = and_(stmt, table.c.date >= start)
+                stmt &= table.c.date >= start
             if end:
-                stmt = and_(stmt, table.c.date <= end)
+                stmt &= table.c.date <= end
             df = pd.DataFrame(conn.execute(table.select().where(stmt)))
         return cls._normalize(df)
 
@@ -151,9 +150,9 @@ class _DailyFeatures:
         with engine.begin() as conn:
             stmt = table.c.ticker == ticker
             if start:
-                stmt = and_(stmt, table.c.date >= start)
+                stmt &= table.c.date >= start
             if end:
-                stmt = and_(stmt, table.c.date <= end)
+                stmt &= table.c.date <= end
             df = pd.DataFrame(conn.execute(table.select().where(stmt)))
         df = df.set_index("date").drop(columns="ticker")
         return df

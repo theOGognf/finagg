@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import and_
 
 from .. import sec, utils, yfinance
 from . import store
@@ -206,9 +205,9 @@ class _FundamentalFeatures:
         with engine.begin() as conn:
             stmt = table.c.ticker == ticker
             if start:
-                stmt = and_(stmt, table.c.date >= start)
+                stmt &= table.c.date >= start
             if end:
-                stmt = and_(stmt, table.c.date <= end)
+                stmt &= table.c.date <= end
             df = pd.DataFrame(conn.execute(table.select().where(stmt)))
         df = df.set_index("date").drop(columns="ticker")
         return df

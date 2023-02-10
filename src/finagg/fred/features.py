@@ -3,7 +3,6 @@
 import pandas as pd
 from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import and_, or_
 
 from .. import utils
 from . import api, sql, store
@@ -155,13 +154,12 @@ class _EconomicFeatures:
         """
         table: Table = metadata.tables["series"]
         with engine.begin() as conn:
-            stmt = or_(
-                *[table.c.series_id == series_id for series_id in cls.series_ids]
-            )
+            stmt = table.c.date >= "0000-00-00"
+            stmt &= table.c.series_id.in_(cls.series_ids)
             if start:
-                stmt = and_(stmt, table.c.date >= start)
+                stmt &= table.c.date >= start
             if end:
-                stmt = and_(stmt, table.c.date <= end)
+                stmt &= table.c.date <= end
             df = pd.DataFrame(conn.execute(table.select().where(stmt)))
         return cls._normalize(df)
 
@@ -198,9 +196,9 @@ class _EconomicFeatures:
         with engine.begin() as conn:
             stmt = table.c.date >= "0000-00-00"
             if start:
-                stmt = and_(stmt, table.c.date >= start)
+                stmt &= table.c.date >= start
             if end:
-                stmt = and_(stmt, table.c.date <= end)
+                stmt &= table.c.date <= end
             df = pd.DataFrame(conn.execute(table.select().where(stmt)))
         df = df.set_index("date")
         return df

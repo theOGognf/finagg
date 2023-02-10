@@ -61,7 +61,7 @@ def _define_db(
 @cache
 def get_series_set() -> set[str]:
     """Get all unique series in the raw SQL tables."""
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         series_ids = set()
         for series_id in conn.execute(series.select().distinct(series.c.series_id)):
             (series_id,) = series_id

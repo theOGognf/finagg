@@ -95,7 +95,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
     raw_tickers_to_inserts = {}
     tags_to_misses = {c["tag"]: 0 for c in concepts}
     skipped_raw_tickers = set()
-    with sql.engine.connect() as conn:
+    with sql.engine.begin() as conn:
         with tqdm.tqdm(
             total=total_searches, desc="Installing raw SEC data", position=0, leave=True
         ) as pbar:
@@ -137,7 +137,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
 
         feature_tickers_to_inserts = {}
         skipped_feature_tickers = set()
-        with store.engine.connect() as conn:
+        with store.engine.begin() as conn:
             with mp.Pool(processes=processes, initializer=sql.engine.dispose) as pool:
                 with tqdm.tqdm(
                     total=len(raw_tickers_to_inserts),
