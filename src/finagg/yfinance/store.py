@@ -2,7 +2,16 @@
 
 from functools import cache
 
-from sqlalchemy import Column, MetaData, String, Table, create_engine, func, inspect
+from sqlalchemy import (
+    Column,
+    Float,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+    func,
+    inspect,
+)
 from sqlalchemy.engine import Engine, Inspector
 
 from .. import backend
@@ -32,16 +41,14 @@ def _define_db(
         engine = backend.engine
         inspector = backend.inspector
     metadata = MetaData()
-    if inspector.has_table("daily_features"):
-        daily_features = Table(
-            "daily_features",
-            metadata,
-            Column("ticker", String, primary_key=True, doc="Unique company ticker."),
-            Column("date", String, primary_key=True, doc="Stock price date."),
-            autoload_with=engine,
-        )
-    else:
-        daily_features = None
+    daily_features = Table(
+        "daily_features",
+        metadata,
+        Column("ticker", String, primary_key=True, doc="Unique company ticker."),
+        Column("date", String, primary_key=True, doc="Date associated with feature."),
+        Column("name", String, primary_key=True, doc="Feature name."),
+        Column("value", Float, doc="Feature value."),
+    )
     return (engine, metadata), inspector, (daily_features,)
 
 
@@ -73,7 +80,7 @@ def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
             daily_features.select()
             .distinct(daily_features.c.ticker)
             .group_by(daily_features.c.ticker)
-            .having(func.count(daily_features.c.date) > lower_bound)
+            .having(func.count(daily_features.c.date) >= lower_bound)
         ):
             (ticker,) = ticker
             tickers.add(str(ticker))

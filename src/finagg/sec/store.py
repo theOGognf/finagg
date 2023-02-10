@@ -72,7 +72,7 @@ def get_tickers_with_at_least(lower_bound: int, /) -> set[str]:
             quarterly_features.select()
             .distinct(quarterly_features.c.ticker)
             .group_by(quarterly_features.c.ticker)
-            .having(func.count(quarterly_features.c.filed) > lower_bound)
+            .having(func.count(quarterly_features.c.filed) >= lower_bound)
         ):
             (ticker,) = ticker
             tickers.add(str(ticker))

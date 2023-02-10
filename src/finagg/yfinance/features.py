@@ -1,7 +1,6 @@
 """Features from yfinance sources."""
 
 import pandas as pd
-from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
 
 from .. import utils
@@ -10,37 +9,6 @@ from . import api, sql, store
 
 class _DailyFeatures:
     """Methods for gathering daily stock data from Yahoo! finance."""
-
-    #: Name of feature store SQL table.
-    table_name = "daily_features"
-
-    @classmethod
-    def _create_table(
-        cls,
-        engine: Engine,
-        metadata: MetaData,
-        column_names: pd.Index,
-        /,
-    ) -> None:
-        """Create the feature store SQL table."""
-        primary_keys = {"ticker", "date"}
-        table_columns = [
-            Column("ticker", String, primary_key=True, doc="Unique company ticker."),
-            Column("date", String, primary_key=True, doc="Stock price date."),
-        ]
-
-        for name in column_names:
-            if name not in primary_keys:
-                column = Column(name, Float)
-                table_columns.append(column)
-
-        daily_features = Table(
-            cls.table_name,
-            metadata,
-            *table_columns,
-        )
-        daily_features.create(bind=engine)
-        store.daily_features = daily_features
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
@@ -89,7 +57,6 @@ class _DailyFeatures:
         start: None | str = None,
         end: None | str = None,
         engine: Engine = sql.engine,
-        metadata: MetaData = sql.metadata,
     ) -> pd.DataFrame:
         """Get daily features from local SQL tables.
 
@@ -100,13 +67,12 @@ class _DailyFeatures:
             end: The end date of the stock history.
                 Defaults to the last recorded date.
             engine: Raw store database engine.
-            metadata: Metadata associated with the tables.
 
         Returns:
             Daily stock price dataframe. Sorted by date.
 
         """
-        table: Table = metadata.tables["prices"]
+        table = sql.prices
         with engine.begin() as conn:
             stmt = table.c.ticker == ticker
             if start:
@@ -125,7 +91,6 @@ class _DailyFeatures:
         start: None | str = None,
         end: None | str = None,
         engine: Engine = store.engine,
-        metadata: MetaData = store.metadata,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -140,13 +105,12 @@ class _DailyFeatures:
             end: The end date of the observation period.
                 Defaults to the last recorded date.
             engine: Feature store database engine.
-            metadata: Metadata associated with the tables.
 
         Returns:
             Daily stock price dataframe. Sorted by date.
 
         """
-        table: Table = metadata.tables[cls.table_name]
+        table = store.daily_features
         with engine.begin() as conn:
             stmt = table.c.ticker == ticker
             if start:
@@ -165,7 +129,6 @@ class _DailyFeatures:
         /,
         *,
         engine: Engine = store.engine,
-        metadata: MetaData = store.metadata,
     ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
@@ -178,7 +141,6 @@ class _DailyFeatures:
             df: Dataframe to store completely as rows in a local SQL
                 table.
             engine: Feature store database engine.
-            metadata: Metadata associated with the tables.
 
         Returns:
             Number of rows written to the SQL table.
@@ -186,10 +148,7 @@ class _DailyFeatures:
         """
         df = df.reset_index(names="date")
         df["ticker"] = ticker
-        inspector = store.inspector if engine is store.engine else inspect(engine)
-        if not inspector.has_table(cls.table_name):
-            cls._create_table(engine, metadata, df.columns)
-        table: Table = metadata.tables[cls.table_name]
+        table = store.daily_features
         with engine.begin() as conn:
             conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
