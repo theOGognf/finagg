@@ -36,7 +36,8 @@ class _FundamentalFeatures:
             ),
         ]
 
-        for name in column_names:
+        for name in column_names.to_list():
+            name = str(name)
             if name not in primary_keys:
                 column = Column(name, Float)
                 table_columns.append(column)
@@ -246,7 +247,7 @@ class _FundamentalFeatures:
             cls._create_table(engine, metadata, df.columns)
         table: Table = metadata.tables[cls.table_name]
         with engine.begin() as conn:
-            conn.execute(table.insert(), df.to_dict(orient="records"))
+            conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 

@@ -114,7 +114,7 @@ class _DailyFeatures:
                 stmt = and_(stmt, table.c.date >= start)
             if end:
                 stmt = and_(stmt, table.c.date <= end)
-            df = pd.DataFrame(conn.execute(table.select(stmt)))
+            df = pd.DataFrame(conn.execute(table.select().where(stmt)))
         return cls._normalize(df)
 
     @classmethod
@@ -192,7 +192,7 @@ class _DailyFeatures:
             cls._create_table(engine, metadata, df.columns)
         table: Table = metadata.tables[cls.table_name]
         with engine.begin() as conn:
-            conn.execute(table.insert(), df.to_dict(orient="records"))
+            conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 

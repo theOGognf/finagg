@@ -3,7 +3,7 @@
 import pandas as pd
 from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import and_
+from sqlalchemy.sql import and_, or_
 
 from .. import utils
 from . import api, sql, store
@@ -155,7 +155,9 @@ class _EconomicFeatures:
         """
         table: Table = metadata.tables["series"]
         with engine.begin() as conn:
-            stmt = table.c.series_id.in_(cls.series_ids)
+            stmt = or_(
+                *[table.c.series_id == series_id for series_id in cls.series_ids]
+            )
             if start:
                 stmt = and_(stmt, table.c.date >= start)
             if end:
@@ -234,7 +236,7 @@ class _EconomicFeatures:
             cls._create_table(engine, metadata, df.columns)
         table: Table = metadata.tables[cls.table_name]
         with engine.begin() as conn:
-            conn.execute(table.insert(), df.to_dict(orient="records"))
+            conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 
