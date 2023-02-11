@@ -1,6 +1,7 @@
 # Custom
 *.sqlite
 data/
+findata/
 notebooks/
 
 # Byte-compiled / optimized / DLL files
