@@ -14,7 +14,7 @@ _CREATOR = Callable[
 ]
 
 
-def sqlite_resources(
+def sqlite_engine(
     path: str, /, *, creator: None | _CREATOR = None
 ) -> Generator[Engine, None, None]:
     """Yield a test database engine that's cleaned-up after
@@ -38,8 +38,8 @@ def sqlite_resources(
         >>> import finagg
         >>>
         >>> @pytest.fixture
-        ... def resources() -> Engine:
-        ...     yield from finagg.testing.sqlite_resources("/path/to/db.sqlite")
+        ... def engine() -> Engine:
+        ...     yield from finagg.testing.sqlite_engine("/path/to/db.sqlite")
         ...
 
     """
@@ -49,7 +49,9 @@ def sqlite_resources(
     if creator is None:
         engine = create_engine(url)
     else:
-        (engine, _), _ = creator(url)
+        (engine, metadata), _ = creator(url)
+        metadata.create_all(engine)
     yield engine
+    metadata.drop_all(engine)
     engine.dispose()
     path_obj.unlink()

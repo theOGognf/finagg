@@ -7,8 +7,8 @@ import finagg
 
 
 @pytest.fixture
-def resources() -> Engine:
-    yield from finagg.testing.sqlite_resources(
+def engine() -> Engine:
+    yield from finagg.testing.sqlite_engine(
         finagg.backend.database_path, creator=finagg.mixed.store._define_db
     )
 
