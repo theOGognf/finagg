@@ -11,25 +11,22 @@ from . import store
 class _FundamentalFeatures:
     """Method for gathering fundamental data on a stock using several sources."""
 
-    #: Indices to compare daily changes to.
-    reference_indices = ("VOO", "VGT")
-
+    #: Columns within this feature set.
     columns = (
         yfinance.features.daily_features.columns
         + sec.features.quarterly_features.columns
         + ("PriceEarningsRatio",)
         + tuple(
-            zip(
-                *[
-                    [
-                        f"{index}_{col}"
-                        for col in ["open", "high", "low", "close", "volume"]
-                    ]
-                    for index in reference_indices
-                ]
-            )
+            [
+                f"{index}_{col}"
+                for col in ["open", "high", "low", "close", "volume"]
+                for index in ["VOO", "VGT"]
+            ]
         )
     )
+
+    #: Indices to compare daily changes to.
+    reference_indices = ("VOO", "VGT")
 
     @classmethod
     def _normalize(
@@ -183,7 +180,9 @@ class _FundamentalFeatures:
             if end:
                 stmt &= table.c.date <= end
             df = pd.DataFrame(conn.execute(table.select().where(stmt)))
-        df = df.set_index("date").drop(columns="ticker")
+        df = df.pivot(index="date", values="value", columns="name").sort_index()
+        df.columns = df.columns.rename(None)
+        df = df[list(cls.columns)]
         return df
 
     @classmethod
@@ -212,6 +211,7 @@ class _FundamentalFeatures:
 
         """
         df = df.reset_index(names="date")
+        df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         table = store.fundamental_features
         with engine.begin() as conn:

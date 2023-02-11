@@ -160,7 +160,9 @@ class _EconomicFeatures:
             if end:
                 stmt &= table.c.date <= end
             df = pd.DataFrame(conn.execute(table.select().where(stmt)))
-        df = df.set_index("date")
+        df = df.pivot(index="date", values="value", columns="name").sort_index()
+        df.columns = df.columns.rename(None)
+        df = df[list(cls.columns)]
         return df
 
     @classmethod
@@ -187,6 +189,7 @@ class _EconomicFeatures:
 
         """
         df = df.reset_index(names="date")
+        df = df.melt("date", var_name="name", value_name="value")
         table = store.economic_features
         with engine.begin() as conn:
             conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
