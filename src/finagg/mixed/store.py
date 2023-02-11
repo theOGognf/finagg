@@ -35,10 +35,10 @@ def _define_db(
         Column("name", String, primary_key=True, doc="Feature name."),
         Column("value", Float, doc="Feature value."),
     )
-    return (engine, metadata), inspector, (fundamental_features,)
+    return (engine, metadata), (fundamental_features,)
 
 
-(engine, metadata), inspector, (fundamental_features,) = _define_db()
+(engine, metadata), (fundamental_features,) = _define_db()
 
 
 @cache
