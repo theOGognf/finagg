@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from sqlalchemy import MetaData
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
 
@@ -8,14 +7,13 @@ import finagg
 
 
 @pytest.fixture
-def resources() -> tuple[Engine, MetaData]:
+def resources() -> Engine:
     yield from finagg.testing.sqlite_resources(
         finagg.backend.database_path, creator=finagg.yfinance.store._define_db
     )
 
 
-def test_daily_features_to_from_store(resources: tuple[Engine, MetaData]) -> None:
-    engine, _ = resources
+def test_daily_features_to_from_store(engine: Engine) -> None:
     df1 = finagg.yfinance.features.daily_features.from_api("AAPL")
     finagg.yfinance.features.daily_features.to_store("AAPL", df1, engine=engine)
     with pytest.raises(IntegrityError):

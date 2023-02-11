@@ -1,15 +1,15 @@
 """Indices SQLAlchemy interfaces."""
 
 
-from sqlalchemy import Column, Float, MetaData, String, Table, create_engine, inspect
-from sqlalchemy.engine import Engine, Inspector
+from sqlalchemy import Column, Float, MetaData, String, Table, create_engine
+from sqlalchemy.engine import Engine
 
 from .. import backend
 
 
 def _define_db(
     url: str = backend.database_url,
-) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
+) -> tuple[tuple[Engine, MetaData], tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 
     Used for the main SQL tables and for creating test
@@ -23,12 +23,7 @@ def _define_db(
         the database definition.
 
     """
-    if url != backend.engine.url:
-        engine = create_engine(url)
-        inspector: Inspector = inspect(engine)
-    else:
-        engine = backend.engine
-        inspector = backend.inspector
+    engine = backend.engine if url == backend.engine.url else create_engine(url)
     metadata = MetaData()
     djia = Table(
         "djia",
@@ -66,7 +61,7 @@ def _define_db(
         Column("cik", String, doc="The company's unique SEC CIK."),
         Column("founded", String, doc="When the company was founded."),
     )
-    return (engine, metadata), inspector, (djia, nasdaq100, sp500)
+    return (engine, metadata), (djia, nasdaq100, sp500)
 
 
-(engine, metadata), inspector, (djia, nasdaq100, sp500) = _define_db()
+(engine, metadata), (djia, nasdaq100, sp500) = _define_db()

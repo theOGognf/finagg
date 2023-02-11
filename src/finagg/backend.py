@@ -3,8 +3,7 @@
 import os
 import pathlib
 
-from sqlalchemy import create_engine, inspect
-from sqlalchemy.engine import Inspector
+from sqlalchemy import create_engine
 
 #: Path to artifact parent directory.
 root_path = pathlib.Path(os.environ.get("FINAGG_ROOT_PATH", pathlib.Path.cwd()))
@@ -20,7 +19,6 @@ http_cache_path = os.environ.get(
 database_path = root_path / "findata" / "finagg.sqlite"
 database_url = os.environ.get("FINAGG_DATABASE_URL", f"sqlite:///{database_path}")
 
-#: SQLAlchemy engine and respective engine inspector. Used by all submodules
-#: for creating/reading/writing.
+#: SQLAlchemy engine for the database. Used by all submodules for
+#: creating/reading/writing.
 engine = create_engine(database_url)
-inspector: Inspector = inspect(engine)

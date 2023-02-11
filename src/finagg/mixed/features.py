@@ -14,6 +14,23 @@ class _FundamentalFeatures:
     #: Indices to compare daily changes to.
     reference_indices = ("VOO", "VGT")
 
+    columns = (
+        yfinance.features.daily_features.columns
+        + sec.features.quarterly_features.columns
+        + ("PriceEarningsRatio",)
+        + tuple(
+            zip(
+                *[
+                    [
+                        f"{index}_{col}"
+                        for col in ["open", "high", "low", "close", "volume"]
+                    ]
+                    for index in reference_indices
+                ]
+            )
+        )
+    )
+
     @classmethod
     def _normalize(
         cls,
@@ -36,8 +53,8 @@ class _FundamentalFeatures:
                 df[f"{index}_{col}"] = (
                     df[f"{index}_{col}"].replace([np.inf, -np.inf], np.nan).fillna(0.0)
                 )
-
         df.index.names = ["date"]
+        df = df[list(cls.columns)]
         return df.dropna()
 
     @classmethod
