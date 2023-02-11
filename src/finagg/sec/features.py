@@ -38,7 +38,20 @@ class _QuarterlyFeatures:
     """Methods for gathering quarterly data from SEC sources."""
 
     #: Columns within this feature set.
-    columns = ()
+    columns = (
+        "AssetsCurrent",
+        "DebtEquityRatio",
+        "EarningsPerShareBasic",
+        "InventoryNet",
+        "LiabilitiesCurrent",
+        "NetIncomeLoss",
+        "OperatingIncomeLoss",
+        "PriceBookRatio",
+        "QuickRatio",
+        "ReturnOnEquity",
+        "StockholdersEquity",
+        "WorkingCapitalRatio",
+    )
 
     #: XBRL disclosure concepts to pull for a company.
     concepts = (
@@ -66,15 +79,15 @@ class _QuarterlyFeatures:
             .sort_index()
         )
         df["EarningsPerShare"] = df["EarningsPerShareBasic"]
-        df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
-        df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
-            "LiabilitiesCurrent"
-        ]
         df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
-        df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
         df["PriceBookRatio"] = df["StockholdersEquity"] / (
             df["AssetsCurrent"] - df["LiabilitiesCurrent"]
         )
+        df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
+            "LiabilitiesCurrent"
+        ]
+        df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
+        df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df = utils.quantile_clip(df)
         pct_change_columns = [concept["tag"] for concept in cls.concepts]
         df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)

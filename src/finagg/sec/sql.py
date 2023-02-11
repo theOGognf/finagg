@@ -10,7 +10,6 @@ from sqlalchemy import (
     String,
     Table,
     create_engine,
-    distinct,
     inspect,
     select,
 )
@@ -155,8 +154,8 @@ def get_ticker_set() -> set[str]:
     """Get all unique tickers in the raw SQL tables."""
     with engine.begin() as conn:
         tickers = set()
-        for cik in conn.execute(select(distinct(tags.c.cik))):
+        for cik in conn.execute(select(tags.c.cik).distinct()):
             (cik,) = cik
-            ticker = api.get_ticker(cik)
+            ticker = api.get_ticker(str(cik))
             tickers.add(ticker)
     return tickers
