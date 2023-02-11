@@ -40,15 +40,14 @@ def _define_db(
         engine = backend.engine
         inspector = backend.inspector
     metadata = MetaData()
-    if inspector.has_table("quarterly_features"):
-        quarterly_features = Table(
-            "quarterly_features",
-            metadata,
-            Column("ticker", String, primary_key=True, doc="Unique company ticker."),
-            Column("filed", String, primary_key=True, doc="Filing date."),
-            Column("name", String, primary_key=True, doc="Feature name."),
-            Column("value", Float, doc="Feature value."),
-        )
+    quarterly_features = Table(
+        "quarterly_features",
+        metadata,
+        Column("ticker", String, primary_key=True, doc="Unique company ticker."),
+        Column("filed", String, primary_key=True, doc="Filing date."),
+        Column("name", String, primary_key=True, doc="Feature name."),
+        Column("value", Float, doc="Feature value."),
+    )
     return (engine, metadata), inspector, (quarterly_features,)
 
 

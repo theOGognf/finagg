@@ -10,6 +10,9 @@ from . import api, sql, store
 class _DailyFeatures:
     """Methods for gathering daily stock data from Yahoo! finance."""
 
+    #: Columns within this feature set.
+    columns = ("price", "open", "high", "low", "close", "volume")
+
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize daily features columns."""
@@ -118,7 +121,9 @@ class _DailyFeatures:
             if end:
                 stmt &= table.c.date <= end
             df = pd.DataFrame(conn.execute(table.select().where(stmt)))
-        df = df.set_index("date").drop(columns="ticker")
+        df = df.pivot(index="date", values="value", columns="name").sort_index()
+        df.columns = df.columns.rename(None)
+        df = df[list(cls.columns)]
         return df
 
     @classmethod
@@ -147,6 +152,7 @@ class _DailyFeatures:
 
         """
         df = df.reset_index(names="date")
+        df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         table = store.daily_features
         with engine.begin() as conn:

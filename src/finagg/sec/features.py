@@ -37,6 +37,9 @@ def get_unique_filings(
 class _QuarterlyFeatures:
     """Methods for gathering quarterly data from SEC sources."""
 
+    #: Columns within this feature set.
+    columns = ()
+
     #: XBRL disclosure concepts to pull for a company.
     concepts = (
         {"tag": "AssetsCurrent", "taxonomy": "us-gaap", "units": "USD"},
@@ -194,7 +197,9 @@ class _QuarterlyFeatures:
             if end:
                 stmt &= table.c.filed <= end
             df = pd.DataFrame(conn.execute(table.select().where(stmt)))
-        df = df.set_index("filed").drop(columns="ticker")
+        df = df.pivot(index="filed", values="value", columns="name").sort_index()
+        df.columns = df.columns.rename(None)
+        df = df[list(cls.columns)]
         return df
 
     @classmethod
@@ -223,6 +228,7 @@ class _QuarterlyFeatures:
 
         """
         df = df.reset_index(names="filed")
+        df = df.melt("filed", var_name="name", value_name="value")
         df["ticker"] = ticker
         table = store.quarterly_features
         with engine.begin() as conn:
