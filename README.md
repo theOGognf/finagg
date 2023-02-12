@@ -63,6 +63,35 @@ checking.
 - `finagg[learning]` includes dependencies for financial reinforcement learning
 environments.
 
+## Configuration
+
+### Data Locations
+
+**finagg**'s root path, HTTP cache path, and database path are all configurable
+through environment variables. By default, all data related to **finagg** is put
+in a `./findata` directory relative to a root directory. You can change these
+locations by modifying the respective environment variables:
+
+- `FINAGG_ROOT_PATH` points to the parent directory of the `./findata` directory.
+This defaults to your current working directory.
+- `FINAGG_HTTP_CACHE_PATH` points to the HTTP requests cache SQLite storage.
+This defaults to `./findata/http_cache.sqlite`
+- `FINAGG_DATABASE_URL` points to the **finagg** data storage. This defaults to
+`./findata/finagg.sqlite`.
+
+### API Keys
+
+API keys are required for most of the APIs. You can set environment variables
+to expose your API keys to **finagg**, or you can pass your API keys to the
+implemented APIs programmatically. The following environment variables are used
+for configuring API keys:
+
+- `BEA_API_KEY` is for the Bureau of Economic Analysis's API key.
+- `FRED_API_KEY` is for the Federal Reserve Economic Data API key.
+- `INDICES_API_USER_AGENT` is for scraping popular indices' compositions from
+Wikipedia and should be equivalent to your browser's user agent.
+- `SEC_API_KEY` is for the Securities and Exchange Commission's API key.
+
 ## Dependencies
 
 - [**pandas** for fast, flexible, and expressive representations of relational data.](https://pandas.pydata.org/)
