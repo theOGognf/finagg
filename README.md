@@ -79,18 +79,23 @@ This defaults to `./findata/http_cache.sqlite`
 - `FINAGG_DATABASE_URL` points to the **finagg** data storage. This defaults to
 `./findata/finagg.sqlite`.
 
-### API Keys
+### API Keys and User Agents
 
-API keys are required for most of the APIs. You can set environment variables
-to expose your API keys to **finagg**, or you can pass your API keys to the
-implemented APIs programmatically. The following environment variables are used
-for configuring API keys:
+API keys and user agent declarations are required for most of the APIs.
+You can set environment variables to expose your API keys and user agents
+to **finagg**, or you can pass your API keys and user agents to the implemented
+APIs programmatically. The following environment variables are used for
+configuring API keys and user agents:
 
-- `BEA_API_KEY` is for the Bureau of Economic Analysis's API key.
-- `FRED_API_KEY` is for the Federal Reserve Economic Data API key.
+- `BEA_API_KEY` is for the Bureau of Economic Analysis's API key. You can get
+  a free API key from the BEA site (linked [below](#api-references)).
+- `FRED_API_KEY` is for the Federal Reserve Economic Data API key. You can get
+  a free API key from the FRED site (linked [below](#api-references)).
 - `INDICES_API_USER_AGENT` is for scraping popular indices' compositions from
-Wikipedia and should be equivalent to your browser's user agent.
-- `SEC_API_KEY` is for the Securities and Exchange Commission's API key.
+  Wikipedia and should be equivalent to a browser's user agent declaration.
+  This defaults to a hardcoded value, but it may not always work.
+- `SEC_API_USER_AGENT` is for the Securities and Exchange Commission's API. This
+  should be of the format `FIRST_NAME LAST_NAME E_MAIL`.
 
 ## Dependencies
 
