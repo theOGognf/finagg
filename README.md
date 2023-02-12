@@ -1,8 +1,9 @@
 # finagg: Financial Aggregation for Python
 
-**finagg** is a Python package that provides implementations of popular financial APIs,
-tools for aggregating data from those APIs in SQL databases, and tools for transforming
-aggregated data into features useful for analysis and AI/ML.
+**finagg** is a Python package that provides implementations of popular
+financial APIs, tools for aggregating data from those APIs in SQL databases,
+and tools for transforming aggregated data into features useful for analysis
+and AI/ML.
 
 ## Quick Start
 
@@ -12,18 +13,18 @@ Install **finagg** from GitHub directly.
 
 ```python
 git clone https://github.com/theOGognf/finagg.git
-cd finagg
-pip install .
+pip install ./finagg/
 ```
 
-Optionally install the recommended datasets from 3rd party APIs into a local SQL database.
+Optionally install the recommended datasets from 3rd party APIs into a local
+SQL database.
 
 ```python
 finagg install
 ```
 
-The installation will point you where to get free API keys and write them to a local
-`.env` file for storage.
+The installation will point you where to get free API keys and write them to a
+local `.env` file for storage.
 
 ### Basic Usage
 
@@ -57,8 +58,10 @@ fundamental_data = finagg.mixed.features.fundamental_features.from_sql("AAPL")
 
 ## Optional Installs
 
-- `finagg[dev]` includes development dependencies for testing and static type checking.
-- `finagg[learning]` includes dependencies for finance reinforcement learning environments.
+- `finagg[dev]` includes development dependencies for testing and static type
+checking.
+- `finagg[learning]` includes dependencies for financial reinforcement learning
+environments.
 
 ## Dependencies
 
@@ -84,17 +87,20 @@ fundamental_data = finagg.mixed.features.fundamental_features.from_sql("AAPL")
 
 ### Where should I start?
 
-Aggregate some data, create some analysis notebooks, and train some RL agents! The package was
-created to make it very easy to aggregate investment data, perform investment analysis, and train
-trading/investment RL agents on a local, single GPU machine.
+Aggregate some data, create some analysis notebooks, and train some RL agents!
+This package was created to make it very easy to aggregate investment data,
+perform investment analysis, and train trading/investment RL agents on a
+local, single GPU machine.
 
 ### What Python versions are supported?
 
-Python 3.10 and up are supported. We don't plan on supporting lower versions because 3.10 introduces
-some nice quality of life updates that are used throughout the package.
+Python 3.10 and up are supported. We don't plan on supporting lower versions
+because 3.10 introduces some nice quality of life updates that are used
+throughout the package.
 
 ### What operating systems are supported?
 
-The package is developed and tested on both Linux and Windows, but we recommend using Linux or WSL
-in practice. The package performs a good amount of I/O and interprocess operations that could result
-in a noticeable performance degradation on Windows.
+The package is developed and tested on both Linux and Windows, but we recommend
+using Linux or WSL in practice. The package performs a good amount of I/O and
+interprocess operations that could result in a noticeable performance
+degradation on Windows.
