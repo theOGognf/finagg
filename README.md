@@ -58,7 +58,7 @@ fundamental_data = finagg.mixed.features.fundamental_features.from_sql("AAPL")
 ## Optional Installs
 
 - `finagg[dev]` includes development dependencies for testing and static type checking.
-- `finagg[learning]` includes canned PyTorch models and reinforcement learning environments.
+- `finagg[learning]` includes dependencies for finance reinforcement learning environments.
 
 ## Dependencies
 
@@ -86,8 +86,7 @@ fundamental_data = finagg.mixed.features.fundamental_features.from_sql("AAPL")
 
 Aggregate some data, create some analysis notebooks, and train some RL agents! The package was
 created to make it very easy to aggregate investment data, perform investment analysis, and train
-trading/investment RL agents on a local, single GPU machine. Build custom models, observation and
-reward functions, and rules-based trading algorithms.
+trading/investment RL agents on a local, single GPU machine.
 
 ### What Python versions are supported?
 
