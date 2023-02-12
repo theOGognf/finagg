@@ -118,7 +118,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
                     dfs = tickers_to_dfs.pop(ticker)
                     df = pd.concat(dfs)
                     try:
-                        conn.execute(sql.tags.insert(), df.to_dict(orient="records"))
+                        conn.execute(sql.tags.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
                         raw_tickers_to_inserts[ticker] = len(df.index)
                     except IntegrityError:
                         continue

@@ -41,7 +41,7 @@ class _QuarterlyFeatures:
     columns = (
         "AssetsCurrent",
         "DebtEquityRatio",
-        "EarningsPerShareBasic",
+        "EarningsPerShare",
         "InventoryNet",
         "LiabilitiesCurrent",
         "NetIncomeLoss",

@@ -77,7 +77,7 @@ def run(
                     )
                     df = features.get_unique_filings(df, units=units)
                     count = conn.execute(
-                        sql.tags.insert(), df.to_dict(orient="records")
+                        sql.tags.insert(), df.to_dict(orient="records")  # type: ignore[arg-type]
                     ).rowcount
                     tickers_to_inserts[ticker] += count
     return tickers_to_inserts

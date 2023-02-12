@@ -51,7 +51,7 @@ def run(
                 output_type=4,
             )
             count = conn.execute(
-                sql.series.insert(), df.to_dict(orient="records")
+                sql.series.insert(), df.to_dict(orient="records")  # type: ignore[arg-type]
             ).rowcount
             series_to_inserts[series_id] = count
 

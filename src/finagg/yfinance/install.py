@@ -78,7 +78,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
                         continue
 
                     try:
-                        conn.execute(sql.prices.insert(), df.to_dict(orient="records"))
+                        conn.execute(sql.prices.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
                     except IntegrityError:
                         continue
                     raw_tickers_to_inserts[ticker] = len(df.index)

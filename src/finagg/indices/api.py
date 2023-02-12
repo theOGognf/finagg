@@ -103,7 +103,7 @@ class _SP500(_API):
         tbl = soup.find("table", {"class": "wikitable"})
         (df,) = pd.read_html(str(tbl))
         df = pd.DataFrame(df)
-        df.drop("SEC filings", axis=1, inplace=True)
+        df.drop("SEC filings", axis=1, inplace=True, errors="ignore")
         return df.rename(
             columns={
                 "Symbol": "ticker",
