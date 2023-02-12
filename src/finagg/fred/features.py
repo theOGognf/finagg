@@ -27,6 +27,9 @@ class _EconomicFeatures:
         "WALCL",  # US assets, total assets (less eliminations from consolidation)
     )
 
+    #: Columns within this feature set.
+    columns = series_ids
+
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize economic features columns."""
