@@ -41,7 +41,7 @@ def run(
 
     sql.metadata.create_all(engine)
 
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         series_to_inserts = {}
         for series_id in series_ids:
             df = api.series.observations.get(
@@ -51,7 +51,7 @@ def run(
                 output_type=4,
             )
             count = conn.execute(
-                sql.series.insert(), df.to_dict(orient="records")
+                sql.series.insert(), df.to_dict(orient="records")  # type: ignore[arg-type]
             ).rowcount
             series_to_inserts[series_id] = count
 

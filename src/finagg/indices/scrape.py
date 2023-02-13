@@ -40,26 +40,26 @@ def run(
 
     sql.metadata.create_all(engine)
 
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         indices_to_inserts = {"djia": 0, "sp500": 0, "nasdaq100": 0}
         if djia:
             df = api.djia.get()
             count = conn.execute(
-                sql.djia.insert(), df.to_dict(orient="records")
+                sql.djia.insert(), df.to_dict(orient="records")  # type: ignore[arg-type]
             ).rowcount
             indices_to_inserts["djia"] = count
 
         if sp500:
             df = api.sp500.get()
             count = conn.execute(
-                sql.sp500.insert(), df.to_dict(orient="records")
+                sql.sp500.insert(), df.to_dict(orient="records")  # type: ignore[arg-type]
             ).rowcount
             indices_to_inserts["sp500"] = count
 
         if nasdaq100:
             df = api.nasdaq100.get()
             count = conn.execute(
-                sql.nasdaq100.insert(), df.to_dict(orient="records")
+                sql.nasdaq100.insert(), df.to_dict(orient="records")  # type: ignore[arg-type]
             ).rowcount
             indices_to_inserts["nasdaq100"] = count
 

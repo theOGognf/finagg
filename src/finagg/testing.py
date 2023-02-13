@@ -4,19 +4,19 @@ import pathlib
 from typing import Callable, Generator
 
 from sqlalchemy import MetaData, Table, create_engine
-from sqlalchemy.engine import Engine, Inspector
+from sqlalchemy.engine import Engine
 
 _CREATOR = Callable[
     [
         str,
     ],
-    tuple[tuple[Engine, MetaData], Inspector, tuple[Table]],
+    tuple[tuple[Engine, MetaData], tuple[Table]],
 ]
 
 
-def sqlite_resources(
+def sqlite_engine(
     path: str, /, *, creator: None | _CREATOR = None
-) -> Generator[tuple[Engine, MetaData], None, None]:
+) -> Generator[Engine, None, None]:
     """Yield a test database engine that's cleaned-up after
     usage.
 
@@ -28,20 +28,18 @@ def sqlite_resources(
     Returns:
         A database engine that's subsequently disposed of
         and whose respective database file is deleted
-        after use. A metadata object is also returned for
-        convenience.
+        after use.
 
     Examples:
         # Using the testing util as a pytest fixture
         >>> import pytest
-        >>> from sqlalchemy import MetaData
         >>> from sqlalchemy.engine import Engine
         >>>
         >>> import finagg
         >>>
         >>> @pytest.fixture
-        ... def resources() -> tuple[Engine, MetaData]:
-        ...     yield from finagg.testing.sqlite_resources("/path/to/db.sqlite")
+        ... def engine() -> Engine:
+        ...     yield from finagg.testing.sqlite_engine("/path/to/db.sqlite")
         ...
 
     """
@@ -50,9 +48,10 @@ def sqlite_resources(
     url = f"sqlite:///{path_obj}"
     if creator is None:
         engine = create_engine(url)
-        metadata = MetaData()
     else:
-        (engine, metadata), _, _ = creator(url)
-    yield engine, metadata
+        (engine, metadata), _ = creator(url)
+        metadata.create_all(engine)
+    yield engine
+    metadata.drop_all(engine)
     engine.dispose()
     path_obj.unlink()

@@ -1,8 +1,9 @@
 # finagg: Financial Aggregation for Python
 
-**finagg** is a Python package that provides implementations of popular financial APIs,
-tools for aggregating data from those APIs in SQL databases, and tools for transforming
-aggregated data into features useful for analysis and AI/ML.
+**finagg** is a Python package that provides implementations of popular
+financial APIs, tools for aggregating data from those APIs in SQL databases,
+and tools for transforming aggregated data into features useful for analysis
+and AI/ML.
 
 ## Quick Start
 
@@ -12,18 +13,18 @@ Install **finagg** from GitHub directly.
 
 ```python
 git clone https://github.com/theOGognf/finagg.git
-cd finagg
-pip install .
+pip install ./finagg/
 ```
 
-Optionally install the recommended datasets from 3rd party APIs into a local SQL database.
+Optionally install the recommended datasets from 3rd party APIs into a local
+SQL database.
 
 ```python
 finagg install
 ```
 
-The installation will point you where to get free API keys and write them to a local
-`.env` file for storage.
+The installation will point you where to get free API keys and write them to a
+local `.env` file for storage.
 
 ### Basic Usage
 
@@ -57,8 +58,44 @@ fundamental_data = finagg.mixed.features.fundamental_features.from_sql("AAPL")
 
 ## Optional Installs
 
-- `finagg[dev]` includes development dependencies for testing and static type checking.
-- `finagg[learning]` includes canned PyTorch models and reinforcement learning environments.
+- `finagg[dev]` includes development dependencies for testing and static type
+checking.
+- `finagg[learning]` includes dependencies for financial reinforcement learning
+environments.
+
+## Configuration
+
+### Data Locations
+
+**finagg**'s root path, HTTP cache path, and database path are all configurable
+through environment variables. By default, all data related to **finagg** is put
+in a `./findata` directory relative to a root directory. You can change these
+locations by modifying the respective environment variables:
+
+- `FINAGG_ROOT_PATH` points to the parent directory of the `./findata` directory.
+This defaults to your current working directory.
+- `FINAGG_HTTP_CACHE_PATH` points to the HTTP requests cache SQLite storage.
+This defaults to `./findata/http_cache.sqlite`
+- `FINAGG_DATABASE_URL` points to the **finagg** data storage. This defaults to
+`./findata/finagg.sqlite`.
+
+### API Keys and User Agents
+
+API keys and user agent declarations are required for most of the APIs.
+You can set environment variables to expose your API keys and user agents
+to **finagg**, or you can pass your API keys and user agents to the implemented
+APIs programmatically. The following environment variables are used for
+configuring API keys and user agents:
+
+- `BEA_API_KEY` is for the Bureau of Economic Analysis's API key. You can get
+  a free API key from the BEA site (linked [below](#api-references)).
+- `FRED_API_KEY` is for the Federal Reserve Economic Data API key. You can get
+  a free API key from the FRED site (linked [below](#api-references)).
+- `INDICES_API_USER_AGENT` is for scraping popular indices' compositions from
+  Wikipedia and should be equivalent to a browser's user agent declaration.
+  This defaults to a hardcoded value, but it may not always work.
+- `SEC_API_USER_AGENT` is for the Securities and Exchange Commission's API. This
+  should be of the format `FIRST_NAME LAST_NAME E_MAIL`.
 
 ## Dependencies
 
@@ -84,18 +121,20 @@ fundamental_data = finagg.mixed.features.fundamental_features.from_sql("AAPL")
 
 ### Where should I start?
 
-Aggregate some data, create some analysis notebooks, and train some RL agents! The package was
-created to make it very easy to aggregate investment data, perform investment analysis, and train
-trading/investment RL agents on a local, single GPU machine. Build custom models, observation and
-reward functions, and rules-based trading algorithms.
+Aggregate some data, create some analysis notebooks, and train some RL agents!
+This package was created to make it very easy to aggregate investment data,
+perform investment analysis, and train trading/investment RL agents on a
+local, single GPU machine.
 
 ### What Python versions are supported?
 
-Python 3.10 and up are supported. We don't plan on supporting lower versions because 3.10 introduces
-some nice quality of life updates that are used throughout the package.
+Python 3.10 and up are supported. We don't plan on supporting lower versions
+because 3.10 introduces some nice quality of life updates that are used
+throughout the package.
 
 ### What operating systems are supported?
 
-The package is developed and tested on both Linux and Windows, but we recommend using Linux or WSL
-in practice. The package performs a good amount of I/O and interprocess operations that could result
-in a noticeable performance degradation on Windows.
+The package is developed and tested on both Linux and Windows, but we recommend
+using Linux or WSL in practice. The package performs a good amount of I/O and
+interprocess operations that could result in a noticeable performance
+degradation on Windows.

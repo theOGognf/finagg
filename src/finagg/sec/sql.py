@@ -10,11 +10,9 @@ from sqlalchemy import (
     String,
     Table,
     create_engine,
-    distinct,
-    inspect,
     select,
 )
-from sqlalchemy.engine import Engine, Inspector
+from sqlalchemy.engine import Engine
 
 from .. import backend
 from . import api
@@ -22,7 +20,7 @@ from . import api
 
 def _define_db(
     url: str = backend.database_url,
-) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
+) -> tuple[tuple[Engine, MetaData], tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 
     Used for the main SQL tables and for creating test
@@ -32,16 +30,11 @@ def _define_db(
         url: SQLAlchemy database URL.
 
     Returns:
-        The engine, engine inspector, metadata, and tables associated with
+        The engine, metadata, and tables associated with
         the database definition.
 
     """
-    if url != backend.engine.url:
-        engine = create_engine(url)
-        inspector: Inspector = inspect(engine)
-    else:
-        engine = backend.engine
-        inspector = backend.inspector
+    engine = backend.engine if url == backend.engine.url else create_engine(url)
     metadata = MetaData()
     submissions = Table(
         "submissions",
@@ -144,19 +137,19 @@ def _define_db(
         Column("entity", String, doc="Company name."),
         Column("value", Float, doc="Tag value with units `units`."),
     )
-    return (engine, metadata), inspector, (submissions, tags)
+    return (engine, metadata), (submissions, tags)
 
 
-(engine, metadata), inspector, (submissions, tags) = _define_db()
+(engine, metadata), (submissions, tags) = _define_db()
 
 
 @cache
 def get_ticker_set() -> set[str]:
     """Get all unique tickers in the raw SQL tables."""
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         tickers = set()
-        for cik in conn.execute(select(distinct(tags.c.cik))):
+        for cik in conn.execute(select(tags.c.cik).distinct()):
             (cik,) = cik
-            ticker = api.get_ticker(cik)
+            ticker = api.get_ticker(str(cik))
             tickers.add(ticker)
     return tickers

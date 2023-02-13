@@ -37,12 +37,12 @@ def run(
 
     sql.metadata.create_all(engine)
 
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         tickers_to_inserts = {}
         for ticker in tickers:
             df = api.get(ticker, interval="1d", period="max")
             count = conn.execute(
-                sql.prices.insert(), df.to_dict(orient="records")
+                sql.prices.insert(), df.to_dict(orient="records")  # type: ignore[arg-type]
             ).rowcount
             tickers_to_inserts[ticker] = count
 

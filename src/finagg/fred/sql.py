@@ -3,25 +3,15 @@
 
 from functools import cache
 
-from sqlalchemy import (
-    Column,
-    Float,
-    MetaData,
-    String,
-    Table,
-    create_engine,
-    distinct,
-    inspect,
-    select,
-)
-from sqlalchemy.engine import Engine, Inspector
+from sqlalchemy import Column, Float, MetaData, String, Table, create_engine
+from sqlalchemy.engine import Engine
 
 from .. import backend
 
 
 def _define_db(
     url: str = backend.database_url,
-) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
+) -> tuple[tuple[Engine, MetaData], tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 
     Used for the main SQL tables and for creating test
@@ -32,16 +22,11 @@ def _define_db(
         path: Path to database file.
 
     Returns:
-        The engine, engine inspector, metadata, and tables associated with
+        The engine, metadata, and tables associated with
         the database definition.
 
     """
-    if url != backend.engine.url:
-        engine = create_engine(url)
-        inspector: Inspector = inspect(engine)
-    else:
-        engine = backend.engine
-        inspector = backend.inspector
+    engine = backend.engine if url == backend.engine.url else create_engine(url)
     metadata = MetaData()
     series = Table(
         "series",
@@ -62,18 +47,18 @@ def _define_db(
         Column("date", String, primary_key=True, doc="Series value publication date."),
         Column("value", Float, doc="Economic series value for a particular date."),
     )
-    return (engine, metadata), inspector, (series,)
+    return (engine, metadata), (series,)
 
 
-(engine, metadata), inspector, (series,) = _define_db()
+(engine, metadata), (series,) = _define_db()
 
 
 @cache
 def get_series_set() -> set[str]:
     """Get all unique series in the raw SQL tables."""
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         series_ids = set()
-        for series_id in conn.execute(select(distinct(series.c.series_id))):
+        for series_id in conn.execute(series.select().distinct(series.c.series_id)):
             (series_id,) = series_id
-            series_ids.add(series_id)
+            series_ids.add(str(series_id))
     return series_ids

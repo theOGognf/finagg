@@ -1,9 +1,7 @@
 """Features from SEC sources."""
 
 import pandas as pd
-from sqlalchemy import Column, Float, MetaData, String, Table, inspect
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import and_
 
 from .. import utils
 from . import api, sql, store
@@ -39,6 +37,22 @@ def get_unique_filings(
 class _QuarterlyFeatures:
     """Methods for gathering quarterly data from SEC sources."""
 
+    #: Columns within this feature set.
+    columns = (
+        "AssetsCurrent",
+        "DebtEquityRatio",
+        "EarningsPerShare",
+        "InventoryNet",
+        "LiabilitiesCurrent",
+        "NetIncomeLoss",
+        "OperatingIncomeLoss",
+        "PriceBookRatio",
+        "QuickRatio",
+        "ReturnOnEquity",
+        "StockholdersEquity",
+        "WorkingCapitalRatio",
+    )
+
     #: XBRL disclosure concepts to pull for a company.
     concepts = (
         {"tag": "AssetsCurrent", "taxonomy": "us-gaap", "units": "USD"},
@@ -54,37 +68,6 @@ class _QuarterlyFeatures:
         {"tag": "StockholdersEquity", "taxonomy": "us-gaap", "units": "USD"},
     )
 
-    #: Name of feature store SQL table.
-    table_name = "quarterly_features"
-
-    @classmethod
-    def _create_table(
-        cls,
-        engine: Engine,
-        metadata: MetaData,
-        column_names: pd.Index,
-        /,
-    ) -> None:
-        """Create the feature store SQL table."""
-        primary_keys = {"ticker", "filed"}
-        table_columns = [
-            Column("ticker", String, primary_key=True, doc="Unique company ticker."),
-            Column("filed", String, primary_key=True, doc="Filing date."),
-        ]
-
-        for name in column_names:
-            if name not in primary_keys:
-                column = Column(name, Float)
-                table_columns.append(column)
-
-        quarterly_features = Table(
-            cls.table_name,
-            metadata,
-            *table_columns,
-        )
-        quarterly_features.create(bind=engine)
-        store.quarterly_features = quarterly_features
-
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize quarterly features columns."""
@@ -96,19 +79,20 @@ class _QuarterlyFeatures:
             .sort_index()
         )
         df["EarningsPerShare"] = df["EarningsPerShareBasic"]
-        df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
-        df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
-            "LiabilitiesCurrent"
-        ]
         df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
-        df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
         df["PriceBookRatio"] = df["StockholdersEquity"] / (
             df["AssetsCurrent"] - df["LiabilitiesCurrent"]
         )
+        df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
+            "LiabilitiesCurrent"
+        ]
+        df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
+        df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df = utils.quantile_clip(df)
         pct_change_columns = [concept["tag"] for concept in cls.concepts]
         df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)
         df.columns = df.columns.rename(None)
+        df = df[list(cls.columns)]
         return df.dropna()
 
     @classmethod
@@ -159,7 +143,6 @@ class _QuarterlyFeatures:
         start: None | str = None,
         end: None | str = None,
         engine: Engine = sql.engine,
-        metadata: MetaData = sql.metadata,
     ) -> pd.DataFrame:
         """Get quarterly features from local SEC SQL tables.
 
@@ -174,24 +157,21 @@ class _QuarterlyFeatures:
             end: The end date of the observation period.
                 Defaults to the last recorded date.
             engine: Raw store database engine.
-            metadata: Metadata associated with the tables.
 
         Returns:
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
 
         """
-        table: Table = metadata.tables["tags"]
-        with engine.connect() as conn:
+        table = sql.tags
+        with engine.begin() as conn:
             stmt = table.c.cik == api.get_cik(ticker)
-            stmt = and_(
-                stmt, table.c.tag.in_([concept["tag"] for concept in cls.concepts])
-            )
+            stmt &= table.c.tag.in_([concept["tag"] for concept in cls.concepts])
             if start:
-                stmt = and_(stmt, table.c.filed >= start)
+                stmt &= table.c.filed >= start
             if end:
-                stmt = and_(stmt, table.c.filed <= end)
-            df = pd.DataFrame(conn.execute(table.select(stmt)))
+                stmt &= table.c.filed <= end
+            df = pd.DataFrame(conn.execute(table.select().where(stmt)))
         return cls._normalize(df)
 
     @classmethod
@@ -203,7 +183,6 @@ class _QuarterlyFeatures:
         start: None | str = None,
         end: None | str = None,
         engine: Engine = store.engine,
-        metadata: MetaData = store.metadata,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -218,22 +197,23 @@ class _QuarterlyFeatures:
             end: The end date of the observation period.
                 Defaults to the last recorded date.
             engine: Feature store database engine.
-            metadata: Metadata associated with the tables.
 
         Returns:
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
 
         """
-        table: Table = metadata.tables[cls.table_name]
-        with engine.connect() as conn:
+        table = store.quarterly_features
+        with engine.begin() as conn:
             stmt = table.c.ticker == ticker
             if start:
-                stmt = and_(stmt, table.c.filed >= start)
+                stmt &= table.c.filed >= start
             if end:
-                stmt = and_(stmt, table.c.filed <= end)
-            df = pd.DataFrame(conn.execute(table.select(stmt)))
-        df = df.set_index("filed").drop(columns="ticker")
+                stmt &= table.c.filed <= end
+            df = pd.DataFrame(conn.execute(table.select().where(stmt)))
+        df = df.pivot(index="filed", values="value", columns="name").sort_index()
+        df.columns = df.columns.rename(None)
+        df = df[list(cls.columns)]
         return df
 
     @classmethod
@@ -244,7 +224,6 @@ class _QuarterlyFeatures:
         /,
         *,
         engine: Engine = store.engine,
-        metadata: MetaData = store.metadata,
     ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
@@ -257,20 +236,17 @@ class _QuarterlyFeatures:
             df: Dataframe to store completely as rows in a local SQL
                 table.
             engine: Feature store database engine.
-            metadata: Metadata associated with the tables.
 
         Returns:
             Number of rows written to the SQL table.
 
         """
         df = df.reset_index(names="filed")
+        df = df.melt("filed", var_name="name", value_name="value")
         df["ticker"] = ticker
-        inspector = store.inspector if engine is store.engine else inspect(engine)
-        if not inspector.has_table(cls.table_name):
-            cls._create_table(engine, metadata, df.columns)
-        table: Table = metadata.tables[cls.table_name]
-        with engine.connect() as conn:
-            conn.execute(table.insert(), df.to_dict(orient="records"))
+        table = store.quarterly_features
+        with engine.begin() as conn:
+            conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 

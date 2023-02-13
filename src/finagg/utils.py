@@ -128,7 +128,7 @@ def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:
         )
 
     os.environ[name] = value
-    dotenv = pathlib.Path(__file__).parent.parent.parent / ".env"
+    dotenv = pathlib.Path.cwd() / ".env"
     with open(dotenv, "a+") as env_file:
         env_file.write(f"{name}={value}\n")
     return dotenv

@@ -58,7 +58,7 @@ def run(
 
     sql.metadata.create_all(engine)
 
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         tickers_to_inserts = {}
         for ticker in unique_tickers:
             if concepts is None:
@@ -69,15 +69,15 @@ def run(
             else:
                 tickers_to_inserts[ticker] = 0
                 for concept in concepts:
-                    tag = concept.pop("tag")
-                    taxonomy = concept.pop("taxonomy", "us-gaap")
-                    units = concept.pop("units", "USD")
+                    tag = concept["tag"]
+                    taxonomy = concept.get("taxonomy", "us-gaap")
+                    units = concept.get("units", "USD")
                     df = api.company_concept.get(
                         tag, ticker=ticker, taxonomy=taxonomy, units=units
                     )
                     df = features.get_unique_filings(df, units=units)
                     count = conn.execute(
-                        sql.tags.insert(), df.to_dict(orient="records")
+                        sql.tags.insert(), df.to_dict(orient="records")  # type: ignore[arg-type]
                     ).rowcount
                     tickers_to_inserts[ticker] += count
     return tickers_to_inserts

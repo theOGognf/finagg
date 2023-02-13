@@ -1,15 +1,15 @@
 """SQLAlchemy interfaces for mixed features."""
 
 
-from sqlalchemy import Column, MetaData, String, Table, create_engine, inspect
-from sqlalchemy.engine import Engine, Inspector
+from sqlalchemy import Column, Float, MetaData, String, Table, create_engine
+from sqlalchemy.engine import Engine
 
 from .. import backend
 
 
 def _define_db(
     url: str = backend.database_url,
-) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
+) -> tuple[tuple[Engine, MetaData], tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 
     Used for the main SQL tables and for creating test
@@ -20,32 +20,25 @@ def _define_db(
         path: Path to database file.
 
     Returns:
-        The engine, engine inspector, metadata, and tables associated with
+        The engine, metadata, and tables associated with
         the database definition.
 
     """
-    if url != backend.engine.url:
-        engine = create_engine(url)
-        inspector: Inspector = inspect(engine)
-    else:
-        engine = backend.engine
-        inspector = backend.inspector
+    engine = backend.engine if url == backend.engine.url else create_engine(url)
     metadata = MetaData()
-    if inspector.has_table("economic_features"):
-        economic_features = Table(
-            "economic_features",
-            metadata,
-            Column(
-                "date",
-                String,
-                primary_key=True,
-                doc="Economic data series release date.",
-            ),
-            autoload_with=engine,
-        )
-    else:
-        economic_features = None
-    return (engine, metadata), inspector, (economic_features,)
+    economic_features = Table(
+        "economic_features",
+        metadata,
+        Column(
+            "date",
+            String,
+            primary_key=True,
+            doc="Economic data series release date.",
+        ),
+        Column("name", String, primary_key=True, doc="Feature name."),
+        Column("value", Float, doc="Feature value."),
+    )
+    return (engine, metadata), (economic_features,)
 
 
-(engine, metadata), inspector, (economic_features,) = _define_db()
+(engine, metadata), (economic_features,) = _define_db()

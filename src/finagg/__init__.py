@@ -1,21 +1,14 @@
 """Main package interface."""
 
+from importlib.metadata import PackageNotFoundError, version
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from . import (
-    _version,
-    backend,
-    bea,
-    fred,
-    indices,
-    install,
-    mixed,
-    sec,
-    testing,
-    utils,
-    yfinance,
-)
+from . import backend, bea, fred, indices, install, mixed, sec, testing, utils, yfinance
 
-__version__ = _version.get_versions()["version"]  # type: ignore
+try:
+    __version__ = version("finagg")
+except PackageNotFoundError:
+    pass

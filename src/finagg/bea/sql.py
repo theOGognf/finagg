@@ -1,24 +1,15 @@
 """BEA SQLAlchemy interfaces."""
 
 
-from sqlalchemy import (
-    Column,
-    Float,
-    Integer,
-    MetaData,
-    String,
-    Table,
-    create_engine,
-    inspect,
-)
-from sqlalchemy.engine import Engine, Inspector
+from sqlalchemy import Column, Float, Integer, MetaData, String, Table, create_engine
+from sqlalchemy.engine import Engine
 
 from .. import backend
 
 
 def _define_db(
     url: str = backend.database_url,
-) -> tuple[tuple[Engine, MetaData], Inspector, tuple[Table, ...]]:
+) -> tuple[tuple[Engine, MetaData], tuple[Table, ...]]:
     """Utility method for defining the SQLAlchemy elements.
 
     Used for the main SQL tables and for creating test
@@ -29,19 +20,12 @@ def _define_db(
         path: Path to database file.
 
     Returns:
-        The engine, engine inspector, metadata, and tables associated with
+        The engine, metadata, and tables associated with
         the database definition.
 
     """
-    if url != backend.engine.url:
-        engine = create_engine(url)
-        inspector: Inspector = inspect(engine)
-    else:
-        engine = backend.engine
-        inspector = backend.inspector
-
+    engine = backend.engine if url == backend.engine.url else create_engine(url)
     metadata = MetaData()
-
     fixed_assets = Table(
         "fixed_assets",
         metadata,
@@ -99,7 +83,6 @@ def _define_db(
 
     return (
         (engine, metadata),
-        inspector,
         (
             fixed_assets,
             gdp_by_industry,
@@ -111,7 +94,6 @@ def _define_db(
 
 (
     (engine, metadata),
-    inspector,
     (
         fixed_assets,
         gdp_by_industry,

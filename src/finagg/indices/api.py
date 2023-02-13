@@ -103,7 +103,7 @@ class _SP500(_API):
         tbl = soup.find("table", {"class": "wikitable"})
         (df,) = pd.read_html(str(tbl))
         df = pd.DataFrame(df)
-        df.drop("SEC filings", axis=1, inplace=True)
+        df.drop("SEC filings", axis=1, inplace=True, errors="ignore")
         return df.rename(
             columns={
                 "Symbol": "ticker",
@@ -139,7 +139,10 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
         Successful responses.
 
     """
-    user_agent = user_agent or os.environ.get("INDICES_API_USER_AGENT", None)
+    user_agent = user_agent or os.environ.get(
+        "INDICES_API_USER_AGENT",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36",
+    )
     if not user_agent:
         raise RuntimeError(
             "No indices API user agent declaration found. "
