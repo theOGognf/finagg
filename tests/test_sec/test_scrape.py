@@ -13,6 +13,6 @@ def engine() -> Engine:
 
 def test_run(engine: Engine) -> None:
     tickers_to_inserts = finagg.sec.scrape.run(
-        "AAPL", concepts=finagg.sec.features.quarterly_features.concepts, engine=engine
+        "AAPL", concepts=finagg.sec.features.quarterly.concepts, engine=engine
     )
     assert sum(tickers_to_inserts.values()) > 0

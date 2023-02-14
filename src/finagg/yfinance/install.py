@@ -39,7 +39,7 @@ def _features_get(ticker: str) -> tuple[str, pd.DataFrame]:
     `multiprocessing.Pool.imap`.
 
     """
-    df = features.daily_features.from_sql(ticker)
+    df = features.daily.from_sql(ticker)
     return ticker, df
 
 
@@ -109,7 +109,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
                     pbar.update()
                     ticker, df = output
                     if len(df.index) > 0:
-                        features.daily_features.to_store(ticker, df)
+                        features.daily.to_store(ticker, df)
                         feature_tickers_to_inserts[ticker] = len(df.index)
                     else:
                         skipped_feature_tickers.add(ticker)

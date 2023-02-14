@@ -60,5 +60,5 @@ def scrape(ticker: Sequence[str], tag: str, taxonomy: str, units: str) -> None:
     if tag and taxonomy and units:
         concepts = [{"tag": tag, "taxonomy": taxonomy, "units": units}]
     else:
-        concepts = list(features.quarterly_features.concepts)
+        concepts = list(features.quarterly.concepts)
     _scrape.run(ticker, concepts=concepts)

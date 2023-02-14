@@ -28,7 +28,7 @@ def _features_get(ticker: str) -> tuple[str, pd.DataFrame]:
     `multiprocessing.Pool.imap`.
 
     """
-    df = features.quarterly_features.from_sql(ticker)
+    df = features.quarterly.from_sql(ticker)
     return ticker, df
 
 
@@ -89,7 +89,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
     sql.metadata.create_all(sql.engine)
 
     tickers = indices.api.get_ticker_set()
-    concepts = features.quarterly_features.concepts
+    concepts = features.quarterly.concepts
     total_searches = len(tickers) * len(concepts)
     tickers_to_dfs: dict[str, list[pd.DataFrame]] = {}
     raw_tickers_to_inserts = {}
@@ -151,7 +151,7 @@ def run(processes: int = mp.cpu_count() - 1, install_features: bool = False) -> 
                         pbar.update()
                         ticker, df = output
                         if len(df.index) > 0:
-                            features.quarterly_features.to_store(ticker, df)
+                            features.quarterly.to_store(ticker, df)
                             feature_tickers_to_inserts[ticker] = len(df.index)
                         else:
                             skipped_feature_tickers.add(ticker)

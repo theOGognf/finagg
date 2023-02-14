@@ -44,8 +44,6 @@ class FundamentalsMonitor(Observer):
                             2,  # Change in value
                             7,  # Fundamentals
                             5,  # Changes in prices and volume
-                            5,  # Changes w.r.t. VOO
-                            5,  # Changes w.r.t. VGT
                         ]
                     )
                 ),
@@ -58,7 +56,7 @@ class FundamentalsMonitor(Observer):
         """Observe fundamental features.
 
         Args:
-            features: Mixed features from the `finagg.mixed` submodule.
+            features: Fundamental features from the `finagg.fundamental` submodule.
             portfolio: Portfolio to manage.
 
         Returns:
@@ -96,17 +94,6 @@ class FundamentalsMonitor(Observer):
                 features["low"],
                 features["close"],
                 features["volume"],
-                # Changes w.r.t. common indices
-                features["VOO_open"],
-                features["VOO_high"],
-                features["VOO_low"],
-                features["VOO_close"],
-                features["VOO_volume"],
-                features["VGT_open"],
-                features["VGT_high"],
-                features["VGT_low"],
-                features["VGT_close"],
-                features["VGT_volume"],
             ],
             -99,
             99,

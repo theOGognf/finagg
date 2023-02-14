@@ -251,4 +251,4 @@ class _QuarterlyFeatures:
 
 
 #: Public-facing API.
-quarterly_features = _QuarterlyFeatures()
+quarterly = _QuarterlyFeatures()

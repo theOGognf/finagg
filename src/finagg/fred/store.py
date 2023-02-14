@@ -1,4 +1,4 @@
-"""SQLAlchemy interfaces for mixed features."""
+"""SQLAlchemy interfaces for fundamental features."""
 
 
 from sqlalchemy import Column, Float, MetaData, String, Table, create_engine

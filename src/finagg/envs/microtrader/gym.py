@@ -9,7 +9,7 @@ from gym.core import ActType, ObsType
 from pydantic import Field
 from pydantic.dataclasses import dataclass
 
-from ... import mixed
+from ... import fundamental
 from ...portfolio import Portfolio
 from . import wrappers
 
@@ -79,9 +79,9 @@ class Sampler:
 
     def reset(self) -> tuple[dict[str, Any], bool]:
         """Sample a new set of features."""
-        tickers = list(mixed.store.get_tickers_with_at_least(self.required_rows))
+        tickers = list(fundamental.store.get_tickers_with_at_least(self.required_rows))
         self.ticker = random.choice(tickers)
-        df = mixed.features.fundamental_features.from_store(self.ticker)
+        df = fundamental.features.fundamental.from_store(self.ticker)
         num_rows = len(df.index)
         if num_rows < self.required_rows:
             subsample = df

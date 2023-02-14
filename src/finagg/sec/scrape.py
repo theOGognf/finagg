@@ -12,7 +12,7 @@ def run(
     tickers: str | Sequence[str],
     /,
     *,
-    concepts: Sequence[dict[str, str]] = features.quarterly_features.concepts,
+    concepts: Sequence[dict[str, str]] = features.quarterly.concepts,
     engine: Engine = sql.engine,
     drop_tables: bool = False,
 ) -> dict[str, int]:

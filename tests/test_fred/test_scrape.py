@@ -13,6 +13,6 @@ def engine() -> Engine:
 
 def test_run(engine: Engine) -> None:
     tickers_to_inserts = finagg.fred.scrape.run(
-        finagg.fred.features.economic_features.series_ids, engine=engine
+        finagg.fred.features.economic.series_ids, engine=engine
     )
     assert sum(tickers_to_inserts.values()) > 0

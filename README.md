@@ -53,7 +53,7 @@ economic_data = finagg.fred.features.economic_features.from_sql()
 quarterly_data = finagg.sec.features.quarterly_features.from_sql("AAPL")
 
 # Get an aggregation of quarterly and daily features for a particular ticker.
-fundamental_data = finagg.mixed.features.fundamental_features.from_sql("AAPL")
+fundamental_data = finagg.fundamental.features.fundamental_features.from_sql("AAPL")
 ```
 
 ## Optional Installs
