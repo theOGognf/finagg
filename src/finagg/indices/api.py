@@ -37,7 +37,7 @@ class _API(ABC):
         return df["ticker"].tolist()
 
 
-class _DJIA(_API):
+class DJIA(_API):
 
     url = "https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average"
 
@@ -69,7 +69,7 @@ class _DJIA(_API):
         return df
 
 
-class _Nasdaq100(_API):
+class Nasdaq100(_API):
 
     url = "https://en.wikipedia.org/wiki/Nasdaq-100"
 
@@ -91,7 +91,7 @@ class _Nasdaq100(_API):
         )
 
 
-class _SP500(_API):
+class SP500(_API):
 
     url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 
@@ -119,13 +119,13 @@ class _SP500(_API):
 
 
 #: The Nasdaq Composite 100.
-djia = _DJIA()
+djia = DJIA()
 
 #: The Nasdaq Composite 100.
-nasdaq100 = _Nasdaq100()
+nasdaq100 = Nasdaq100()
 
 #: The Standard and Poor's 500.
-sp500 = _SP500()
+sp500 = SP500()
 
 
 def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:

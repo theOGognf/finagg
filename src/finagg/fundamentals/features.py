@@ -1,34 +1,37 @@
-"""Features from yfinance sources."""
+"""Features from several sources."""
 
 import pandas as pd
 from sqlalchemy.engine import Engine
 
-from .. import utils
-from . import api, sql, store
+from .. import sec, utils, yfinance
+from . import store
 
 
-class DailyFeatures:
-    """Methods for gathering daily stock data from Yahoo! finance."""
+class FundamentalFeatures:
+    """Method for gathering fundamental data on a stock using several sources."""
 
     #: Columns within this feature set.
-    columns = ("price", "open", "high", "low", "close", "volume")
+    columns = (
+        yfinance.features.daily.columns
+        + sec.features.quarterly.columns
+        + ("PriceEarningsRatio",)
+    )
 
     @classmethod
-    def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
-        """Normalize daily features columns."""
-        df = (
-            df.drop(columns=["ticker"])
-            .fillna(method="ffill")
-            .dropna()
-            .set_index("date")
-            .astype(float)
-            .sort_index()
+    def _normalize(
+        cls,
+        quarterly_df: pd.DataFrame,
+        daily_df: pd.DataFrame,
+        /,
+    ) -> pd.DataFrame:
+        """Normalize the feature columns."""
+        df = pd.merge(
+            quarterly_df, daily_df, how="outer", left_index=True, right_index=True
         )
-        df["price"] = df["close"]
+        df = df.fillna(method="ffill").dropna()
+        df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
         df = utils.quantile_clip(df)
-        pct_change_columns = ["open", "high", "low", "close", "volume"]
-        df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)
-        df.columns = df.columns.rename(None)
+        df.index.names = ["date"]
         df = df[list(cls.columns)]
         return df.dropna()
 
@@ -36,21 +39,30 @@ class DailyFeatures:
     def from_api(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
-        """Get daily features directly from the yfinance API.
+        """Get features directly from APIs.
+
+        Not all data series are published at the same rate or
+        time. Missing rows for less-frequent publications
+        are forward filled.
 
         Args:
             ticker: Company ticker.
-            start: The start date of the stock history.
+            start: The start date of the observation period.
                 Defaults to the first recorded date.
-            end: The end date of the stock history.
+            end: The end date of the observation period.
                 Defaults to the last recorded date.
 
         Returns:
-            Daily stock price dataframe. Sorted by date.
+            Combined quarterly and daily feature dataframe.
+            Sorted by date.
 
         """
-        df = api.get(ticker, start=start, end=end)
-        return cls._normalize(df)
+        quarterly_features = sec.features.quarterly.from_api(
+            ticker, start=start, end=end
+        )
+        start = str(quarterly_features.index[0])
+        daily_features = yfinance.features.daily.from_api(ticker, start=start, end=end)
+        return cls._normalize(quarterly_features, daily_features)
 
     @classmethod
     def from_sql(
@@ -60,31 +72,43 @@ class DailyFeatures:
         *,
         start: None | str = None,
         end: None | str = None,
-        engine: Engine = sql.engine,
+        sec_engine: Engine = sec.sql.engine,
+        yf_engine: Engine = yfinance.sql.engine,
     ) -> pd.DataFrame:
-        """Get daily features from local SQL tables.
+        """Get features directly from local SQL tables.
+
+        Not all data series are published at the same rate or
+        time. Missing rows for less-frequent publications
+        are forward filled.
 
         Args:
             ticker: Company ticker.
-            start: The start date of the stock history.
+            start: The start date of the observation period.
                 Defaults to the first recorded date.
-            end: The end date of the stock history.
+            end: The end date of the observation period.
                 Defaults to the last recorded date.
-            engine: Raw store database engine.
+            sec_engine: Raw SEC store database engine.
+            yf_engine: Raw yfinance store database engine.
 
         Returns:
-            Daily stock price dataframe. Sorted by date.
+            Combined quarterly and daily feature dataframe.
+            Sorted by date.
 
         """
-        table = sql.prices
-        with engine.begin() as conn:
-            stmt = table.c.ticker == ticker
-            if start:
-                stmt &= table.c.date >= start
-            if end:
-                stmt &= table.c.date <= end
-            df = pd.DataFrame(conn.execute(table.select().where(stmt)))
-        return cls._normalize(df)
+        quarterly_features = sec.features.quarterly.from_sql(
+            ticker,
+            start=start,
+            end=end,
+            engine=sec_engine,
+        )
+        start = str(quarterly_features.index[0])
+        daily_features = yfinance.features.daily.from_sql(
+            ticker,
+            start=start,
+            end=end,
+            engine=yf_engine,
+        )
+        return cls._normalize(quarterly_features, daily_features)
 
     @classmethod
     def from_store(
@@ -111,10 +135,11 @@ class DailyFeatures:
             engine: Feature store database engine.
 
         Returns:
-            Daily stock price dataframe. Sorted by date.
+            Combined quarterly and daily feature dataframe.
+            Sorted by date.
 
         """
-        table = store.daily_features
+        table = store.fundamental_features
         with engine.begin() as conn:
             stmt = table.c.ticker == ticker
             if start:
@@ -155,11 +180,11 @@ class DailyFeatures:
         df = df.reset_index(names="date")
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
-        table = store.daily_features
+        table = store.fundamental_features
         with engine.begin() as conn:
             conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 
 #: Public-facing API.
-daily = DailyFeatures()
+fundamentals = FundamentalFeatures()

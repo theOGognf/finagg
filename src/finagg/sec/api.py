@@ -62,7 +62,7 @@ class _API(ABC):
         """Main dataset API method."""
 
 
-class _CompanyConcept(_API):
+class CompanyConcept(_API):
 
     url = (
         "https://data.sec.gov/api/xbrl"
@@ -121,7 +121,7 @@ class _CompanyConcept(_API):
         return results.rename(columns={"entityName": "entity", "val": "value"})
 
 
-class _CompanyFacts(_API):
+class CompanyFacts(_API):
 
     url = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 
@@ -176,7 +176,7 @@ class _CompanyFacts(_API):
         )
 
 
-class _Frames(_API):
+class Frames(_API):
 
     url = (
         "https://data.sec.gov/api/xbrl"
@@ -231,7 +231,7 @@ class _Frames(_API):
         )
 
 
-class _Submissions(_API):
+class Submissions(_API):
 
     url = "https://data.sec.gov/submissions/CIK{cik}.json"
 
@@ -282,7 +282,7 @@ class _Submissions(_API):
         return {"metadata": metadata, "filings": df}
 
 
-class _Tickers(_API):
+class Tickers(_API):
 
     url = "https://www.sec.gov/files/company_tickers.json"
 
@@ -309,21 +309,21 @@ _cik_to_tickers: dict[str, str] = {}
 _tickers_to_cik: dict[str, str] = {}
 
 #: Get the full history of a company's concept (taxonomy and tag).
-company_concept = _CompanyConcept()
+company_concept = CompanyConcept()
 
 #: Get all XBRL disclosures from a single company (CIK).
-company_facts = _CompanyFacts()
+company_facts = CompanyFacts()
 
 #: Get one fact for each reporting entity that most closely fits
 #: the calendrical period requested.
-frames = _Frames()
+frames = Frames()
 
 #: Get a company's metadata and recent submissions.
-submissions = _Submissions()
+submissions = Submissions()
 
 #: Used to get all SEC ticker data as opposed to
 #: an individual ticker's SEC CIK.
-tickers = _Tickers()
+tickers = Tickers()
 
 
 @ratelimit.guard([ratelimit.RequestLimit(9, timedelta(seconds=1))])
@@ -353,7 +353,7 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
 def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
     """Return a ticker's SEC CIK."""
     if not _tickers_to_cik:
-        response = get(_Tickers.url, user_agent=user_agent)
+        response = get(Tickers.url, user_agent=user_agent)
         content: dict[str, dict[str, str]] = response.json()
         for _, items in content.items():
             normalized_cik = str(items["cik_str"]).zfill(10)
@@ -365,7 +365,7 @@ def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
 def get_ticker(cik: str, /, *, user_agent: None | str = None) -> str:
     """Return an SEC CIK's ticker."""
     if not _cik_to_tickers:
-        response = get(_Tickers.url, user_agent=user_agent)
+        response = get(Tickers.url, user_agent=user_agent)
         content: dict[str, dict[str, str]] = response.json()
         for _, items in content.items():
             normalized_cik = str(items["cik_str"]).zfill(10)

@@ -1,10 +1,14 @@
 """Features from SEC sources."""
 
+from functools import cache
+from typing import Literal
+
 import pandas as pd
+import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 
 from .. import utils
-from . import api, sql, store
+from . import api, sql
 
 
 def get_unique_filings(
@@ -34,7 +38,90 @@ def get_unique_filings(
     return df.drop_duplicates(["tag", "filed"])
 
 
-class _QuarterlyFeatures:
+class IndustryQuarterlyFeatures:
+    """Methods for gathering industry-averaged quarterly data from SEC features."""
+
+    @classmethod
+    def from_store(
+        cls,
+        /,
+        *,
+        ticker: None | str = None,
+        code: None | str = None,
+        level: Literal[2, 3, 4] = 2,
+        start: None | str = None,
+        end: None | str = None,
+        engine: Engine = sql.engine,
+    ) -> pd.DataFrame:
+        """Get quarterly features from the feature store,
+        aggregated for an entire industry.
+
+        The industry can be chosen according to a company or
+        by an industry code directly. If a company is provided,
+        then the first `level` digits of the company's SIC code
+        is used for the industry code.
+
+        Args:
+            ticker: Company ticker. Lookup the industry associated
+                with this company. Mutually exclusive with `code`.
+            code: Industry SIC code to use for industry lookup.
+                Mutually exclusive with `ticker`.
+            level: Industry level to aggregate features at.
+                The industry used according to `ticker` or `code`
+                is subsampled according to this value. Options include:
+                    2 = major group (e.g., furniture and fixtures)
+                    3 = industry group (e.g., office furnitures)
+                    4 = industry (e.g., wood office furniture)
+            start: The start date of the observation period.
+                Defaults to the first recorded date.
+            end: The end date of the observation period.
+                Defaults to the last recorded date.
+            engine: Raw data and feature data SQL database engine.
+
+        Returns:
+            Quarterly data dataframe with each tag as a
+            separate column. Sorted by filing date.
+
+        """
+        if bool(ticker) == bool(code):
+            raise ValueError("Must provide a `ticker` or `code`.")
+
+        with engine.begin() as conn:
+            if ticker:
+                (sic,) = conn.execute(
+                    sa.select(sql.submissions.c.sic)
+                    .where(sql.submissions.c.cik == api.get_cik(ticker))
+                    .distinct()
+                )
+                code = sic[:level]
+            else:
+                code = code[:level]
+
+            stmt = (
+                sa.select(
+                    sql.quarterly_features.c.filed,
+                    sql.quarterly_features.c.name,
+                    sa.func.avg(sql.quarterly_features.c.value),
+                )
+                .join(
+                    sql.submissions,
+                    (sql.submissions.c.cik == sql.quarterly_features.c.cik)
+                    & (sql.submissions.c.sic.startswith(code)),
+                )
+                .group_by(sql.quarterly_features.c.filed, sql.quarterly_features.c.name)
+            )
+            where = sql.quarterly_features.c.filed >= "0000-00-00"
+            if start:
+                where &= sql.quarterly_features.c.filed >= start
+            if end:
+                where &= sql.quarterly_features.c.filed <= end
+            df = pd.DataFrame(conn.execute(stmt.where(where)))
+        df = df.pivot(index="filed", values="value", columns="name").sort_index()
+        df.columns = df.columns.rename(None)
+        return df
+
+
+class QuarterlyFeatures:
     """Methods for gathering quarterly data from SEC sources."""
 
     #: Columns within this feature set.
@@ -163,15 +250,14 @@ class _QuarterlyFeatures:
             separate column. Sorted by filing date.
 
         """
-        table = sql.tags
         with engine.begin() as conn:
-            stmt = table.c.cik == api.get_cik(ticker)
-            stmt &= table.c.tag.in_([concept["tag"] for concept in cls.concepts])
+            stmt = sql.tags.c.cik == api.get_cik(ticker)
+            stmt &= sql.tags.c.tag.in_([concept["tag"] for concept in cls.concepts])
             if start:
-                stmt &= table.c.filed >= start
+                stmt &= sql.tags.c.filed >= start
             if end:
-                stmt &= table.c.filed <= end
-            df = pd.DataFrame(conn.execute(table.select().where(stmt)))
+                stmt &= sql.tags.c.filed <= end
+            df = pd.DataFrame(conn.execute(sql.tags.select().where(stmt)))
         return cls._normalize(df)
 
     @classmethod
@@ -182,7 +268,7 @@ class _QuarterlyFeatures:
         *,
         start: None | str = None,
         end: None | str = None,
-        engine: Engine = store.engine,
+        engine: Engine = sql.engine,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -203,18 +289,40 @@ class _QuarterlyFeatures:
             separate column. Sorted by filing date.
 
         """
-        table = store.quarterly_features
+        cik = api.get_cik(ticker)
         with engine.begin() as conn:
-            stmt = table.c.ticker == ticker
+            stmt = sql.quarterly_features.c.ticker == cik
             if start:
-                stmt &= table.c.filed >= start
+                stmt &= sql.quarterly_features.c.filed >= start
             if end:
-                stmt &= table.c.filed <= end
-            df = pd.DataFrame(conn.execute(table.select().where(stmt)))
+                stmt &= sql.quarterly_features.c.filed <= end
+            df = pd.DataFrame(conn.execute(sql.quarterly_features.select().where(stmt)))
         df = df.pivot(index="filed", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
         df = df[list(cls.columns)]
         return df
+
+    @cache
+    @classmethod
+    def get_ticker_set(cls, lb: int = 1, *, engine: Engine = sql.engine) -> set[str]:
+        """Get all unique tickers in the feature SQL tables."""
+        with engine.begin() as conn:
+            tickers = set()
+            for cik in conn.execute(
+                sql.quarterly_features.select()
+                .distinct(sql.quarterly_features.c.cik)
+                .group_by(sql.quarterly_features.c.cik)
+                .having(sa.func.count(sql.quarterly_features.c.filed) >= lb)
+            ):
+                (cik,) = cik
+                ticker = api.get_ticker(str(cik))
+                tickers.add(ticker)
+        return tickers
+
+    @classmethod
+    def install(cls, *, engine: Engine = sql.engine) -> int:
+        sql.quarterly_features.drop(engine)
+        sql.quarterly_features.create(engine)
 
     @classmethod
     def to_store(
@@ -223,7 +331,7 @@ class _QuarterlyFeatures:
         df: pd.DataFrame,
         /,
         *,
-        engine: Engine = store.engine,
+        engine: Engine = sql.engine,
     ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
@@ -243,12 +351,11 @@ class _QuarterlyFeatures:
         """
         df = df.reset_index(names="filed")
         df = df.melt("filed", var_name="name", value_name="value")
-        df["ticker"] = ticker
-        table = store.quarterly_features
+        df["cik"] = api.get_cik(ticker)
         with engine.begin() as conn:
-            conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+            conn.execute(sql.quarterly_features.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 
 #: Public-facing API.
-quarterly = _QuarterlyFeatures()
+quarterly = QuarterlyFeatures()

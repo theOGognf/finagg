@@ -1,6 +1,6 @@
 """Main datbase initialization/installation script."""
 
-from . import fred, fundamental, indices, sec, yfinance
+from . import fred, fundamentals, indices, sec, yfinance
 
 
 def run(install_features: bool = False) -> None:
@@ -10,4 +10,4 @@ def run(install_features: bool = False) -> None:
     sec.install.run(install_features=install_features)
     yfinance.install.run(install_features=install_features)
     if install_features:
-        fundamental.install.run()
+        fundamentals.install.run()

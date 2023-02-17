@@ -15,7 +15,7 @@ import pandas as pd
 from . import _api
 
 
-class _RelatedTags(_api.API):
+class RelatedTags(_api.API):
 
     url = "https://api.stlouisfed.org/fred/related_tags"
 
@@ -93,7 +93,7 @@ class _RelatedTags(_api.API):
         return pd.DataFrame(data)
 
 
-class _Series(_api.API):
+class Series(_api.API):
 
     url = "https://api.stlouisfed.org/fred/tags/series"
 
@@ -164,11 +164,11 @@ class _Series(_api.API):
         return pd.DataFrame(data)
 
 
-class _Tags(_api.API):
+class Tags(_api.API):
     """Get FRED tags."""
 
     #: "tags/series" FRED API. Get the series for a FRED tag.
-    series = _Series()
+    series = Series()
 
     url = "https://api.stlouisfed.org/fred/tags"
 
@@ -246,5 +246,5 @@ class _Tags(_api.API):
 
 
 #: Public-facing "fred/tags" and "fred/related_tags" APIs.
-tags = _Tags()
-related_tags = _RelatedTags()
+tags = Tags()
+related_tags = RelatedTags()

@@ -1,4 +1,4 @@
-"""SQLAlchemy interfaces for SEC features."""
+"""SQLAlchemy interfaces for fundamental features."""
 
 from functools import cache
 
@@ -18,6 +18,7 @@ def _define_db(
 
     Args:
         url: SQLAlchemy database URL.
+        path: Path to database file.
 
     Returns:
         The engine, metadata, and tables associated with
@@ -26,18 +27,18 @@ def _define_db(
     """
     engine = backend.engine if url == backend.engine.url else create_engine(url)
     metadata = MetaData()
-    quarterly_features = Table(
-        "quarterly_features",
+    fundamental_features = Table(
+        "fundamental_features",
         metadata,
         Column("ticker", String, primary_key=True, doc="Unique company ticker."),
-        Column("filed", String, primary_key=True, doc="Filing date."),
+        Column("date", String, primary_key=True, doc="Filing and stock price dates."),
         Column("name", String, primary_key=True, doc="Feature name."),
         Column("value", Float, doc="Feature value."),
     )
-    return (engine, metadata), (quarterly_features,)
+    return (engine, metadata), (fundamental_features,)
 
 
-(engine, metadata), (quarterly_features,) = _define_db()
+(engine, metadata), (fundamental_features,) = _define_db()
 
 
 @cache
@@ -46,7 +47,7 @@ def get_ticker_set() -> set[str]:
     with engine.begin() as conn:
         tickers = set()
         for ticker in conn.execute(
-            quarterly_features.select().distinct(quarterly_features.c.ticker)
+            fundamental_features.select().distinct(fundamental_features.c.ticker)
         ):
             (ticker,) = ticker
             tickers.add(str(ticker))
@@ -62,10 +63,10 @@ def get_tickers_with_at_least(lb: int, /) -> set[str]:
     with engine.begin() as conn:
         tickers = set()
         for ticker in conn.execute(
-            quarterly_features.select()
-            .distinct(quarterly_features.c.ticker)
-            .group_by(quarterly_features.c.ticker)
-            .having(func.count(quarterly_features.c.filed) >= lb)
+            fundamental_features.select()
+            .distinct(fundamental_features.c.ticker)
+            .group_by(fundamental_features.c.ticker)
+            .having(func.count(fundamental_features.c.date) >= lb)
         ):
             (ticker,) = ticker
             tickers.add(str(ticker))

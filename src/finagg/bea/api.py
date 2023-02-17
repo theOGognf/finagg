@@ -80,7 +80,7 @@ class _API(ABC):
         return get_parameter_values(cls.name, param, api_key=api_key)
 
 
-class _FixedAssets(_API):
+class FixedAssets(_API):
     """US fixed assets (assets for long-term use).
 
     Details low-level US economic details.
@@ -158,7 +158,7 @@ class _FixedAssets(_API):
         return pd.concat(results)
 
 
-class _GDPByIndustry(_API):
+class GDPByIndustry(_API):
     """GDP (a single summary statistic) for each industry.
 
     Data provided by this API is considered coarse/high-level.
@@ -233,7 +233,7 @@ class _GDPByIndustry(_API):
         )
 
 
-class _InputOutput(_API):
+class InputOutput(_API):
     """Specific input-output statistics for each industry.
 
     Data provided by this API is considered granular/low-level.
@@ -310,7 +310,7 @@ class _InputOutput(_API):
         )
 
 
-class _NIPA(_API):
+class NIPA(_API):
     """National income and product accounts.
 
     Details high-level US economic details in several
@@ -393,16 +393,16 @@ class _NIPA(_API):
 
 
 #: "FixedAssets" dataset API.
-fixed_assets = _FixedAssets()
+fixed_assets = FixedAssets()
 
 #: "GdpByIndustry" dataset API.
-gdp_by_industry = _GDPByIndustry()
+gdp_by_industry = GDPByIndustry()
 
 #: "InputOutput" dataset API.
-input_output = _InputOutput()
+input_output = InputOutput()
 
 #: "NIPA" dataset API.
-nipa = _NIPA()
+nipa = NIPA()
 
 #: BEA API URL.
 url = "https://apps.bea.gov/api/data"

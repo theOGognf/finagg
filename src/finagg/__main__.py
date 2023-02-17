@@ -2,7 +2,7 @@
 
 import click
 
-from . import fred, fundamental, indices
+from . import fred, fundamentals, indices
 from . import install as _install
 from . import sec, yfinance
 
@@ -28,7 +28,7 @@ def install(install_features: bool = False) -> None:
 
 cli.add_command(fred._cli.entry_point, "fred")
 cli.add_command(indices._cli.entry_point, "indices")
-cli.add_command(fundamental._cli.entry_point, "fundamental")
+cli.add_command(fundamentals._cli.entry_point, "fundamentals")
 cli.add_command(sec._cli.entry_point, "sec")
 cli.add_command(yfinance._cli.entry_point, "yfinance")
 

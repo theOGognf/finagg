@@ -7,7 +7,7 @@ from .. import utils
 from . import api, sql, store
 
 
-class _EconomicFeatures:
+class EconomicFeatures:
     """Methods for gathering economic data series from FRED sources."""
 
     #: Economic series IDs (typical economic indicators).
@@ -201,4 +201,4 @@ class _EconomicFeatures:
 
 
 #: Public-facing API.
-economic = _EconomicFeatures()
+economic = EconomicFeatures()

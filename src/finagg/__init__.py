@@ -10,7 +10,7 @@ from . import (
     backend,
     bea,
     fred,
-    fundamental,
+    fundamentals,
     indices,
     install,
     sec,

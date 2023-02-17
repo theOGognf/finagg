@@ -15,7 +15,7 @@ import pandas as pd
 from . import _api
 
 
-class _Releases(_api.API):
+class Releases(_api.API):
 
     url = "https://api.stlouisfed.org/fred/source/releases"
 
@@ -78,11 +78,11 @@ class _Releases(_api.API):
         return pd.DataFrame(data)
 
 
-class _Source(_api.API):
+class Source(_api.API):
     """Get a source of economic data."""
 
     #: "source/releases" FRED API. Get the releases for a source of economic data.
-    releases = _Releases()
+    releases = Releases()
 
     url = "https://api.stlouisfed.org/fred/source"
 
@@ -125,7 +125,7 @@ class _Source(_api.API):
         return pd.DataFrame(data)
 
 
-class _Sources(_api.API):
+class Sources(_api.API):
 
     url = "https://api.stlouisfed.org/fred/sources"
 
@@ -184,5 +184,5 @@ class _Sources(_api.API):
 
 
 #: Public-facing "fred/source" and "fred/sources" API.
-source = _Source()
-sources = _Sources()
+source = Source()
+sources = Sources()

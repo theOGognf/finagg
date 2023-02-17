@@ -18,7 +18,7 @@ import pandas as pd
 from . import _api
 
 
-class _Children(_api.API):
+class Children(_api.API):
 
     url = "https://api.stlouisfed.org/fred/category/children"
 
@@ -61,7 +61,7 @@ class _Children(_api.API):
         return pd.DataFrame(data)
 
 
-class _Related(_api.API):
+class Related(_api.API):
 
     url = "https://api.stlouisfed.org/fred/category/related"
 
@@ -106,7 +106,7 @@ class _Related(_api.API):
         return pd.DataFrame(data)
 
 
-class _Series(_api.API):
+class Series(_api.API):
 
     url = "https://api.stlouisfed.org/fred/category/series"
 
@@ -187,7 +187,7 @@ class _Series(_api.API):
         return pd.DataFrame(data)
 
 
-class _Tags(_api.API):
+class Tags(_api.API):
 
     url = "https://api.stlouisfed.org/fred/category/tags"
 
@@ -268,7 +268,7 @@ class _Tags(_api.API):
         return pd.DataFrame(data)
 
 
-class _RelatedTags(_api.API):
+class RelatedTags(_api.API):
 
     url = "https://api.stlouisfed.org/fred/category/related_tags"
 
@@ -352,7 +352,7 @@ class _RelatedTags(_api.API):
         return pd.DataFrame(data)
 
 
-class _Category(_api.API):
+class Category(_api.API):
     """Collection of `fred/category` APIs.
 
     See the related FRED API documentation at:
@@ -361,19 +361,19 @@ class _Category(_api.API):
     """
 
     #: "category/children" FRED API. Get the children of a category.
-    children = _Children()
+    children = Children()
 
     #: "category/related" FRED API. Get categories related to a category.
-    related = _Related()
+    related = Related()
 
     #: "category/related_tags" FRED API. Get tags related to a category.
-    related_tags = _RelatedTags()
+    related_tags = RelatedTags()
 
     #: "category/series" FRED API. Get a category's series.
-    series = _Series()
+    series = Series()
 
     #: "category/tags" FRED API. Get a category's tags.
-    tags = _Tags()
+    tags = Tags()
 
     url = "https://api.stlouisfed.org/fred/category"
 
@@ -397,4 +397,4 @@ class _Category(_api.API):
 
 
 #: Public-facing "fred/category" API.
-category = _Category()
+category = Category()

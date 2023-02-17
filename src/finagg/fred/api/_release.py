@@ -15,7 +15,7 @@ import pandas as pd
 from . import _api
 
 
-class _ReleasesDates(_api.API):
+class ReleasesDates(_api.API):
 
     url = "https://api.stlouisfed.org/fred/releases/dates"
 
@@ -76,11 +76,11 @@ class _ReleasesDates(_api.API):
         return pd.DataFrame(data)
 
 
-class _Releases(_api.API):
+class Releases(_api.API):
     """Get all releases of economic data."""
 
     #: "releases/dates" FRED API. Get dates for releases of economic data.
-    dates = _ReleasesDates
+    dates = ReleasesDates
 
     url = "https://api.stlouisfed.org/fred/releases"
 
@@ -139,7 +139,7 @@ class _Releases(_api.API):
         return pd.DataFrame(data)
 
 
-class _ReleaseDates(_api.API):
+class ReleaseDates(_api.API):
 
     url = "https://api.stlouisfed.org/fred/release/dates"
 
@@ -196,7 +196,7 @@ class _ReleaseDates(_api.API):
         return pd.DataFrame(data)
 
 
-class _Series(_api.API):
+class Series(_api.API):
 
     url = "https://api.stlouisfed.org/fred/release/series"
 
@@ -282,7 +282,7 @@ class _Series(_api.API):
         return pd.DataFrame(data)
 
 
-class _Sources(_api.API):
+class Sources(_api.API):
 
     url = "https://api.stlouisfed.org/fred/release/sources"
 
@@ -325,7 +325,7 @@ class _Sources(_api.API):
         return pd.DataFrame(data)
 
 
-class _Tags(_api.API):
+class Tags(_api.API):
 
     url = "https://api.stlouisfed.org/fred/release/tags"
 
@@ -405,7 +405,7 @@ class _Tags(_api.API):
         return pd.DataFrame(data)
 
 
-class _RelatedTags(_api.API):
+class RelatedTags(_api.API):
 
     url = "https://api.stlouisfed.org/fred/release/related_tags"
 
@@ -488,7 +488,7 @@ class _RelatedTags(_api.API):
         return pd.DataFrame(data)
 
 
-class _Tables(_api.API):
+class Tables(_api.API):
 
     url = "https://api.stlouisfed.org/fred/release/tables"
 
@@ -534,26 +534,26 @@ class _Tables(_api.API):
         return pd.DataFrame(data)
 
 
-class _Release(_api.API):
+class Release(_api.API):
     """Collection of `fred/release` APIs."""
 
     #: "release/dates" FRED API. Get economic release dates.
-    dates = _ReleaseDates()
+    dates = ReleaseDates()
 
     #: "release/related_tags" FRED API. Get tags related to an economic release.
-    related_tags = _RelatedTags()
+    related_tags = RelatedTags()
 
     #: "release/series" FRED API. Get the series of an economic release.
-    series = _Series()
+    series = Series()
 
     #: "release/sources" FRED API. Get the sources for an economic release.
-    sources = _Sources()
+    sources = Sources()
 
     #: "release/tables" FRED API. Get the tables of an economic release.
-    tables = _Tables()
+    tables = Tables()
 
     #: "release/tags" FRED API. Get tags of an economic release.
-    tags = _Tags()
+    tags = Tags()
 
     url = "https://api.stlouisfed.org/fred/release"
 
@@ -597,5 +597,5 @@ class _Release(_api.API):
 
 
 #: Public-facing "fred/release" and "fred/releases" APIs.
-releases = _Releases()
-release = _Release()
+releases = Releases()
+release = Release()
