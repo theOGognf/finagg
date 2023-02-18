@@ -129,9 +129,9 @@ quarterly_features = sa.Table(
 
 
 @cache
-def get_ticker_set(lb: int = 1, *, engine: sa.Engine = backend.engine) -> set[str]:
+def get_ticker_set(lb: int = 1) -> set[str]:
     """Get all unique tickers in the raw SQL tables."""
-    with engine.begin() as conn:
+    with backend.engine.begin() as conn:
         tickers = set()
         for cik in conn.execute(
             sa.select(tags.c.cik)

@@ -13,12 +13,13 @@ from .. import backend, utils
 from . import api, sql
 
 
-def _install_quarterly_features(ticker: str) -> int:
+def _install_quarterly_features(ticker: str, /) -> int:
     """Helper for creating and inserting data into the SEC quarterly
     features table from the raw data table.
 
-    No data is inserted if no feature rows can be constructed from
-    the raw data table.
+    This function is used within a multiprocessing pool. No data
+    is inserted if no feature rows can be constructed from the raw
+    data table.
 
     Args:
         ticker: Ticker to create features for and insert.
@@ -106,6 +107,9 @@ class IndustryQuarterlyFeatures:
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
 
+        Raises:
+            ValueError if neither a `ticker` nor `code` are provided.
+
         """
         with engine.begin() as conn:
             if ticker:
@@ -165,7 +169,7 @@ class QuarterlyFeatures:
     )
 
     #: XBRL disclosure concepts to pull for a company.
-    concepts = (
+    concepts: tuple[api.Concept] = (
         {"tag": "AssetsCurrent", "taxonomy": "us-gaap", "units": "USD"},
         {
             "tag": "EarningsPerShareBasic",
@@ -328,7 +332,7 @@ class QuarterlyFeatures:
 
     @classmethod
     @cache
-    def get_candidate_set(
+    def get_candidate_ticker_set(
         cls,
         lb: int = 1,
     ) -> set[str]:
@@ -413,7 +417,7 @@ class QuarterlyFeatures:
         sql.quarterly_features.drop(backend.engine)
         sql.quarterly_features.create(backend.engine)
 
-        tickers = cls.get_candidate_set()
+        tickers = cls.get_candidate_ticker_set()
         total_rows = 0
         with tqdm(
             total=len(tickers),

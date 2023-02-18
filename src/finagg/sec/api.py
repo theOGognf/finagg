@@ -24,10 +24,9 @@ Examples:
 
 import logging
 import os
-import sys
 from abc import ABC, abstractmethod
 from datetime import timedelta
-from typing import Any, ClassVar
+from typing import Any, ClassVar, TypedDict
 
 import pandas as pd
 import requests
@@ -35,14 +34,10 @@ import requests_cache
 
 from .. import backend, ratelimit, utils
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter(
-    "%(asctime)s | %(levelname)s | finagg.sec.api - %(message)s"
+logging.basicConfig(
+    format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
 )
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = logging.getLogger(__name__)
 
 session = requests_cache.CachedSession(
     str(backend.http_cache_path),
@@ -60,6 +55,18 @@ class _API(ABC):
     @abstractmethod
     def get(cls, *args: Any, **kwargs: Any) -> dict[str, Any] | pd.DataFrame:
         """Main dataset API method."""
+
+
+class Concept(TypedDict):
+    #: Valid tag within the given `taxonomy`.
+    tag: str
+
+    #: Valid SEC EDGAR taxonomy.
+    #: See https://www.sec.gov/info/edgar/edgartaxonomies.shtml for taxonomies.
+    taxonomy: str
+
+    #: Currency the concept is in.
+    units: str
 
 
 class CompanyConcept(_API):
@@ -231,6 +238,14 @@ class Frames(_API):
         )
 
 
+class SubmissionsResult(TypedDict):
+    #: Company metadata.
+    metadata: dict[str, Any]
+
+    #: Most recent company filings.
+    filings: pd.DataFrame
+
+
 class Submissions(_API):
 
     url = "https://data.sec.gov/submissions/CIK{cik}.json"
@@ -243,7 +258,7 @@ class Submissions(_API):
         cik: None | str = None,
         ticker: None | str = None,
         user_agent: None | str = None,
-    ) -> dict[str, Any]:
+    ) -> SubmissionsResult:
         """Return all recent filings from a single company (CIK).
 
         Args:
