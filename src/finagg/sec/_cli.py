@@ -20,17 +20,17 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def _install_raw_data(ticker: str, /) -> int:
+def _install_raw_data(ticker: str, /) -> tuple[bool, int]:
     """Helper for creating and inserting data into the SEC raw data
     table.
 
-    This function is used within a multiprocessing pool. No data
-    is inserted if no rows are found.
+    No data is inserted if no rows are found.
 
     Args:
         ticker: Ticker to aggregate data for.
 
     """
+    errored = False
     total_rows = 0
     with backend.engine.begin() as conn:
         try:
@@ -40,7 +40,7 @@ def _install_raw_data(ticker: str, /) -> int:
             ).rowcount
             if not rowcount:
                 logger.debug(f"Skipping {ticker} due to missing metadata")
-                return 0
+                return True, 0
             for concept in _features.quarterly.concepts:
                 df = _api.company_concept.get(
                     concept["tag"],
@@ -48,20 +48,24 @@ def _install_raw_data(ticker: str, /) -> int:
                     taxonomy=concept["taxonomy"],
                     units=concept["units"],
                 )
-                df = _features.get_unique_filings(df, units=concept["units"])
+                df = _features.get_unique_filings(
+                    df, form="10-Q", units=concept["units"]
+                )
                 rowcount = len(df.index)
                 if not rowcount:
                     logger.debug(
                         f"Skipping {ticker} concept {concept['tag']} due to "
                         "missing filings"
                     )
+                    errored = True
                     continue
                 conn.execute(_sql.tags.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
                 total_rows += rowcount
         except (HTTPError, IntegrityError, KeyError) as e:
             logger.debug(f"Skipping {ticker} due to {e}")
-            return total_rows
-    return total_rows
+            return True, total_rows
+    logger.debug(f"{total_rows} total rows written for {ticker}")
+    return errored, total_rows
 
 
 @click.group(help="Securities and Exchange Commission (SEC) tools.")
@@ -113,23 +117,37 @@ def install(
     else:
         logger.info("SEC API user agent already exists in the environment")
 
+    _sql.submissions.drop(backend.engine)
+    _sql.submissions.create(backend.engine)
+    _sql.tags.drop(backend.engine)
+    _sql.tags.create(backend.engine)
+
     tickers = indices.api.get_ticker_set()
+    total_errors = 0
     total_rows = 0
     with tqdm(
         total=len(tickers),
         desc="Installing SEC quarterly features",
         position=0,
         leave=True,
+        disable=verbose,
     ) as pbar:
-        with mp.Pool(processes=processes, initializer=backend.engine.dispose) as pool:
-            for rows in pool.imap_unordered(_install_raw_data, tickers):
-                pbar.update()
-                total_rows += rows
+        for ticker in tickers:
+            errored, rows = _install_raw_data(ticker)
+            total_errors += errored
+            total_rows += rows
+            pbar.update()
+
+    logger.info(
+        f"{pbar.total - total_errors}/{pbar.total} company datasets "
+        "sucessfully written"
+    )
 
     if feature:
         features = set(feature)
         for f in features:
             if f == "quarterly":
-                total_rows += _features.quarterly.install()
+                total_rows += _features.quarterly.install(processes=processes)
 
+    logger.info(f"{total_rows} total rows written")
     return total_rows

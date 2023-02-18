@@ -18,22 +18,7 @@ submissions = sa.Table(
     ),
     sa.Column("sic", sa.String, nullable=False, doc="Industry code."),
     sa.Column("sic_description", sa.String, doc="Industry code description."),
-    sa.Column(
-        "insider_transaction_for_owner_exists",
-        sa.Integer,
-        doc="Whether owner insider transactions data exists.",
-    ),
-    sa.Column(
-        "insider_transaction_for_issuer_exists",
-        sa.Integer,
-        doc="Whether issuer insider transactions data exists.",
-    ),
     sa.Column("name", sa.String, doc="Company name."),
-    sa.Column(
-        "tickers",
-        sa.String,
-        doc="Comma-separated tickers/symbols the company uses.",
-    ),
     sa.Column(
         "exchanges",
         sa.String,
@@ -41,21 +26,11 @@ submissions = sa.Table(
     ),
     sa.Column("ein", sa.String, doc="Entity identification number."),
     sa.Column("description", sa.String, doc="Entity description (often empty/null)."),
-    sa.Column("website", sa.String, doc="Company website (often empty/null)."),
-    sa.Column(
-        "investor_website", sa.String, doc="Investor website (often empty/null)."
-    ),
     sa.Column("category", sa.String, doc="SEC entity category."),
     sa.Column(
         "fiscal_year_end",
         sa.String,
         doc="The company's last day of the fiscal year (MMDD).",
-    ),
-    sa.Column("state_of_incorporation", sa.String, doc="Official incorporation state."),
-    sa.Column(
-        "state_of_incorporation_description",
-        sa.String,
-        doc="State of incorporation description.",
     ),
 )
 
@@ -89,7 +64,12 @@ tags = sa.Table(
         nullable=True,
         doc="When the tag's value's measurements started.",
     ),
-    sa.Column("end", sa.String, doc="When the tag's value's measurements ended."),
+    sa.Column(
+        "end",
+        sa.String,
+        nullable=True,
+        doc="When the tag's value's measurements ended.",
+    ),
     sa.Column(
         "filed",
         sa.String,

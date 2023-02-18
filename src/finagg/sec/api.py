@@ -285,15 +285,12 @@ class Submissions(_API):
         df.columns = map(utils.snake_case, df.columns)  # type: ignore
         df.rename(columns={"accession_number": "accn"})
         df["cik"] = cik
-        metadata = {utils.snake_case(k): v for k, v in content.items()}
-        mailing_address = metadata["addresses"]["mailing"]
-        business_address = metadata["addresses"]["business"]
-        metadata["addresses"]["mailing"] = {
-            utils.snake_case(k): v for k, v in mailing_address.items()
-        }
-        metadata["addresses"]["business"] = {
-            utils.snake_case(k): v for k, v in business_address.items()
-        }
+        metadata = {}
+        for k, v in content.items():
+            if isinstance(v, str):
+                metadata[k] = utils.snake_case(v)
+        if "exchanges" in metadata:
+            metadata["exchanges"] = ",".join(metadata["exchanges"])
         return {"metadata": metadata, "filings": df}
 
 
