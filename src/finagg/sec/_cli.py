@@ -84,21 +84,25 @@ def entry_point() -> None:
     "-f",
     type=click.Choice(["quarterly"]),
     multiple=True,
-    help="Features ",
+    help="Additional features to install after installing raw SEC data.",
 )
 @click.option(
     "--processes",
     "-n",
     type=int,
     default=mp.cpu_count() - 1,
-    help="Number of background processes to use for installation.",
+    help=(
+        "Number of background processes to use for installing features "
+        "after installing raw SEC data. Installation of raw SEC data is "
+        "limited to one process because of the SEC API's rate limiting."
+    ),
 )
 @click.option(
     "-v",
     "--verbose",
     is_flag=True,
     default=False,
-    help="Log installation errors for each ticker.",
+    help="Sets the log level to DEBUG to show installation errors for each ticker.",
 )
 def install(
     feature: list[str] = [], processes: int = mp.cpu_count() - 1, verbose: bool = False
