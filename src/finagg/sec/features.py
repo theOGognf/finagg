@@ -351,18 +351,23 @@ class QuarterlyFeatures:
         """
         with backend.engine.begin() as conn:
             tickers = set()
-            for cik in conn.execute(
-                sa.select(sql.tags.c.cik)
-                .distinct()
+            for row in conn.execute(
+                sa.select(
+                    sql.tags.c.cik,
+                    *[
+                        sa.func.sum(
+                            sa.case({concept["tag"]: 1}, value=sql.tags.c.tag, else_=0)
+                        ).label(concept["tag"])
+                        for concept in cls.concepts
+                    ],
+                )
                 .group_by(sql.tags.c.cik)
                 .having(
-                    *[
-                        sa.func.count(sql.tags.c.tag == concept["tag"]) >= lb
-                        for concept in cls.concepts
-                    ]
+                    *[sa.text(f"{concept['tag']} >= {lb}") for concept in cls.concepts]
                 )
+                .distinct()
             ):
-                (cik,) = cik
+                cik = row[0]
                 ticker = api.get_ticker(str(cik))
                 tickers.add(ticker)
         return tickers
@@ -414,7 +419,7 @@ class QuarterlyFeatures:
             Number of rows written to the feature's SQL table.
 
         """
-        sql.quarterly_features.drop(backend.engine)
+        sql.quarterly_features.drop(backend.engine, checkfirst=True)
         sql.quarterly_features.create(backend.engine)
 
         tickers = cls.get_candidate_ticker_set()

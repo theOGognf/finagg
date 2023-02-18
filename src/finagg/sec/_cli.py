@@ -117,9 +117,9 @@ def install(
     else:
         logger.info("SEC API user agent already exists in the environment")
 
-    _sql.submissions.drop(backend.engine)
+    _sql.submissions.drop(backend.engine, checkfirst=True)
     _sql.submissions.create(backend.engine)
-    _sql.tags.drop(backend.engine)
+    _sql.tags.drop(backend.engine, checkfirst=True)
     _sql.tags.create(backend.engine)
 
     tickers = indices.api.get_ticker_set()
