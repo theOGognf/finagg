@@ -3,7 +3,7 @@
 import pandas as pd
 from sqlalchemy.engine import Engine
 
-from .. import sec, utils, yfinance
+from .. import backend, sec, utils, yfinance
 from . import store
 
 
@@ -72,8 +72,7 @@ class FundamentalFeatures:
         *,
         start: None | str = None,
         end: None | str = None,
-        sec_engine: Engine = sec.sql.engine,
-        yf_engine: Engine = yfinance.sql.engine,
+        engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features directly from local SQL tables.
 
@@ -87,8 +86,7 @@ class FundamentalFeatures:
                 Defaults to the first recorded date.
             end: The end date of the observation period.
                 Defaults to the last recorded date.
-            sec_engine: Raw SEC store database engine.
-            yf_engine: Raw yfinance store database engine.
+            engine: Raw data and feature store database engine.
 
         Returns:
             Combined quarterly and daily feature dataframe.
@@ -99,14 +97,14 @@ class FundamentalFeatures:
             ticker,
             start=start,
             end=end,
-            engine=sec_engine,
+            engine=engine,
         )
         start = str(quarterly_features.index[0])
         daily_features = yfinance.features.daily.from_sql(
             ticker,
             start=start,
             end=end,
-            engine=yf_engine,
+            engine=engine,
         )
         return cls._normalize(quarterly_features, daily_features)
 
@@ -118,7 +116,7 @@ class FundamentalFeatures:
         *,
         start: None | str = None,
         end: None | str = None,
-        engine: Engine = store.engine,
+        engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -139,14 +137,15 @@ class FundamentalFeatures:
             Sorted by date.
 
         """
-        table = store.fundamental_features
         with engine.begin() as conn:
-            stmt = table.c.ticker == ticker
+            stmt = store.fundamental_features.c.ticker == ticker
             if start:
-                stmt &= table.c.date >= start
+                stmt &= store.fundamental_features.c.date >= start
             if end:
-                stmt &= table.c.date <= end
-            df = pd.DataFrame(conn.execute(table.select().where(stmt)))
+                stmt &= store.fundamental_features.c.date <= end
+            df = pd.DataFrame(
+                conn.execute(store.fundamental_features.select().where(stmt))
+            )
         df = df.pivot(index="date", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
         df = df[list(cls.columns)]
@@ -159,7 +158,7 @@ class FundamentalFeatures:
         df: pd.DataFrame,
         /,
         *,
-        engine: Engine = store.engine,
+        engine: Engine = backend.engine,
     ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
@@ -180,9 +179,8 @@ class FundamentalFeatures:
         df = df.reset_index(names="date")
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
-        table = store.fundamental_features
         with engine.begin() as conn:
-            conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+            conn.execute(store.fundamental_features.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 

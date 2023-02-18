@@ -1,14 +1,35 @@
 """Features from SEC sources."""
 
+import multiprocessing as mp
 from functools import cache
 from typing import Literal
 
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
+from tqdm import tqdm
 
-from .. import utils
+from .. import backend, utils
 from . import api, sql
+
+
+def _install_quarterly_features(ticker: str) -> int:
+    """Helper for creating and inserting data into the SEC quarterly
+    features table from the raw data table.
+
+    No data is inserted if no feature rows can be constructed from
+    the raw data table.
+
+    Args:
+        ticker: Ticker to create features for and insert.
+
+    """
+    df = QuarterlyFeatures.from_sql(ticker)
+    rowcount = len(df.index)
+    if not rowcount:
+        return 0
+    QuarterlyFeatures.to_store(ticker, df)
+    return rowcount
 
 
 def get_unique_filings(
@@ -39,7 +60,10 @@ def get_unique_filings(
 
 
 class IndustryQuarterlyFeatures:
-    """Methods for gathering industry-averaged quarterly data from SEC features."""
+    """Methods for gathering industry-averaged quarterly data from SEC
+    features.
+
+    """
 
     @classmethod
     def from_store(
@@ -51,7 +75,7 @@ class IndustryQuarterlyFeatures:
         level: Literal[2, 3, 4] = 2,
         start: None | str = None,
         end: None | str = None,
-        engine: Engine = sql.engine,
+        engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get quarterly features from the feature store,
         aggregated for an entire industry.
@@ -83,19 +107,19 @@ class IndustryQuarterlyFeatures:
             separate column. Sorted by filing date.
 
         """
-        if bool(ticker) == bool(code):
-            raise ValueError("Must provide a `ticker` or `code`.")
-
         with engine.begin() as conn:
             if ticker:
-                (sic,) = conn.execute(
+                row = conn.execute(
                     sa.select(sql.submissions.c.sic)
                     .where(sql.submissions.c.cik == api.get_cik(ticker))
                     .distinct()
                 )
-                code = sic[:level]
-            else:
+                (sic,) = row
+                code = str(sic)[:level]
+            elif code:
                 code = code[:level]
+            else:
+                raise ValueError("Must provide a `ticker` or `code`.")
 
             stmt = (
                 sa.select(
@@ -122,7 +146,7 @@ class IndustryQuarterlyFeatures:
 
 
 class QuarterlyFeatures:
-    """Methods for gathering quarterly data from SEC sources."""
+    """Quarterly features from SEC EDGAR data."""
 
     #: Columns within this feature set.
     columns = (
@@ -229,9 +253,9 @@ class QuarterlyFeatures:
         *,
         start: None | str = None,
         end: None | str = None,
-        engine: Engine = sql.engine,
+        engine: Engine = backend.engine,
     ) -> pd.DataFrame:
-        """Get quarterly features from local SEC SQL tables.
+        """Get quarterly features from a local SEC SQL table.
 
         Not all data series are published at the same rate or
         time. Missing rows for less-frequent quarterly publications
@@ -268,12 +292,12 @@ class QuarterlyFeatures:
         *,
         start: None | str = None,
         end: None | str = None,
-        engine: Engine = sql.engine,
+        engine: Engine = backend.engine,
     ) -> pd.DataFrame:
-        """Get features from the feature-dedicated local SQL tables.
+        """Get features from the features SQL table.
 
         This is the preferred method for accessing features for
-        offline analysis (assuming data in the local SQL tables
+        offline analysis (assuming data in the local SQL table
         is current).
 
         Args:
@@ -302,17 +326,37 @@ class QuarterlyFeatures:
         df = df[list(cls.columns)]
         return df
 
-    @cache
     @classmethod
-    def get_ticker_set(cls, lb: int = 1, *, engine: Engine = sql.engine) -> set[str]:
-        """Get all unique tickers in the feature SQL tables."""
-        with engine.begin() as conn:
+    @cache
+    def get_candidate_set(
+        cls,
+        lb: int = 1,
+    ) -> set[str]:
+        """Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE
+        to be in the feature's SQL table.
+
+        Args:
+            lb: Minimum number of rows required to include a ticker in the
+                returned set.
+
+        Returns:
+            All unique tickers that're valid for creating quarterly features
+            that also have at least `lb` rows for each tag used for
+            constructing the features.
+
+        """
+        with backend.engine.begin() as conn:
             tickers = set()
             for cik in conn.execute(
-                sql.quarterly_features.select()
-                .distinct(sql.quarterly_features.c.cik)
-                .group_by(sql.quarterly_features.c.cik)
-                .having(sa.func.count(sql.quarterly_features.c.filed) >= lb)
+                sa.select(sql.tags.c.cik)
+                .distinct()
+                .group_by(sql.tags.c.cik)
+                .having(
+                    *[
+                        sa.func.count(sql.tags.c.tag == concept["tag"]) >= lb
+                        for concept in cls.concepts
+                    ]
+                )
             ):
                 (cik,) = cik
                 ticker = api.get_ticker(str(cik))
@@ -320,9 +364,70 @@ class QuarterlyFeatures:
         return tickers
 
     @classmethod
-    def install(cls, *, engine: Engine = sql.engine) -> int:
-        sql.quarterly_features.drop(engine)
-        sql.quarterly_features.create(engine)
+    @cache
+    def get_ticker_set(
+        cls,
+        lb: int = 1,
+    ) -> set[str]:
+        """Get all unique tickers in the feature's SQL table.
+
+        Args:
+            lb: Minimum number of rows required to include a ticker in the
+                returned set.
+
+        Returns:
+            All unique tickers that contain all the columns for creating
+            quarterly features that also have at least `lb` rows.
+
+        """
+        with backend.engine.begin() as conn:
+            tickers = set()
+            for cik in conn.execute(
+                sa.select(sql.quarterly_features.c.cik)
+                .distinct()
+                .group_by(sql.quarterly_features.c.cik)
+                .having(
+                    *[
+                        sa.func.count(sql.quarterly_features.c.name == col) >= lb
+                        for col in cls.columns
+                    ]
+                )
+            ):
+                (cik,) = cik
+                ticker = api.get_ticker(str(cik))
+                tickers.add(ticker)
+        return tickers
+
+    @classmethod
+    def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
+        """Drop the feature's table, create a new one, and insert data
+        transformed from another raw SQL table.
+
+        Args:
+            processes: Number of background processes to use for installation.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
+        sql.quarterly_features.drop(backend.engine)
+        sql.quarterly_features.create(backend.engine)
+
+        tickers = cls.get_candidate_set()
+        total_rows = 0
+        with tqdm(
+            total=len(tickers),
+            desc="Installing SEC quarterly features",
+            position=0,
+            leave=True,
+        ) as pbar:
+            with mp.Pool(
+                processes=processes, initializer=backend.engine.dispose
+            ) as pool:
+                for rows in pool.imap_unordered(_install_quarterly_features, tickers):
+                    pbar.update()
+                    total_rows += rows
+        return total_rows
 
     @classmethod
     def to_store(
@@ -331,7 +436,7 @@ class QuarterlyFeatures:
         df: pd.DataFrame,
         /,
         *,
-        engine: Engine = sql.engine,
+        engine: Engine = backend.engine,
     ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
@@ -358,4 +463,5 @@ class QuarterlyFeatures:
 
 
 #: Public-facing API.
+industry_quarterly = IndustryQuarterlyFeatures()
 quarterly = QuarterlyFeatures()
