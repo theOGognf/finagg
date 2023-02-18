@@ -115,10 +115,10 @@ class IndustryQuarterlyFeatures:
             if ticker:
                 row = conn.execute(
                     sa.select(sql.submissions.c.sic)
-                    .where(sql.submissions.c.cik == api.get_cik(ticker))
                     .distinct()
+                    .where(sql.submissions.c.cik == api.get_cik(ticker))
                 )
-                (sic,) = row
+                ((sic,),) = row
                 code = str(sic)[:level]
             elif code:
                 code = code[:level]
@@ -129,7 +129,7 @@ class IndustryQuarterlyFeatures:
                 sa.select(
                     sql.quarterly_features.c.filed,
                     sql.quarterly_features.c.name,
-                    sa.func.avg(sql.quarterly_features.c.value),
+                    sa.func.avg(sql.quarterly_features.c.value).label("value"),
                 )
                 .join(
                     sql.submissions,
@@ -138,12 +138,12 @@ class IndustryQuarterlyFeatures:
                 )
                 .group_by(sql.quarterly_features.c.filed, sql.quarterly_features.c.name)
             )
-            where = sql.quarterly_features.c.filed >= "0000-00-00"
+            whereclause = sql.quarterly_features.c.filed >= "0000-00-00"
             if start:
-                where &= sql.quarterly_features.c.filed >= start
+                whereclause &= sql.quarterly_features.c.filed >= start
             if end:
-                where &= sql.quarterly_features.c.filed <= end
-            df = pd.DataFrame(conn.execute(stmt.where(where)))
+                whereclause &= sql.quarterly_features.c.filed <= end
+            df = pd.DataFrame(conn.execute(stmt.where(whereclause)))
         df = df.pivot(index="filed", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
         return df
@@ -361,11 +361,11 @@ class QuarterlyFeatures:
                         for concept in cls.concepts
                     ],
                 )
+                .distinct()
                 .group_by(sql.tags.c.cik)
                 .having(
                     *[sa.text(f"{concept['tag']} >= {lb}") for concept in cls.concepts]
                 )
-                .distinct()
             ):
                 cik = row[0]
                 ticker = api.get_ticker(str(cik))

@@ -150,8 +150,9 @@ def install(
     if feature:
         features = set(feature)
         for f in features:
-            if f == "quarterly":
-                total_rows += _features.quarterly.install(processes=processes)
+            match f:
+                case "quarterly":
+                    total_rows += _features.quarterly.install(processes=processes)
 
     logger.info(f"{total_rows} total rows written")
     return total_rows

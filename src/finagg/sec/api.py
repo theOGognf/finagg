@@ -291,6 +291,7 @@ class Submissions(_API):
                 metadata[k] = utils.snake_case(v)
         if "exchanges" in metadata:
             metadata["exchanges"] = ",".join(metadata["exchanges"])
+        metadata["cik"] = cik
         return {"metadata": metadata, "filings": df}
 
 
