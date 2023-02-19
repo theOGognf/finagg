@@ -43,7 +43,7 @@ inflation_rate = finagg.fred.api.series.get("CPIAUCNS")
 facts = finagg.sec.api.company_facts.get(ticker="AAPL")
 ```
 
-Or use downloaded data for exploring the most popular features.
+Use installed raw data for exploring the most popular features.
 
 ```python
 # Get the most popular FRED features all in one dataframe.
@@ -56,12 +56,18 @@ quarterly_data = finagg.sec.features.quarterly.from_sql("AAPL")
 fundamental_data = finagg.fundamentals.features.fundamentals.from_sql("AAPL")
 ```
 
-## Optional Installs
+Use installed features for exploring richer feature aggregations.
 
-- `finagg[dev]` includes development dependencies for testing and static type
-checking.
-- `finagg[learning]` includes dependencies for financial reinforcement learning
-environments.
+```python
+# Get a ticker's industry's averaged quarterly report features.
+industry_quartery = finagg.sec.features.industry_quarterly.from_store(ticker="AAPL")
+
+# Get a ticker's industry-averaged quarterly report features.
+relative_quarterly = finagg.sec.features.relative_quarterly.from_store("AAPL")
+
+# Get tickers sorted by an industry-averaged quarterly report feature.
+lowest_earners = finagg.sec.features.relative_quarterly.get_tickers_sorted_by("EarningsPerShare", year=2022, quarter=3)
+```
 
 ## Configuration
 
@@ -115,16 +121,20 @@ configuring API keys and user agents:
 
 - [**FinRL** is a collection of financial reinforcement learning environments and tools.](https://github.com/AI4Finance-Foundation/FinRL)
 - [**fredapi** is an implementation of the FRED API.](https://github.com/mortada/fredapi)
+- [**OpenBBTerminal** an open-source version of the Bloomberg Terminal.](https://github.com/OpenBB-finance/OpenBBTerminal)
 - [**sec-edgar** is an implementation of a file-based SEC EDGAR parser.](https://github.com/sec-edgar/sec-edgar)
 
 ## Frequently Asked Questions
 
 ### Where should I start?
 
-Aggregate some data, create some analysis notebooks, and train some RL agents!
-This package was created to make it very easy to aggregate investment data,
-perform investment analysis, and train trading/investment RL agents on a
-local, single GPU machine.
+Aggregate some data, create some analysis notebooks, or create some RL
+environments using the implemented data features and SQL tables. This
+project was originally created to make RL environments for financial
+applications but has since focused its purpose to just aggregating financial
+data and features. That being said, all the implemented features are
+defined in such a way to make it very easy to develop financial AI/ML,
+so we encourage you to do just that!
 
 ### What Python versions are supported?
 

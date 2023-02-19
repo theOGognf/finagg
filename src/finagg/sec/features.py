@@ -173,7 +173,9 @@ class IndustryQuarterlyFeatures:
                 )
             )
         df = df.pivot(
-            index=["fy", "fp", "filed"], values=["avg", "std"], columns="name"
+            index=["fy", "fp", "filed"],
+            columns="name",
+            values=["avg", "std"],
         ).sort_index()
         return df
 
@@ -229,7 +231,11 @@ class QuarterlyFeatures:
         df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
         df = df.reset_index()
         df = (
-            df.pivot(index=["fy", "fp", "filed"], values="value", columns="tag")
+            df.pivot(
+                index=["fy", "fp", "filed"],
+                columns="tag",
+                values="value",
+            )
             .astype(float)
             .sort_index()
         )
@@ -367,7 +373,9 @@ class QuarterlyFeatures:
                 )
             )
         df = df.pivot(
-            index=["fy", "fp", "filed"], values="value", columns="name"
+            index=["fy", "fp", "filed"],
+            columns="name",
+            values="value",
         ).sort_index()
         df.columns = df.columns.rename(None)
         df = df[list(cls.columns)]
@@ -618,13 +626,13 @@ class RelativeQuarterlyFeatures:
                 )
             )
         df = df.pivot(
-            index=["fy", "fp", "filed"], values="value", columns="name"
+            index=["fy", "fp", "filed"], columns="name", values="value"
         ).sort_index()
         df.columns = df.columns.rename(None)
         df = df[list(cls.columns)]
         return df
 
-    #: The candidate set is just the quarterly feature ticket set.
+    #: The candidate set is just the quarterly feature ticker set.
     get_candidate_ticker_set = QuarterlyFeatures.get_ticker_set
 
     @classmethod

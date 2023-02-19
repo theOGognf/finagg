@@ -1,13 +1,13 @@
 """CLI and tools for yfinance."""
 
 import logging
-from typing import Sequence
 
 import click
 
-from . import install as _install
-from . import scrape as _scrape
-from . import sql
+logging.basicConfig(
+    format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 
 @click.group(help="Yahoo! finance tools.")
@@ -36,16 +36,4 @@ def entry_point() -> None:
 )
 def install(install_features: bool = False, verbose: bool = False) -> None:
     if verbose:
-        _install.logger.setLevel(logging.DEBUG)
-    _install.run(install_features=install_features)
-
-
-@entry_point.command(help="List all tickers within the SQL database.")
-def ls() -> None:
-    print(sorted(sql.get_ticker_set()))
-
-
-@entry_point.command(help="Scrape a specified ticker history into the SQL database.")
-@click.option("--ticker", required=True, multiple=True, help="Ticker to scrape.")
-def scrape(ticker: Sequence[str]) -> None:
-    _scrape.run(ticker)
+        logger.setLevel(logging.DEBUG)
