@@ -89,7 +89,7 @@ def entry_point() -> None:
 @click.option(
     "--feature",
     "-f",
-    type=click.Choice(["quarterly"]),
+    type=click.Choice(["quarterly", "relative-quarterly"]),
     multiple=True,
     help=(
         "Feature tables to install. This requires raw SEC data to be "
@@ -142,7 +142,7 @@ def install(
         p = utils.setenv("SEC_API_USER_AGENT", user_agent)
         logger.info(f"SEC API user agent written to {p}")
     else:
-        logger.info("SEC API user agent already exists in the environment")
+        logger.info("SEC API user agent found in the environment")
 
     total_rows = 0
     if all_ or raw:
@@ -155,7 +155,7 @@ def install(
         total_errors = 0
         with tqdm(
             total=len(tickers),
-            desc="Installing SEC quarterly features",
+            desc="Installing raw SEC quarterly data",
             position=0,
             leave=True,
             disable=verbose,
@@ -173,13 +173,15 @@ def install(
 
     features = set()
     if all_:
-        features = {"quarterly"}
+        features = {"quarterly", "relative-quarterly"}
     elif feature:
         features = set(feature)
-    for f in features:
-        match f:
-            case "quarterly":
-                total_rows += _features.quarterly.install(processes=processes)
+
+    if "quarterly" in features:
+        total_rows += _features.quarterly.install(processes=processes)
+
+    if "relative-quarterly" in features:
+        total_rows += _features.relative_quarterly.install(processes=processes)
 
     if all_ or features or raw:
         logger.info(f"{total_rows} total rows written")

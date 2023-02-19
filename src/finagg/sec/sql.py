@@ -135,6 +135,29 @@ quarterly_features = sa.Table(
 )
 
 
+relative_quarterly_features = sa.Table(
+    "relative_quarterly_features",
+    metadata,
+    sa.Column(
+        "cik",
+        sa.String,
+        sa.ForeignKey(submissions.c.cik, ondelete="CASCADE"),
+        primary_key=True,
+        doc="Unique company ticker.",
+    ),
+    sa.Column("filed", sa.String, nullable=False, doc="Filing date."),
+    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
+    sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
+    sa.Column(
+        "fp",
+        sa.String,
+        primary_key=True,
+        doc="Fiscal period the value is for (e.g., Q1 or FY).",
+    ),
+    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+)
+
+
 @cache
 def get_ticker_set(lb: int = 1) -> set[str]:
     """Get all unique tickers in the raw SQL tables."""

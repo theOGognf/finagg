@@ -33,6 +33,23 @@ def _install_quarterly_features(ticker: str, /) -> int:
     return rowcount
 
 
+def _install_relative_quarterly_features(ticker: str, /) -> int:
+    """Helper for creating and inserting data into the SEC relative
+    quarterly features table from the quarterly and industry quarterly
+    features.
+
+    Args:
+        ticker: Ticker to create features for and insert.
+
+    """
+    df = RelativeQuarterlyFeatures.from_other_store(ticker)
+    rowcount = len(df.index)
+    if not rowcount:
+        return 0
+    RelativeQuarterlyFeatures.to_store(ticker, df)
+    return rowcount
+
+
 def get_unique_filings(
     df: pd.DataFrame, /, *, form: str = "10-Q", units: None | str = None
 ) -> pd.DataFrame:
@@ -228,7 +245,9 @@ class QuarterlyFeatures:
         df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df = utils.quantile_clip(df)
         pct_change_columns = [f"{col}_pct_change" for col in cls.pct_change_columns]
-        df[pct_change_columns] = df[cls.pct_change_columns].apply(utils.safe_pct_change)
+        df[pct_change_columns] = df[list(cls.pct_change_columns)].apply(
+            utils.safe_pct_change
+        )
         df.columns = df.columns.rename(None)
         df = df[list(cls.columns)]
         return df.dropna()
@@ -473,10 +492,6 @@ class QuarterlyFeatures:
     ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
-        Does the necessary handling to transform columns to
-        prepare the dataframe to be written to a dynamically-defined
-        local SQL table.
-
         Args:
             ticker: Company ticker.
             df: Dataframe to store completely as rows in a local SQL
@@ -495,6 +510,178 @@ class QuarterlyFeatures:
         return len(df.index)
 
 
+class RelativeQuarterlyFeatures:
+    #: Columns within this feature set.
+    columns = (
+        "AssetsCurrent_pct_change",
+        "DebtEquityRatio",
+        "EarningsPerShare",
+        "InventoryNet_pct_change",
+        "LiabilitiesCurrent_pct_change",
+        "NetIncomeLoss_pct_change",
+        "OperatingIncomeLoss_pct_change",
+        "PriceBookRatio",
+        "QuickRatio",
+        "ReturnOnEquity",
+        "StockholdersEquity_pct_change",
+        "WorkingCapitalRatio",
+    )
+
+    @classmethod
+    def from_other_store(
+        cls,
+        ticker: str,
+        /,
+        *,
+        level: Literal[2, 3, 4] = 2,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
+        engine: Engine = backend.engine,
+    ) -> pd.DataFrame:
+        """Get features from other features SQL table.
+
+        Args:
+            ticker: Company ticker.
+            level: Industry level to aggregate relative features at.
+                The industry used according to `ticker` is subsampled
+                according to this value. Options include:
+                    2 = major group (e.g., furniture and fixtures)
+                    3 = industry group (e.g., office furnitures)
+                    4 = industry (e.g., wood office furniture)
+            start: The start date of the observation period.
+            end: The end date of the observation period.
+            engine: Feature store database engine.
+
+        Returns:
+            Relative quarterly data dataframe with each tag as a
+            separate column. Sorted by filing date.
+
+        """
+        company_df = QuarterlyFeatures.from_store(
+            ticker, start=start, end=end, engine=engine
+        ).reset_index(["filed"])
+        filed = company_df["filed"]
+        industry_df = IndustryQuarterlyFeatures.from_store(
+            ticker=ticker, level=level, start=start, end=end, engine=engine
+        ).reset_index(["filed"])
+        company_df = (company_df - industry_df["avg"]) / industry_df["std"]
+        company_df["filed"] = filed
+        return (
+            company_df.fillna(method="ffill")
+            .dropna()
+            .reset_index()
+            .drop_duplicates("filed")
+            .set_index(["fy", "fp", "filed"])
+        )
+
+    @classmethod
+    def from_store(
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
+        engine: Engine = backend.engine,
+    ) -> pd.DataFrame:
+        """Get features from the features SQL table.
+
+        This is the preferred method for accessing features for
+        offline analysis (assuming data in the local SQL table
+        is current).
+
+        Args:
+            ticker: Company ticker.
+            start: The start date of the observation period.
+            end: The end date of the observation period.
+            engine: Feature store database engine.
+
+        Returns:
+            Quarterly data dataframe with each tag as a
+            separate column. Sorted by filing date.
+
+        """
+        cik = api.get_cik(ticker)
+        with engine.begin() as conn:
+            df = pd.DataFrame(
+                conn.execute(
+                    sql.relative_quarterly_features.select().where(
+                        sql.relative_quarterly_features.c.cik == cik,
+                        sql.relative_quarterly_features.c.filed >= start,
+                        sql.relative_quarterly_features.c.filed <= end,
+                    )
+                )
+            )
+        df = df.pivot(
+            index=["fy", "fp", "filed"], values="value", columns="name"
+        ).sort_index()
+        df.columns = df.columns.rename(None)
+        df = df[list(cls.columns)]
+        return df
+
+    @classmethod
+    def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
+        """Drop the feature's table, create a new one, and insert data
+        transformed from another raw SQL table.
+
+        Args:
+            processes: Number of background processes to use for installation.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
+        sql.relative_quarterly_features.drop(backend.engine, checkfirst=True)
+        sql.relative_quarterly_features.create(backend.engine)
+
+        tickers = QuarterlyFeatures.get_ticker_set()
+        total_rows = 0
+        with tqdm(
+            total=len(tickers),
+            desc="Installing SEC industry-relative quarterly features",
+            position=0,
+            leave=True,
+        ) as pbar:
+            with mp.Pool(
+                processes=processes, initializer=backend.engine.dispose
+            ) as pool:
+                for rows in pool.imap_unordered(
+                    _install_relative_quarterly_features, tickers
+                ):
+                    pbar.update()
+                    total_rows += rows
+        return total_rows
+
+    @classmethod
+    def to_store(
+        cls,
+        ticker: str,
+        df: pd.DataFrame,
+        /,
+        *,
+        engine: Engine = backend.engine,
+    ) -> int:
+        """Write the dataframe to the feature store for `ticker`.
+
+        Args:
+            ticker: Company ticker.
+            df: Dataframe to store completely as rows in a local SQL
+                table.
+            engine: Feature store database engine.
+
+        Returns:
+            Number of rows written to the SQL table.
+
+        """
+        df = df.reset_index(names=["fy", "fp", "filed"])
+        df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
+        df["cik"] = api.get_cik(ticker)
+        with engine.begin() as conn:
+            conn.execute(sql.relative_quarterly_features.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+        return len(df.index)
+
+
 #: Public-facing API.
 industry_quarterly = IndustryQuarterlyFeatures()
 quarterly = QuarterlyFeatures()
+relative_quarterly = RelativeQuarterlyFeatures()
