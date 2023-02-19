@@ -42,20 +42,20 @@ def _install_raw_data(ticker: str, /) -> tuple[bool, int]:
                 logger.debug(f"Skipping {ticker} due to missing metadata")
                 return True, 0
             for concept in _features.quarterly.concepts:
+                tag = concept["tag"]
+                taxonomy = concept["taxonomy"]
+                units = concept["units"]
                 df = _api.company_concept.get(
-                    concept["tag"],
+                    tag,
                     ticker=ticker,
-                    taxonomy=concept["taxonomy"],
-                    units=concept["units"],
+                    taxonomy=taxonomy,
+                    units=units,
                 )
-                df = _features.get_unique_filings(
-                    df, form="10-Q", units=concept["units"]
-                )
+                df = _features.get_unique_filings(df, form="10-Q", units=units)
                 rowcount = len(df.index)
                 if not rowcount:
                     logger.debug(
-                        f"Skipping {ticker} concept {concept['tag']} due to "
-                        "missing filings"
+                        f"Skipping {ticker} concept {tag} due to missing filings"
                     )
                     errored = True
                     continue
@@ -87,6 +87,14 @@ def entry_point() -> None:
     help="Additional features to install after installing raw SEC data.",
 )
 @click.option(
+    "--all",
+    "-a",
+    "all_",
+    is_flag=True,
+    default=False,
+    help="Whether to install all defined tables (including all feature tables).",
+)
+@click.option(
     "--processes",
     "-n",
     type=int,
@@ -98,14 +106,17 @@ def entry_point() -> None:
     ),
 )
 @click.option(
-    "-v",
     "--verbose",
+    "-v",
     is_flag=True,
     default=False,
     help="Sets the log level to DEBUG to show installation errors for each ticker.",
 )
 def install(
-    feature: list[str] = [], processes: int = mp.cpu_count() - 1, verbose: bool = False
+    feature: list[str] = [],
+    all_: bool = False,
+    processes: int = mp.cpu_count() - 1,
+    verbose: bool = False,
 ) -> int:
     if verbose:
         logger.setLevel(logging.DEBUG)
@@ -147,12 +158,15 @@ def install(
         "sucessfully written"
     )
 
-    if feature:
+    features = set()
+    if all_:
+        features = {"quarterly"}
+    elif feature:
         features = set(feature)
-        for f in features:
-            match f:
-                case "quarterly":
-                    total_rows += _features.quarterly.install(processes=processes)
+    for f in features:
+        match f:
+            case "quarterly":
+                total_rows += _features.quarterly.install(processes=processes)
 
     logger.info(f"{total_rows} total rows written")
     return total_rows

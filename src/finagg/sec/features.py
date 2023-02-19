@@ -57,7 +57,11 @@ def get_unique_filings(
     if units:
         mask &= df["units"] == units
     df = df[mask]
-    return df.drop_duplicates(["tag", "filed"])
+    return (
+        df.sort_values(["fy", "fp", "filed"])
+        .groupby(["fy", "fp", "tag"], as_index=False)
+        .first()
+    )
 
 
 class IndustryQuarterlyFeatures:
@@ -74,8 +78,8 @@ class IndustryQuarterlyFeatures:
         ticker: None | str = None,
         code: None | str = None,
         level: Literal[2, 3, 4] = 2,
-        start: None | str = None,
-        end: None | str = None,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get quarterly features from the feature store,
@@ -98,9 +102,7 @@ class IndustryQuarterlyFeatures:
                     3 = industry group (e.g., office furnitures)
                     4 = industry (e.g., wood office furniture)
             start: The start date of the observation period.
-                Defaults to the first recorded date.
             end: The end date of the observation period.
-                Defaults to the last recorded date.
             engine: Raw data and feature data SQL database engine.
 
         Returns:
@@ -127,25 +129,35 @@ class IndustryQuarterlyFeatures:
 
             stmt = (
                 sa.select(
-                    sql.quarterly_features.c.filed,
+                    sql.quarterly_features.c.fy,
+                    sql.quarterly_features.c.fp,
+                    sa.func.max(sql.quarterly_features.c.filed).label("filed"),
                     sql.quarterly_features.c.name,
-                    sa.func.avg(sql.quarterly_features.c.value).label("value"),
+                    sa.func.avg(sql.quarterly_features.c.value).label("avg"),
+                    sa.func.std(sql.quarterly_features.c.value).label("std"),
                 )
                 .join(
                     sql.submissions,
                     (sql.submissions.c.cik == sql.quarterly_features.c.cik)
                     & (sql.submissions.c.sic.startswith(code)),
                 )
-                .group_by(sql.quarterly_features.c.filed, sql.quarterly_features.c.name)
+                .group_by(
+                    sql.quarterly_features.c.fy,
+                    sql.quarterly_features.c.fp,
+                    sql.quarterly_features.c.name,
+                )
             )
-            whereclause = sql.quarterly_features.c.filed >= "0000-00-00"
-            if start:
-                whereclause &= sql.quarterly_features.c.filed >= start
-            if end:
-                whereclause &= sql.quarterly_features.c.filed <= end
-            df = pd.DataFrame(conn.execute(stmt.where(whereclause)))
-        df = df.pivot(index="filed", values="value", columns="name").sort_index()
-        df.columns = df.columns.rename(None)
+            df = pd.DataFrame(
+                conn.execute(
+                    stmt.where(
+                        sql.quarterly_features.c.filed >= start,
+                        sql.quarterly_features.c.filed <= end,
+                    )
+                )
+            )
+        df = df.pivot(
+            index=["fy", "fp", "filed"], values=["avg", "std"], columns="name"
+        ).sort_index()
         return df
 
 
@@ -169,7 +181,7 @@ class QuarterlyFeatures:
     )
 
     #: XBRL disclosure concepts to pull for a company.
-    concepts: tuple[api.Concept] = (
+    concepts: tuple[api.Concept, ...] = (
         {"tag": "AssetsCurrent", "taxonomy": "us-gaap", "units": "USD"},
         {
             "tag": "EarningsPerShareBasic",
@@ -186,10 +198,11 @@ class QuarterlyFeatures:
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize quarterly features columns."""
+        df = df.set_index(["fy", "fp"])
+        df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
+        df = df.reset_index()
         df = (
-            df.pivot(index="filed", values="value", columns="tag")
-            .fillna(method="ffill")
-            .dropna()
+            df.pivot(index=["fy", "fp", "filed"], values="value", columns="tag")
             .astype(float)
             .sort_index()
         )
@@ -212,7 +225,7 @@ class QuarterlyFeatures:
 
     @classmethod
     def from_api(
-        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
+        cls, ticker: str, /, *, start: str = "0000-00-00", end: str = "9999-99-99"
     ) -> pd.DataFrame:
         """Get quarterly features directly from the SEC API.
 
@@ -223,9 +236,7 @@ class QuarterlyFeatures:
         Args:
             ticker: Company ticker.
             start: The start date of the observation period.
-                Defaults to the first recorded date.
             end: The end date of the observation period.
-                Defaults to the last recorded date.
 
         Returns:
             Quarterly data dataframe with each tag as a
@@ -241,10 +252,7 @@ class QuarterlyFeatures:
                 tag, ticker=ticker, taxonomy=taxonomy, units=units
             )
             df = get_unique_filings(df, units=units)
-            if start:
-                df = df[df["filed"] >= start]
-            if end:
-                df = df[df["filed"] <= end]
+            df = df[(df["filed"] >= start) & (df["filed"] <= end)]
             dfs.append(df)
         df = pd.concat(dfs)
         return cls._normalize(df)
@@ -255,8 +263,8 @@ class QuarterlyFeatures:
         ticker: str,
         /,
         *,
-        start: None | str = None,
-        end: None | str = None,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get quarterly features from a local SEC SQL table.
@@ -268,9 +276,7 @@ class QuarterlyFeatures:
         Args:
             ticker: Company ticker.
             start: The start date of the observation period.
-                Defaults to the first recorded date.
             end: The end date of the observation period.
-                Defaults to the last recorded date.
             engine: Raw store database engine.
 
         Returns:
@@ -279,13 +285,18 @@ class QuarterlyFeatures:
 
         """
         with engine.begin() as conn:
-            stmt = sql.tags.c.cik == api.get_cik(ticker)
-            stmt &= sql.tags.c.tag.in_([concept["tag"] for concept in cls.concepts])
-            if start:
-                stmt &= sql.tags.c.filed >= start
-            if end:
-                stmt &= sql.tags.c.filed <= end
-            df = pd.DataFrame(conn.execute(sql.tags.select().where(stmt)))
+            df = pd.DataFrame(
+                conn.execute(
+                    sql.tags.select().where(
+                        sql.tags.c.cik == api.get_cik(ticker),
+                        sql.tags.c.tag.in_(
+                            [concept["tag"] for concept in cls.concepts]
+                        ),
+                        sql.tags.c.filed >= start,
+                        sql.tags.c.filed <= end,
+                    )
+                )
+            )
         return cls._normalize(df)
 
     @classmethod
@@ -294,8 +305,8 @@ class QuarterlyFeatures:
         ticker: str,
         /,
         *,
-        start: None | str = None,
-        end: None | str = None,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from the features SQL table.
@@ -307,9 +318,7 @@ class QuarterlyFeatures:
         Args:
             ticker: Company ticker.
             start: The start date of the observation period.
-                Defaults to the first recorded date.
             end: The end date of the observation period.
-                Defaults to the last recorded date.
             engine: Feature store database engine.
 
         Returns:
@@ -319,13 +328,18 @@ class QuarterlyFeatures:
         """
         cik = api.get_cik(ticker)
         with engine.begin() as conn:
-            stmt = sql.quarterly_features.c.ticker == cik
-            if start:
-                stmt &= sql.quarterly_features.c.filed >= start
-            if end:
-                stmt &= sql.quarterly_features.c.filed <= end
-            df = pd.DataFrame(conn.execute(sql.quarterly_features.select().where(stmt)))
-        df = df.pivot(index="filed", values="value", columns="name").sort_index()
+            df = pd.DataFrame(
+                conn.execute(
+                    sql.quarterly_features.select().where(
+                        sql.quarterly_features.c.cik == cik,
+                        sql.quarterly_features.c.filed >= start,
+                        sql.quarterly_features.c.filed <= end,
+                    )
+                )
+            )
+        df = df.pivot(
+            index=["fy", "fp", "filed"], values="value", columns="name"
+        ).sort_index()
         df.columns = df.columns.rename(None)
         df = df[list(cls.columns)]
         return df
@@ -463,8 +477,8 @@ class QuarterlyFeatures:
             Number of rows written to the SQL table.
 
         """
-        df = df.reset_index(names="filed")
-        df = df.melt("filed", var_name="name", value_name="value")
+        df = df.reset_index(names=["fy", "fp", "filed"])
+        df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = api.get_cik(ticker)
         with engine.begin() as conn:
             conn.execute(sql.quarterly_features.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]

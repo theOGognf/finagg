@@ -45,18 +45,6 @@ session = requests_cache.CachedSession(
 )
 
 
-class _API(ABC):
-    """Abstract SEC EDGAR API."""
-
-    #: Request API URL.
-    url: ClassVar[str]
-
-    @classmethod
-    @abstractmethod
-    def get(cls, *args: Any, **kwargs: Any) -> dict[str, Any] | pd.DataFrame:
-        """Main dataset API method."""
-
-
 class Concept(TypedDict):
     #: Valid tag within the given `taxonomy`.
     tag: str
@@ -67,6 +55,26 @@ class Concept(TypedDict):
 
     #: Currency the concept is in.
     units: str
+
+
+class SubmissionsResult(TypedDict):
+    #: Company metadata.
+    metadata: dict[str, Any]
+
+    #: Most recent company filings.
+    filings: pd.DataFrame
+
+
+class _API(ABC):
+    """Abstract SEC EDGAR API."""
+
+    #: Request API URL.
+    url: ClassVar[str]
+
+    @classmethod
+    @abstractmethod
+    def get(cls, *args: Any, **kwargs: Any) -> pd.DataFrame | SubmissionsResult:
+        """Main dataset API method."""
 
 
 class CompanyConcept(_API):
@@ -236,14 +244,6 @@ class Frames(_API):
                 "val": "value",
             }
         )
-
-
-class SubmissionsResult(TypedDict):
-    #: Company metadata.
-    metadata: dict[str, Any]
-
-    #: Most recent company filings.
-    filings: pd.DataFrame
 
 
 class Submissions(_API):

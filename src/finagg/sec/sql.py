@@ -37,7 +37,13 @@ submissions = sa.Table(
 tags = sa.Table(
     "tags",
     metadata,
-    sa.Column("cik", sa.String, primary_key=True, doc="Unique SEC ID."),
+    sa.Column(
+        "cik",
+        sa.String,
+        sa.ForeignKey(submissions.c.cik, ondelete="CASCADE"),
+        primary_key=True,
+        doc="Unique SEC ID.",
+    ),
     sa.Column("accn", sa.String, doc="Unique submission/access number."),
     sa.Column(
         "taxonomy", sa.String, doc="XBRL taxonomy the submission's tag belongs to."
@@ -48,15 +54,23 @@ tags = sa.Table(
         primary_key=True,
         doc="XBRL submission tag (e.g., NetIncomeLoss).",
     ),
-    sa.Column("form", sa.String, doc="Submission form type (e.g., 10-Q)."),
+    sa.Column(
+        "form", sa.String, nullable=False, doc="Submission form type (e.g., 10-Q)."
+    ),
     sa.Column(
         "units",
         sa.String,
+        nullable=False,
         doc="Unit of measurements for tag value (e.g., USD or shares).",
     ),
-    sa.Column("fy", sa.Integer, doc="Fiscal year the submission is for."),
     sa.Column(
-        "fp", sa.String, doc="Fiscal period the submission is for (e.g., Q1 or FY)."
+        "fy", sa.Integer, primary_key=True, doc="Fiscal year the submission is for."
+    ),
+    sa.Column(
+        "fp",
+        sa.String,
+        primary_key=True,
+        doc="Fiscal period the submission is for (e.g., Q1 or FY).",
     ),
     sa.Column(
         "start",
@@ -73,7 +87,7 @@ tags = sa.Table(
     sa.Column(
         "filed",
         sa.String,
-        primary_key=True,
+        nullable=False,
         doc="When the submission was actually filed.",
     ),
     sa.Column(
@@ -95,16 +109,29 @@ tags = sa.Table(
         doc="Long description of `tag` and `label`.",
     ),
     sa.Column("entity", sa.String, doc="Company name."),
-    sa.Column("value", sa.Float, doc="Tag value with units `units`."),
+    sa.Column("value", sa.Float, nullable=False, doc="Tag value with units `units`."),
 )
 
 quarterly_features = sa.Table(
     "quarterly_features",
     metadata,
-    sa.Column("cik", sa.String, primary_key=True, doc="Unique company ticker."),
-    sa.Column("filed", sa.String, primary_key=True, doc="Filing date."),
+    sa.Column(
+        "cik",
+        sa.String,
+        sa.ForeignKey(submissions.c.cik, ondelete="CASCADE"),
+        primary_key=True,
+        doc="Unique company ticker.",
+    ),
+    sa.Column("filed", sa.String, nullable=False, doc="Filing date."),
     sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
-    sa.Column("value", sa.Float, doc="Feature value."),
+    sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
+    sa.Column(
+        "fp",
+        sa.String,
+        primary_key=True,
+        doc="Fiscal period the value is for (e.g., Q1 or FY).",
+    ),
+    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
 
 
