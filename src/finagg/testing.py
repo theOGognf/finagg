@@ -1,29 +1,23 @@
 """Testing utils."""
 
 import pathlib
-from typing import Callable, Generator
+from typing import Generator
 
-from sqlalchemy import MetaData, Table, create_engine
+import sqlalchemy as sa
 from sqlalchemy.engine import Engine
-
-_CREATOR = Callable[
-    [
-        str,
-    ],
-    tuple[tuple[Engine, MetaData], tuple[Table]],
-]
 
 
 def sqlite_engine(
-    path: str, /, *, creator: None | _CREATOR = None
+    path: str, /, *, metadata: None | sa.MetaData = None
 ) -> Generator[Engine, None, None]:
     """Yield a test database engine that's cleaned-up after
     usage.
 
     Args:
         path: Path to SQLite database file.
-        creator: Callable for creating the database and related
-            SQLAlchemy objects from a database URL.
+        metadata: Optional metadata for creating and dropping
+            tables before and after yielding the engine,
+            respectively.
 
     Returns:
         A database engine that's subsequently disposed of
@@ -46,12 +40,11 @@ def sqlite_engine(
     path_obj = pathlib.Path(path)
     path_obj = path_obj.with_stem(f"{path_obj.stem}_test")
     url = f"sqlite:///{path_obj}"
-    if creator is None:
-        engine = create_engine(url)
-    else:
-        (engine, metadata), _ = creator(url)
+    engine = sa.create_engine(url)
+    if metadata:
         metadata.create_all(engine)
     yield engine
-    metadata.drop_all(engine)
+    if metadata:
+        metadata.drop_all(engine)
     engine.dispose()
     path_obj.unlink()
