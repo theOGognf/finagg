@@ -543,7 +543,7 @@ class RelativeQuarterlyFeatures:
         end: str = "9999-99-99",
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
-        """Get features from other features SQL table.
+        """Get features from other feature SQL tables.
 
         Args:
             ticker: Company ticker.
@@ -662,6 +662,65 @@ class RelativeQuarterlyFeatures:
                 ticker = api.get_ticker(str(cik))
                 tickers.add(ticker)
         return tickers
+
+    @classmethod
+    def get_tickers_sorted_by(
+        cls,
+        column: str,
+        /,
+        *,
+        ascending: bool = True,
+        year: int = -1,
+        quarter: int = -1,
+    ) -> tuple[str, ...]:
+        """Get all tickers in the feature's SQL table sorted by a particular
+        column.
+
+        Args:
+            column: Feature column to sort by.
+            ascending: Whether to return results in ascending order according
+                to the values in `column`.
+            year: Year to select from. Defaults to the most recent year that
+                has data available.
+            quarter: Quarter to select from. Defaults to the most recent quarter
+                that has data available.
+
+        Returns:
+            Tickers sorted by a feature column for a particular year and quarter.
+
+        """
+        with backend.engine.begin() as conn:
+            if year == -1:
+                (((max_year,),)) = conn.execute(
+                    sa.select(sa.func.max(sql.relative_quarterly_features.c.fy))
+                ).fetchall()
+                year = int(max_year)
+
+            if quarter == -1:
+                (((max_quarter,),)) = conn.execute(
+                    sa.select(sa.func.max(sql.relative_quarterly_features.c.fp))
+                ).fetchall()
+                fp = str(max_quarter)
+            else:
+                fp = f"Q{quarter}"
+
+            tickers = []
+            for cik in conn.execute(
+                sa.select(sql.relative_quarterly_features.c.cik)
+                .distinct()
+                .where(
+                    sql.relative_quarterly_features.c.name == column,
+                    sql.relative_quarterly_features.c.fy == year,
+                    sql.relative_quarterly_features.c.fp == fp,
+                )
+                .order_by(sql.relative_quarterly_features.c.value)
+            ):
+                (cik,) = cik
+                ticker = api.get_ticker(str(cik))
+                tickers.append(ticker)
+        if not ascending:
+            tickers = list(reversed(tickers))
+        return tuple(tickers)
 
     @classmethod
     def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
