@@ -166,17 +166,17 @@ class QuarterlyFeatures:
 
     #: Columns within this feature set.
     columns = (
-        "AssetsCurrent",
+        "AssetsCurrent_pct_change",
         "DebtEquityRatio",
         "EarningsPerShare",
-        "InventoryNet",
-        "LiabilitiesCurrent",
-        "NetIncomeLoss",
-        "OperatingIncomeLoss",
+        "InventoryNet_pct_change",
+        "LiabilitiesCurrent_pct_change",
+        "NetIncomeLoss_pct_change",
+        "OperatingIncomeLoss_pct_change",
         "PriceBookRatio",
         "QuickRatio",
         "ReturnOnEquity",
-        "StockholdersEquity",
+        "StockholdersEquity_pct_change",
         "WorkingCapitalRatio",
     )
 
@@ -193,6 +193,16 @@ class QuarterlyFeatures:
         {"tag": "NetIncomeLoss", "taxonomy": "us-gaap", "units": "USD"},
         {"tag": "OperatingIncomeLoss", "taxonomy": "us-gaap", "units": "USD"},
         {"tag": "StockholdersEquity", "taxonomy": "us-gaap", "units": "USD"},
+    )
+
+    #: Columns that're replaced with their respective percent changes.
+    pct_change_columns = (
+        "AssetsCurrent",
+        "InventoryNet",
+        "LiabilitiesCurrent",
+        "NetIncomeLoss",
+        "OperatingIncomeLoss",
+        "StockholdersEquity",
     )
 
     @classmethod
@@ -217,8 +227,8 @@ class QuarterlyFeatures:
         df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
         df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df = utils.quantile_clip(df)
-        pct_change_columns = [concept["tag"] for concept in cls.concepts]
-        df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)
+        pct_change_columns = [f"{col}_pct_change" for col in cls.pct_change_columns]
+        df[pct_change_columns] = df[cls.pct_change_columns].apply(utils.safe_pct_change)
         df.columns = df.columns.rename(None)
         df = df[list(cls.columns)]
         return df.dropna()

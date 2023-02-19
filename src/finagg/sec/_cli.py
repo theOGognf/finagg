@@ -80,11 +80,22 @@ def entry_point() -> None:
     ),
 )
 @click.option(
+    "--raw",
+    "-r",
+    is_flag=True,
+    default=False,
+    help="Whether to install raw SEC data.",
+)
+@click.option(
     "--feature",
     "-f",
     type=click.Choice(["quarterly"]),
     multiple=True,
-    help="Additional features to install after installing raw SEC data.",
+    help=(
+        "Feature tables to install. This requires raw SEC data to be "
+        "installed beforehand using the `--raw` flag or for the "
+        "`--raw` flag to be set when this option is provided."
+    ),
 )
 @click.option(
     "--all",
@@ -100,9 +111,9 @@ def entry_point() -> None:
     type=int,
     default=mp.cpu_count() - 1,
     help=(
-        "Number of background processes to use for installing features "
-        "after installing raw SEC data. Installation of raw SEC data is "
-        "limited to one process because of the SEC API's rate limiting."
+        "Number of background processes to use for installing features. "
+        "Installation of raw SEC data is limited to one process because "
+        "the SEC rate-limits its API."
     ),
 )
 @click.option(
@@ -113,6 +124,7 @@ def entry_point() -> None:
     help="Sets the log level to DEBUG to show installation errors for each ticker.",
 )
 def install(
+    raw: bool = False,
     feature: list[str] = [],
     all_: bool = False,
     processes: int = mp.cpu_count() - 1,
@@ -132,31 +144,32 @@ def install(
     else:
         logger.info("SEC API user agent already exists in the environment")
 
-    _sql.submissions.drop(backend.engine, checkfirst=True)
-    _sql.submissions.create(backend.engine)
-    _sql.tags.drop(backend.engine, checkfirst=True)
-    _sql.tags.create(backend.engine)
-
-    tickers = indices.api.get_ticker_set()
-    total_errors = 0
     total_rows = 0
-    with tqdm(
-        total=len(tickers),
-        desc="Installing SEC quarterly features",
-        position=0,
-        leave=True,
-        disable=verbose,
-    ) as pbar:
-        for ticker in tickers:
-            errored, rows = _install_raw_data(ticker)
-            total_errors += errored
-            total_rows += rows
-            pbar.update()
+    if all_ or raw:
+        _sql.submissions.drop(backend.engine, checkfirst=True)
+        _sql.submissions.create(backend.engine)
+        _sql.tags.drop(backend.engine, checkfirst=True)
+        _sql.tags.create(backend.engine)
 
-    logger.info(
-        f"{pbar.total - total_errors}/{pbar.total} company datasets "
-        "sucessfully written"
-    )
+        tickers = indices.api.get_ticker_set()
+        total_errors = 0
+        with tqdm(
+            total=len(tickers),
+            desc="Installing SEC quarterly features",
+            position=0,
+            leave=True,
+            disable=verbose,
+        ) as pbar:
+            for ticker in tickers:
+                errored, rows = _install_raw_data(ticker)
+                total_errors += errored
+                total_rows += rows
+                pbar.update()
+
+        logger.info(
+            f"{pbar.total - total_errors}/{pbar.total} company datasets "
+            "sucessfully written"
+        )
 
     features = set()
     if all_:
@@ -168,5 +181,10 @@ def install(
             case "quarterly":
                 total_rows += _features.quarterly.install(processes=processes)
 
-    logger.info(f"{total_rows} total rows written")
+    if all_ or features or raw:
+        logger.info(f"{total_rows} total rows written")
+    else:
+        logger.info(
+            "Skipping installation because no installation options are provided"
+        )
     return total_rows
