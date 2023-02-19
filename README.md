@@ -1,7 +1,7 @@
 # finagg: Financial Aggregation for Python
 
 **finagg** is a Python package that provides implementations of popular and free
-financial APIs, tools for aggregating data from those APIs in SQL databases,
+financial APIs, tools for aggregating data from those APIs into SQL databases,
 and tools for transforming aggregated data into features useful for analysis
 and AI/ML.
 
@@ -47,13 +47,13 @@ Or use downloaded data for exploring the most popular features.
 
 ```python
 # Get the most popular FRED features all in one dataframe.
-economic_data = finagg.fred.features.economic_features.from_sql()
+economic_data = finagg.fred.features.economic.from_sql()
 
 # Get quarterly report features from SEC data.
-quarterly_data = finagg.sec.features.quarterly_features.from_sql("AAPL")
+quarterly_data = finagg.sec.features.quarterly.from_sql("AAPL")
 
 # Get an aggregation of quarterly and daily features for a particular ticker.
-fundamental_data = finagg.fundamental.features.fundamental_features.from_sql("AAPL")
+fundamental_data = finagg.fundamentals.features.fundamentals.from_sql("AAPL")
 ```
 
 ## Optional Installs
@@ -73,10 +73,10 @@ in a `./findata` directory relative to a root directory. You can change these
 locations by modifying the respective environment variables:
 
 - `FINAGG_ROOT_PATH` points to the parent directory of the `./findata` directory.
-This defaults to your current working directory.
+Defaults to your current working directory.
 - `FINAGG_HTTP_CACHE_PATH` points to the HTTP requests cache SQLite storage.
-This defaults to `./findata/http_cache.sqlite`
-- `FINAGG_DATABASE_URL` points to the **finagg** data storage. This defaults to
+Defaults to `./findata/http_cache.sqlite`
+- `FINAGG_DATABASE_URL` points to the **finagg** data storage. Defaults to
 `./findata/finagg.sqlite`.
 
 ### API Keys and User Agents

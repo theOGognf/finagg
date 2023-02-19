@@ -511,6 +511,11 @@ class QuarterlyFeatures:
 
 
 class RelativeQuarterlyFeatures:
+    """Quarterly features from SEC EDGAR data normalized according to industry
+    averages and standard deviations.
+
+    """
+
     #: Columns within this feature set.
     columns = (
         "AssetsCurrent_pct_change",
@@ -619,6 +624,45 @@ class RelativeQuarterlyFeatures:
         df = df[list(cls.columns)]
         return df
 
+    #: The candidate set is just the quarterly feature ticket set.
+    get_candidate_ticker_set = QuarterlyFeatures.get_ticker_set
+
+    @classmethod
+    @cache
+    def get_ticker_set(
+        cls,
+        lb: int = 1,
+    ) -> set[str]:
+        """Get all unique tickers in the feature's SQL table.
+
+        Args:
+            lb: Minimum number of rows required to include a ticker in the
+                returned set.
+
+        Returns:
+            All unique tickers that contain all the columns for creating
+            quarterly features that also have at least `lb` rows.
+
+        """
+        with backend.engine.begin() as conn:
+            tickers = set()
+            for cik in conn.execute(
+                sa.select(sql.relative_quarterly_features.c.cik)
+                .distinct()
+                .group_by(sql.relative_quarterly_features.c.cik)
+                .having(
+                    *[
+                        sa.func.count(sql.relative_quarterly_features.c.name == col)
+                        >= lb
+                        for col in cls.columns
+                    ]
+                )
+            ):
+                (cik,) = cik
+                ticker = api.get_ticker(str(cik))
+                tickers.add(ticker)
+        return tickers
+
     @classmethod
     def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
         """Drop the feature's table, create a new one, and insert data
@@ -634,7 +678,7 @@ class RelativeQuarterlyFeatures:
         sql.relative_quarterly_features.drop(backend.engine, checkfirst=True)
         sql.relative_quarterly_features.create(backend.engine)
 
-        tickers = QuarterlyFeatures.get_ticker_set()
+        tickers = cls.get_candidate_ticker_set()
         total_rows = 0
         with tqdm(
             total=len(tickers),
