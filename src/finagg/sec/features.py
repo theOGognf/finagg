@@ -1,7 +1,7 @@
 """Features from SEC sources."""
 
 import multiprocessing as mp
-from functools import cache
+from functools import cache, partial
 from typing import Literal
 
 import pandas as pd
@@ -13,41 +13,33 @@ from .. import backend, utils
 from . import api, sql
 
 
-def _install_quarterly_features(ticker: str, /) -> int:
-    """Helper for creating and inserting data into the SEC quarterly
-    features table from the raw data table.
-
-    This function is used within a multiprocessing pool. No data
-    is inserted if no feature rows can be constructed from the raw
-    data table.
+def _install_quarterly_features(ticker: str, /) -> tuple[str, pd.DataFrame]:
+    """Helper for getting quarterly SEC data in a multiprocessing pool.
 
     Args:
-        ticker: Ticker to create features for and insert.
+        ticker: Ticker to create features for.
+
+    Returns:
+        The ticker and the returned feature dataframe.
 
     """
     df = QuarterlyFeatures.from_sql(ticker)
-    rowcount = len(df.index)
-    if not rowcount:
-        return 0
-    QuarterlyFeatures.to_store(ticker, df)
-    return rowcount
+    return ticker, df
 
 
-def _install_relative_quarterly_features(ticker: str, /) -> int:
-    """Helper for creating and inserting data into the SEC relative
-    quarterly features table from the quarterly and industry quarterly
-    features.
+def _install_relative_quarterly_features(ticker: str, /) -> tuple[str, pd.DataFrame]:
+    """Helper for getting industry-relative quarterly SEC data in a
+    multiprocessing pool.
 
     Args:
-        ticker: Ticker to create features for and insert.
+        ticker: Ticker to create features for.
+
+    Returns:
+        The ticker and the returned feature dataframe.
 
     """
     df = RelativeQuarterlyFeatures.from_other_store(ticker)
-    rowcount = len(df.index)
-    if not rowcount:
-        return 0
-    RelativeQuarterlyFeatures.to_store(ticker, df)
-    return rowcount
+    return ticker, df
 
 
 def get_unique_filings(
@@ -475,18 +467,24 @@ class QuarterlyFeatures:
 
         tickers = cls.get_candidate_ticker_set()
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
-            desc="Installing SEC quarterly features",
-            position=0,
-            leave=True,
-        ) as pbar:
-            with mp.Pool(
-                processes=processes, initializer=backend.engine.dispose
-            ) as pool:
-                for rows in pool.imap_unordered(_install_quarterly_features, tickers):
-                    pbar.update()
-                    total_rows += rows
+        with (
+            tqdm(
+                total=len(tickers),
+                desc="Installing quarterly SEC features",
+                position=0,
+                leave=True,
+            ) as pbar,
+            mp.Pool(
+                processes=processes,
+                initializer=partial(backend.engine.dispose, close=False),
+            ) as pool,
+        ):
+            for ticker, df in pool.imap_unordered(_install_quarterly_features, tickers):
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_store(ticker, df)
+                total_rows += rowcount
+                pbar.update()
         return total_rows
 
     @classmethod
@@ -747,20 +745,26 @@ class RelativeQuarterlyFeatures:
 
         tickers = cls.get_candidate_ticker_set()
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
-            desc="Installing SEC industry-relative quarterly features",
-            position=0,
-            leave=True,
-        ) as pbar:
-            with mp.Pool(
-                processes=processes, initializer=backend.engine.dispose
-            ) as pool:
-                for rows in pool.imap_unordered(
-                    _install_relative_quarterly_features, tickers
-                ):
-                    pbar.update()
-                    total_rows += rows
+        with (
+            tqdm(
+                total=len(tickers),
+                desc="Installing industry-relative quarterly SEC features",
+                position=0,
+                leave=True,
+            ) as pbar,
+            mp.Pool(
+                processes=processes,
+                initializer=partial(backend.engine.dispose, close=False),
+            ) as pool,
+        ):
+            for ticker, df in pool.imap_unordered(
+                _install_relative_quarterly_features, tickers
+            ):
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_store(ticker, df)
+                total_rows += rowcount
+                pbar.update()
         return total_rows
 
     @classmethod

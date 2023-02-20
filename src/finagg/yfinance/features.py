@@ -1,7 +1,7 @@
 """Features from yfinance sources."""
 
 import multiprocessing as mp
-from functools import cache
+from functools import cache, partial
 
 import pandas as pd
 import sqlalchemy as sa
@@ -12,24 +12,19 @@ from .. import backend, utils
 from . import api, sql
 
 
-def _install_daily_features(ticker: str, /) -> int:
-    """Helper for creating and inserting data into the daily
-    features table from the raw data table.
-
-    This function is used within a multiprocessing pool. No data
-    is inserted if no feature rows can be constructed from the raw
-    data table.
+def _install_daily_features(ticker: str, /) -> tuple[str, pd.DataFrame]:
+    """Helper for getting daily Yahoo! Finance data in a
+    multiprocessing pool.
 
     Args:
-        ticker: Ticker to create features for and insert.
+        ticker: Ticker to create features for.
+
+    Returns:
+        The ticker and the returned feature dataframe.
 
     """
     df = DailyFeatures.from_sql(ticker)
-    rowcount = len(df.index)
-    if not rowcount:
-        return 0
-    DailyFeatures.to_store(ticker, df)
-    return rowcount
+    return ticker, df
 
 
 class DailyFeatures:
@@ -222,18 +217,24 @@ class DailyFeatures:
 
         tickers = cls.get_candidate_ticker_set()
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
-            desc="Installing SEC industry-relative quarterly features",
-            position=0,
-            leave=True,
-        ) as pbar:
-            with mp.Pool(
-                processes=processes, initializer=backend.engine.dispose
-            ) as pool:
-                for rows in pool.imap_unordered(_install_daily_features, tickers):
-                    pbar.update()
-                    total_rows += rows
+        with (
+            tqdm(
+                total=len(tickers),
+                desc="Installing daily Yahoo! Finance features",
+                position=0,
+                leave=True,
+            ) as pbar,
+            mp.Pool(
+                processes=processes,
+                initializer=partial(backend.engine.dispose, close=False),
+            ) as pool,
+        ):
+            for ticker, df in pool.imap_unordered(_install_daily_features, tickers):
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_store(ticker, df)
+                total_rows += rowcount
+                pbar.update()
         return total_rows
 
     @classmethod

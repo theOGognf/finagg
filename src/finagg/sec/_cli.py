@@ -29,6 +29,9 @@ def _install_raw_data(ticker: str, /) -> tuple[bool, int]:
     Args:
         ticker: Ticker to aggregate data for.
 
+    Returns:
+        Whether an error occurred and
+
     """
     errored = False
     total_rows = 0
@@ -155,15 +158,15 @@ def install(
         total_errors = 0
         with tqdm(
             total=len(tickers),
-            desc="Installing raw SEC quarterly data",
+            desc="Installing raw quarterly SEC data",
             position=0,
             leave=True,
             disable=verbose,
         ) as pbar:
             for ticker in tickers:
-                errored, rows = _install_raw_data(ticker)
+                errored, rowcount = _install_raw_data(ticker)
                 total_errors += errored
-                total_rows += rows
+                total_rows += rowcount
                 pbar.update()
 
         logger.info(
