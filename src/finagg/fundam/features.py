@@ -107,7 +107,7 @@ class FundamentalFeatures:
         return cls._normalize(quarterly_features, daily_features)
 
     @classmethod
-    def from_store(
+    def from_refined(
         cls,
         ticker: str,
         /,
@@ -150,7 +150,7 @@ class FundamentalFeatures:
         return df
 
     @classmethod
-    def to_store(
+    def to_refined(
         cls,
         ticker: str,
         df: pd.DataFrame,

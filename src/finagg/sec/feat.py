@@ -80,7 +80,7 @@ class IndustryQuarterlyFeatures:
     """
 
     @classmethod
-    def from_store(
+    def from_refined(
         cls,
         /,
         *,
@@ -224,11 +224,11 @@ class RelativeQuarterlyFeatures:
             separate column. Sorted by filing date.
 
         """
-        company_df = QuarterlyFeatures.from_store(
+        company_df = QuarterlyFeatures.from_refined(
             ticker, start=start, end=end, engine=engine
         ).reset_index(["filed"])
         filed = company_df["filed"]
-        industry_df = IndustryQuarterlyFeatures.from_store(
+        industry_df = IndustryQuarterlyFeatures.from_refined(
             ticker=ticker, level=level, start=start, end=end, engine=engine
         ).reset_index(["filed"])
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
@@ -242,7 +242,7 @@ class RelativeQuarterlyFeatures:
         )
 
     @classmethod
-    def from_store(
+    def from_refined(
         cls,
         ticker: str,
         /,
@@ -287,13 +287,13 @@ class RelativeQuarterlyFeatures:
         return df
 
     @classmethod
-    def get_candidate_ticker_set(cls, lb: int = 1) -> set[str]:
+    def get_candidate_id_set(cls, lb: int = 1) -> set[str]:
         """The candidate ticker set is just the `quarterly` ticker set."""
-        return QuarterlyFeatures.get_ticker_set(lb=lb)
+        return QuarterlyFeatures.get_id_set(lb=lb)
 
     @classmethod
     @cache
-    def get_ticker_set(
+    def get_id_set(
         cls,
         lb: int = 1,
     ) -> set[str]:
@@ -328,7 +328,7 @@ class RelativeQuarterlyFeatures:
         return tickers
 
     @classmethod
-    def get_tickers_sorted_by(
+    def get_ids_sorted_by(
         cls,
         column: str,
         /,
@@ -401,7 +401,7 @@ class RelativeQuarterlyFeatures:
         sql.relative_quarterly_features.drop(backend.engine, checkfirst=True)
         sql.relative_quarterly_features.create(backend.engine)
 
-        tickers = cls.get_candidate_ticker_set()
+        tickers = cls.get_candidate_id_set()
         total_rows = 0
         with (
             tqdm(
@@ -420,13 +420,13 @@ class RelativeQuarterlyFeatures:
             ):
                 rowcount = len(df.index)
                 if rowcount:
-                    cls.to_store(ticker, df)
+                    cls.to_refined(ticker, df)
                 total_rows += rowcount
                 pbar.update()
         return total_rows
 
     @classmethod
-    def to_store(
+    def to_refined(
         cls,
         ticker: str,
         df: pd.DataFrame,
@@ -615,7 +615,7 @@ class QuarterlyFeatures:
         return cls._normalize(df)
 
     @classmethod
-    def from_store(
+    def from_refined(
         cls,
         ticker: str,
         /,
@@ -663,7 +663,7 @@ class QuarterlyFeatures:
 
     @classmethod
     @cache
-    def get_candidate_ticker_set(
+    def get_candidate_id_set(
         cls,
         lb: int = 1,
     ) -> set[str]:
@@ -705,7 +705,7 @@ class QuarterlyFeatures:
 
     @classmethod
     @cache
-    def get_ticker_set(
+    def get_id_set(
         cls,
         lb: int = 1,
     ) -> set[str]:
@@ -753,7 +753,7 @@ class QuarterlyFeatures:
         sql.quarterly_features.drop(backend.engine, checkfirst=True)
         sql.quarterly_features.create(backend.engine)
 
-        tickers = cls.get_candidate_ticker_set()
+        tickers = cls.get_candidate_id_set()
         total_rows = 0
         with (
             tqdm(
@@ -770,13 +770,13 @@ class QuarterlyFeatures:
             for ticker, df in pool.imap_unordered(_install_quarterly_features, tickers):
                 rowcount = len(df.index)
                 if rowcount:
-                    cls.to_store(ticker, df)
+                    cls.to_refined(ticker, df)
                 total_rows += rowcount
                 pbar.update()
         return total_rows
 
     @classmethod
-    def to_store(
+    def to_refined(
         cls,
         ticker: str,
         df: pd.DataFrame,

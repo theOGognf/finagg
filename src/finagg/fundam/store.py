@@ -42,7 +42,7 @@ def _define_db(
 
 
 @cache
-def get_ticker_set() -> set[str]:
+def get_id_set() -> set[str]:
     """Get all unique tickers in the feature SQL tables."""
     with engine.begin() as conn:
         tickers = set()

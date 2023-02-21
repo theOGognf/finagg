@@ -56,17 +56,17 @@ quarterly_data = finagg.sec.feat.quarterly.from_raw("AAPL")
 fundamental_data = finagg.fundam.feat.fundam.from_raw("AAPL")
 ```
 
-Use installed features for exploring richer feature aggregations.
+Use installed features for exploring refined feature aggregations.
 
 ```python
 # Get a ticker's industry's averaged quarterly report features.
-industry_quartery = finagg.sec.feat.quarterly.industry.from_store(ticker="AAPL")
+industry_quartery = finagg.sec.feat.quarterly.industry.from_refined(ticker="AAPL")
 
 # Get a ticker's industry-averaged quarterly report features.
-relative_quarterly = finagg.sec.feat.quarterly.relative.from_store("AAPL")
+relative_quarterly = finagg.sec.feat.quarterly.relative.from_refined("AAPL")
 
 # Get tickers sorted by an industry-averaged quarterly report feature.
-lowest_earners = finagg.sec.feat.quarterly.relative.get_tickers_sorted_by("EarningsPerShare", year=2022, quarter=3)
+lowest_earners = finagg.sec.feat.quarterly.relative.get_ids_sorted_by("EarningsPerShare", year=2022, quarter=3)
 ```
 
 ## Configuration

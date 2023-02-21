@@ -50,7 +50,7 @@ def run(install_features: bool = False) -> None:
         store.metadata.create_all(store.engine)
 
         df = features.economic.from_raw()
-        feature_count = features.economic.to_store(df)
+        feature_count = features.economic.to_refined(df)
         if not feature_count:
             raise RuntimeError("An error occurred when installing FRED features.")
         logger.info(f"{feature_count} feature rows written")

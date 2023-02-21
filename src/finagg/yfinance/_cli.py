@@ -114,7 +114,7 @@ def install(
         _sql.prices.drop(backend.engine, checkfirst=True)
         _sql.prices.create(backend.engine)
 
-        tickers = indices.api.get_ticker_set()
+        tickers = indices.api.get_id_set()
         total_errors = 0
         with tqdm(
             total=len(tickers),

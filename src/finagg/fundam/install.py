@@ -51,7 +51,7 @@ def run(processes: int = mp.cpu_count() - 1) -> None:
     store.metadata.drop_all(store.engine)
     store.metadata.create_all(store.engine)
 
-    tickers = sec.sql.get_ticker_set()
+    tickers = sec.sql.get_id_set()
     tickers_to_inserts = {}
     skipped_tickers = set()
     with mp.Pool(processes=processes, initializer=_initialize) as pool:
@@ -65,7 +65,7 @@ def run(processes: int = mp.cpu_count() - 1) -> None:
                 pbar.update()
                 ticker, df = output
                 if len(df.index) > 0:
-                    features.fundam.to_store(ticker, df)
+                    features.fundam.to_refined(ticker, df)
                     tickers_to_inserts[ticker] = len(df.index)
                 else:
                     skipped_tickers.add(ticker)

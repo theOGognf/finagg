@@ -121,7 +121,7 @@ class DailyFeatures:
         return cls._normalize(df)
 
     @classmethod
-    def from_store(
+    def from_refined(
         cls,
         ticker: str,
         /,
@@ -164,11 +164,11 @@ class DailyFeatures:
         return df
 
     #: The candidate set is just the raw SQL ticker set.
-    get_candidate_ticker_set = sql.get_ticker_set
+    get_candidate_id_set = sql.get_id_set
 
     @classmethod
     @cache
-    def get_ticker_set(
+    def get_id_set(
         cls,
         lb: int = 1,
     ) -> set[str]:
@@ -215,7 +215,7 @@ class DailyFeatures:
         sql.daily_features.drop(backend.engine, checkfirst=True)
         sql.daily_features.create(backend.engine)
 
-        tickers = cls.get_candidate_ticker_set()
+        tickers = cls.get_candidate_id_set()
         total_rows = 0
         with (
             tqdm(
@@ -232,13 +232,13 @@ class DailyFeatures:
             for ticker, df in pool.imap_unordered(_install_daily_features, tickers):
                 rowcount = len(df.index)
                 if rowcount:
-                    cls.to_store(ticker, df)
+                    cls.to_refined(ticker, df)
                 total_rows += rowcount
                 pbar.update()
         return total_rows
 
     @classmethod
-    def to_store(
+    def to_refined(
         cls,
         ticker: str,
         df: pd.DataFrame,

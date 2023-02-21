@@ -159,7 +159,7 @@ relative_quarterly_features = sa.Table(
 
 
 @cache
-def get_ticker_set(lb: int = 1) -> set[str]:
+def get_id_set(lb: int = 1) -> set[str]:
     """Get all unique tickers in the raw SQL tables."""
     with backend.engine.begin() as conn:
         tickers = set()

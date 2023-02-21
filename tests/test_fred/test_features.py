@@ -13,19 +13,19 @@ def engine() -> Engine:
     )
 
 
-def test_economic_features_to_from_store(engine: Engine) -> None:
+def test_economic_features_to_from_refined(engine: Engine) -> None:
     df1 = finagg.fred.features.economic.from_api()
-    finagg.fred.features.economic.to_store(
+    finagg.fred.features.economic.to_refined(
         df1,
         engine=engine,
     )
     with pytest.raises(IntegrityError):
-        finagg.fred.features.economic.to_store(
+        finagg.fred.features.economic.to_refined(
             df1,
             engine=engine,
         )
 
-    df2 = finagg.fred.features.economic.from_store(
+    df2 = finagg.fred.features.economic.from_refined(
         engine=engine,
     )
     pd.testing.assert_frame_equal(df1, df2)

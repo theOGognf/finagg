@@ -130,7 +130,7 @@ class EconomicFeatures:
         return cls._normalize(df)
 
     @classmethod
-    def from_store(
+    def from_refined(
         cls,
         /,
         *,
@@ -170,7 +170,7 @@ class EconomicFeatures:
         return df
 
     @classmethod
-    def to_store(
+    def to_refined(
         cls,
         df: pd.DataFrame,
         /,
