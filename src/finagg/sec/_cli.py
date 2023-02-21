@@ -90,12 +90,12 @@ def entry_point() -> None:
     help="Whether to install raw SEC data.",
 )
 @click.option(
-    "--feature",
-    "-f",
-    type=click.Choice(["quarterly", "relative-quarterly"]),
+    "--refined",
+    "-ref",
+    type=click.Choice(["quarterly", "quarterly.relative"]),
     multiple=True,
     help=(
-        "Feature tables to install. This requires raw SEC data to be "
+        "Refined tables to install. This requires raw SEC data to be "
         "installed beforehand using the `--raw` flag or for the "
         "`--raw` flag to be set when this option is provided."
     ),
@@ -128,7 +128,7 @@ def entry_point() -> None:
 )
 def install(
     raw: bool = False,
-    feature: list[str] = [],
+    refined: list[str] = [],
     all_: bool = False,
     processes: int = mp.cpu_count() - 1,
     verbose: bool = False,
@@ -174,19 +174,19 @@ def install(
             "sucessfully written"
         )
 
-    features = set()
+    all_refined = set()
     if all_:
-        features = {"quarterly", "relative-quarterly"}
-    elif feature:
-        features = set(feature)
+        all_refined = {"quarterly", "quarterly.relative"}
+    elif refined:
+        all_refined = set(refined)
 
-    if "quarterly" in features:
+    if "quarterly" in all_refined:
         total_rows += _features.quarterly.install(processes=processes)
 
-    if "relative-quarterly" in features:
-        total_rows += _features.relative_quarterly.install(processes=processes)
+    if "quarterly.relative" in all_refined:
+        total_rows += _features.quarterly.relative.install(processes=processes)
 
-    if all_ or features or raw:
+    if all_ or all_refined or raw:
         logger.info(f"{total_rows} total rows written")
     else:
         logger.info(

@@ -9,7 +9,7 @@ from .. import backend
 metadata = sa.MetaData()
 
 prices = sa.Table(
-    "prices",
+    "yfinance.raw.prices",
     metadata,
     sa.Column("ticker", sa.String, primary_key=True, doc="Unique company ticker."),
     sa.Column("date", sa.String, primary_key=True, doc="Stock price date."),
@@ -21,7 +21,7 @@ prices = sa.Table(
 )
 
 daily_features = sa.Table(
-    "daily_features",
+    "yfinance.refined.daily",
     metadata,
     sa.Column(
         "ticker",

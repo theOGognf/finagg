@@ -9,7 +9,7 @@ from .. import backend
 metadata = sa.MetaData()
 
 djia = sa.Table(
-    "djia",
+    "indices.raw.djia",
     metadata,
     sa.Column("company", sa.String, doc="Company name."),
     sa.Column("exchange", sa.String, doc="Exchange the company is listed on."),
@@ -20,7 +20,7 @@ djia = sa.Table(
 )
 
 nasdaq100 = sa.Table(
-    "nasdaq100",
+    "indices.raw.nasdaq100",
     metadata,
     sa.Column("company", sa.String, doc="Company name."),
     sa.Column("ticker", sa.String, primary_key=True, doc="Company ticker/symbol."),
@@ -31,7 +31,7 @@ nasdaq100 = sa.Table(
 )
 
 sp500 = sa.Table(
-    "sp500",
+    "indices.raw.sp500",
     metadata,
     sa.Column("ticker", sa.String, primary_key=True, doc="Company ticker/symbol."),
     sa.Column("company", sa.String, doc="Company name."),

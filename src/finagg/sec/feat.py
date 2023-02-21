@@ -138,29 +138,29 @@ class IndustryQuarterlyFeatures:
 
             stmt = (
                 sa.select(
-                    sql.quarterly_features.c.fy,
-                    sql.quarterly_features.c.fp,
-                    sa.func.max(sql.quarterly_features.c.filed).label("filed"),
-                    sql.quarterly_features.c.name,
-                    sa.func.avg(sql.quarterly_features.c.value).label("avg"),
-                    sa.func.std(sql.quarterly_features.c.value).label("std"),
+                    sql.quarterly.c.fy,
+                    sql.quarterly.c.fp,
+                    sa.func.max(sql.quarterly.c.filed).label("filed"),
+                    sql.quarterly.c.name,
+                    sa.func.avg(sql.quarterly.c.value).label("avg"),
+                    sa.func.std(sql.quarterly.c.value).label("std"),
                 )
                 .join(
                     sql.submissions,
-                    (sql.submissions.c.cik == sql.quarterly_features.c.cik)
+                    (sql.submissions.c.cik == sql.quarterly.c.cik)
                     & (sql.submissions.c.sic.startswith(code)),
                 )
                 .group_by(
-                    sql.quarterly_features.c.fy,
-                    sql.quarterly_features.c.fp,
-                    sql.quarterly_features.c.name,
+                    sql.quarterly.c.fy,
+                    sql.quarterly.c.fp,
+                    sql.quarterly.c.name,
                 )
             )
             df = pd.DataFrame(
                 conn.execute(
                     stmt.where(
-                        sql.quarterly_features.c.filed >= start,
-                        sql.quarterly_features.c.filed <= end,
+                        sql.quarterly.c.filed >= start,
+                        sql.quarterly.c.filed <= end,
                     )
                 )
             )
@@ -272,10 +272,10 @@ class RelativeQuarterlyFeatures:
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
-                    sql.relative_quarterly_features.select().where(
-                        sql.relative_quarterly_features.c.cik == cik,
-                        sql.relative_quarterly_features.c.filed >= start,
-                        sql.relative_quarterly_features.c.filed <= end,
+                    sql.relative_quarterly.select().where(
+                        sql.relative_quarterly.c.cik == cik,
+                        sql.relative_quarterly.c.filed >= start,
+                        sql.relative_quarterly.c.filed <= end,
                     )
                 )
             )
@@ -311,13 +311,12 @@ class RelativeQuarterlyFeatures:
         with backend.engine.begin() as conn:
             tickers = set()
             for row in conn.execute(
-                sa.select(sql.relative_quarterly_features.c.cik)
+                sa.select(sql.relative_quarterly.c.cik)
                 .distinct()
-                .group_by(sql.relative_quarterly_features.c.cik)
+                .group_by(sql.relative_quarterly.c.cik)
                 .having(
                     *[
-                        sa.func.count(sql.relative_quarterly_features.c.name == col)
-                        >= lb
+                        sa.func.count(sql.relative_quarterly.c.name == col) >= lb
                         for col in cls.columns
                     ]
                 )
@@ -356,13 +355,13 @@ class RelativeQuarterlyFeatures:
         with backend.engine.begin() as conn:
             if year == -1:
                 (((max_year,),)) = conn.execute(
-                    sa.select(sa.func.max(sql.relative_quarterly_features.c.fy))
+                    sa.select(sa.func.max(sql.relative_quarterly.c.fy))
                 ).fetchall()
                 year = int(max_year)
 
             if quarter == -1:
                 (((max_quarter,),)) = conn.execute(
-                    sa.select(sa.func.max(sql.relative_quarterly_features.c.fp))
+                    sa.select(sa.func.max(sql.relative_quarterly.c.fp))
                 ).fetchall()
                 fp = str(max_quarter)
             else:
@@ -370,14 +369,14 @@ class RelativeQuarterlyFeatures:
 
             tickers = []
             for row in conn.execute(
-                sa.select(sql.relative_quarterly_features.c.cik)
+                sa.select(sql.relative_quarterly.c.cik)
                 .distinct()
                 .where(
-                    sql.relative_quarterly_features.c.name == column,
-                    sql.relative_quarterly_features.c.fy == year,
-                    sql.relative_quarterly_features.c.fp == fp,
+                    sql.relative_quarterly.c.name == column,
+                    sql.relative_quarterly.c.fy == year,
+                    sql.relative_quarterly.c.fp == fp,
                 )
-                .order_by(sql.relative_quarterly_features.c.value)
+                .order_by(sql.relative_quarterly.c.value)
             ):
                 (cik,) = row
                 ticker = api.get_ticker(str(cik))
@@ -398,8 +397,8 @@ class RelativeQuarterlyFeatures:
             Number of rows written to the feature's SQL table.
 
         """
-        sql.relative_quarterly_features.drop(backend.engine, checkfirst=True)
-        sql.relative_quarterly_features.create(backend.engine)
+        sql.relative_quarterly.drop(backend.engine, checkfirst=True)
+        sql.relative_quarterly.create(backend.engine)
 
         tickers = cls.get_candidate_id_set()
         total_rows = 0
@@ -450,7 +449,7 @@ class RelativeQuarterlyFeatures:
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = api.get_cik(ticker)
         with engine.begin() as conn:
-            conn.execute(sql.relative_quarterly_features.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+            conn.execute(sql.relative_quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 
@@ -645,10 +644,10 @@ class QuarterlyFeatures:
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
-                    sql.quarterly_features.select().where(
-                        sql.quarterly_features.c.cik == cik,
-                        sql.quarterly_features.c.filed >= start,
-                        sql.quarterly_features.c.filed <= end,
+                    sql.quarterly.select().where(
+                        sql.quarterly.c.cik == cik,
+                        sql.quarterly.c.filed >= start,
+                        sql.quarterly.c.filed <= end,
                     )
                 )
             )
@@ -723,12 +722,12 @@ class QuarterlyFeatures:
         with backend.engine.begin() as conn:
             tickers = set()
             for row in conn.execute(
-                sa.select(sql.quarterly_features.c.cik)
+                sa.select(sql.quarterly.c.cik)
                 .distinct()
-                .group_by(sql.quarterly_features.c.cik)
+                .group_by(sql.quarterly.c.cik)
                 .having(
                     *[
-                        sa.func.count(sql.quarterly_features.c.name == col) >= lb
+                        sa.func.count(sql.quarterly.c.name == col) >= lb
                         for col in cls.columns
                     ]
                 )
@@ -750,8 +749,8 @@ class QuarterlyFeatures:
             Number of rows written to the feature's SQL table.
 
         """
-        sql.quarterly_features.drop(backend.engine, checkfirst=True)
-        sql.quarterly_features.create(backend.engine)
+        sql.quarterly.drop(backend.engine, checkfirst=True)
+        sql.quarterly.create(backend.engine)
 
         tickers = cls.get_candidate_id_set()
         total_rows = 0
@@ -800,7 +799,7 @@ class QuarterlyFeatures:
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = api.get_cik(ticker)
         with engine.begin() as conn:
-            conn.execute(sql.quarterly_features.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+            conn.execute(sql.quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 

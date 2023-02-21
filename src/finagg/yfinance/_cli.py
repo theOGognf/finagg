@@ -67,12 +67,12 @@ def entry_point() -> None:
     help="Whether to install raw Yahoo! Finance historical price data.",
 )
 @click.option(
-    "--feature",
-    "-f",
+    "--refined",
+    "-ref",
     type=click.Choice(["daily"]),
     multiple=True,
     help=(
-        "Feature tables to install. This requires raw data to be "
+        "Refined tables to install. This requires raw data to be "
         "installed beforehand using the `--raw` flag or for the "
         "`--raw` flag to be set when this option is provided."
     ),
@@ -101,7 +101,7 @@ def entry_point() -> None:
 )
 def install(
     raw: bool = False,
-    feature: list[str] = [],
+    refined: list[str] = [],
     all_: bool = False,
     processes: int = mp.cpu_count() - 1,
     verbose: bool = False,
@@ -134,16 +134,16 @@ def install(
             "sucessfully written"
         )
 
-    features = set()
+    all_refined = set()
     if all_:
-        features = {"daily"}
-    elif feature:
-        features = set(feature)
+        all_refined = {"daily"}
+    elif refined:
+        all_refined = set(refined)
 
-    if "daily" in features:
+    if "daily" in all_refined:
         total_rows += _features.daily.install(processes=processes)
 
-    if all_ or features or raw:
+    if all_ or all_refined or raw:
         logger.info(f"{total_rows} total rows written")
     else:
         logger.info(

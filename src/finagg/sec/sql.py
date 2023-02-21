@@ -10,7 +10,7 @@ from . import api
 metadata = sa.MetaData()
 
 submissions = sa.Table(
-    "submissions",
+    "sec.raw.submissions",
     metadata,
     sa.Column("cik", sa.String, primary_key=True, doc="Unique SEC ID."),
     sa.Column(
@@ -35,7 +35,7 @@ submissions = sa.Table(
 )
 
 tags = sa.Table(
-    "tags",
+    "sec.raw.tags",
     metadata,
     sa.Column(
         "cik",
@@ -112,8 +112,8 @@ tags = sa.Table(
     sa.Column("value", sa.Float, nullable=False, doc="Tag value with units `units`."),
 )
 
-quarterly_features = sa.Table(
-    "quarterly_features",
+quarterly = sa.Table(
+    "sec.refined.quarterly",
     metadata,
     sa.Column(
         "cik",
@@ -135,8 +135,8 @@ quarterly_features = sa.Table(
 )
 
 
-relative_quarterly_features = sa.Table(
-    "relative_quarterly_features",
+relative_quarterly = sa.Table(
+    "sec.refined.quarterly.relative",
     metadata,
     sa.Column(
         "cik",

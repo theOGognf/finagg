@@ -34,7 +34,7 @@ def get(
 
     """
     stock = yf.Ticker(ticker)
-    df: pd.DataFrame = stock.history(
+    df = stock.history(
         period=period,
         interval=interval,
         start=start,
@@ -50,5 +50,5 @@ def get(
     df["Date"] = df["Date"].apply(_strftime)
     df["ticker"] = stock.ticker
     df = df.drop(columns=["Dividends", "Stock Splits"], errors="ignore")
-    df.columns = map(str.lower, df.columns)  # type: ignore
-    return df
+    df.columns = map(str.lower, df.columns)
+    return df  # type: ignore[no-any-return]
