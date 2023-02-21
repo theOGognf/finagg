@@ -66,7 +66,7 @@ industry_quartery = finagg.sec.feat.quarterly.industry.from_refined(ticker="AAPL
 relative_quarterly = finagg.sec.feat.quarterly.relative.from_refined("AAPL")
 
 # Get tickers sorted by an industry-averaged quarterly report feature.
-lowest_earners = finagg.sec.feat.quarterly.relative.get_ids_sorted_by("EarningsPerShare", year=2022, quarter=3)
+lowest_earners = finagg.sec.feat.quarterly.relative.get_ids_sorted_by("EarningsPerShare")
 ```
 
 ## Configuration
