@@ -93,7 +93,7 @@ class EconomicFeatures:
         return cls._normalize(df)
 
     @classmethod
-    def from_sql(
+    def from_raw(
         cls,
         *,
         start: None | str = None,

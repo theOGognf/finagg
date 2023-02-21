@@ -2,5 +2,56 @@
 requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "finagg"
+description = "Data aggregation with popular and free financial APIs."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "Andrew B."}]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Typing :: Typed"
+]
+dependencies = [
+    "beautifulsoup4",
+    "click",
+    "pandas",
+    "pandas-stubs",
+    "python-dotenv",
+    "requests",
+    "requests-cache",
+    "setuptools>=46.1.0",
+    "setuptools_scm>=5",
+    "SQLAlchemy",
+    "tqdm",
+    "types-requests",
+    "typing-extensions",
+    "yfinance"
+]
+
+[project.optional.dependencies]
+dev = [
+    "build[virtualenv]",
+    "mypy",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "pytest-randomly",
+    "sphinx",
+    "tox",
+    "virtualenv"
+]
+
 [tool.setuptools_scm]
 version_scheme = "no-guess-dev"

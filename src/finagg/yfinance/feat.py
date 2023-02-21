@@ -23,7 +23,7 @@ def _install_daily_features(ticker: str, /) -> tuple[str, pd.DataFrame]:
         The ticker and the returned feature dataframe.
 
     """
-    df = DailyFeatures.from_sql(ticker)
+    df = DailyFeatures.from_raw(ticker)
     return ticker, df
 
 
@@ -85,7 +85,7 @@ class DailyFeatures:
         return cls._normalize(df)
 
     @classmethod
-    def from_sql(
+    def from_raw(
         cls,
         ticker: str,
         /,

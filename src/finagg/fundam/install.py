@@ -26,7 +26,7 @@ def _features_get(ticker: str) -> tuple[str, pd.DataFrame]:
 
     """
     try:
-        df = features.fundamentals.from_sql(ticker)
+        df = features.fundam.from_raw(ticker)
     except (IndexError, KeyError) as e:
         logger.debug(f"Skipping {ticker} due to {e}")
         return ticker, pd.DataFrame()
@@ -65,7 +65,7 @@ def run(processes: int = mp.cpu_count() - 1) -> None:
                 pbar.update()
                 ticker, df = output
                 if len(df.index) > 0:
-                    features.fundamentals.to_store(ticker, df)
+                    features.fundam.to_store(ticker, df)
                     tickers_to_inserts[ticker] = len(df.index)
                 else:
                     skipped_tickers.add(ticker)

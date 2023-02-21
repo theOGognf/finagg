@@ -12,8 +12,8 @@ class FundamentalFeatures:
 
     #: Columns within this feature set.
     columns = (
-        yfinance.features.daily.columns
-        + sec.features.quarterly.columns
+        yfinance.feat.daily.columns
+        + sec.feat.quarterly.columns
         + ("PriceEarningsRatio",)
     )
 
@@ -57,15 +57,13 @@ class FundamentalFeatures:
             Sorted by date.
 
         """
-        quarterly_features = sec.features.quarterly.from_api(
-            ticker, start=start, end=end
-        )
+        quarterly_features = sec.feat.quarterly.from_api(ticker, start=start, end=end)
         start = str(quarterly_features.index[0])
-        daily_features = yfinance.features.daily.from_api(ticker, start=start, end=end)
+        daily_features = yfinance.feat.daily.from_api(ticker, start=start, end=end)
         return cls._normalize(quarterly_features, daily_features)
 
     @classmethod
-    def from_sql(
+    def from_raw(
         cls,
         ticker: str,
         /,
@@ -93,14 +91,14 @@ class FundamentalFeatures:
             Sorted by date.
 
         """
-        quarterly_features = sec.features.quarterly.from_sql(
+        quarterly_features = sec.feat.quarterly.from_raw(
             ticker,
             start=start,
             end=end,
             engine=engine,
         )
         start = str(quarterly_features.index[0])
-        daily_features = yfinance.features.daily.from_sql(
+        daily_features = yfinance.feat.daily.from_raw(
             ticker,
             start=start,
             end=end,
@@ -185,4 +183,4 @@ class FundamentalFeatures:
 
 
 #: Public-facing API.
-fundamentals = FundamentalFeatures()
+fundam = FundamentalFeatures()

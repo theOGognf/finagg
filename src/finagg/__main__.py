@@ -4,7 +4,7 @@ import multiprocessing as mp
 
 import click
 
-from . import fred, fundamentals, indices, sec, yfinance
+from . import fred, fundam, indices, sec, yfinance
 
 
 @click.group()
@@ -12,11 +12,11 @@ def cli() -> None:
     ...
 
 
-cli.add_command(fred._cli.entry_point, "fred")
-cli.add_command(indices._cli.entry_point, "indices")
-cli.add_command(fundamentals._cli.entry_point, "fundamentals")
-cli.add_command(sec._cli.entry_point, "sec")
-cli.add_command(yfinance._cli.entry_point, "yfinance")
+cli.add_command(fred._cli.entry_point, fred.__name__)
+cli.add_command(indices._cli.entry_point, indices.__name__)
+cli.add_command(fundam._cli.entry_point, fundam.__name__)
+cli.add_command(sec._cli.entry_point, sec.__name__)
+cli.add_command(yfinance._cli.entry_point, yfinance.__name__)
 
 
 @cli.command(

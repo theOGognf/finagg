@@ -34,7 +34,7 @@ Explore the APIs directly.
 import finagg
 
 # Get Bureau of Economic Analysis (BEA) data.
-gdp = finagg.bea.api.get_gdp_by_industry.get(year=[2019, 2020, 2021])
+gdp = finagg.bea.api.gdp_by_industry.get(year=[2019, 2020, 2021])
 
 # Get Federal Reserve Economic Data (FRED).
 inflation_rate = finagg.fred.api.series.get("CPIAUCNS")
@@ -47,26 +47,26 @@ Use installed raw data for exploring the most popular features.
 
 ```python
 # Get the most popular FRED features all in one dataframe.
-economic_data = finagg.fred.features.economic.from_sql()
+economic_data = finagg.fred.feat.economic.from_raw()
 
 # Get quarterly report features from SEC data.
-quarterly_data = finagg.sec.features.quarterly.from_sql("AAPL")
+quarterly_data = finagg.sec.feat.quarterly.from_raw("AAPL")
 
 # Get an aggregation of quarterly and daily features for a particular ticker.
-fundamental_data = finagg.fundamentals.features.fundamentals.from_sql("AAPL")
+fundamental_data = finagg.fundam.feat.fundam.from_raw("AAPL")
 ```
 
 Use installed features for exploring richer feature aggregations.
 
 ```python
 # Get a ticker's industry's averaged quarterly report features.
-industry_quartery = finagg.sec.features.industry_quarterly.from_store(ticker="AAPL")
+industry_quartery = finagg.sec.feat.quarterly.industry.from_store(ticker="AAPL")
 
 # Get a ticker's industry-averaged quarterly report features.
-relative_quarterly = finagg.sec.features.relative_quarterly.from_store("AAPL")
+relative_quarterly = finagg.sec.feat.quarterly.relative.from_store("AAPL")
 
 # Get tickers sorted by an industry-averaged quarterly report feature.
-lowest_earners = finagg.sec.features.relative_quarterly.get_tickers_sorted_by("EarningsPerShare", year=2022, quarter=3)
+lowest_earners = finagg.sec.feat.quarterly.relative.get_tickers_sorted_by("EarningsPerShare", year=2022, quarter=3)
 ```
 
 ## Configuration

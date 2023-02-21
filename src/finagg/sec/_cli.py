@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from .. import backend, indices, utils
 from . import api as _api
-from . import features as _features
+from . import feat as _features
 from . import sql as _sql
 
 logging.basicConfig(
