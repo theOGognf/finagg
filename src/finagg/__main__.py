@@ -43,6 +43,7 @@ def install(
     processes: int = mp.cpu_count() - 1,
     verbose: bool = False,
 ) -> None:
+    ctx.invoke(indices._cli.install, all_=True)
     ctx.invoke(sec._cli.install, all_=True, processes=processes, verbose=verbose)
     ctx.invoke(yfinance._cli.install, all_=True, processes=processes, verbose=verbose)
 
