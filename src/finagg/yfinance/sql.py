@@ -41,12 +41,12 @@ def get_ticker_set(lb: int = 1) -> set[str]:
     """Get all unique tickers in the raw SQL tables."""
     with backend.engine.begin() as conn:
         tickers = set()
-        for ticker in conn.execute(
+        for row in conn.execute(
             sa.select(prices.c.ticker)
             .distinct()
             .group_by(prices.c.ticker)
             .having(sa.func.count(prices.c.date) >= lb)
         ):
-            (ticker,) = ticker
+            (ticker,) = row
             tickers.add(str(ticker))
     return tickers

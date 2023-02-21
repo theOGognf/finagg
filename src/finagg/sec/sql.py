@@ -163,13 +163,13 @@ def get_ticker_set(lb: int = 1) -> set[str]:
     """Get all unique tickers in the raw SQL tables."""
     with backend.engine.begin() as conn:
         tickers = set()
-        for cik in conn.execute(
+        for row in conn.execute(
             sa.select(tags.c.cik)
             .distinct()
             .group_by(tags.c.cik)
             .having(sa.func.count(tags.c.filed) >= lb)
         ):
-            (cik,) = cik
+            (cik,) = row
             ticker = api.get_ticker(str(cik))
             tickers.add(ticker)
     return tickers

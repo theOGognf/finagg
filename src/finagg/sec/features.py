@@ -434,7 +434,7 @@ class QuarterlyFeatures:
         """
         with backend.engine.begin() as conn:
             tickers = set()
-            for cik in conn.execute(
+            for row in conn.execute(
                 sa.select(sql.quarterly_features.c.cik)
                 .distinct()
                 .group_by(sql.quarterly_features.c.cik)
@@ -445,7 +445,7 @@ class QuarterlyFeatures:
                     ]
                 )
             ):
-                (cik,) = cik
+                (cik,) = row
                 ticker = api.get_ticker(str(cik))
                 tickers.add(ticker)
         return tickers
@@ -652,7 +652,7 @@ class RelativeQuarterlyFeatures:
         """
         with backend.engine.begin() as conn:
             tickers = set()
-            for cik in conn.execute(
+            for row in conn.execute(
                 sa.select(sql.relative_quarterly_features.c.cik)
                 .distinct()
                 .group_by(sql.relative_quarterly_features.c.cik)
@@ -664,7 +664,7 @@ class RelativeQuarterlyFeatures:
                     ]
                 )
             ):
-                (cik,) = cik
+                (cik,) = row
                 ticker = api.get_ticker(str(cik))
                 tickers.add(ticker)
         return tickers
@@ -711,7 +711,7 @@ class RelativeQuarterlyFeatures:
                 fp = f"Q{quarter}"
 
             tickers = []
-            for cik in conn.execute(
+            for row in conn.execute(
                 sa.select(sql.relative_quarterly_features.c.cik)
                 .distinct()
                 .where(
@@ -721,7 +721,7 @@ class RelativeQuarterlyFeatures:
                 )
                 .order_by(sql.relative_quarterly_features.c.value)
             ):
-                (cik,) = cik
+                (cik,) = row
                 ticker = api.get_ticker(str(cik))
                 tickers.append(ticker)
         if not ascending:

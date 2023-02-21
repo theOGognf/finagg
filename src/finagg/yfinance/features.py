@@ -185,7 +185,7 @@ class DailyFeatures:
         """
         with backend.engine.begin() as conn:
             tickers = set()
-            for ticker in conn.execute(
+            for row in conn.execute(
                 sa.select(sql.daily_features.c.ticker)
                 .distinct()
                 .group_by(sql.daily_features.c.ticker)
@@ -196,7 +196,7 @@ class DailyFeatures:
                     ]
                 )
             ):
-                (ticker,) = ticker
+                (ticker,) = row
                 tickers.add(str(ticker))
         return tickers
 
