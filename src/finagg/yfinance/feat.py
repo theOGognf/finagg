@@ -218,7 +218,7 @@ class DailyFeatures:
         with (
             tqdm(
                 total=len(tickers),
-                desc="Installing refined daily Yahoo! Finance data",
+                desc="Installing refined Yahoo! Finance daily data",
                 position=0,
                 leave=True,
             ) as pbar,

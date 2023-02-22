@@ -158,7 +158,7 @@ def install(
         total_errors = 0
         with tqdm(
             total=len(tickers),
-            desc="Installing raw quarterly SEC data",
+            desc="Installing raw SEC quarterly data",
             position=0,
             leave=True,
             disable=verbose,

@@ -118,7 +118,7 @@ def install(
         total_errors = 0
         with tqdm(
             total=len(tickers),
-            desc="Installing raw daily Yahoo! Finance data",
+            desc="Installing raw Yahoo! Finance daily data",
             position=0,
             leave=True,
             disable=verbose,

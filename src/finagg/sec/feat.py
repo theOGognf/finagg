@@ -407,7 +407,7 @@ class RelativeQuarterlyFeatures:
         with (
             tqdm(
                 total=len(tickers),
-                desc="Installing refined industry-relative quarterly SEC data",
+                desc="Installing refined SEC industry-relative quarterly data",
                 position=0,
                 leave=True,
             ) as pbar,
@@ -744,7 +744,7 @@ class QuarterlyFeatures:
         with (
             tqdm(
                 total=len(tickers),
-                desc="Installing refined quarterly SEC data",
+                desc="Installing refined SEC quarterly data",
                 position=0,
                 leave=True,
             ) as pbar,
