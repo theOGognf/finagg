@@ -1,13 +1,55 @@
 """FRED CLI and tools."""
 
 import logging
-from typing import Sequence
 
 import click
+from requests.exceptions import HTTPError
+from sqlalchemy.exc import IntegrityError
+from tqdm import tqdm
 
-from . import install as _install
-from . import scrape as _scrape
-from . import sql
+from .. import backend
+from . import api as _api
+from . import feat as _feat
+from . import sql as _sql
+
+logging.basicConfig(
+    format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+
+def _install_raw_data(series_id: str, /) -> tuple[bool, int]:
+    """Helper for getting raw SEC economic data.
+
+    Args:
+        series_id: Series to aggregate data for.
+
+    Returns:
+        Whether an error occurred and the total rows inserted for the series.
+
+    """
+    errored = False
+    total_rows = 0
+    with backend.engine.begin() as conn:
+        try:
+            df = _api.series.observations.get(
+                series_id,
+                realtime_start=0,
+                realtime_end=-1,
+                output_type=4,
+            )
+            rowcount = len(df.index)
+            if not rowcount:
+                logger.debug(f"Skipping {series_id} due to missing data")
+                return True, 0
+
+            conn.execute(_sql.series.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+            total_rows += rowcount
+        except (HTTPError, IntegrityError) as e:
+            logger.debug(f"Skipping {series_id} due to {e}")
+            return True, total_rows
+    logger.debug(f"{total_rows} total rows inserted for {series_id}")
+    return errored, total_rows
 
 
 @click.group(help="Federal Reserve Economic Data (FRED) tools.")
@@ -18,36 +60,88 @@ def entry_point() -> None:
 @entry_point.command(
     help=(
         "Set the FRED API key, drop and recreate tables, "
-        "and scrape the recommended datasets and features into the SQL database."
+        "and install the recommended tables into the SQL database."
     ),
 )
 @click.option(
-    "--install-features",
+    "--raw",
+    "-r",
     is_flag=True,
     default=False,
-    help="Whether to install features with the recommended datasets.",
+    help="Whether to install raw FRED series data.",
 )
 @click.option(
-    "-v",
-    "--verbose",
+    "--refined",
+    "-ref",
+    type=click.Choice(["economic"]),
+    multiple=True,
+    help=(
+        "Refined tables to install. This requires raw data to be "
+        "installed beforehand using the `--raw` flag or for the "
+        "`--raw` flag to be set when this option is provided."
+    ),
+)
+@click.option(
+    "--all",
+    "-a",
+    "all_",
     is_flag=True,
     default=False,
-    help="Log installation errors for each series.",
+    help="Whether to install all defined tables (including all refined tables).",
 )
-def install(install_features: bool = False, verbose: bool = False) -> None:
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Sets the log level to DEBUG to show installation errors for each series.",
+)
+def install(
+    raw: bool = False,
+    refined: list[str] = [],
+    all_: bool = False,
+    verbose: bool = False,
+) -> int:
     if verbose:
-        _install.logger.setLevel(logging.DEBUG)
-    _install.run(install_features=install_features)
+        logger.setLevel(logging.DEBUG)
 
+    total_rows = 0
+    if all_ or raw:
+        _sql.series.drop(backend.engine, checkfirst=True)
+        _sql.series.create(backend.engine)
 
-@entry_point.command(help="List all economic data series within the SQL database.")
-def ls() -> None:
-    print(sorted(sql.get_id_set()))
+        total_errors = 0
+        with tqdm(
+            total=len(_feat.economic.series_ids),
+            desc="Installing raw FRED economic data",
+            position=0,
+            leave=True,
+            disable=verbose,
+        ) as pbar:
+            for series_id in _feat.economic.series_ids:
+                errored, rowcount = _install_raw_data(series_id)
+                total_errors += errored
+                total_rows += rowcount
+                pbar.update()
 
+        logger.info(
+            f"{pbar.total - total_errors}/{pbar.total} FRED series datasets "
+            "sucessfully inserted"
+        )
 
-@entry_point.command(
-    help="Scrape a specified economic data series into the SQL database.",
-)
-@click.option("--series", required=True, multiple=True, help="Series IDs to scrape.")
-def scrape(series: Sequence[str]) -> None:
-    _scrape.run(series)
+    all_refined = set()
+    if all_:
+        all_refined = {"economic"}
+    elif refined:
+        all_refined = set(refined)
+
+    if "economic" in all_refined:
+        total_rows += _feat.economic.install()
+
+    if all_ or all_refined or raw:
+        logger.info(f"{total_rows} total rows inserted for {__package__}")
+    else:
+        logger.info(
+            "Skipping installation because no installation options are provided"
+        )
+    return total_rows

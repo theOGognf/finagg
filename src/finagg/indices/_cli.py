@@ -66,34 +66,43 @@ def install(
     total_rows = 0
     with backend.engine.begin() as conn:
         if all_ or djia:
+            _sql.djia.drop(conn, checkfirst=True)
+            _sql.djia.create(conn)
+
             df = _api.djia.get()
             rowcount = len(df.index)
             conn.execute(
                 _sql.djia.insert(), df.to_dict(orient="records")  # type: ignore[arg-type]
             )
-            logger.info(f"Installed {rowcount} rows into the DJIA table")
+            logger.info(f"Inserted {rowcount} rows into the DJIA table")
             total_rows += rowcount
 
         if all_ or sp500:
+            _sql.sp500.drop(conn, checkfirst=True)
+            _sql.sp500.create(conn)
+
             df = _api.sp500.get()
             rowcount = len(df.index)
             conn.execute(
                 _sql.sp500.insert(), df.to_dict(orient="records")  # type: ignore[arg-type]
             )
-            logger.info(f"Installed {rowcount} rows into the S&P 500 table")
+            logger.info(f"Inserted {rowcount} rows into the S&P 500 table")
             total_rows += rowcount
 
         if all_ or nasdaq100:
+            _sql.nasdaq100.drop(conn, checkfirst=True)
+            _sql.nasdaq100.create(conn)
+
             df = _api.nasdaq100.get()
             rowcount = len(df.index)
             conn.execute(
                 _sql.nasdaq100.insert(), df.to_dict(orient="records")  # type: ignore[arg-type]
             )
-            logger.info(f"Installed {rowcount} rows into the Nasdaq 100 table")
+            logger.info(f"Inserted {rowcount} rows into the Nasdaq 100 table")
             total_rows += rowcount
 
     if all_ or djia or sp500 or nasdaq100:
-        logger.info(f"{total_rows} total rows written")
+        logger.info(f"{total_rows} total rows inserted for {__package__}")
     else:
         logger.info(
             "Skipping installation because no installation options are provided"

@@ -1,10 +1,13 @@
 """Features from FRED sources."""
 
+from functools import cache
+
 import pandas as pd
+import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 
-from .. import utils
-from . import api, sql, store
+from .. import backend, utils
+from . import api, sql
 
 
 class EconomicFeatures:
@@ -33,15 +36,15 @@ class EconomicFeatures:
         "CPIAUCNS_pct_change",
         "CSUSHPINSA_pct_change",
         "FEDFUNDS",
-        "GDP",
-        "GDPC1",
+        "GDP_pct_change",
+        "GDPC1_pct_change",
         "GS10",
-        "M2",
+        "M2_pct_change",
         "MICH",
         "PSAVERT",
-        "UMCSENT",
+        "UMCSENT_pct_change",
         "UNRATE",
-        "WALCL",
+        "WALCL_pct_change",
     ]
 
     #: Columns that're replaced with their respective percent changes.
@@ -67,18 +70,8 @@ class EconomicFeatures:
             .sort_index()
         )
         df = utils.quantile_clip(df)
-
-        pct_change_columns = [
-            "CIVPART",
-            "CPIAUCNS",
-            "CSUSHPINSA",
-            "GDP",
-            "GDPC1",
-            "M2",
-            "UMCSENT",
-            "WALCL",
-        ]
-        df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)
+        pct_change_columns = [f"{col}_pct_change" for col in cls.pct_change_columns]
+        df[pct_change_columns] = df[cls.pct_change_columns].apply(utils.safe_pct_change)
         df.columns = df.columns.rename(None)
         df = df[cls.columns]
         return df.dropna()
@@ -122,9 +115,9 @@ class EconomicFeatures:
     def from_raw(
         cls,
         *,
-        start: None | str = None,
-        end: None | str = None,
-        engine: Engine = sql.engine,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
+        engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get economic features from local FRED SQL tables.
 
@@ -144,15 +137,16 @@ class EconomicFeatures:
             as a separate column. Sorted by date.
 
         """
-        table = sql.series
         with engine.begin() as conn:
-            stmt = table.c.date >= "0000-00-00"
-            stmt &= table.c.series_id.in_(cls.series_ids)
-            if start:
-                stmt &= table.c.date >= start
-            if end:
-                stmt &= table.c.date <= end
-            df = pd.DataFrame(conn.execute(table.select().where(stmt)))
+            df = pd.DataFrame(
+                conn.execute(
+                    sql.series.select().where(
+                        sql.series.c.series_id.in_(cls.series_ids),
+                        sql.series.c.date >= start,
+                        sql.series.c.date <= end,
+                    )
+                )
+            )
         return cls._normalize(df)
 
     @classmethod
@@ -160,9 +154,9 @@ class EconomicFeatures:
         cls,
         /,
         *,
-        start: None | str = None,
-        end: None | str = None,
-        engine: Engine = store.engine,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
+        engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -182,18 +176,69 @@ class EconomicFeatures:
             as a separate column. Sorted by date.
 
         """
-        table = store.economic_features
         with engine.begin() as conn:
-            stmt = table.c.date >= "0000-00-00"
-            if start:
-                stmt &= table.c.date >= start
-            if end:
-                stmt &= table.c.date <= end
-            df = pd.DataFrame(conn.execute(table.select().where(stmt)))
+            df = pd.DataFrame(
+                conn.execute(
+                    sql.economic.select().where(
+                        sql.economic.c.date >= start, sql.economic.c.date <= end
+                    )
+                )
+            )
         df = df.pivot(index="date", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
         df = df[cls.columns]
         return df
+
+    #: The candidate set is just the raw SQL series set.
+    get_candidate_id_set = sql.get_id_set
+
+    @classmethod
+    @cache
+    def get_id_set(
+        cls,
+        lb: int = 1,
+    ) -> set[str]:
+        """Get all unique series IDs in the feature's SQL table.
+
+        Args:
+            lb: Minimum number of rows required to include a series ID in the
+                returned set.
+
+        Returns:
+            All unique series IDs that contain all the columns for creating
+            economic features that also have at least `lb` rows.
+
+        """
+        with backend.engine.begin() as conn:
+            tickers = set()
+            for row in conn.execute(
+                sa.select(sql.economic.c.series_id)
+                .distinct()
+                .group_by(sql.economic.c.series_id)
+                .having(sa.func.count(sql.economic.c.date) >= lb)
+            ):
+                (ticker,) = row
+                tickers.add(str(ticker))
+        return tickers
+
+    @classmethod
+    def install(cls) -> int:
+        """Drop the feature's table, create a new one, and insert data
+        transformed from another raw SQL table.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
+        sql.economic.drop(backend.engine, checkfirst=True)
+        sql.economic.create(backend.engine)
+
+        df = cls.from_raw()
+        total_rows = len(df.index)
+        if total_rows:
+            cls.to_refined(df)
+        total_rows += total_rows
+        return total_rows
 
     @classmethod
     def to_refined(
@@ -201,7 +246,7 @@ class EconomicFeatures:
         df: pd.DataFrame,
         /,
         *,
-        engine: Engine = store.engine,
+        engine: Engine = backend.engine,
     ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
@@ -220,9 +265,8 @@ class EconomicFeatures:
         """
         df = df.reset_index(names="date")
         df = df.melt("date", var_name="name", value_name="value")
-        table = store.economic_features
         with engine.begin() as conn:
-            conn.execute(table.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+            conn.execute(sql.economic.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 

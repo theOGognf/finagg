@@ -13,7 +13,7 @@ from .. import backend, utils
 from . import api, sql
 
 
-def _install_quarterly_features(ticker: str, /) -> tuple[str, pd.DataFrame]:
+def _install_refined_quarterly(ticker: str, /) -> tuple[str, pd.DataFrame]:
     """Helper for getting quarterly SEC data in a multiprocessing pool.
 
     Args:
@@ -27,7 +27,7 @@ def _install_quarterly_features(ticker: str, /) -> tuple[str, pd.DataFrame]:
     return ticker, df
 
 
-def _install_relative_quarterly_features(ticker: str, /) -> tuple[str, pd.DataFrame]:
+def _install_refined_relative_quarterly(ticker: str, /) -> tuple[str, pd.DataFrame]:
     """Helper for getting industry-relative quarterly SEC data in a
     multiprocessing pool.
 
@@ -233,6 +233,8 @@ class RelativeQuarterlyFeatures:
         ).reset_index(["filed"])
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
         company_df["filed"] = filed
+        pad_fill_columns = [col for col in cls.columns if col.endswith("pct_change")]
+        company_df[pad_fill_columns] = company_df[pad_fill_columns].fillna(method="pad")
         return (
             company_df.fillna(method="ffill")
             .dropna()
@@ -405,7 +407,7 @@ class RelativeQuarterlyFeatures:
         with (
             tqdm(
                 total=len(tickers),
-                desc="Installing industry-relative quarterly SEC features",
+                desc="Installing refined industry-relative quarterly SEC data",
                 position=0,
                 leave=True,
             ) as pbar,
@@ -415,7 +417,7 @@ class RelativeQuarterlyFeatures:
             ) as pool,
         ):
             for ticker, df in pool.imap_unordered(
-                _install_relative_quarterly_features, tickers
+                _install_refined_relative_quarterly, tickers
             ):
                 rowcount = len(df.index)
                 if rowcount:
@@ -742,7 +744,7 @@ class QuarterlyFeatures:
         with (
             tqdm(
                 total=len(tickers),
-                desc="Installing quarterly SEC features",
+                desc="Installing refined quarterly SEC data",
                 position=0,
                 leave=True,
             ) as pbar,
@@ -751,7 +753,7 @@ class QuarterlyFeatures:
                 initializer=partial(backend.engine.dispose, close=False),
             ) as pool,
         ):
-            for ticker, df in pool.imap_unordered(_install_quarterly_features, tickers):
+            for ticker, df in pool.imap_unordered(_install_refined_quarterly, tickers):
                 rowcount = len(df.index)
                 if rowcount:
                     cls.to_refined(ticker, df)

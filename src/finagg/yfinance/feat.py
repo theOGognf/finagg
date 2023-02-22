@@ -12,7 +12,7 @@ from .. import backend, utils
 from . import api, sql
 
 
-def _install_daily_features(ticker: str, /) -> tuple[str, pd.DataFrame]:
+def _install_refined_daily(ticker: str, /) -> tuple[str, pd.DataFrame]:
     """Helper for getting daily Yahoo! Finance data in a
     multiprocessing pool.
 
@@ -218,7 +218,7 @@ class DailyFeatures:
         with (
             tqdm(
                 total=len(tickers),
-                desc="Installing daily Yahoo! Finance features",
+                desc="Installing refined daily Yahoo! Finance data",
                 position=0,
                 leave=True,
             ) as pbar,
@@ -227,7 +227,7 @@ class DailyFeatures:
                 initializer=partial(backend.engine.dispose, close=False),
             ) as pool,
         ):
-            for ticker, df in pool.imap_unordered(_install_daily_features, tickers):
+            for ticker, df in pool.imap_unordered(_install_refined_daily, tickers):
                 rowcount = len(df.index)
                 if rowcount:
                     cls.to_refined(ticker, df)

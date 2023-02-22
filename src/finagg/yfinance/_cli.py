@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from .. import backend, indices
 from . import api as _api
-from . import feat as _features
+from . import feat as _feat
 from . import sql as _sql
 
 logging.basicConfig(
@@ -26,7 +26,7 @@ def _install_raw_data(ticker: str, /) -> tuple[bool, int]:
         ticker: Ticker to aggregate data for.
 
     Returns:
-        The ticker and the raw data dataframe.
+        Whether an error occurred and the total rows inserted for the ticker.
 
     """
     errored = False
@@ -44,7 +44,7 @@ def _install_raw_data(ticker: str, /) -> tuple[bool, int]:
         except (IntegrityError, pd.errors.EmptyDataError) as e:
             logger.debug(f"Skipping {ticker} due to {e}")
             return True, total_rows
-    logger.debug(f"{total_rows} total rows written for {ticker}")
+    logger.debug(f"{total_rows} total rows inserted for {ticker}")
     return errored, total_rows
 
 
@@ -83,14 +83,14 @@ def entry_point() -> None:
     "all_",
     is_flag=True,
     default=False,
-    help="Whether to install all defined tables (including all feature tables).",
+    help="Whether to install all defined tables (including all refined tables).",
 )
 @click.option(
     "--processes",
     "-n",
     type=int,
     default=mp.cpu_count() - 1,
-    help=("Number of background processes to use for installing feature data. "),
+    help=("Number of background processes to use for installing refined data. "),
 )
 @click.option(
     "--verbose",
@@ -131,7 +131,7 @@ def install(
 
         logger.info(
             f"{pbar.total - total_errors}/{pbar.total} company datasets "
-            "sucessfully written"
+            "sucessfully inserted"
         )
 
     all_refined = set()
@@ -141,10 +141,10 @@ def install(
         all_refined = set(refined)
 
     if "daily" in all_refined:
-        total_rows += _features.daily.install(processes=processes)
+        total_rows += _feat.daily.install(processes=processes)
 
     if all_ or all_refined or raw:
-        logger.info(f"{total_rows} total rows written")
+        logger.info(f"{total_rows} total rows inserted for {__package__}")
     else:
         logger.info(
             "Skipping installation because no installation options are provided"

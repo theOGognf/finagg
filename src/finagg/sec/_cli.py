@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from .. import backend, indices, utils
 from . import api as _api
-from . import feat as _features
+from . import feat as _feat
 from . import sql as _sql
 
 logging.basicConfig(
@@ -30,7 +30,7 @@ def _install_raw_data(ticker: str, /) -> tuple[bool, int]:
         ticker: Ticker to aggregate data for.
 
     Returns:
-        Whether an error occurred and
+        Whether an error occurred and the total rows inserted for the ticker.
 
     """
     errored = False
@@ -44,7 +44,7 @@ def _install_raw_data(ticker: str, /) -> tuple[bool, int]:
             if not rowcount:
                 logger.debug(f"Skipping {ticker} due to missing metadata")
                 return True, 0
-            for concept in _features.quarterly.concepts:
+            for concept in _feat.quarterly.concepts:
                 tag = concept["tag"]
                 taxonomy = concept["taxonomy"]
                 units = concept["units"]
@@ -54,7 +54,7 @@ def _install_raw_data(ticker: str, /) -> tuple[bool, int]:
                     taxonomy=taxonomy,
                     units=units,
                 )
-                df = _features.get_unique_filings(df, form="10-Q", units=units)
+                df = _feat.get_unique_filings(df, form="10-Q", units=units)
                 rowcount = len(df.index)
                 if not rowcount:
                     logger.debug(
@@ -67,7 +67,7 @@ def _install_raw_data(ticker: str, /) -> tuple[bool, int]:
         except (HTTPError, IntegrityError, KeyError) as e:
             logger.debug(f"Skipping {ticker} due to {e}")
             return True, total_rows
-    logger.debug(f"{total_rows} total rows written for {ticker}")
+    logger.debug(f"{total_rows} total rows inserted for {ticker}")
     return errored, total_rows
 
 
@@ -106,7 +106,7 @@ def entry_point() -> None:
     "all_",
     is_flag=True,
     default=False,
-    help="Whether to install all defined tables (including all feature tables).",
+    help="Whether to install all defined tables (including all refined tables).",
 )
 @click.option(
     "--processes",
@@ -114,7 +114,7 @@ def entry_point() -> None:
     type=int,
     default=mp.cpu_count() - 1,
     help=(
-        "Number of background processes to use for installing features. "
+        "Number of background processes to use for installing refined data. "
         "Installation of raw SEC data is limited to one process because "
         "the SEC rate-limits its API."
     ),
@@ -138,12 +138,12 @@ def install(
 
     if "SEC_API_USER_AGENT" not in os.environ:
         user_agent = input(
-            "Enter your SEC API user agent below.\n\n" "SEC API user agent: "
+            "Enter your SEC API user agent below.\n\nSEC API user agent: "
         ).strip()
         if not user_agent:
             raise RuntimeError("An empty SEC API user agent was given.")
         p = utils.setenv("SEC_API_USER_AGENT", user_agent)
-        logger.info(f"SEC API user agent written to {p}")
+        logger.info(f"SEC API user agent inserted to {p}")
     else:
         logger.info("SEC API user agent found in the environment")
 
@@ -171,7 +171,7 @@ def install(
 
         logger.info(
             f"{pbar.total - total_errors}/{pbar.total} company datasets "
-            "sucessfully written"
+            "sucessfully inserted"
         )
 
     all_refined = set()
@@ -181,13 +181,13 @@ def install(
         all_refined = set(refined)
 
     if "quarterly" in all_refined:
-        total_rows += _features.quarterly.install(processes=processes)
+        total_rows += _feat.quarterly.install(processes=processes)
 
     if "quarterly.relative" in all_refined:
-        total_rows += _features.quarterly.relative.install(processes=processes)
+        total_rows += _feat.quarterly.relative.install(processes=processes)
 
     if all_ or all_refined or raw:
-        logger.info(f"{total_rows} total rows written")
+        logger.info(f"{total_rows} total rows inserted for {__package__}")
     else:
         logger.info(
             "Skipping installation because no installation options are provided"
