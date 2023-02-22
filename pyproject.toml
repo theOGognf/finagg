@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=61.0",
+    "setuptools>=64.0",
     "setuptools_scm[toml]>=5"
 ]
 build-backend = "setuptools.build_meta"
@@ -31,8 +31,6 @@ dependencies = [
     "python-dotenv",
     "requests",
     "requests-cache",
-    "setuptools>=61.0",
-    "setuptools_scm>=5",
     "SQLAlchemy",
     "tqdm",
     "types-requests",
@@ -41,7 +39,7 @@ dependencies = [
 ]
 dynamic = ["version"]
 license = {file = "LICENSE"}
-readme = "README.md"
+readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.10"
 
 [project.entry-points."finagg"]
