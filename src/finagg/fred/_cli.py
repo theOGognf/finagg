@@ -42,7 +42,7 @@ def install(install_features: bool = False, verbose: bool = False) -> None:
 
 @entry_point.command(help="List all economic data series within the SQL database.")
 def ls() -> None:
-    print(sorted(sql.get_series_set()))
+    print(sorted(sql.get_id_set()))
 
 
 @entry_point.command(

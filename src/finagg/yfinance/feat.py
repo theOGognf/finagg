@@ -31,17 +31,17 @@ class DailyFeatures:
     """Methods for gathering daily stock data from Yahoo! finance."""
 
     #: Columns within this feature set.
-    columns = (
+    columns = [
         "price",
         "open_pct_change",
         "high_pct_change",
         "low_pct_change",
         "close_pct_change",
         "volume_pct_change",
-    )
+    ]
 
     #: Columns that're replaced with their respective percent changes.
-    pct_change_columns = ("open", "high", "low", "close", "volume")
+    pct_change_columns = ["open", "high", "low", "close", "volume"]
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
@@ -57,11 +57,9 @@ class DailyFeatures:
         df["price"] = df["close"]
         df = utils.quantile_clip(df)
         pct_change_columns = [f"{col}_pct_change" for col in cls.pct_change_columns]
-        df[pct_change_columns] = df[list(cls.pct_change_columns)].apply(
-            utils.safe_pct_change
-        )
+        df[pct_change_columns] = df[cls.pct_change_columns].apply(utils.safe_pct_change)
         df.columns = df.columns.rename(None)
-        df = df[list(cls.columns)]
+        df = df[cls.columns]
         return df.dropna()
 
     @classmethod
@@ -160,7 +158,7 @@ class DailyFeatures:
             )
         df = df.pivot(index="date", columns="name", values="value").sort_index()
         df.columns = df.columns.rename(None)
-        df = df[list(cls.columns)]
+        df = df[cls.columns]
         return df
 
     #: The candidate set is just the raw SQL ticker set.

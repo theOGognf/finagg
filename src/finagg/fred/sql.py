@@ -3,62 +3,59 @@
 
 from functools import cache
 
-from sqlalchemy import Column, Float, MetaData, String, Table, create_engine
-from sqlalchemy.engine import Engine
+import sqlalchemy as sa
 
 from .. import backend
 
+metadata = sa.MetaData()
 
-def _define_db(
-    url: str = backend.database_url,
-) -> tuple[tuple[Engine, MetaData], tuple[Table, ...]]:
-    """Utility method for defining the SQLAlchemy elements.
+series = sa.Table(
+    "fred.raw.series",
+    metadata,
+    sa.Column("series_id", sa.String, primary_key=True, doc="Economic series ID."),
+    sa.Column(
+        "realtime_start",
+        sa.String,
+        primary_key=True,
+        doc="Start date for values according to their publication date.",
+    ),
+    sa.Column(
+        "realtime_end",
+        sa.String,
+        primary_key=True,
+        doc="End date for values according to their publication date.",
+    ),
+    sa.Column(
+        "date", sa.String, primary_key=True, doc="Series value publication date."
+    ),
+    sa.Column("value", sa.Float, doc="Economic series value for a particular date."),
+)
 
-    Used for the main SQL tables and for creating test
-    databases.
-
-    Args:
-        url: SQLAlchemy database URL.
-        path: Path to database file.
-
-    Returns:
-        The engine, metadata, and tables associated with
-        the database definition.
-
-    """
-    engine = backend.engine if url == backend.engine.url else create_engine(url)
-    metadata = MetaData()
-    series = Table(
-        "series",
-        metadata,
-        Column("series_id", String, primary_key=True, doc="Economic series ID."),
-        Column(
-            "realtime_start",
-            String,
-            primary_key=True,
-            doc="Start date for values according to their publication date.",
-        ),
-        Column(
-            "realtime_end",
-            String,
-            primary_key=True,
-            doc="End date for values according to their publication date.",
-        ),
-        Column("date", String, primary_key=True, doc="Series value publication date."),
-        Column("value", Float, doc="Economic series value for a particular date."),
-    )
-    return (engine, metadata), (series,)
-
-
-(engine, metadata), (series,) = _define_db()
+economic = sa.Table(
+    "fred.refined.economic",
+    metadata,
+    sa.Column(
+        "date",
+        sa.String,
+        primary_key=True,
+        doc="Economic data series release date.",
+    ),
+    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
+    sa.Column("value", sa.Float, doc="Feature value."),
+)
 
 
 @cache
-def get_series_set() -> set[str]:
-    """Get all unique series in the raw SQL tables."""
-    with engine.begin() as conn:
+def get_id_set(lb: int = 1) -> set[str]:
+    """Get all unique series IDs in the raw SQL tables."""
+    with backend.engine.begin() as conn:
         series_ids = set()
-        for series_id in conn.execute(series.select().distinct(series.c.series_id)):
-            (series_id,) = series_id
+        for row in conn.execute(
+            sa.select(series.c.series_id)
+            .distinct()
+            .group_by(series.c.series_id)
+            .having(sa.func.count(series.c.date) >= lb)
+        ):
+            (series_id,) = row
             series_ids.add(str(series_id))
     return series_ids

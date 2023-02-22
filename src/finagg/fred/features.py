@@ -11,7 +11,7 @@ class EconomicFeatures:
     """Methods for gathering economic data series from FRED sources."""
 
     #: Economic series IDs (typical economic indicators).
-    series_ids = (
+    series_ids = [
         "CIVPART",  # Labor force participation rate
         "CPIAUCNS",  # Consumer price index
         "CSUSHPINSA",  # S&P/Case-Shiller national home price index
@@ -25,10 +25,36 @@ class EconomicFeatures:
         "UMCSENT",  # University of Michigan: consumer sentiment
         "UNRATE",  # Unemployment rate
         "WALCL",  # US assets, total assets (less eliminations from consolidation)
-    )
+    ]
 
     #: Columns within this feature set.
-    columns = series_ids
+    columns = [
+        "CIVPART_pct_change",
+        "CPIAUCNS_pct_change",
+        "CSUSHPINSA_pct_change",
+        "FEDFUNDS",
+        "GDP",
+        "GDPC1",
+        "GS10",
+        "M2",
+        "MICH",
+        "PSAVERT",
+        "UMCSENT",
+        "UNRATE",
+        "WALCL",
+    ]
+
+    #: Columns that're replaced with their respective percent changes.
+    pct_change_columns = [
+        "CIVPART",
+        "CPIAUCNS",
+        "CSUSHPINSA",
+        "GDP",
+        "GDPC1",
+        "M2",
+        "UMCSENT",
+        "WALCL",
+    ]
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
@@ -54,7 +80,7 @@ class EconomicFeatures:
         ]
         df[pct_change_columns] = df[pct_change_columns].apply(utils.safe_pct_change)
         df.columns = df.columns.rename(None)
-        df = df[list(cls.columns)]
+        df = df[cls.columns]
         return df.dropna()
 
     @classmethod
@@ -166,7 +192,7 @@ class EconomicFeatures:
             df = pd.DataFrame(conn.execute(table.select().where(stmt)))
         df = df.pivot(index="date", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
-        df = df[list(cls.columns)]
+        df = df[cls.columns]
         return df
 
     @classmethod

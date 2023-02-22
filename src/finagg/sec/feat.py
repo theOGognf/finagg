@@ -179,7 +179,7 @@ class RelativeQuarterlyFeatures:
     """
 
     #: Columns within this feature set.
-    columns = (
+    columns = [
         "AssetsCurrent_pct_change",
         "DebtEquityRatio",
         "EarningsPerShare",
@@ -192,7 +192,7 @@ class RelativeQuarterlyFeatures:
         "ReturnOnEquity",
         "StockholdersEquity_pct_change",
         "WorkingCapitalRatio",
-    )
+    ]
 
     @classmethod
     def from_other_store(
@@ -283,7 +283,7 @@ class RelativeQuarterlyFeatures:
             index=["fy", "fp", "filed"], columns="name", values="value"
         ).sort_index()
         df.columns = df.columns.rename(None)
-        df = df[list(cls.columns)]
+        df = df[cls.columns]
         return df
 
     @classmethod
@@ -457,23 +457,10 @@ class QuarterlyFeatures:
     """Quarterly features from SEC EDGAR data."""
 
     #: Columns within this feature set.
-    columns = (
-        "AssetsCurrent_pct_change",
-        "DebtEquityRatio",
-        "EarningsPerShare",
-        "InventoryNet_pct_change",
-        "LiabilitiesCurrent_pct_change",
-        "NetIncomeLoss_pct_change",
-        "OperatingIncomeLoss_pct_change",
-        "PriceBookRatio",
-        "QuickRatio",
-        "ReturnOnEquity",
-        "StockholdersEquity_pct_change",
-        "WorkingCapitalRatio",
-    )
+    columns = RelativeQuarterlyFeatures.columns
 
     #: XBRL disclosure concepts to pull for a company.
-    concepts: tuple[api.Concept, ...] = (
+    concepts: list[api.Concept] = [
         {"tag": "AssetsCurrent", "taxonomy": "us-gaap", "units": "USD"},
         {
             "tag": "EarningsPerShareBasic",
@@ -485,20 +472,20 @@ class QuarterlyFeatures:
         {"tag": "NetIncomeLoss", "taxonomy": "us-gaap", "units": "USD"},
         {"tag": "OperatingIncomeLoss", "taxonomy": "us-gaap", "units": "USD"},
         {"tag": "StockholdersEquity", "taxonomy": "us-gaap", "units": "USD"},
-    )
+    ]
 
     #: Quarterly features aggregated by industry.
     industry = IndustryQuarterlyFeatures()
 
     #: Columns that're replaced with their respective percent changes.
-    pct_change_columns = (
+    pct_change_columns = [
         "AssetsCurrent",
         "InventoryNet",
         "LiabilitiesCurrent",
         "NetIncomeLoss",
         "OperatingIncomeLoss",
         "StockholdersEquity",
-    )
+    ]
 
     #: A company's quarterly features normalized by its industry.
     relative = RelativeQuarterlyFeatures()
@@ -530,11 +517,9 @@ class QuarterlyFeatures:
         df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df = utils.quantile_clip(df)
         pct_change_columns = [f"{col}_pct_change" for col in cls.pct_change_columns]
-        df[pct_change_columns] = df[list(cls.pct_change_columns)].apply(
-            utils.safe_pct_change
-        )
+        df[pct_change_columns] = df[cls.pct_change_columns].apply(utils.safe_pct_change)
         df.columns = df.columns.rename(None)
-        df = df[list(cls.columns)]
+        df = df[cls.columns]
         return df.dropna()
 
     @classmethod
@@ -657,7 +642,7 @@ class QuarterlyFeatures:
             values="value",
         ).sort_index()
         df.columns = df.columns.rename(None)
-        df = df[list(cls.columns)]
+        df = df[cls.columns]
         return df
 
     @classmethod
