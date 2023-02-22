@@ -151,10 +151,10 @@ class DailyFeatures:
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
-                    sql.daily_features.select().where(
-                        sql.daily_features.c.ticker == ticker,
-                        sql.daily_features.c.date >= start,
-                        sql.daily_features.c.date <= end,
+                    sql.daily.select().where(
+                        sql.daily.c.ticker == ticker,
+                        sql.daily.c.date >= start,
+                        sql.daily.c.date <= end,
                     )
                 )
             )
@@ -186,12 +186,12 @@ class DailyFeatures:
         with backend.engine.begin() as conn:
             tickers = set()
             for row in conn.execute(
-                sa.select(sql.daily_features.c.ticker)
+                sa.select(sql.daily.c.ticker)
                 .distinct()
-                .group_by(sql.daily_features.c.ticker)
+                .group_by(sql.daily.c.ticker)
                 .having(
                     *[
-                        sa.func.count(sql.daily_features.c.name == col) >= lb
+                        sa.func.count(sql.daily.c.name == col) >= lb
                         for col in cls.columns
                     ]
                 )
@@ -212,8 +212,8 @@ class DailyFeatures:
             Number of rows written to the feature's SQL table.
 
         """
-        sql.daily_features.drop(backend.engine, checkfirst=True)
-        sql.daily_features.create(backend.engine)
+        sql.daily.drop(backend.engine, checkfirst=True)
+        sql.daily.create(backend.engine)
 
         tickers = cls.get_candidate_id_set()
         total_rows = 0
@@ -266,7 +266,7 @@ class DailyFeatures:
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:
-            conn.execute(sql.daily_features.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+            conn.execute(sql.daily.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 

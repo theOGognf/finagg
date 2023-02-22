@@ -1,12 +1,13 @@
 [build-system]
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
+requires = [
+    "setuptools>=61.0",
+    "setuptools_scm[toml]>=5"
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "finagg"
 description = "Data aggregation with popular and free financial APIs."
-readme = "README.md"
-requires-python = ">=3.10"
 authors = [{name = "Andrew B."}]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -30,7 +31,7 @@ dependencies = [
     "python-dotenv",
     "requests",
     "requests-cache",
-    "setuptools>=46.1.0",
+    "setuptools>=61.0",
     "setuptools_scm>=5",
     "SQLAlchemy",
     "tqdm",
@@ -38,8 +39,18 @@ dependencies = [
     "typing-extensions",
     "yfinance"
 ]
+dynamic = ["version"]
+license = {file = "LICENSE"}
+readme = "README.md"
+requires-python = ">=3.10"
 
-[project.optional.dependencies]
+[project.entry-points."finagg"]
+finagg = "finagg.__main__:main"
+
+[project.urls]
+repository = "https://github.com/theOGognf/finagg"
+
+[project.optional-dependencies]
 dev = [
     "build[virtualenv]",
     "mypy",
@@ -53,5 +64,81 @@ dev = [
     "virtualenv"
 ]
 
+[tool.isort]
+profile = "black"
+src_paths = [
+    "src",
+    "tests"
+]
+
+[tool.mypy]
+ignore_missing_imports = true
+implicit_reexport = true
+no_implicit_optional = true
+show_error_codes = true
+strict = true
+
 [tool.setuptools_scm]
 version_scheme = "no-guess-dev"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py310
+isolated_build = True
+
+[testenv:{test, typecheck}]
+description =
+    test: Run unit tests.
+    typecheck: Run static type analysis.
+changedir = {toxinidir}
+setenv =
+    TOXINIDIR = {toxinidir}
+passenv =
+    PIP_CACHE
+    PIP_TRUSTED_HOST
+extras =
+    dev
+commands =
+    test: pytest {posargs}
+    typecheck: mypy {posargs:src}
+
+[testenv:lint]
+description = Lint the package.
+skip_install = True
+deps = pre-commit
+passenv =
+    TERM
+commands =
+    pre-commit run --all-files
+
+[testenv:{clean,build}]
+description =
+    clean: Remove old distribution files and temporary build artifacts (./build and ./dist)
+    build: Build the package in isolation according to PEP517, see https://github.com/pypa/build
+# https://setuptools.pypa.io/en/latest/build_meta.html#how-to-use-it
+skip_install = True
+changedir = {toxinidir}
+deps =
+    build: build[virtualenv]
+commands =
+    clean: python -c 'import shutil; [shutil.rmtree(p, True) for p in ("build", "dist", "docs/_build")]'
+    clean: python -c 'import pathlib, shutil; [shutil.rmtree(p, True) for p in pathlib.Path("src").glob("*.egg-info")]'
+    build: python -m build {posargs}
+
+[testenv:publish]
+description =
+    Publish the package you have been developing to a package index server.
+    By default, it uses testpypi. If you really want to publish your package
+    to be publicly accessible in PyPI, use the `-- --repository pypi` option.
+skip_install = True
+changedir = {toxinidir}
+passenv =
+    TWINE_USERNAME
+    TWINE_PASSWORD
+    TWINE_REPOSITORY
+deps = twine
+commands =
+    python -m twine check dist/*
+    python -m twine upload {posargs:--repository {env:TWINE_REPOSITORY:testpypi}} dist/*
+"""

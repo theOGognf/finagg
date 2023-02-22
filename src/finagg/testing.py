@@ -8,7 +8,11 @@ from sqlalchemy.engine import Engine
 
 
 def sqlite_engine(
-    path: str, /, *, metadata: None | sa.MetaData = None
+    path: str,
+    /,
+    *,
+    metadata: None | sa.MetaData = None,
+    table: None | sa.Table = None,
 ) -> Generator[Engine, None, None]:
     """Yield a test database engine that's cleaned-up after
     usage.
@@ -18,6 +22,8 @@ def sqlite_engine(
         metadata: Optional metadata for creating and dropping
             tables before and after yielding the engine,
             respectively.
+        table: Optional table for creating and dropping before
+            and after yielding the engine, respectively.
 
     Returns:
         A database engine that's subsequently disposed of
@@ -37,14 +43,21 @@ def sqlite_engine(
         ...
 
     """
+    if metadata and table:
+        raise ValueError("`metadata` and `table` are mutally exclusive")
+
     path_obj = pathlib.Path(path)
     path_obj = path_obj.with_stem(f"{path_obj.stem}_test")
     url = f"sqlite:///{path_obj}"
     engine = sa.create_engine(url)
     if metadata:
         metadata.create_all(engine)
+    if table:
+        table.create(engine)
     yield engine
     if metadata:
         metadata.drop_all(engine)
+    if table:
+        table.drop(engine)
     engine.dispose()
     path_obj.unlink()

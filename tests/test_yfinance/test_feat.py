@@ -9,11 +9,11 @@ import finagg
 @pytest.fixture
 def engine() -> Engine:
     yield from finagg.testing.sqlite_engine(
-        finagg.backend.database_path, creator=finagg.yfinance.store._define_db
+        finagg.backend.database_path, table=finagg.yfinance.sql.daily
     )
 
 
-def test_daily_features_to_from_refined(engine: Engine) -> None:
+def test_daily_to_from_refined(engine: Engine) -> None:
     df1 = finagg.yfinance.feat.daily.from_api("AAPL")
     finagg.yfinance.feat.daily.to_refined("AAPL", df1, engine=engine)
     with pytest.raises(IntegrityError):

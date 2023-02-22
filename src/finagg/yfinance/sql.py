@@ -20,7 +20,7 @@ prices = sa.Table(
     sa.Column("volume", sa.Float, doc="Units traded during trading hours."),
 )
 
-daily_features = sa.Table(
+daily = sa.Table(
     "yfinance.refined.daily",
     metadata,
     sa.Column(
