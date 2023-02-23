@@ -10,6 +10,60 @@ from .. import backend, utils
 from . import api, sql
 
 
+class TimeSummarizedEconomicFeatures:
+    """Methods for gathering time-averaged economic data from FRED
+    features.
+
+    """
+
+    @classmethod
+    def from_refined(
+        cls,
+        /,
+        *,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
+        engine: Engine = backend.engine,
+    ) -> pd.DataFrame:
+        """Get the average and standard deviation of each series's
+        feature across its history.
+
+        Args:
+            start: The start date of the observation period.
+            end: The end date of the observation period.
+            engine: Raw data and feature data SQL database engine.
+
+        Returns:
+            Average and standard deviation of each economic series
+            across its respective history.
+
+        """
+        with engine.begin() as conn:
+            stmt = sa.select(
+                sql.economic.c.date,
+                sql.economic.c.name,
+                sa.func.avg(sql.economic.c.value).label("avg"),
+                sa.func.std(sql.economic.c.value).label("std"),
+            ).group_by(
+                sql.economic.c.date,
+                sql.economic.c.name,
+            )
+            df = pd.DataFrame(
+                conn.execute(
+                    stmt.where(
+                        sql.economic.c.date >= start,
+                        sql.economic.c.date <= end,
+                    )
+                )
+            )
+        df = df.pivot(
+            index=["date"],
+            columns="name",
+            values=["avg", "std"],
+        ).sort_index()
+        return df
+
+
 class EconomicFeatures:
     """Methods for gathering economic data series from FRED sources."""
 
@@ -58,6 +112,9 @@ class EconomicFeatures:
         "UMCSENT",
         "WALCL",
     ]
+
+    #: Economic features aggregated over time.
+    summary = TimeSummarizedEconomicFeatures()
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
@@ -270,5 +327,5 @@ class EconomicFeatures:
         return len(df.index)
 
 
-#: Public-facing API.
+#: Module variable intended for fully qualified name usage.
 economic = EconomicFeatures()

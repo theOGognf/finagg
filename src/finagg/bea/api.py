@@ -27,7 +27,6 @@ Examples:
 import json
 import logging
 import os
-import sys
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from typing import Any, ClassVar, Literal, Sequence
@@ -38,14 +37,10 @@ import requests_cache
 
 from .. import backend, ratelimit
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter(
-    "%(asctime)s | %(levelname)s | finagg.bea.api - %(message)s"
+logging.basicConfig(
+    format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
 )
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = logging.getLogger(__name__)
 
 session = requests_cache.CachedSession(
     str(backend.http_cache_path),

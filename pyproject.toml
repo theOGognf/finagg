@@ -42,7 +42,7 @@ license = {file = "LICENSE"}
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.10"
 
-[project.entry-points."finagg"]
+[project.scripts]
 finagg = "finagg.__main__:main"
 
 [project.urls]

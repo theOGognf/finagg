@@ -13,7 +13,7 @@ from .. import backend, utils
 from . import api, sql
 
 
-def _install_refined_quarterly(ticker: str, /) -> tuple[str, pd.DataFrame]:
+def _refined_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
     """Helper for getting quarterly SEC data in a multiprocessing pool.
 
     Args:
@@ -27,7 +27,7 @@ def _install_refined_quarterly(ticker: str, /) -> tuple[str, pd.DataFrame]:
     return ticker, df
 
 
-def _install_refined_relative_quarterly(ticker: str, /) -> tuple[str, pd.DataFrame]:
+def _refined_relative_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
     """Helper for getting industry-relative quarterly SEC data in a
     multiprocessing pool.
 
@@ -38,7 +38,7 @@ def _install_refined_relative_quarterly(ticker: str, /) -> tuple[str, pd.DataFra
         The ticker and the returned feature dataframe.
 
     """
-    df = RelativeQuarterlyFeatures.from_other_store(ticker)
+    df = RelativeQuarterlyFeatures.from_other_refined(ticker)
     return ticker, df
 
 
@@ -178,24 +178,8 @@ class RelativeQuarterlyFeatures:
 
     """
 
-    #: Columns within this feature set.
-    columns = [
-        "AssetsCurrent_pct_change",
-        "DebtEquityRatio",
-        "EarningsPerShare",
-        "InventoryNet_pct_change",
-        "LiabilitiesCurrent_pct_change",
-        "NetIncomeLoss_pct_change",
-        "OperatingIncomeLoss_pct_change",
-        "PriceBookRatio",
-        "QuickRatio",
-        "ReturnOnEquity",
-        "StockholdersEquity_pct_change",
-        "WorkingCapitalRatio",
-    ]
-
     @classmethod
-    def from_other_store(
+    def from_other_refined(
         cls,
         ticker: str,
         /,
@@ -233,7 +217,9 @@ class RelativeQuarterlyFeatures:
         ).reset_index(["filed"])
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
         company_df["filed"] = filed
-        pad_fill_columns = [col for col in cls.columns if col.endswith("pct_change")]
+        pad_fill_columns = [
+            col for col in QuarterlyFeatures.columns if col.endswith("pct_change")
+        ]
         company_df[pad_fill_columns] = company_df[pad_fill_columns].fillna(method="pad")
         return (
             company_df.fillna(method="ffill")
@@ -285,7 +271,7 @@ class RelativeQuarterlyFeatures:
             index=["fy", "fp", "filed"], columns="name", values="value"
         ).sort_index()
         df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = df[QuarterlyFeatures.columns]
         return df
 
     @classmethod
@@ -319,7 +305,7 @@ class RelativeQuarterlyFeatures:
                 .having(
                     *[
                         sa.func.count(sql.relative_quarterly.c.name == col) >= lb
-                        for col in cls.columns
+                        for col in QuarterlyFeatures.columns
                     ]
                 )
             ):
@@ -417,7 +403,7 @@ class RelativeQuarterlyFeatures:
             ) as pool,
         ):
             for ticker, df in pool.imap_unordered(
-                _install_refined_relative_quarterly, tickers
+                _refined_relative_quarterly_helper, tickers
             ):
                 rowcount = len(df.index)
                 if rowcount:
@@ -459,7 +445,20 @@ class QuarterlyFeatures:
     """Quarterly features from SEC EDGAR data."""
 
     #: Columns within this feature set.
-    columns = RelativeQuarterlyFeatures.columns
+    columns = [
+        "AssetsCurrent_pct_change",
+        "DebtEquityRatio",
+        "EarningsPerShare",
+        "InventoryNet_pct_change",
+        "LiabilitiesCurrent_pct_change",
+        "NetIncomeLoss_pct_change",
+        "OperatingIncomeLoss_pct_change",
+        "PriceBookRatio",
+        "QuickRatio",
+        "ReturnOnEquity",
+        "StockholdersEquity_pct_change",
+        "WorkingCapitalRatio",
+    ]
 
     #: XBRL disclosure concepts to pull for a company.
     concepts: list[api.Concept] = [
@@ -753,7 +752,7 @@ class QuarterlyFeatures:
                 initializer=partial(backend.engine.dispose, close=False),
             ) as pool,
         ):
-            for ticker, df in pool.imap_unordered(_install_refined_quarterly, tickers):
+            for ticker, df in pool.imap_unordered(_refined_quarterly_helper, tickers):
                 rowcount = len(df.index)
                 if rowcount:
                     cls.to_refined(ticker, df)
@@ -790,5 +789,5 @@ class QuarterlyFeatures:
         return len(df.index)
 
 
-#: Public-facing API.
+#: Module variable intended for fully qualified name usage.
 quarterly = QuarterlyFeatures()

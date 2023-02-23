@@ -182,5 +182,5 @@ class FundamentalFeatures:
         return len(df.index)
 
 
-#: Public-facing API.
+#: Module variable intended for fully qualified name usage.
 fundam = FundamentalFeatures()
