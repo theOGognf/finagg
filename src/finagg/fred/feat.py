@@ -45,7 +45,6 @@ class TimeSummarizedEconomicFeatures:
                 sa.func.avg(sql.economic.c.value).label("avg"),
                 sa.func.std(sql.economic.c.value).label("std"),
             ).group_by(
-                sql.economic.c.date,
                 sql.economic.c.name,
             )
             df = pd.DataFrame(
@@ -62,6 +61,169 @@ class TimeSummarizedEconomicFeatures:
             values=["avg", "std"],
         ).sort_index()
         return df
+
+
+class NormalizedEconomicFeatures:
+    """Economic features from FRED data normalized according to historical
+    averages.
+
+    """
+
+    @classmethod
+    def from_other_refined(
+        cls,
+        *,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
+        engine: Engine = backend.engine,
+    ) -> pd.DataFrame:
+        """Get features from other feature SQL tables.
+
+        Args:
+            start: The start date of the observation period.
+            end: The end date of the observation period.
+            engine: Feature store database engine.
+
+        Returns:
+            Relative economic data dataframe with each series ID as a
+            separate column. Sorted by date.
+
+        """
+        economic_df = EconomicFeatures.from_refined(start=start, end=end, engine=engine)
+        summarized_df = TimeSummarizedEconomicFeatures.from_refined(
+            start=start, end=end, engine=engine
+        )
+        economic_df = (economic_df - summarized_df["avg"]) / summarized_df["std"]
+        pad_fill_columns = [
+            col for col in EconomicFeatures.columns if col.endswith("pct_change")
+        ]
+        economic_df[pad_fill_columns] = economic_df[pad_fill_columns].fillna(
+            method="pad"
+        )
+        return economic_df.fillna(method="ffill").dropna()
+
+    @classmethod
+    def from_refined(
+        cls,
+        /,
+        *,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
+        engine: Engine = backend.engine,
+    ) -> pd.DataFrame:
+        """Get features from the feature-dedicated local SQL tables.
+
+        This is the preferred method for accessing features for
+        offline analysis (assuming data in the local SQL tables
+        is current).
+
+        Args:
+            start: The start date of the observation period.
+                Defaults to the first recorded date.
+            end: The end date of the observation period.
+                Defaults to the last recorded date.
+            engine: Feature store database engine.
+
+        Returns:
+            Economic data series dataframe with each series
+            as a separate column. Sorted by date.
+
+        """
+        with engine.begin() as conn:
+            df = pd.DataFrame(
+                conn.execute(
+                    sql.normalized_economic.select().where(
+                        sql.normalized_economic.c.date >= start,
+                        sql.normalized_economic.c.date <= end,
+                    )
+                )
+            )
+        df = df.pivot(index="date", values="value", columns="name").sort_index()
+        df.columns = df.columns.rename(None)
+        df = df[EconomicFeatures.columns]
+        return df
+
+    @classmethod
+    def get_candidate_id_set(cls, lb: int = 1) -> set[str]:
+        """The candidate ID set is just the `economic` ID set."""
+        return EconomicFeatures.get_id_set(lb=lb)
+
+    @classmethod
+    @cache
+    def get_id_set(
+        cls,
+        lb: int = 1,
+    ) -> set[str]:
+        """Get all unique series IDs in the feature's SQL table.
+
+        Args:
+            lb: Minimum number of rows required to include a series ID in the
+                returned set.
+
+        Returns:
+            All unique series IDs that contain all the columns for creating
+            economic features that also have at least `lb` rows.
+
+        """
+        with backend.engine.begin() as conn:
+            tickers = set()
+            for row in conn.execute(
+                sa.select(sql.normalized_economic.c.series_id)
+                .distinct()
+                .group_by(sql.normalized_economic.c.series_id)
+                .having(sa.func.count(sql.normalized_economic.c.date) >= lb)
+            ):
+                (ticker,) = row
+                tickers.add(str(ticker))
+        return tickers
+
+    @classmethod
+    def install(cls) -> int:
+        """Drop the feature's table, create a new one, and insert data
+        transformed from another raw SQL table.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
+        sql.normalized_economic.drop(backend.engine, checkfirst=True)
+        sql.normalized_economic.create(backend.engine)
+
+        df = cls.from_other_refined()
+        total_rows = len(df.index)
+        if total_rows:
+            cls.to_refined(df)
+        total_rows += total_rows
+        return total_rows
+
+    @classmethod
+    def to_refined(
+        cls,
+        df: pd.DataFrame,
+        /,
+        *,
+        engine: Engine = backend.engine,
+    ) -> int:
+        """Write the dataframe to the feature store for `ticker`.
+
+        Does the necessary handling to transform columns to
+        prepare the dataframe to be written to a dynamically-defined
+        local SQL table.
+
+        Args:
+            df: Dataframe to store completely as rows in a local SQL
+                table.
+            engine: Feature store database engine.
+
+        Returns:
+            Number of rows written to the SQL table.
+
+        """
+        df = df.reset_index(names="date")
+        df = df.melt("date", var_name="name", value_name="value")
+        with engine.begin() as conn:
+            conn.execute(sql.normalized_economic.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+        return len(df.index)
 
 
 class EconomicFeatures:
@@ -100,6 +262,9 @@ class EconomicFeatures:
         "UNRATE",
         "WALCL_pct_change",
     ]
+
+    #: Economic features averaged over time.
+    normalized = NormalizedEconomicFeatures()
 
     #: Columns that're replaced with their respective percent changes.
     pct_change_columns = [

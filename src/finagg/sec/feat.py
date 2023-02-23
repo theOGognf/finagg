@@ -27,7 +27,7 @@ def _refined_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
     return ticker, df
 
 
-def _refined_relative_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
+def _refined_normalized_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
     """Helper for getting industry-relative quarterly SEC data in a
     multiprocessing pool.
 
@@ -38,7 +38,7 @@ def _refined_relative_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFram
         The ticker and the returned feature dataframe.
 
     """
-    df = RelativeQuarterlyFeatures.from_other_refined(ticker)
+    df = NormalizedQuarterlyFeatures.from_other_refined(ticker)
     return ticker, df
 
 
@@ -172,7 +172,7 @@ class IndustryQuarterlyFeatures:
         return df
 
 
-class RelativeQuarterlyFeatures:
+class NormalizedQuarterlyFeatures:
     """Quarterly features from SEC EDGAR data normalized according to industry
     averages and standard deviations.
 
@@ -260,10 +260,10 @@ class RelativeQuarterlyFeatures:
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
-                    sql.relative_quarterly.select().where(
-                        sql.relative_quarterly.c.cik == cik,
-                        sql.relative_quarterly.c.filed >= start,
-                        sql.relative_quarterly.c.filed <= end,
+                    sql.normalized_quarterly.select().where(
+                        sql.normalized_quarterly.c.cik == cik,
+                        sql.normalized_quarterly.c.filed >= start,
+                        sql.normalized_quarterly.c.filed <= end,
                     )
                 )
             )
@@ -299,12 +299,12 @@ class RelativeQuarterlyFeatures:
         with backend.engine.begin() as conn:
             tickers = set()
             for row in conn.execute(
-                sa.select(sql.relative_quarterly.c.cik)
+                sa.select(sql.normalized_quarterly.c.cik)
                 .distinct()
-                .group_by(sql.relative_quarterly.c.cik)
+                .group_by(sql.normalized_quarterly.c.cik)
                 .having(
                     *[
-                        sa.func.count(sql.relative_quarterly.c.name == col) >= lb
+                        sa.func.count(sql.normalized_quarterly.c.name == col) >= lb
                         for col in QuarterlyFeatures.columns
                     ]
                 )
@@ -343,13 +343,13 @@ class RelativeQuarterlyFeatures:
         with backend.engine.begin() as conn:
             if year == -1:
                 (((max_year,),)) = conn.execute(
-                    sa.select(sa.func.max(sql.relative_quarterly.c.fy))
+                    sa.select(sa.func.max(sql.normalized_quarterly.c.fy))
                 ).fetchall()
                 year = int(max_year)
 
             if quarter == -1:
                 (((max_quarter,),)) = conn.execute(
-                    sa.select(sa.func.max(sql.relative_quarterly.c.fp))
+                    sa.select(sa.func.max(sql.normalized_quarterly.c.fp))
                 ).fetchall()
                 fp = str(max_quarter)
             else:
@@ -357,14 +357,14 @@ class RelativeQuarterlyFeatures:
 
             tickers = []
             for row in conn.execute(
-                sa.select(sql.relative_quarterly.c.cik)
+                sa.select(sql.normalized_quarterly.c.cik)
                 .distinct()
                 .where(
-                    sql.relative_quarterly.c.name == column,
-                    sql.relative_quarterly.c.fy == year,
-                    sql.relative_quarterly.c.fp == fp,
+                    sql.normalized_quarterly.c.name == column,
+                    sql.normalized_quarterly.c.fy == year,
+                    sql.normalized_quarterly.c.fp == fp,
                 )
-                .order_by(sql.relative_quarterly.c.value)
+                .order_by(sql.normalized_quarterly.c.value)
             ):
                 (cik,) = row
                 ticker = api.get_ticker(str(cik))
@@ -385,8 +385,8 @@ class RelativeQuarterlyFeatures:
             Number of rows written to the feature's SQL table.
 
         """
-        sql.relative_quarterly.drop(backend.engine, checkfirst=True)
-        sql.relative_quarterly.create(backend.engine)
+        sql.normalized_quarterly.drop(backend.engine, checkfirst=True)
+        sql.normalized_quarterly.create(backend.engine)
 
         tickers = cls.get_candidate_id_set()
         total_rows = 0
@@ -403,7 +403,7 @@ class RelativeQuarterlyFeatures:
             ) as pool,
         ):
             for ticker, df in pool.imap_unordered(
-                _refined_relative_quarterly_helper, tickers
+                _refined_normalized_quarterly_helper, tickers
             ):
                 rowcount = len(df.index)
                 if rowcount:
@@ -437,7 +437,7 @@ class RelativeQuarterlyFeatures:
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = api.get_cik(ticker)
         with engine.begin() as conn:
-            conn.execute(sql.relative_quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+            conn.execute(sql.normalized_quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 
@@ -478,6 +478,9 @@ class QuarterlyFeatures:
     #: Quarterly features aggregated by industry.
     industry = IndustryQuarterlyFeatures()
 
+    #: A company's quarterly features normalized by its industry.
+    normalized = NormalizedQuarterlyFeatures()
+
     #: Columns that're replaced with their respective percent changes.
     pct_change_columns = [
         "AssetsCurrent",
@@ -487,9 +490,6 @@ class QuarterlyFeatures:
         "OperatingIncomeLoss",
         "StockholdersEquity",
     ]
-
-    #: A company's quarterly features normalized by its industry.
-    relative = RelativeQuarterlyFeatures()
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:

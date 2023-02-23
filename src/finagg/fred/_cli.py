@@ -73,7 +73,7 @@ def entry_point() -> None:
 @click.option(
     "--refined",
     "-ref",
-    type=click.Choice(["economic"]),
+    type=click.Choice(["economic", "economic.normalized"]),
     multiple=True,
     help=(
         "Refined tables to install. This requires raw data to be "
@@ -131,12 +131,15 @@ def install(
 
     all_refined = set()
     if all_:
-        all_refined = {"economic"}
+        all_refined = {"economic", "economic.normalized"}
     elif refined:
         all_refined = set(refined)
 
     if "economic" in all_refined:
         total_rows += _feat.economic.install()
+
+    if "economic.normalized" in all_refined:
+        total_rows += _feat.economic.normalized.install()
 
     if all_ or all_refined or raw:
         logger.info(f"{total_rows} total rows inserted for {__package__}")

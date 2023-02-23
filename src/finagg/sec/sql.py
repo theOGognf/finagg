@@ -135,8 +135,8 @@ quarterly = sa.Table(
 )
 
 
-relative_quarterly = sa.Table(
-    "sec.refined.quarterly.relative",
+normalized_quarterly = sa.Table(
+    "sec.refined.quarterly.normalized",
     metadata,
     sa.Column(
         "cik",

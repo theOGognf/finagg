@@ -92,7 +92,7 @@ def entry_point() -> None:
 @click.option(
     "--refined",
     "-ref",
-    type=click.Choice(["quarterly", "quarterly.relative"]),
+    type=click.Choice(["quarterly", "quarterly.normalized"]),
     multiple=True,
     help=(
         "Refined tables to install. This requires raw SEC data to be "
@@ -176,15 +176,15 @@ def install(
 
     all_refined = set()
     if all_:
-        all_refined = {"quarterly", "quarterly.relative"}
+        all_refined = {"quarterly", "quarterly.normalized"}
     elif refined:
         all_refined = set(refined)
 
     if "quarterly" in all_refined:
         total_rows += _feat.quarterly.install(processes=processes)
 
-    if "quarterly.relative" in all_refined:
-        total_rows += _feat.quarterly.relative.install(processes=processes)
+    if "quarterly.normalized" in all_refined:
+        total_rows += _feat.quarterly.normalized.install(processes=processes)
 
     if all_ or all_refined or raw:
         logger.info(f"{total_rows} total rows inserted for {__package__}")

@@ -44,6 +44,19 @@ economic = sa.Table(
     sa.Column("value", sa.Float, doc="Feature value."),
 )
 
+normalized_economic = sa.Table(
+    "fred.refined.economic.normalized",
+    metadata,
+    sa.Column(
+        "date",
+        sa.String,
+        primary_key=True,
+        doc="Economic data series release date.",
+    ),
+    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
+    sa.Column("value", sa.Float, doc="Feature value."),
+)
+
 
 @cache
 def get_id_set(lb: int = 1) -> set[str]:
