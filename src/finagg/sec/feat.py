@@ -28,7 +28,7 @@ def _refined_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
 
 
 def _refined_normalized_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
-    """Helper for getting industry-relative quarterly SEC data in a
+    """Helper for getting industry-normalized quarterly SEC data in a
     multiprocessing pool.
 
     Args:
@@ -393,7 +393,7 @@ class NormalizedQuarterlyFeatures:
         with (
             tqdm(
                 total=len(tickers),
-                desc="Installing refined SEC industry-relative quarterly data",
+                desc="Installing refined SEC industry-normalized quarterly data",
                 position=0,
                 leave=True,
             ) as pbar,
