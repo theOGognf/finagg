@@ -275,13 +275,13 @@ class NormalizedQuarterlyFeatures:
         return df
 
     @classmethod
-    def get_candidate_id_set(cls, lb: int = 1) -> set[str]:
+    def get_candidate_ticker_set(cls, lb: int = 1) -> set[str]:
         """The candidate ticker set is just the `quarterly` ticker set."""
-        return QuarterlyFeatures.get_id_set(lb=lb)
+        return QuarterlyFeatures.get_ticker_set(lb=lb)
 
     @classmethod
     @cache
-    def get_id_set(
+    def get_ticker_set(
         cls,
         lb: int = 1,
     ) -> set[str]:
@@ -315,7 +315,7 @@ class NormalizedQuarterlyFeatures:
         return tickers
 
     @classmethod
-    def get_ids_sorted_by(
+    def get_tickers_sorted_by(
         cls,
         column: str,
         /,
@@ -388,7 +388,7 @@ class NormalizedQuarterlyFeatures:
         sql.normalized_quarterly.drop(backend.engine, checkfirst=True)
         sql.normalized_quarterly.create(backend.engine)
 
-        tickers = cls.get_candidate_id_set()
+        tickers = cls.get_candidate_ticker_set()
         total_rows = 0
         with (
             tqdm(
@@ -648,7 +648,7 @@ class QuarterlyFeatures:
 
     @classmethod
     @cache
-    def get_candidate_id_set(
+    def get_candidate_ticker_set(
         cls,
         lb: int = 1,
     ) -> set[str]:
@@ -690,7 +690,7 @@ class QuarterlyFeatures:
 
     @classmethod
     @cache
-    def get_id_set(
+    def get_ticker_set(
         cls,
         lb: int = 1,
     ) -> set[str]:
@@ -738,7 +738,7 @@ class QuarterlyFeatures:
         sql.quarterly.drop(backend.engine, checkfirst=True)
         sql.quarterly.create(backend.engine)
 
-        tickers = cls.get_candidate_id_set()
+        tickers = cls.get_candidate_ticker_set()
         total_rows = 0
         with (
             tqdm(
@@ -789,5 +789,55 @@ class QuarterlyFeatures:
         return len(df.index)
 
 
+class TagFeatures:
+    """Get a single company concept tag as-is from raw SEC data."""
+
+    @classmethod
+    def from_raw(
+        cls,
+        ticker: str,
+        tag: str,
+        /,
+        *,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
+        engine: Engine = backend.engine,
+    ) -> pd.DataFrame:
+        """Get a single company concept tag as-is from raw SEC data.
+
+        The tag is in the units it was in when it was originally retrieved
+        from the SEC API prior to being stored (this is usually USD).
+        This is the preferred method for accessing raw SEC data without
+        using the SEC API.
+
+        Args:
+            ticker: Company ticker.
+            tag: Company concept tag to retreive.
+            start: The start date of the observation period.
+            end: The end date of the observation period.
+            engine: Feature store database engine.
+
+        Returns:
+            A dataframe containing the company concept tag values
+            across the specified period.
+
+        """
+        with engine.begin() as conn:
+            df = pd.DataFrame(
+                conn.execute(
+                    sa.select(
+                        sql.tags.c.fy, sql.tags.c.fp, sql.tags.c.filed, sql.tags.c.value
+                    ).where(
+                        sql.tags.c.cik == api.get_cik(ticker),
+                        sql.tags.c.tag == tag,
+                        sql.tags.c.filed >= start,
+                        sql.tags.c.filed <= end,
+                    )
+                )
+            ).set_index(["fy", "fp", "filed"])
+        return df
+
+
 #: Module variable intended for fully qualified name usage.
 quarterly = QuarterlyFeatures()
+tags = TagFeatures()

@@ -155,7 +155,7 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
 
 
 @cache
-def get_id_set(*, user_agent: None | str = None) -> set[str]:
+def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
     """Get the set of tickers from all the indices."""
     tickers = set()
     tickers.update(djia.get_ticker_list(user_agent=user_agent))

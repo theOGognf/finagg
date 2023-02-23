@@ -492,5 +492,48 @@ class EconomicFeatures:
         return len(df.index)
 
 
+class SeriesFeatures:
+    """Get a single economic series as-is from raw FRED data."""
+
+    @classmethod
+    def from_raw(
+        cls,
+        series_id: str,
+        /,
+        *,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
+        engine: Engine = backend.engine,
+    ) -> pd.DataFrame:
+        """Get a single economic data series as-is from raw FRED data.
+
+        This is the preferred method for accessing raw FRED data without
+        using the FRED API.
+
+        Args:
+            series_id: Economic data series ID.
+            start: The start date of the observation period.
+            end: The end date of the observation period.
+            engine: Feature store database engine.
+
+        Returns:
+            A dataframe containing the economic data series values
+            across the specified period.
+
+        """
+        with engine.begin() as conn:
+            df = pd.DataFrame(
+                conn.execute(
+                    sa.select(sql.series.c.date, sql.series.c.value).where(
+                        sql.series.c.series_id == series_id,
+                        sql.series.c.date >= start,
+                        sql.series.c.date <= end,
+                    )
+                )
+            ).set_index(["date"])
+        return df
+
+
 #: Module variable intended for fully qualified name usage.
 economic = EconomicFeatures()
+series = SeriesFeatures()

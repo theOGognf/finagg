@@ -162,11 +162,11 @@ class DailyFeatures:
         return df
 
     #: The candidate set is just the raw SQL ticker set.
-    get_candidate_id_set = sql.get_id_set
+    get_candidate_ticker_set = sql.get_ticker_set
 
     @classmethod
     @cache
-    def get_id_set(
+    def get_ticker_set(
         cls,
         lb: int = 1,
     ) -> set[str]:
@@ -213,7 +213,7 @@ class DailyFeatures:
         sql.daily.drop(backend.engine, checkfirst=True)
         sql.daily.create(backend.engine)
 
-        tickers = cls.get_candidate_id_set()
+        tickers = cls.get_candidate_ticker_set()
         total_rows = 0
         with (
             tqdm(
