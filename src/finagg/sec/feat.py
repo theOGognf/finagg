@@ -136,29 +136,27 @@ class IndustryQuarterlyFeatures:
             else:
                 raise ValueError("Must provide a `ticker` or `code`.")
 
-            stmt = (
-                sa.select(
-                    sql.quarterly.c.fy,
-                    sql.quarterly.c.fp,
-                    sa.func.max(sql.quarterly.c.filed).label("filed"),
-                    sql.quarterly.c.name,
-                    sa.func.avg(sql.quarterly.c.value).label("avg"),
-                    sa.func.std(sql.quarterly.c.value).label("std"),
-                )
-                .join(
-                    sql.submissions,
-                    (sql.submissions.c.cik == sql.quarterly.c.cik)
-                    & (sql.submissions.c.sic.startswith(code)),
-                )
-                .group_by(
-                    sql.quarterly.c.fy,
-                    sql.quarterly.c.fp,
-                    sql.quarterly.c.name,
-                )
-            )
             df = pd.DataFrame(
                 conn.execute(
-                    stmt.where(
+                    sa.select(
+                        sql.quarterly.c.fy,
+                        sql.quarterly.c.fp,
+                        sa.func.max(sql.quarterly.c.filed).label("filed"),
+                        sql.quarterly.c.name,
+                        sa.func.avg(sql.quarterly.c.value).label("avg"),
+                        sa.func.std(sql.quarterly.c.value).label("std"),
+                    )
+                    .join(
+                        sql.submissions,
+                        (sql.submissions.c.cik == sql.quarterly.c.cik)
+                        & (sql.submissions.c.sic.startswith(code)),
+                    )
+                    .group_by(
+                        sql.quarterly.c.fy,
+                        sql.quarterly.c.fp,
+                        sql.quarterly.c.name,
+                    )
+                    .where(
                         sql.quarterly.c.filed >= start,
                         sql.quarterly.c.filed <= end,
                     )

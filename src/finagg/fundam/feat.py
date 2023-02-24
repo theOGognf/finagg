@@ -1,10 +1,29 @@
 """Features from several sources."""
 
+import multiprocessing as mp
+from functools import cache, partial
+
 import pandas as pd
+import sqlalchemy as sa
 from sqlalchemy.engine import Engine
+from tqdm import tqdm
 
 from .. import backend, sec, utils, yfinance
-from . import store
+from . import sql
+
+
+def _refined_fundam_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
+    """Helper for getting fundamental data in a multiprocessing pool.
+
+    Args:
+        ticker: Ticker to create features for.
+
+    Returns:
+        The ticker and the returned feature dataframe.
+
+    """
+    df = FundamentalFeatures.from_raw(ticker)
+    return ticker, df
 
 
 class FundamentalFeatures:
@@ -14,30 +33,35 @@ class FundamentalFeatures:
     columns = (
         yfinance.feat.daily.columns
         + sec.feat.quarterly.columns
-        + ("PriceEarningsRatio",)
+        + ["PriceEarningsRatio"]
     )
 
     @classmethod
     def _normalize(
         cls,
-        quarterly_df: pd.DataFrame,
-        daily_df: pd.DataFrame,
+        quarterly: pd.DataFrame,
+        daily: pd.DataFrame,
         /,
     ) -> pd.DataFrame:
         """Normalize the feature columns."""
-        df = pd.merge(
-            quarterly_df, daily_df, how="outer", left_index=True, right_index=True
-        )
+        df = pd.merge(quarterly, daily, how="outer", left_index=True, right_index=True)
+        pct_change_cols = [col for col in cls.columns if col.endswith("pct_change")]
+        df[pct_change_cols] = df[pct_change_cols].fillna(method="pad")
         df = df.fillna(method="ffill").dropna()
         df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
         df = utils.quantile_clip(df)
         df.index.names = ["date"]
-        df = df[list(cls.columns)]
+        df = df[cls.columns]
         return df.dropna()
 
     @classmethod
     def from_api(
-        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
     ) -> pd.DataFrame:
         """Get features directly from APIs.
 
@@ -57,10 +81,10 @@ class FundamentalFeatures:
             Sorted by date.
 
         """
-        quarterly_features = sec.feat.quarterly.from_api(ticker, start=start, end=end)
-        start = str(quarterly_features.index[0])
-        daily_features = yfinance.feat.daily.from_api(ticker, start=start, end=end)
-        return cls._normalize(quarterly_features, daily_features)
+        quarterly = sec.feat.quarterly.from_api(ticker, start=start, end=end)
+        start = str(quarterly.index[0])
+        daily = yfinance.feat.daily.from_api(ticker, start=start, end=end)
+        return cls._normalize(quarterly, daily)
 
     @classmethod
     def from_raw(
@@ -68,8 +92,8 @@ class FundamentalFeatures:
         ticker: str,
         /,
         *,
-        start: None | str = None,
-        end: None | str = None,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features directly from local SQL tables.
@@ -112,8 +136,8 @@ class FundamentalFeatures:
         ticker: str,
         /,
         *,
-        start: None | str = None,
-        end: None | str = None,
+        start: str = "0000-00-00",
+        end: str = "9999-99-99",
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
@@ -136,18 +160,93 @@ class FundamentalFeatures:
 
         """
         with engine.begin() as conn:
-            stmt = store.fundamental_features.c.ticker == ticker
-            if start:
-                stmt &= store.fundamental_features.c.date >= start
-            if end:
-                stmt &= store.fundamental_features.c.date <= end
             df = pd.DataFrame(
-                conn.execute(store.fundamental_features.select().where(stmt))
+                conn.execute(
+                    sql.fundam.select().where(
+                        sql.fundam.c.ticker == ticker,
+                        sql.fundam.c.date >= start,
+                        sql.fundam.c.date <= end,
+                    )
+                )
             )
         df = df.pivot(index="date", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
-        df = df[list(cls.columns)]
+        df = df[cls.columns]
         return df
+
+    #: Candidate ticker set is just the `quarterly` ticker set.
+    get_candidate_ticker_set = sec.feat.QuarterlyFeatures.get_ticker_set
+
+    @classmethod
+    @cache
+    def get_ticker_set(
+        cls,
+        lb: int = 1,
+    ) -> set[str]:
+        """Get all unique tickers in the feature's SQL table.
+
+        Args:
+            lb: Minimum number of rows required to include a ticker in the
+                returned set.
+
+        Returns:
+            All unique tickers that contain all the columns for creating
+            fundamental features that also have at least `lb` rows.
+
+        """
+        with backend.engine.begin() as conn:
+            tickers = set()
+            for row in conn.execute(
+                sa.select(sql.fundam.c.ticker)
+                .distinct()
+                .group_by(sql.fundam.c.ticker)
+                .having(
+                    *[
+                        sa.func.count(sql.fundam.c.name == col) >= lb
+                        for col in cls.columns
+                    ]
+                )
+            ):
+                (ticker,) = row
+                tickers.add(str(ticker))
+        return tickers
+
+    @classmethod
+    def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
+        """Drop the feature's table, create a new one, and insert data
+        transformed from another raw SQL table.
+
+        Args:
+            processes: Number of background processes to use for installation.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
+        sql.fundam.drop(backend.engine, checkfirst=True)
+        sql.fundam.create(backend.engine)
+
+        tickers = cls.get_candidate_ticker_set()
+        total_rows = 0
+        with (
+            tqdm(
+                total=len(tickers),
+                desc="Installing refined SEC quarterly data",
+                position=0,
+                leave=True,
+            ) as pbar,
+            mp.Pool(
+                processes=processes,
+                initializer=partial(backend.engine.dispose, close=False),
+            ) as pool,
+        ):
+            for ticker, df in pool.imap_unordered(_refined_fundam_helper, tickers):
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_refined(ticker, df)
+                total_rows += rowcount
+                pbar.update()
+        return total_rows
 
     @classmethod
     def to_refined(
@@ -178,7 +277,7 @@ class FundamentalFeatures:
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:
-            conn.execute(store.fundamental_features.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+            conn.execute(sql.fundam.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 
