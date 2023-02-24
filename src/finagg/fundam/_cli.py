@@ -53,7 +53,7 @@ def install(
     refined: list[str] = [],
     all_: bool = False,
     processes: int = mp.cpu_count() - 1,
-) -> None:
+) -> int:
     total_rows = 0
     all_refined = set()
     if all_:

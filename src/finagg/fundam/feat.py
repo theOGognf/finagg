@@ -235,7 +235,7 @@ class FundamentalFeatures:
         with (
             tqdm(
                 total=len(tickers),
-                desc="Installing refined SEC quarterly data",
+                desc="Installing refined fundamental data",
                 position=0,
                 leave=True,
             ) as pbar,

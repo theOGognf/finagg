@@ -276,6 +276,9 @@ class Submissions(_API):
         if ticker:
             cik = str(get_cik(ticker))
 
+        if cik:
+            ticker = str(get_ticker(cik))
+
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik)
         response = get(url, user_agent=user_agent)
@@ -292,6 +295,7 @@ class Submissions(_API):
         if "exchanges" in metadata:
             metadata["exchanges"] = ",".join(metadata["exchanges"])
         metadata["cik"] = cik
+        metadata["ticker"] = str(ticker)
         return {"metadata": metadata, "filings": df}
 
 

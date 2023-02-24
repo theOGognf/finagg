@@ -124,12 +124,12 @@ class IndustryQuarterlyFeatures:
         """
         with engine.begin() as conn:
             if ticker:
-                row = conn.execute(
+                (row,) = conn.execute(
                     sa.select(sql.submissions.c.sic)
                     .distinct()
-                    .where(sql.submissions.c.cik == api.get_cik(ticker))
-                )
-                ((sic,),) = row
+                    .where(sql.submissions.c.ticker == ticker)
+                ).fetchall()
+                (sic,) = row
                 code = str(sic)[:level]
             elif code:
                 code = code[:level]
@@ -254,12 +254,16 @@ class NormalizedQuarterlyFeatures:
             separate column. Sorted by filing date.
 
         """
-        cik = api.get_cik(ticker)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
-                    sql.normalized_quarterly.select().where(
-                        sql.normalized_quarterly.c.cik == cik,
+                    sql.normalized_quarterly.select()
+                    .join(
+                        sql.submissions,
+                        (sql.submissions.c.cik == sql.normalized_quarterly.c.cik)
+                        & (sql.submissions.c.ticker == ticker),
+                    )
+                    .where(
                         sql.normalized_quarterly.c.filed >= start,
                         sql.normalized_quarterly.c.filed <= end,
                     )
@@ -297,8 +301,12 @@ class NormalizedQuarterlyFeatures:
         with backend.engine.begin() as conn:
             tickers = set()
             for row in conn.execute(
-                sa.select(sql.normalized_quarterly.c.cik)
+                sa.select(sql.submissions.c.ticker)
                 .distinct()
+                .join(
+                    sql.normalized_quarterly,
+                    sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
+                )
                 .group_by(sql.normalized_quarterly.c.cik)
                 .having(
                     *[
@@ -307,9 +315,8 @@ class NormalizedQuarterlyFeatures:
                     ]
                 )
             ):
-                (cik,) = row
-                ticker = api.get_ticker(str(cik))
-                tickers.add(ticker)
+                (ticker,) = row
+                tickers.add(str(ticker))
         return tickers
 
     @classmethod
@@ -340,23 +347,29 @@ class NormalizedQuarterlyFeatures:
         """
         with backend.engine.begin() as conn:
             if year == -1:
-                (((max_year,),)) = conn.execute(
+                (row,) = conn.execute(
                     sa.select(sa.func.max(sql.normalized_quarterly.c.fy))
                 ).fetchall()
+                (max_year,) = row
                 year = int(max_year)
 
             if quarter == -1:
-                (((max_quarter,),)) = conn.execute(
+                (row,) = conn.execute(
                     sa.select(sa.func.max(sql.normalized_quarterly.c.fp))
                 ).fetchall()
+                (max_quarter,) = row
                 fp = str(max_quarter)
             else:
                 fp = f"Q{quarter}"
 
             tickers = []
             for row in conn.execute(
-                sa.select(sql.normalized_quarterly.c.cik)
+                sa.select(sql.submissions.c.ticker)
                 .distinct()
+                .join(
+                    sql.normalized_quarterly,
+                    sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
+                )
                 .where(
                     sql.normalized_quarterly.c.name == column,
                     sql.normalized_quarterly.c.fy == year,
@@ -364,9 +377,8 @@ class NormalizedQuarterlyFeatures:
                 )
                 .order_by(sql.normalized_quarterly.c.value)
             ):
-                (cik,) = row
-                ticker = api.get_ticker(str(cik))
-                tickers.append(ticker)
+                (ticker,) = row
+                tickers.append(str(ticker))
         if not ascending:
             tickers = list(reversed(tickers))
         return tuple(tickers)
@@ -433,7 +445,7 @@ class NormalizedQuarterlyFeatures:
         """
         df = df.reset_index(names=["fy", "fp", "filed"])
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
-        df["cik"] = api.get_cik(ticker)
+        df["cik"] = sql.get_cik(ticker)
         with engine.begin() as conn:
             conn.execute(sql.normalized_quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
@@ -585,8 +597,13 @@ class QuarterlyFeatures:
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
-                    sql.tags.select().where(
-                        sql.tags.c.cik == api.get_cik(ticker),
+                    sql.tags.select()
+                    .join(
+                        sql.submissions,
+                        (sql.submissions.c.cik == sql.tags.c.cik)
+                        & (sql.submissions.c.ticker == ticker),
+                    )
+                    .where(
                         sql.tags.c.tag.in_(
                             [concept["tag"] for concept in cls.concepts]
                         ),
@@ -624,12 +641,16 @@ class QuarterlyFeatures:
             separate column. Sorted by filing date.
 
         """
-        cik = api.get_cik(ticker)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
-                    sql.quarterly.select().where(
-                        sql.quarterly.c.cik == cik,
+                    sql.quarterly.select()
+                    .join(
+                        sql.submissions,
+                        (sql.submissions.c.cik == sql.quarterly.c.cik)
+                        & (sql.submissions.c.ticker == ticker),
+                    )
+                    .where(
                         sql.quarterly.c.filed >= start,
                         sql.quarterly.c.filed <= end,
                     )
@@ -667,7 +688,7 @@ class QuarterlyFeatures:
             tickers = set()
             for row in conn.execute(
                 sa.select(
-                    sql.tags.c.cik,
+                    sql.submissions.c.ticker,
                     *[
                         sa.func.sum(
                             sa.case({concept["tag"]: 1}, value=sql.tags.c.tag, else_=0)
@@ -676,14 +697,14 @@ class QuarterlyFeatures:
                     ],
                 )
                 .distinct()
+                .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
                 .group_by(sql.tags.c.cik)
                 .having(
                     *[sa.text(f"{concept['tag']} >= {lb}") for concept in cls.concepts]
                 )
             ):
-                cik = row[0]
-                ticker = api.get_ticker(str(cik))
-                tickers.add(ticker)
+                ticker = row[0]
+                tickers.add(str(ticker))
         return tickers
 
     @classmethod
@@ -706,8 +727,9 @@ class QuarterlyFeatures:
         with backend.engine.begin() as conn:
             tickers = set()
             for row in conn.execute(
-                sa.select(sql.quarterly.c.cik)
+                sa.select(sql.submissions.c.ticker)
                 .distinct()
+                .join(sql.quarterly, sql.quarterly.c.cik == sql.submissions.c.cik)
                 .group_by(sql.quarterly.c.cik)
                 .having(
                     *[
@@ -716,9 +738,8 @@ class QuarterlyFeatures:
                     ]
                 )
             ):
-                (cik,) = row
-                ticker = api.get_ticker(str(cik))
-                tickers.add(ticker)
+                (ticker,) = row
+                tickers.add(str(ticker))
         return tickers
 
     @classmethod
@@ -781,7 +802,7 @@ class QuarterlyFeatures:
         """
         df = df.reset_index(names=["fy", "fp", "filed"])
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
-        df["cik"] = api.get_cik(ticker)
+        df["cik"] = sql.get_cik(ticker)
         with engine.begin() as conn:
             conn.execute(sql.quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
@@ -825,8 +846,13 @@ class TagFeatures:
                 conn.execute(
                     sa.select(
                         sql.tags.c.fy, sql.tags.c.fp, sql.tags.c.filed, sql.tags.c.value
-                    ).where(
-                        sql.tags.c.cik == api.get_cik(ticker),
+                    )
+                    .join(
+                        sql.submissions,
+                        (sql.submissions.c.cik == sql.tags.c.cik)
+                        & (sql.submissions.c.ticker == ticker),
+                    )
+                    .where(
                         sql.tags.c.tag == tag,
                         sql.tags.c.filed >= start,
                         sql.tags.c.filed <= end,

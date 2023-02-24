@@ -5,7 +5,6 @@ from functools import cache
 import sqlalchemy as sa
 
 from .. import backend
-from . import api
 
 metadata = sa.MetaData()
 
@@ -13,6 +12,7 @@ submissions = sa.Table(
     "sec.raw.submissions",
     metadata,
     sa.Column("cik", sa.String, primary_key=True, doc="Unique SEC ID."),
+    sa.Column("ticker", sa.String, nullable=False, doc="Company ticker."),
     sa.Column(
         "entity_type", sa.String, doc="Type of company standing (e.g., operating)."
     ),
@@ -158,18 +158,40 @@ normalized_quarterly = sa.Table(
 )
 
 
+def get_cik(ticker: str, /) -> str:
+    """Return a company's SEC CIK."""
+    with backend.engine.begin() as conn:
+        (row,) = conn.execute(
+            sa.select(submissions.c.cik)
+            .distinct()
+            .where(submissions.c.ticker == ticker)
+        ).fetchall()
+        (cik,) = row
+    return str(cik)
+
+
+def get_ticker(cik: str, /) -> str:
+    """Return an SEC CIK's ticker."""
+    with backend.engine.begin() as conn:
+        (row,) = conn.execute(
+            sa.select(submissions.c.ticker).distinct().where(submissions.c.cik == cik)
+        ).fetchall()
+        (ticker,) = row
+    return str(ticker)
+
+
 @cache
 def get_ticker_set(lb: int = 1) -> set[str]:
     """Get all unique tickers in the raw SQL tables."""
     with backend.engine.begin() as conn:
         tickers = set()
         for row in conn.execute(
-            sa.select(tags.c.cik)
+            sa.select(submissions.c.ticker)
             .distinct()
+            .join(tags, tags.c.cik == submissions.c.cik)
             .group_by(tags.c.cik)
             .having(sa.func.count(tags.c.filed) >= lb)
         ):
-            (cik,) = row
-            ticker = api.get_ticker(str(cik))
-            tickers.add(ticker)
+            (ticker,) = row
+            tickers.add(str(ticker))
     return tickers
