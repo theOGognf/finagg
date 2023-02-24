@@ -4,7 +4,7 @@ import multiprocessing as mp
 
 import click
 
-from . import fred, indices, sec, yfinance
+from . import fred, fundam, indices, sec, yfinance
 
 
 @click.group()
@@ -13,6 +13,7 @@ def cli() -> None:
 
 
 cli.add_command(fred._cli.entry_point, "fred")
+cli.add_command(fundam._cli.entry_point, "fundam")
 cli.add_command(indices._cli.entry_point, "indices")
 cli.add_command(sec._cli.entry_point, "sec")
 cli.add_command(yfinance._cli.entry_point, "yfinance")
@@ -46,6 +47,7 @@ def install(
     ctx.invoke(indices._cli.install, all_=True)
     ctx.invoke(sec._cli.install, all_=True, processes=processes, verbose=verbose)
     ctx.invoke(yfinance._cli.install, all_=True, processes=processes, verbose=verbose)
+    ctx.invoke(fundam._cli.install, all_=True, processes=processes)
 
 
 def main() -> int:
