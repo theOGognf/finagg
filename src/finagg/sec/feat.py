@@ -679,7 +679,7 @@ class QuarterlyFeatures:
                 returned set.
 
         Returns:
-            All unique tickers that're valid for creating quarterly features
+            All unique tickers that may be valid for creating quarterly features
             that also have at least `lb` rows for each tag used for
             constructing the features.
 

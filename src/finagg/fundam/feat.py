@@ -85,7 +85,7 @@ class FundamentalFeatures:
             ticker,
             start=start,
             end=end,
-        )
+        ).reset_index(["fy", "fp"])
         start = str(quarterly.index[0])
         daily = yfinance.feat.daily.from_api(ticker, start=start, end=end)
         return cls._normalize(quarterly, daily)
@@ -124,7 +124,7 @@ class FundamentalFeatures:
             start=start,
             end=end,
             engine=engine,
-        )
+        ).reset_index(["fy", "fp"])
         start = str(quarterly_features.index[0])
         daily_features = yfinance.feat.daily.from_raw(
             ticker,
@@ -178,8 +178,26 @@ class FundamentalFeatures:
         df = df[cls.columns]
         return df
 
-    #: Candidate ticker set is just the `quarterly` ticker set.
-    get_candidate_ticker_set = sec.feat.QuarterlyFeatures.get_ticker_set
+    @classmethod
+    def get_candidate_ticker_set(
+        cls,
+        lb: int = 1,
+    ) -> set[str]:
+        """Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE
+        to be in the feature's SQL table.
+
+        Args:
+            lb: Minimum number of rows required to include a ticker in the
+                returned set.
+
+        Returns:
+            All unique tickers that may be valid for both quarterly and daily
+            features.
+
+        """
+        return sec.feat.QuarterlyFeatures.get_candidate_ticker_set(
+            lb=lb
+        ) & yfinance.feat.DailyFeatures.get_candidate_ticker_set(lb=lb)
 
     @classmethod
     @cache
