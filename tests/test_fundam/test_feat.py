@@ -9,25 +9,25 @@ import finagg
 @pytest.fixture
 def engine() -> Engine:
     yield from finagg.testing.sqlite_engine(
-        finagg.backend.database_path, creator=finagg.fundam.store._define_db
+        finagg.backend.database_path, metadata=finagg.yfinance.sql.metadata
     )
 
 
-def test_fundamental_features_to_from_refined(engine: Engine) -> None:
-    df1 = finagg.fundam.features.fundam.from_api("AAPL")
-    finagg.fundam.features.fundam.to_refined(
+def test_fundam_to_from_refined(engine: Engine) -> None:
+    df1 = finagg.fundam.feat.fundam.from_api("AAPL")
+    finagg.fundam.feat.fundam.to_refined(
         "AAPL",
         df1,
         engine=engine,
     )
     with pytest.raises(IntegrityError):
-        finagg.fundam.features.fundam.to_refined(
+        finagg.fundam.feat.fundam.to_refined(
             "AAPL",
             df1,
             engine=engine,
         )
 
-    df2 = finagg.fundam.features.fundam.from_refined(
+    df2 = finagg.fundam.feat.fundam.from_refined(
         "AAPL",
         engine=engine,
     )

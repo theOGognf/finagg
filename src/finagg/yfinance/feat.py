@@ -64,7 +64,7 @@ class DailyFeatures:
 
     @classmethod
     def from_api(
-        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
+        cls, ticker: str, /, *, start: str = "1776-07-04", end: str = utils.today
     ) -> pd.DataFrame:
         """Get daily features directly from the yfinance API.
 
@@ -88,8 +88,8 @@ class DailyFeatures:
         ticker: str,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get daily features from local SQL tables.
@@ -124,8 +124,8 @@ class DailyFeatures:
         ticker: str,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.

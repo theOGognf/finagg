@@ -87,8 +87,8 @@ class IndustryQuarterlyFeatures:
         ticker: None | str = None,
         code: None | str = None,
         level: Literal[2, 3, 4] = 2,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get quarterly features from the feature store,
@@ -183,8 +183,8 @@ class NormalizedQuarterlyFeatures:
         /,
         *,
         level: Literal[2, 3, 4] = 2,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from other feature SQL tables.
@@ -233,8 +233,8 @@ class NormalizedQuarterlyFeatures:
         ticker: str,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from the features SQL table.
@@ -523,7 +523,7 @@ class QuarterlyFeatures:
 
     @classmethod
     def from_api(
-        cls, ticker: str, /, *, start: str = "0000-00-00", end: str = "9999-99-99"
+        cls, ticker: str, /, *, start: str = "1776-07-04", end: str = utils.today
     ) -> pd.DataFrame:
         """Get quarterly features directly from the SEC API.
 
@@ -561,8 +561,8 @@ class QuarterlyFeatures:
         ticker: str,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get quarterly features from a local SEC SQL table.
@@ -603,8 +603,8 @@ class QuarterlyFeatures:
         ticker: str,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from the features SQL table.
@@ -797,8 +797,8 @@ class TagFeatures:
         tag: str,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get a single company concept tag as-is from raw SEC data.

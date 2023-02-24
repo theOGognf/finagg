@@ -13,7 +13,7 @@ def engine() -> Engine:
     )
 
 
-def test_economic_features_to_from_refined(engine: Engine) -> None:
+def test_economic_to_from_refined(engine: Engine) -> None:
     df1 = finagg.fred.feat.economic.from_api()
     finagg.fred.feat.economic.to_refined(
         df1,

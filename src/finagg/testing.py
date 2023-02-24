@@ -50,14 +50,14 @@ def sqlite_engine(
     path_obj = path_obj.with_stem(f"{path_obj.stem}_test")
     url = f"sqlite:///{path_obj}"
     engine = sa.create_engine(url)
-    if metadata:
+    if metadata is not None:
         metadata.create_all(engine)
-    if table:
+    if table is not None:
         table.create(engine)
     yield engine
-    if metadata:
+    if metadata is not None:
         metadata.drop_all(engine)
-    if table:
+    if table is not None:
         table.drop(engine)
     engine.dispose()
     path_obj.unlink()

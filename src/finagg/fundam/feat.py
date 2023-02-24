@@ -60,8 +60,8 @@ class FundamentalFeatures:
         ticker: str,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
     ) -> pd.DataFrame:
         """Get features directly from APIs.
 
@@ -81,7 +81,11 @@ class FundamentalFeatures:
             Sorted by date.
 
         """
-        quarterly = sec.feat.quarterly.from_api(ticker, start=start, end=end)
+        quarterly = sec.feat.quarterly.from_api(
+            ticker,
+            start=start,
+            end=end,
+        )
         start = str(quarterly.index[0])
         daily = yfinance.feat.daily.from_api(ticker, start=start, end=end)
         return cls._normalize(quarterly, daily)
@@ -92,8 +96,8 @@ class FundamentalFeatures:
         ticker: str,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features directly from local SQL tables.
@@ -136,8 +140,8 @@ class FundamentalFeatures:
         ticker: str,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.

@@ -21,8 +21,8 @@ class TimeSummarizedEconomicFeatures:
         cls,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get the average and standard deviation of each series's
@@ -73,8 +73,8 @@ class NormalizedEconomicFeatures:
     def from_other_refined(
         cls,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from other feature SQL tables.
@@ -107,8 +107,8 @@ class NormalizedEconomicFeatures:
         cls,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
@@ -300,7 +300,7 @@ class EconomicFeatures:
 
     @classmethod
     def from_api(
-        cls, *, start: None | str = None, end: None | str = None
+        cls, *, start: str = "1776-07-04", end: str = utils.today
     ) -> pd.DataFrame:
         """Get economic features directly from the FRED API.
 
@@ -337,8 +337,8 @@ class EconomicFeatures:
     def from_raw(
         cls,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get economic features from local FRED SQL tables.
@@ -376,8 +376,8 @@ class EconomicFeatures:
         cls,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
@@ -501,8 +501,8 @@ class SeriesFeatures:
         series_id: str,
         /,
         *,
-        start: str = "0000-00-00",
-        end: str = "9999-99-99",
+        start: str = "1776-07-04",
+        end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
         """Get a single economic data series as-is from raw FRED data.

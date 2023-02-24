@@ -5,6 +5,7 @@ import pathlib
 import re
 import time
 from contextlib import contextmanager
+from datetime import datetime
 from typing import Callable, Generator
 
 import numpy as np
@@ -149,3 +150,6 @@ def snake_case(s: str, /) -> str:
     s = re.sub("__([A-Z])", r"_\1", s)
     s = re.sub("([a-z0-9])([A-Z])", r"\1_\2", s)
     return s.lower()
+
+
+today = datetime.today().strftime("%Y-%m-%d")
