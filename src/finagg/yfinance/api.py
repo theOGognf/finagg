@@ -42,12 +42,8 @@ def get(
         auto_adjust=True,
         debug=debug,
     )
-    df = df.reset_index()
-
-    def _strftime(item: pd.Timestamp) -> str:
-        return item.strftime("%Y-%m-%d")
-
-    df["Date"] = df["Date"].apply(_strftime)
+    df.index = pd.to_datetime(df.index).date
+    df = df.rename_axis("date").reset_index()
     df["ticker"] = stock.ticker
     df = df.drop(columns=["Dividends", "Stock Splits"], errors="ignore")
     df.columns = map(str.lower, df.columns)

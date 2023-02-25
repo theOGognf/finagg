@@ -40,9 +40,6 @@ class DailyFeatures:
         "volume_pct_change",
     ]
 
-    #: Columns that're replaced with their respective percent changes.
-    pct_change_columns = ["open", "high", "low", "close", "volume"]
-
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize daily features columns."""
@@ -56,8 +53,10 @@ class DailyFeatures:
         )
         df["price"] = df["close"]
         df = utils.quantile_clip(df)
-        pct_change_columns = [f"{col}_pct_change" for col in cls.pct_change_columns]
-        df[pct_change_columns] = df[cls.pct_change_columns].apply(utils.safe_pct_change)
+        pct_change_columns = [col for col in cls.columns if col.endswith("pct_change")]
+        df[pct_change_columns] = df[cls.pct_change_columns_source_names()].apply(
+            utils.safe_pct_change
+        )
         df.columns = df.columns.rename(None)
         df = df[cls.columns]
         return df.dropna()
@@ -253,6 +252,18 @@ class DailyFeatures:
         return total_rows
 
     @classmethod
+    def pct_change_columns_source_names(cls) -> list[str]:
+        """Return the names of columns used for computed percent change
+        columns.
+
+        """
+        return [
+            col.removesuffix("_pct_change")
+            for col in cls.columns
+            if col.endswith("_pct_change")
+        ]
+
+    @classmethod
     def to_refined(
         cls,
         ticker: str,
@@ -277,7 +288,7 @@ class DailyFeatures:
             Number of rows written to the SQL table.
 
         """
-        df = df.reset_index(names="date")
+        df = df.reset_index("date")
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:

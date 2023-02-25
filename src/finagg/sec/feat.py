@@ -443,7 +443,7 @@ class NormalizedQuarterlyFeatures:
             Number of rows written to the SQL table.
 
         """
-        df = df.reset_index(names=["fy", "fp", "filed"])
+        df = df.reset_index(["fy", "fp", "filed"])
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker)
         with engine.begin() as conn:
@@ -800,7 +800,7 @@ class QuarterlyFeatures:
             Number of rows written to the SQL table.
 
         """
-        df = df.reset_index(names=["fy", "fp", "filed"])
+        df = df.reset_index(["fy", "fp", "filed"])
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker)
         with engine.begin() as conn:

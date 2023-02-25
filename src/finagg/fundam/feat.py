@@ -295,7 +295,7 @@ class FundamentalFeatures:
             Number of rows written to the SQL table.
 
         """
-        df = df.reset_index(names="date")
+        df = df.reset_index("date")
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:

@@ -219,7 +219,7 @@ class NormalizedEconomicFeatures:
             Number of rows written to the SQL table.
 
         """
-        df = df.reset_index(names="date")
+        df = df.reset_index("date")
         df = df.melt("date", var_name="name", value_name="value")
         with engine.begin() as conn:
             conn.execute(sql.normalized_economic.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
@@ -502,7 +502,7 @@ class EconomicFeatures:
             Number of rows written to the SQL table.
 
         """
-        df = df.reset_index(names="date")
+        df = df.reset_index("date")
         df = df.melt("date", var_name="name", value_name="value")
         with engine.begin() as conn:
             conn.execute(sql.economic.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
