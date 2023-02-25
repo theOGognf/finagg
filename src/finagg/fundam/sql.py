@@ -4,14 +4,21 @@ from functools import cache
 
 import sqlalchemy as sa
 
-from .. import backend
+from .. import backend, sec, yfinance
 
 metadata = sa.MetaData()
 
 fundam = sa.Table(
     "fundam.refined.fundam",
     metadata,
-    sa.Column("ticker", sa.String, primary_key=True, doc="Unique company ticker."),
+    sa.Column(
+        "ticker",
+        sa.String,
+        sa.ForeignKey(sec.sql.submissions.c.ticker, ondelete="CASCADE"),
+        sa.ForeignKey(yfinance.sql.prices.c.ticker, ondelete="CASCADE"),
+        primary_key=True,
+        doc="Unique company ticker.",
+    ),
     sa.Column("date", sa.String, primary_key=True, doc="Filing and stock price dates."),
     sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("value", sa.Float, doc="Feature value."),
