@@ -57,11 +57,11 @@ def install(
     total_rows = 0
     all_refined = set()
     if all_:
-        all_refined = {"quarterly", "quarterly.normalized"}
+        all_refined = {"fundam"}
     elif refined:
         all_refined = set(refined)
 
-    if "quarterly" in all_refined:
+    if "fundam" in all_refined:
         total_rows += _feat.fundam.install(processes=processes)
 
     if all_ or all_refined:

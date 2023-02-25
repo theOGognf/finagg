@@ -411,8 +411,25 @@ class EconomicFeatures:
         df = df[cls.columns]
         return df
 
-    #: The candidate set is just the raw SQL series set.
-    get_candidate_id_set = sql.get_id_set
+    @classmethod
+    def get_candidate_id_set(
+        cls,
+        lb: int = 1,
+    ) -> set[str]:
+        """Get all unique series IDs in the raw SQL table that MAY BE ELIGIBLE
+        to be in the feature's SQL table.
+
+        Args:
+            lb: Minimum number of rows required to include a series in the
+                returned set.
+
+        Returns:
+            All unique series that may be valid for creating economic features
+            that also have at least `lb` rows used for constructing the
+            features.
+
+        """
+        return sql.get_id_set(lb=lb)
 
     @classmethod
     @cache

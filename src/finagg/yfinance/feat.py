@@ -161,8 +161,25 @@ class DailyFeatures:
         df = df[cls.columns]
         return df
 
-    #: The candidate set is just the raw SQL ticker set.
-    get_candidate_ticker_set = sql.get_ticker_set
+    @classmethod
+    def get_candidate_ticker_set(
+        cls,
+        lb: int = 1,
+    ) -> set[str]:
+        """Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE
+        to be in the feature's SQL table.
+
+        Args:
+            lb: Minimum number of rows required to include a ticker in the
+                returned set.
+
+        Returns:
+            All unique tickers that may be valid for creating daily features
+            that also have at least `lb` rows used for constructing the
+            features.
+
+        """
+        return sql.get_ticker_set(lb=lb)
 
     @classmethod
     @cache

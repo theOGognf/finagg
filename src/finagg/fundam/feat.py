@@ -85,7 +85,7 @@ class FundamentalFeatures:
             ticker,
             start=start,
             end=end,
-        ).reset_index(["fy", "fp"])
+        ).reset_index(["fy", "fp"], drop=True)
         start = str(quarterly.index[0])
         daily = yfinance.feat.daily.from_api(ticker, start=start, end=end)
         return cls._normalize(quarterly, daily)
@@ -124,7 +124,7 @@ class FundamentalFeatures:
             start=start,
             end=end,
             engine=engine,
-        ).reset_index(["fy", "fp"])
+        ).reset_index(["fy", "fp"], drop=True)
         start = str(quarterly_features.index[0])
         daily_features = yfinance.feat.daily.from_raw(
             ticker,
@@ -195,9 +195,9 @@ class FundamentalFeatures:
             features.
 
         """
-        return sec.feat.QuarterlyFeatures.get_candidate_ticker_set(
+        return sec.feat.QuarterlyFeatures.get_ticker_set(
             lb=lb
-        ) & yfinance.feat.DailyFeatures.get_candidate_ticker_set(lb=lb)
+        ) & yfinance.feat.DailyFeatures.get_ticker_set(lb=lb)
 
     @classmethod
     @cache
@@ -264,7 +264,7 @@ class FundamentalFeatures:
         ):
             for ticker, df in pool.imap_unordered(_refined_fundam_helper, tickers):
                 rowcount = len(df.index)
-                if rowcount:
+                if not rowcount:
                     cls.to_refined(ticker, df)
                 total_rows += rowcount
                 pbar.update()
