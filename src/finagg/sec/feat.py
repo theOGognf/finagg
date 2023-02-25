@@ -491,16 +491,6 @@ class QuarterlyFeatures:
     #: A company's quarterly features normalized by its industry.
     normalized = NormalizedQuarterlyFeatures()
 
-    #: Columns that're replaced with their respective percent changes.
-    pct_change_columns = [
-        "AssetsCurrent",
-        "InventoryNet",
-        "LiabilitiesCurrent",
-        "NetIncomeLoss",
-        "OperatingIncomeLoss",
-        "StockholdersEquity",
-    ]
-
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize quarterly features columns."""
@@ -527,8 +517,10 @@ class QuarterlyFeatures:
         df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
         df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df = utils.quantile_clip(df)
-        pct_change_columns = [f"{col}_pct_change" for col in cls.pct_change_columns]
-        df[pct_change_columns] = df[cls.pct_change_columns].apply(utils.safe_pct_change)
+        pct_change_columns = [col for col in cls.columns if col.endswith("pct_change")]
+        df[pct_change_columns] = df[cls.pct_change_columns_source_names()].apply(
+            utils.safe_pct_change
+        )
         df.columns = df.columns.rename(None)
         df = df[cls.columns]
         return df.dropna()
@@ -778,6 +770,18 @@ class QuarterlyFeatures:
                 total_rows += rowcount
                 pbar.update()
         return total_rows
+
+    @classmethod
+    def pct_change_columns_source_names(cls) -> list[str]:
+        """Return the names of columns used for computed percent change
+        columns.
+
+        """
+        return [
+            col.removesuffix("_pct_change")
+            for col in cls.columns
+            if col.endswith("_pct_change")
+        ]
 
     @classmethod
     def to_refined(

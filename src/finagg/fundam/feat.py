@@ -3,6 +3,7 @@
 import multiprocessing as mp
 from functools import cache, partial
 
+import numpy as np
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
@@ -44,6 +45,28 @@ class FundamentalFeatures:
         /,
     ) -> pd.DataFrame:
         """Normalize the feature columns."""
+        quarterly = quarterly.reset_index()
+        abs_cols = [
+            col
+            for col in sec.feat.QuarterlyFeatures.columns
+            if not col.endswith("pct_change")
+        ]
+        quarterly_abs = quarterly.groupby(["filed"], as_index=False)[abs_cols].last()
+        pct_change_cols = [
+            col
+            for col in sec.feat.QuarterlyFeatures.columns
+            if col.endswith("pct_change")
+        ]
+        quarterly_pct_change = quarterly.groupby(["filed"], as_index=False).agg(
+            {col: np.prod for col in pct_change_cols}
+        )
+        quarterly = pd.merge(
+            quarterly_abs,
+            quarterly_pct_change,
+            how="inner",
+            left_on="filed",
+            right_on="filed",
+        )
         df = pd.merge(quarterly, daily, how="outer", left_index=True, right_index=True)
         pct_change_cols = [col for col in cls.columns if col.endswith("pct_change")]
         df[pct_change_cols] = df[pct_change_cols].fillna(method="pad")
@@ -269,6 +292,18 @@ class FundamentalFeatures:
                 total_rows += rowcount
                 pbar.update()
         return total_rows
+
+    @classmethod
+    def pct_change_columns_source_names(cls) -> list[str]:
+        """Return the names of columns used for computed percent change
+        columns.
+
+        """
+        return [
+            col.removesuffix("_pct_change")
+            for col in cls.columns
+            if col.endswith("_pct_change")
+        ]
 
     @classmethod
     def to_refined(
