@@ -215,10 +215,12 @@ class NormalizedQuarterlyFeatures:
         ).reset_index(["filed"])
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
         company_df["filed"] = filed
-        pad_fill_columns = [
+        pct_change_columns = [
             col for col in QuarterlyFeatures.columns if col.endswith("pct_change")
         ]
-        company_df[pad_fill_columns] = company_df[pad_fill_columns].fillna(method="pad")
+        company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
+            method="pad"
+        )
         return (
             company_df.fillna(method="ffill")
             .dropna()
@@ -518,7 +520,7 @@ class QuarterlyFeatures:
         df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df = utils.quantile_clip(df)
         pct_change_columns = [col for col in cls.columns if col.endswith("pct_change")]
-        df[pct_change_columns] = df[cls.pct_change_columns_source_names()].apply(
+        df[pct_change_columns] = df[cls.pct_change_source_columns()].apply(
             utils.safe_pct_change
         )
         df.columns = df.columns.rename(None)
@@ -772,7 +774,7 @@ class QuarterlyFeatures:
         return total_rows
 
     @classmethod
-    def pct_change_columns_source_names(cls) -> list[str]:
+    def pct_change_source_columns(cls) -> list[str]:
         """Return the names of columns used for computed percent change
         columns.
 

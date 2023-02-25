@@ -54,7 +54,7 @@ class DailyFeatures:
         df["price"] = df["close"]
         df = utils.quantile_clip(df)
         pct_change_columns = [col for col in cls.columns if col.endswith("pct_change")]
-        df[pct_change_columns] = df[cls.pct_change_columns_source_names()].apply(
+        df[pct_change_columns] = df[cls.pct_change_source_columns()].apply(
             utils.safe_pct_change
         )
         df.columns = df.columns.rename(None)
@@ -252,7 +252,7 @@ class DailyFeatures:
         return total_rows
 
     @classmethod
-    def pct_change_columns_source_names(cls) -> list[str]:
+    def pct_change_source_columns(cls) -> list[str]:
         """Return the names of columns used for computed percent change
         columns.
 
