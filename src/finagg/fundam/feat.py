@@ -72,11 +72,16 @@ class FundamentalFeatures(feat.Features):
         df = pd.merge(quarterly, daily, how="outer", left_index=True, right_index=True)
         pct_change_cols = cls.pct_change_target_columns()
         df[pct_change_cols] = df[pct_change_cols].fillna(value=0)
+        df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
         df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
-        df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill").dropna()
+        df["PriceEarningsRatio"] = (
+            df["PriceEarningsRatio"]
+            .replace([-np.inf, np.inf], np.nan)
+            .fillna(method="ffill")
+        )
         df.index.names = ["date"]
         df = df[cls.columns]
-        return df
+        return df.dropna()
 
     @classmethod
     def from_api(
