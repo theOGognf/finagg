@@ -6,7 +6,7 @@ import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 
-from .. import backend, utils
+from .. import backend, feat, utils
 from . import api, sql
 
 
@@ -94,12 +94,8 @@ class NormalizedEconomicFeatures:
             start=start, end=end, engine=engine
         )
         economic_df = (economic_df - summarized_df["avg"]) / summarized_df["std"]
-        pad_fill_columns = [
-            col for col in EconomicFeatures.columns if col.endswith("pct_change")
-        ]
-        economic_df[pad_fill_columns] = economic_df[pad_fill_columns].fillna(
-            method="pad"
-        )
+        pct_change_cols = EconomicFeatures.pct_change_target_columns()
+        economic_df[pct_change_cols] = economic_df[pct_change_cols].fillna(value=0.0)
         return economic_df.fillna(method="ffill").dropna()
 
     @classmethod
@@ -226,7 +222,7 @@ class NormalizedEconomicFeatures:
         return len(df.index)
 
 
-class EconomicFeatures:
+class EconomicFeatures(feat.Features):
     """Methods for gathering economic data series from FRED sources."""
 
     #: Economic series IDs (typical economic indicators).
@@ -279,9 +275,7 @@ class EconomicFeatures:
             .astype(float)
             .sort_index()
         )
-        df = utils.quantile_clip(df)
-        pct_change_columns = [col for col in cls.columns if col.endswith("pct_change")]
-        df[pct_change_columns] = df[cls.pct_change_source_columns()].apply(
+        df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(
             utils.safe_pct_change
         )
         df.columns = df.columns.rename(None)
@@ -468,18 +462,6 @@ class EconomicFeatures:
             cls.to_refined(df)
         total_rows += total_rows
         return total_rows
-
-    @classmethod
-    def pct_change_source_columns(cls) -> list[str]:
-        """Return the names of columns used for computed percent change
-        columns.
-
-        """
-        return [
-            col.removesuffix("_pct_change")
-            for col in cls.columns
-            if col.endswith("_pct_change")
-        ]
 
     @classmethod
     def to_refined(

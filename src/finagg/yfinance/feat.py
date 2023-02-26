@@ -3,12 +3,13 @@
 import multiprocessing as mp
 from functools import cache, partial
 
+import numpy as np
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 from tqdm import tqdm
 
-from .. import backend, utils
+from .. import backend, feat, utils
 from . import api, sql
 
 
@@ -27,7 +28,7 @@ def _refined_daily_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
     return ticker, df
 
 
-class DailyFeatures:
+class DailyFeatures(feat.Features):
     """Methods for gathering daily stock data from Yahoo! finance."""
 
     #: Columns within this feature set.
@@ -43,18 +44,10 @@ class DailyFeatures:
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize daily features columns."""
-        df = (
-            df.drop(columns=["ticker"])
-            .fillna(method="ffill")
-            .dropna()
-            .set_index("date")
-            .astype(float)
-            .sort_index()
-        )
+        df = df.drop(columns=["ticker"]).set_index("date").astype(float)
         df["price"] = df["close"]
-        df = utils.quantile_clip(df)
-        pct_change_columns = [col for col in cls.columns if col.endswith("pct_change")]
-        df[pct_change_columns] = df[cls.pct_change_source_columns()].apply(
+        df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
+        df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(
             utils.safe_pct_change
         )
         df.columns = df.columns.rename(None)
@@ -250,18 +243,6 @@ class DailyFeatures:
                 total_rows += rowcount
                 pbar.update()
         return total_rows
-
-    @classmethod
-    def pct_change_source_columns(cls) -> list[str]:
-        """Return the names of columns used for computed percent change
-        columns.
-
-        """
-        return [
-            col.removesuffix("_pct_change")
-            for col in cls.columns
-            if col.endswith("_pct_change")
-        ]
 
     @classmethod
     def to_refined(

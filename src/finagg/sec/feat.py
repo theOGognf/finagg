@@ -4,12 +4,13 @@ import multiprocessing as mp
 from functools import cache, partial
 from typing import Literal
 
+import numpy as np
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 from tqdm import tqdm
 
-from .. import backend, utils
+from .. import backend, feat, utils
 from . import api, sql
 
 
@@ -215,11 +216,9 @@ class NormalizedQuarterlyFeatures:
         ).reset_index(["filed"])
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
         company_df["filed"] = filed
-        pct_change_columns = [
-            col for col in QuarterlyFeatures.columns if col.endswith("pct_change")
-        ]
+        pct_change_columns = QuarterlyFeatures.pct_change_target_columns()
         company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
-            method="pad"
+            value=0.0
         )
         return (
             company_df.fillna(method="ffill")
@@ -453,7 +452,7 @@ class NormalizedQuarterlyFeatures:
         return len(df.index)
 
 
-class QuarterlyFeatures:
+class QuarterlyFeatures(feat.Features):
     """Quarterly features from SEC EDGAR data."""
 
     #: Columns within this feature set.
@@ -518,9 +517,8 @@ class QuarterlyFeatures:
         ]
         df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
         df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
-        df = utils.quantile_clip(df)
-        pct_change_columns = [col for col in cls.columns if col.endswith("pct_change")]
-        df[pct_change_columns] = df[cls.pct_change_source_columns()].apply(
+        df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
+        df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(
             utils.safe_pct_change
         )
         df.columns = df.columns.rename(None)
@@ -772,18 +770,6 @@ class QuarterlyFeatures:
                 total_rows += rowcount
                 pbar.update()
         return total_rows
-
-    @classmethod
-    def pct_change_source_columns(cls) -> list[str]:
-        """Return the names of columns used for computed percent change
-        columns.
-
-        """
-        return [
-            col.removesuffix("_pct_change")
-            for col in cls.columns
-            if col.endswith("_pct_change")
-        ]
 
     @classmethod
     def to_refined(

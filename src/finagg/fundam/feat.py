@@ -9,7 +9,7 @@ import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 from tqdm import tqdm
 
-from .. import backend, sec, utils, yfinance
+from .. import backend, feat, sec, utils, yfinance
 from . import sql
 
 
@@ -27,7 +27,7 @@ def _refined_fundam_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
     return ticker, df
 
 
-class FundamentalFeatures:
+class FundamentalFeatures(feat.Features):
     """Method for gathering fundamental data on a stock using several sources."""
 
     #: Columns within this feature set.
@@ -46,19 +46,19 @@ class FundamentalFeatures:
     ) -> pd.DataFrame:
         """Normalize the feature columns."""
         quarterly = quarterly.reset_index()
-        abs_cols = [
-            col
-            for col in sec.feat.QuarterlyFeatures.columns
-            if not col.endswith("pct_change")
-        ]
-        quarterly_abs = quarterly.groupby(["filed"], as_index=False)[abs_cols].last()
-        pct_change_cols = [
-            col
-            for col in sec.feat.QuarterlyFeatures.columns
-            if col.endswith("pct_change")
-        ]
+        quarterly_abs = quarterly.groupby(["filed"], as_index=False)[
+            [
+                col
+                for col in sec.feat.QuarterlyFeatures.columns
+                if not col.endswith("pct_change")
+            ]
+        ].last()
+        quarterly_pct_change_cols = (
+            sec.feat.QuarterlyFeatures.pct_change_target_columns()
+        )
+        quarterly[quarterly_pct_change_cols] += 1
         quarterly_pct_change = quarterly.groupby(["filed"], as_index=False).agg(
-            {col: np.prod for col in pct_change_cols}
+            {col: np.prod for col in quarterly_pct_change_cols}
         )
         quarterly = pd.merge(
             quarterly_abs,
@@ -67,15 +67,16 @@ class FundamentalFeatures:
             left_on="filed",
             right_on="filed",
         )
+        quarterly[quarterly_pct_change_cols] -= 1
+        quarterly = quarterly.set_index("filed")
         df = pd.merge(quarterly, daily, how="outer", left_index=True, right_index=True)
-        pct_change_cols = [col for col in cls.columns if col.endswith("pct_change")]
-        df[pct_change_cols] = df[pct_change_cols].fillna(method="pad")
-        df = df.fillna(method="ffill").dropna()
+        pct_change_cols = cls.pct_change_target_columns()
+        df[pct_change_cols] = df[pct_change_cols].fillna(value=0)
         df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
-        df = utils.quantile_clip(df)
+        df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill").dropna()
         df.index.names = ["date"]
         df = df[cls.columns]
-        return df.dropna()
+        return df
 
     @classmethod
     def from_api(
@@ -292,18 +293,6 @@ class FundamentalFeatures:
                 total_rows += rowcount
                 pbar.update()
         return total_rows
-
-    @classmethod
-    def pct_change_source_columns(cls) -> list[str]:
-        """Return the names of columns used for computed percent change
-        columns.
-
-        """
-        return [
-            col.removesuffix("_pct_change")
-            for col in cls.columns
-            if col.endswith("_pct_change")
-        ]
 
     @classmethod
     def to_refined(
