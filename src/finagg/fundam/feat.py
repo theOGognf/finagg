@@ -89,10 +89,6 @@ class FundamentalFeatures(feat.Features):
     ) -> pd.DataFrame:
         """Get features directly from APIs.
 
-        Not all data series are published at the same rate or
-        time. Missing rows for less-frequent publications
-        are forward filled.
-
         Args:
             ticker: Company ticker.
             start: The start date of the observation period.
@@ -115,6 +111,46 @@ class FundamentalFeatures(feat.Features):
         return cls._normalize(quarterly, daily)
 
     @classmethod
+    def from_other_refined(
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: str = "1776-07-04",
+        end: str = utils.today,
+        engine: Engine = backend.engine,
+    ) -> pd.DataFrame:
+        """Get features directly from other refined SQL tables.
+
+        Args:
+            ticker: Company ticker.
+            start: The start date of the observation period.
+                Defaults to the first recorded date.
+            end: The end date of the observation period.
+                Defaults to the last recorded date.
+            engine: Raw data and feature store database engine.
+
+        Returns:
+            Combined quarterly and daily feature dataframe.
+            Sorted by date.
+
+        """
+        quarterly_features = sec.feat.quarterly.from_refined(
+            ticker,
+            start=start,
+            end=end,
+            engine=engine,
+        ).reset_index(["fy", "fp"], drop=True)
+        start = str(quarterly_features.index[0])
+        daily_features = yfinance.feat.daily.from_refined(
+            ticker,
+            start=start,
+            end=end,
+            engine=engine,
+        )
+        return cls._normalize(quarterly_features, daily_features)
+
+    @classmethod
     def from_raw(
         cls,
         ticker: str,
@@ -124,11 +160,7 @@ class FundamentalFeatures(feat.Features):
         end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
-        """Get features directly from local SQL tables.
-
-        Not all data series are published at the same rate or
-        time. Missing rows for less-frequent publications
-        are forward filled.
+        """Get features directly from other raw SQL tables.
 
         Args:
             ticker: Company ticker.
@@ -304,10 +336,6 @@ class FundamentalFeatures(feat.Features):
         engine: Engine = backend.engine,
     ) -> int:
         """Write the dataframe to the feature store for `ticker`.
-
-        Does the necessary handling to transform columns to
-        prepare the dataframe to be written to a dynamically-defined
-        local SQL table.
 
         Args:
             ticker: Company ticker.

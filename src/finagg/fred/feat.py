@@ -202,10 +202,6 @@ class NormalizedEconomicFeatures:
     ) -> int:
         """Write the dataframe to the feature store for `ticker`.
 
-        Does the necessary handling to transform columns to
-        prepare the dataframe to be written to a dynamically-defined
-        local SQL table.
-
         Args:
             df: Dataframe to store completely as rows in a local SQL
                 table.
@@ -472,10 +468,6 @@ class EconomicFeatures(feat.Features):
         engine: Engine = backend.engine,
     ) -> int:
         """Write the dataframe to the feature store for `ticker`.
-
-        Does the necessary handling to transform columns to
-        prepare the dataframe to be written to a dynamically-defined
-        local SQL table.
 
         Args:
             df: Dataframe to store completely as rows in a local SQL
