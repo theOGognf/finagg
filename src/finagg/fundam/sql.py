@@ -25,6 +25,22 @@ fundam = sa.Table(
 )
 
 
+normalized_fundam = sa.Table(
+    "fundam.refined.fundam.normalized",
+    metadata,
+    sa.Column(
+        "ticker",
+        sa.String,
+        sa.ForeignKey(fundam.c.ticker, ondelete="CASCADE"),
+        primary_key=True,
+        doc="Unique company ticker.",
+    ),
+    sa.Column("date", sa.String, nullable=False, doc="Filing and stock price dates."),
+    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
+    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+)
+
+
 @cache
 def get_ticker_set(lb: int = 1) -> set[str]:
     """Get all unique tickers in the raw SQL tables."""
