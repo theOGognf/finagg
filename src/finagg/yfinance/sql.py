@@ -32,7 +32,7 @@ daily = sa.Table(
     ),
     sa.Column("date", sa.String, primary_key=True, doc="Date associated with feature."),
     sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
-    sa.Column("value", sa.Float, doc="Feature value."),
+    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
 
 

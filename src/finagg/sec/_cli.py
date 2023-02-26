@@ -143,7 +143,7 @@ def install(
         if not user_agent:
             raise RuntimeError("An empty SEC API user agent was given.")
         p = utils.setenv("SEC_API_USER_AGENT", user_agent)
-        logger.info(f"SEC API user agent inserted to {p}")
+        logger.info(f"SEC API user agent written to {p}")
     else:
         logger.info("SEC API user agent found in the environment")
 

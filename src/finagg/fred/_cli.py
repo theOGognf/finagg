@@ -1,13 +1,14 @@
 """FRED CLI and tools."""
 
 import logging
+import os
 
 import click
 from requests.exceptions import HTTPError
 from sqlalchemy.exc import IntegrityError
 from tqdm import tqdm
 
-from .. import backend
+from .. import backend, utils
 from . import api as _api
 from . import feat as _feat
 from . import sql as _sql
@@ -104,6 +105,20 @@ def install(
 ) -> int:
     if verbose:
         logger.setLevel(logging.DEBUG)
+
+    if "FRED_API_KEY" not in os.environ:
+        api_key = input(
+            "Enter your FRED API key below.\n\n"
+            "You can request a FRED API key at\n"
+            "https://fred.stlouisfed.org/docs/api/api_key.html.\n\n"
+            "FRED API key: "
+        ).strip()
+        if not api_key:
+            raise RuntimeError("An empty FRED API key was given.")
+        p = utils.setenv("FRED_API_KEY", api_key)
+        logger.info(f"FRED API key written to {p}")
+    else:
+        logger.info("FRED API key found in the environment")
 
     total_rows = 0
     if all_ or raw:

@@ -65,7 +65,7 @@ def install(
         total_rows += _feat.fundam.install(processes=processes)
 
     if "fundam.normalized" in all_refined:
-        total_rows += _feat.fundam.normalized.install(processes=processes)
+        total_rows += _feat.fundam.normalized.install()
 
     if all_ or all_refined:
         logger.info(f"{total_rows} total rows inserted for {__package__}")

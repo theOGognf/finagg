@@ -28,7 +28,12 @@ series = sa.Table(
     sa.Column(
         "date", sa.String, primary_key=True, doc="Series value publication date."
     ),
-    sa.Column("value", sa.Float, doc="Economic series value for a particular date."),
+    sa.Column(
+        "value",
+        sa.Float,
+        nullable=False,
+        doc="Economic series value for a particular date.",
+    ),
 )
 
 economic = sa.Table(
@@ -41,7 +46,7 @@ economic = sa.Table(
         doc="Economic data series release date.",
     ),
     sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
-    sa.Column("value", sa.Float, doc="Feature value."),
+    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
 
 normalized_economic = sa.Table(
@@ -54,7 +59,7 @@ normalized_economic = sa.Table(
         doc="Economic data series release date.",
     ),
     sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
-    sa.Column("value", sa.Float, doc="Feature value."),
+    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
 
 
