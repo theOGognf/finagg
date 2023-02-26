@@ -280,7 +280,7 @@ class NormalizedFundamentalFeatures:
         *,
         ascending: bool = True,
         date: int | str = 0,
-    ) -> tuple[str, ...]:
+    ) -> list[str]:
         """Get all tickers in the feature's SQL table sorted by a particular
         column for a date.
 
@@ -327,7 +327,7 @@ class NormalizedFundamentalFeatures:
                 tickers.append(str(ticker))
         if not ascending:
             tickers = list(reversed(tickers))
-        return tuple(tickers)
+        return tickers
 
     @classmethod
     def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
