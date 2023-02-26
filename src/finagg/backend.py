@@ -38,11 +38,12 @@ class NumPyStdAggregate:
         return float(np.std(self.values))
 
 
-# Custom creator for adding aggregate functions.
-# Inspired by https://stackoverflow.com/a/997467.
+# Custom creator for enabline Write-Ahead Logging (WAL) and adding aggregate functions.
+# Adding aggregate functions is inspired by https://stackoverflow.com/a/997467.
 def creator() -> sqlite3.Connection:
     conn = sqlite3.connect(urlparse(database_url).path)
     conn.create_aggregate("std", 1, NumPyStdAggregate)  # type: ignore[arg-type]
+    conn.execute("PRAGMA journal_mode=WAL;")
     return conn
 
 

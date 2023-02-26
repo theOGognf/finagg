@@ -29,6 +29,21 @@ def _refined_fundam_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
     return ticker, df
 
 
+def _refined_normalized_fundam_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
+    """Helper for getting industry-normalized fundamental data in a
+    multiprocessing pool.
+
+    Args:
+        ticker: Ticker to create features for.
+
+    Returns:
+        The ticker and the returned feature dataframe.
+
+    """
+    df = NormalizedFundamentalFeatures.from_other_refined(ticker)
+    return ticker, df
+
+
 class IndustryFundamentalFeatures:
     """Methods for gathering industry-averaged fundamental data."""
 
@@ -315,9 +330,12 @@ class NormalizedFundamentalFeatures:
         return tuple(tickers)
 
     @classmethod
-    def install(cls) -> int:
+    def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
+
+        Args:
+            processes: Number of background processes to use for installation.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -328,14 +346,21 @@ class NormalizedFundamentalFeatures:
 
         tickers = cls.get_candidate_ticker_set()
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
-            desc="Installing refined industry-normalized fundamental data",
-            position=0,
-            leave=True,
-        ) as pbar:
-            for ticker in tickers:
-                df = cls.from_other_refined(ticker)
+        with (
+            tqdm(
+                total=len(tickers),
+                desc="Installing refined industry-normalized fundamental data",
+                position=0,
+                leave=True,
+            ) as pbar,
+            mp.Pool(
+                processes=processes,
+                initializer=partial(backend.engine.dispose, close=False),
+            ) as pool,
+        ):
+            for ticker, df in pool.imap_unordered(
+                _refined_normalized_fundam_helper, tickers
+            ):
                 rowcount = len(df.index)
                 if rowcount:
                     cls.to_refined(ticker, df)
