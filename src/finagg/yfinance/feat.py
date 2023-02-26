@@ -44,7 +44,7 @@ class DailyFeatures(feat.Features):
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize daily features columns."""
-        df = df.drop(columns=["ticker"]).set_index("date").astype(float)
+        df = df.drop(columns=["ticker"]).set_index("date").astype(float).sort_index()
         df["price"] = df["close"]
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
         df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(

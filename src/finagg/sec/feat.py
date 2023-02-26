@@ -226,6 +226,7 @@ class NormalizedQuarterlyFeatures:
             .reset_index()
             .drop_duplicates("filed")
             .set_index(["fy", "fp", "filed"])
+            .sort_index()
         )
 
     @classmethod
@@ -495,18 +496,14 @@ class QuarterlyFeatures(feat.Features):
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize quarterly features columns."""
-        df = df.set_index(["fy", "fp"])
+        df = df.set_index(["fy", "fp"]).sort_index()
         df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
         df = df.reset_index()
-        df = (
-            df.pivot(
-                index=["fy", "fp", "filed"],
-                columns="tag",
-                values="value",
-            )
-            .astype(float)
-            .sort_index()
-        )
+        df = df.pivot(
+            index=["fy", "fp", "filed"],
+            columns="tag",
+            values="value",
+        ).astype(float)
         df["EarningsPerShare"] = df["EarningsPerShareBasic"]
         df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
         df["PriceBookRatio"] = df["StockholdersEquity"] / (
@@ -834,23 +831,30 @@ class TagFeatures:
 
         """
         with engine.begin() as conn:
-            df = pd.DataFrame(
-                conn.execute(
-                    sa.select(
-                        sql.tags.c.fy, sql.tags.c.fp, sql.tags.c.filed, sql.tags.c.value
-                    )
-                    .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.tags.c.cik)
-                        & (sql.submissions.c.ticker == ticker),
-                    )
-                    .where(
-                        sql.tags.c.tag == tag,
-                        sql.tags.c.filed >= start,
-                        sql.tags.c.filed <= end,
+            df = (
+                pd.DataFrame(
+                    conn.execute(
+                        sa.select(
+                            sql.tags.c.fy,
+                            sql.tags.c.fp,
+                            sql.tags.c.filed,
+                            sql.tags.c.value,
+                        )
+                        .join(
+                            sql.submissions,
+                            (sql.submissions.c.cik == sql.tags.c.cik)
+                            & (sql.submissions.c.ticker == ticker),
+                        )
+                        .where(
+                            sql.tags.c.tag == tag,
+                            sql.tags.c.filed >= start,
+                            sql.tags.c.filed <= end,
+                        )
                     )
                 )
-            ).set_index(["fy", "fp", "filed"])
+                .set_index(["fy", "fp", "filed"])
+                .sort_index()
+            )
         return df
 
 

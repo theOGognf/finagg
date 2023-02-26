@@ -94,6 +94,7 @@ class NormalizedEconomicFeatures:
             start=start, end=end, engine=engine
         )
         economic_df = (economic_df - summarized_df["avg"]) / summarized_df["std"]
+        economic_df = economic_df.sort_index()
         pct_change_cols = EconomicFeatures.pct_change_target_columns()
         economic_df[pct_change_cols] = economic_df[pct_change_cols].fillna(value=0.0)
         return economic_df.fillna(method="ffill").dropna()
@@ -266,10 +267,10 @@ class EconomicFeatures(feat.Features):
         """Normalize economic features columns."""
         df = (
             df.pivot(index="date", values="value", columns="series_id")
+            .sort_index()
             .fillna(method="ffill")
             .dropna()
             .astype(float)
-            .sort_index()
         )
         df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(
             utils.safe_pct_change
@@ -515,15 +516,19 @@ class SeriesFeatures:
 
         """
         with engine.begin() as conn:
-            df = pd.DataFrame(
-                conn.execute(
-                    sa.select(sql.series.c.date, sql.series.c.value).where(
-                        sql.series.c.series_id == series_id,
-                        sql.series.c.date >= start,
-                        sql.series.c.date <= end,
+            df = (
+                pd.DataFrame(
+                    conn.execute(
+                        sa.select(sql.series.c.date, sql.series.c.value).where(
+                            sql.series.c.series_id == series_id,
+                            sql.series.c.date >= start,
+                            sql.series.c.date <= end,
+                        )
                     )
                 )
-            ).set_index(["date"])
+                .set_index(["date"])
+                .sort_index()
+            )
         return df
 
 

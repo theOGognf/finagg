@@ -27,7 +27,7 @@ def entry_point() -> None:
 @click.option(
     "--refined",
     "-ref",
-    type=click.Choice(["fundam"]),
+    type=click.Choice(["fundam", "fundam.normalized"]),
     multiple=True,
     help=(
         "Refined tables to install. This requires Yahoo! Finance and "
@@ -57,12 +57,15 @@ def install(
     total_rows = 0
     all_refined = set()
     if all_:
-        all_refined = {"fundam"}
+        all_refined = {"fundam", "fundam.normalized"}
     elif refined:
         all_refined = set(refined)
 
     if "fundam" in all_refined:
         total_rows += _feat.fundam.install(processes=processes)
+
+    if "fundam.normalized" in all_refined:
+        total_rows += _feat.fundam.normalized.install(processes=processes)
 
     if all_ or all_refined:
         logger.info(f"{total_rows} total rows inserted for {__package__}")

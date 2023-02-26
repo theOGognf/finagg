@@ -178,6 +178,7 @@ class NormalizedFundamentalFeatures:
             ticker=ticker, level=level, start=start, end=end, engine=engine
         )
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
+        company_df = company_df.sort_index()
         pct_change_columns = FundamentalFeatures.pct_change_target_columns()
         company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
             value=0.0
@@ -444,7 +445,9 @@ class FundamentalFeatures(feat.Features):
         )
         quarterly[quarterly_pct_change_cols] -= 1
         quarterly = quarterly.set_index("filed")
-        df = pd.merge(quarterly, daily, how="outer", left_index=True, right_index=True)
+        df = pd.merge(
+            quarterly, daily, how="outer", left_index=True, right_index=True
+        ).sort_index()
         pct_change_cols = cls.pct_change_target_columns()
         df[pct_change_cols] = df[pct_change_cols].fillna(value=0)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
@@ -609,7 +612,7 @@ class FundamentalFeatures(feat.Features):
                     )
                 )
             )
-        df = df.pivot(index="date", values="value", columns="name")
+        df = df.pivot(index="date", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
         df = df[cls.columns]
         return df
