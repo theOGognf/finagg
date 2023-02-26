@@ -32,7 +32,7 @@ class DailyFeatures(feat.Features):
     """Methods for gathering daily stock data from Yahoo! finance."""
 
     #: Columns within this feature set.
-    columns = [
+    columns: list[str] = [
         "price",
         "open_pct_change",
         "high_pct_change",
@@ -240,7 +240,7 @@ class DailyFeatures(feat.Features):
                 rowcount = len(df.index)
                 if rowcount:
                     cls.to_refined(ticker, df)
-                total_rows += rowcount
+                    total_rows += rowcount
                 pbar.update()
         return total_rows
 

@@ -189,7 +189,7 @@ class NormalizedEconomicFeatures:
         total_rows = len(df.index)
         if total_rows:
             cls.to_refined(df)
-        total_rows += total_rows
+            total_rows += total_rows
         return total_rows
 
     @classmethod
@@ -239,7 +239,7 @@ class EconomicFeatures(feat.Features):
     ]
 
     #: Columns within this feature set.
-    columns = [
+    columns: list[str] = [
         "CIVPART_pct_change",
         "CPIAUCNS_pct_change",
         "CSUSHPINSA_pct_change",
@@ -456,7 +456,7 @@ class EconomicFeatures(feat.Features):
         total_rows = len(df.index)
         if total_rows:
             cls.to_refined(df)
-        total_rows += total_rows
+            total_rows += total_rows
         return total_rows
 
     @classmethod

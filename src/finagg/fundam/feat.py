@@ -23,7 +23,7 @@ def _refined_fundam_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
         The ticker and the returned feature dataframe.
 
     """
-    df = FundamentalFeatures.from_raw(ticker)
+    df = FundamentalFeatures.from_other_refined(ticker)
     return ticker, df
 
 
@@ -31,7 +31,7 @@ class FundamentalFeatures(feat.Features):
     """Method for gathering fundamental data on a stock using several sources."""
 
     #: Columns within this feature set.
-    columns = (
+    columns: list[str] = (
         yfinance.feat.daily.columns
         + sec.feat.quarterly.columns
         + ["PriceEarningsRatio"]
@@ -320,9 +320,9 @@ class FundamentalFeatures(feat.Features):
         ):
             for ticker, df in pool.imap_unordered(_refined_fundam_helper, tickers):
                 rowcount = len(df.index)
-                if not rowcount:
+                if rowcount:
                     cls.to_refined(ticker, df)
-                total_rows += rowcount
+                    total_rows += rowcount
                 pbar.update()
         return total_rows
 

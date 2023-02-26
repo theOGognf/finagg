@@ -419,7 +419,7 @@ class NormalizedQuarterlyFeatures:
                 rowcount = len(df.index)
                 if rowcount:
                     cls.to_refined(ticker, df)
-                total_rows += rowcount
+                    total_rows += rowcount
                 pbar.update()
         return total_rows
 
@@ -456,7 +456,7 @@ class QuarterlyFeatures(feat.Features):
     """Quarterly features from SEC EDGAR data."""
 
     #: Columns within this feature set.
-    columns = [
+    columns: list[str] = [
         "AssetsCurrent_pct_change",
         "DebtEquityRatio",
         "EarningsPerShare",
@@ -767,7 +767,7 @@ class QuarterlyFeatures(feat.Features):
                 rowcount = len(df.index)
                 if rowcount:
                     cls.to_refined(ticker, df)
-                total_rows += rowcount
+                    total_rows += rowcount
                 pbar.update()
         return total_rows
 
