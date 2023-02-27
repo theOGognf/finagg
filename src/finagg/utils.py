@@ -10,6 +10,7 @@ from typing import Callable, Generator
 
 import numpy as np
 import pandas as pd
+from dotenv import set_key
 
 
 def CamelCase(s: str, /) -> str:
@@ -127,8 +128,7 @@ def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:
 
     os.environ[name] = value
     dotenv = pathlib.Path.cwd() / ".env"
-    with open(dotenv, "a+") as env_file:
-        env_file.write(f"{name}={value}\n")
+    set_key(str(dotenv), name, value)
     return dotenv
 
 

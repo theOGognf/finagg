@@ -2,6 +2,7 @@
 
 import logging
 import multiprocessing as mp
+from typing import Literal
 
 import click
 
@@ -50,7 +51,7 @@ def entry_point() -> None:
     help="Number of background processes to use for installing refined data.",
 )
 def install(
-    refined: list[str] = [],
+    refined: list[Literal["fundam", "fundam.normalized"]] = [],
     all_: bool = False,
     processes: int = mp.cpu_count() - 1,
 ) -> int:

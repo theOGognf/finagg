@@ -2,6 +2,7 @@
 
 import logging
 import os
+from typing import Literal
 
 import click
 from requests.exceptions import HTTPError
@@ -99,7 +100,7 @@ def entry_point() -> None:
 )
 def install(
     raw: bool = False,
-    refined: list[str] = [],
+    refined: list[Literal["economic", "economic.normalized"]] = [],
     all_: bool = False,
     verbose: bool = False,
 ) -> int:

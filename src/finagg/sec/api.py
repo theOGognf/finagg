@@ -25,7 +25,8 @@ Examples:
 import logging
 import os
 from abc import ABC, abstractmethod
-from datetime import timedelta
+from datetime import datetime, timedelta
+from functools import cache
 from typing import Any, ClassVar, TypedDict
 
 import pandas as pd
@@ -196,7 +197,7 @@ class Frames(_API):
     url = (
         "https://data.sec.gov/api/xbrl"
         "/frames"
-        "/{taxonomy}/{tag}/{units}/CY{year}Q{quarter}I.json"
+        "/{taxonomy}/{tag}/{units}/CY{year}Q{quarter}.json"
     )
 
     @classmethod
@@ -207,6 +208,7 @@ class Frames(_API):
         quarter: int | str,
         /,
         *,
+        instant: bool = False,
         taxonomy: str = "us-gaap",
         units: str = "USD",
         user_agent: None | str = None,
@@ -218,6 +220,9 @@ class Frames(_API):
             tag: Valid tag within the given `taxonomy`.
             year: Year to retrieve.
             quarter: Quarter to retrieve.
+            instant: Whether to get instantaneous data for the frame (data that
+                most closely matches a frame's year and quarter without a
+                buffer).
             taxonomy: Valid SEC EDGAR taxonomy.
                 See https://www.sec.gov/info/edgar/edgartaxonomies.shtml for taxonomies.
             units: Current to view results in.
@@ -227,6 +232,8 @@ class Frames(_API):
             Dataframe with slightly improved column names.
 
         """
+        if instant:
+            quarter = f"{quarter}I"
         url = cls.url.format(
             taxonomy=taxonomy, tag=tag, units=units, year=year, quarter=quarter
         )
@@ -390,3 +397,42 @@ def get_ticker(cik: str, /, *, user_agent: None | str = None) -> str:
             _tickers_to_cik[items["ticker"]] = normalized_cik
     cik = str(cik).zfill(10)
     return _cik_to_tickers[cik]
+
+
+@cache
+def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
+    """Get the set of tickers that published data for popular concepts
+    during any of the quarters for the previous year.
+
+    This effectively gets the set of tickers whose data is at least
+    somewhat available through the SEC EDGAR API.
+
+    """
+    year = datetime.now().year - 1
+    tickers = set()
+    for concept in [
+        {"tag": "AssetsCurrent", "taxonomy": "us-gaap", "units": "USD"},
+        {"tag": "InventoryNet", "taxonomy": "us-gaap", "units": "USD"},
+        {"tag": "LiabilitiesCurrent", "taxonomy": "us-gaap", "units": "USD"},
+        {"tag": "NetIncomeLoss", "taxonomy": "us-gaap", "units": "USD"},
+        {"tag": "StockholdersEquity", "taxonomy": "us-gaap", "units": "USD"},
+    ]:
+        tag = concept["tag"]
+        taxonomy = concept["taxonomy"]
+        units = concept["units"]
+        for quarter in range(1, 4):
+            df = frames.get(
+                tag,
+                year,
+                quarter,
+                taxonomy=taxonomy,
+                units=units,
+                user_agent=user_agent,
+            )
+            for cik in df["cik"]:
+                try:
+                    ticker = get_ticker(cik)
+                except KeyError:
+                    continue
+                tickers.add(ticker)
+    return tickers
