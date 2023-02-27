@@ -96,7 +96,7 @@ def install(
             processes=processes,
             verbose=verbose,
         )
-        ctx.invoke(fundam._cli.install, raw=raw, all_=all_, processes=processes)
+        ctx.invoke(fundam._cli.install, all_=all_, processes=processes)
     else:
         logger.info(
             "Skipping installation because no installation options are provided"
