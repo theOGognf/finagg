@@ -58,6 +58,25 @@ class Concept(TypedDict):
     units: str
 
 
+class Frame(Concept):
+    """A frame is just a concept with a flag indicating if it supports
+    'instantaneous' frame data.
+
+    """
+
+    #: Whether to retrieve "instant" calendrical results.
+    instant: bool
+
+
+def frame_to_concept(frame: Frame) -> Concept:
+    """Helper for converting from a frame to a concept."""
+    return {
+        "tag": frame["tag"],
+        "taxonomy": frame["taxonomy"],
+        "units": "/".join(frame["units"].split("-per-")),
+    }
+
+
 class SubmissionsResult(TypedDict):
     #: Company metadata.
     metadata: dict[str, Any]
@@ -197,7 +216,7 @@ class Frames(_API):
     url = (
         "https://data.sec.gov/api/xbrl"
         "/frames"
-        "/{taxonomy}/{tag}/{units}/CY{year}Q{quarter}.json"
+        "/{taxonomy}/{tag}/{units}/CY{year}{quarter}.json"
     )
 
     @classmethod
@@ -205,10 +224,10 @@ class Frames(_API):
         cls,
         tag: str,
         year: int | str,
-        quarter: int | str,
         /,
+        quarter: None | int | str = None,
         *,
-        instant: bool = False,
+        instant: bool = True,
         taxonomy: str = "us-gaap",
         units: str = "USD",
         user_agent: None | str = None,
@@ -219,10 +238,11 @@ class Frames(_API):
         Args:
             tag: Valid tag within the given `taxonomy`.
             year: Year to retrieve.
-            quarter: Quarter to retrieve.
+            quarter: Quarter to retrieve data for. Most data is only provided
+                at a quarterly rate, so this should be provided for most cases.
             instant: Whether to get instantaneous data for the frame (data that
                 most closely matches a frame's year and quarter without a
-                buffer).
+                time buffer). This flag should be enabled for most cases.
             taxonomy: Valid SEC EDGAR taxonomy.
                 See https://www.sec.gov/info/edgar/edgartaxonomies.shtml for taxonomies.
             units: Current to view results in.
@@ -232,8 +252,12 @@ class Frames(_API):
             Dataframe with slightly improved column names.
 
         """
-        if instant:
-            quarter = f"{quarter}I"
+        if quarter:
+            quarter = f"Q{quarter}"
+            if instant:
+                quarter = f"{quarter}I"
+        else:
+            quarter = ""
         url = cls.url.format(
             taxonomy=taxonomy, tag=tag, units=units, year=year, quarter=quarter
         )
@@ -349,6 +373,52 @@ submissions = Submissions()
 #: an individual ticker's SEC CIK.
 tickers = Tickers()
 
+#: Company frames that have high availability. Units are in valid frame
+#: format.
+common_frames: list[Frame] = [
+    {
+        "tag": "AssetsCurrent",
+        "taxonomy": "us-gaap",
+        "units": "USD",
+        "instant": True,
+    },
+    {
+        "tag": "EarningsPerShareBasic",
+        "taxonomy": "us-gaap",
+        "units": "USD-per-shares",
+        "instant": False,
+    },
+    {"tag": "InventoryNet", "taxonomy": "us-gaap", "units": "USD", "instant": True},
+    {
+        "tag": "LiabilitiesCurrent",
+        "taxonomy": "us-gaap",
+        "units": "USD",
+        "instant": True,
+    },
+    {
+        "tag": "NetIncomeLoss",
+        "taxonomy": "us-gaap",
+        "units": "USD",
+        "instant": True,
+    },
+    {
+        "tag": "OperatingIncomeLoss",
+        "taxonomy": "us-gaap",
+        "units": "USD",
+        "instant": False,
+    },
+    {
+        "tag": "StockholdersEquity",
+        "taxonomy": "us-gaap",
+        "units": "USD",
+        "instant": True,
+    },
+]
+
+#: Company concepts that have high availability. Units are not in valid frame
+#: formats.
+common_concepts: list[Concept] = [frame_to_concept(frame) for frame in common_frames]
+
 
 @ratelimit.guard([ratelimit.RequestLimit(9, timedelta(seconds=1))])
 def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
@@ -410,21 +480,18 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
     """
     year = datetime.now().year - 1
     tickers = set()
-    for concept in [
-        {"tag": "AssetsCurrent", "taxonomy": "us-gaap", "units": "USD"},
-        {"tag": "InventoryNet", "taxonomy": "us-gaap", "units": "USD"},
-        {"tag": "LiabilitiesCurrent", "taxonomy": "us-gaap", "units": "USD"},
-        {"tag": "NetIncomeLoss", "taxonomy": "us-gaap", "units": "USD"},
-        {"tag": "StockholdersEquity", "taxonomy": "us-gaap", "units": "USD"},
-    ]:
-        tag = concept["tag"]
-        taxonomy = concept["taxonomy"]
-        units = concept["units"]
+
+    for frame in common_frames:
+        tag = frame["tag"]
+        instant = frame["instant"]
+        taxonomy = frame["taxonomy"]
+        units = frame["units"]
         for quarter in range(1, 4):
             df = frames.get(
                 tag,
                 year,
                 quarter,
+                instant=instant,
                 taxonomy=taxonomy,
                 units=units,
                 user_agent=user_agent,

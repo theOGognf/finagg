@@ -45,7 +45,7 @@ def _install_raw_data(ticker: str, /) -> tuple[bool, int]:
             if not rowcount:
                 logger.debug(f"Skipping {ticker} due to missing metadata")
                 return True, 0
-            for concept in _feat.quarterly.concepts:
+            for concept in _api.common_concepts:
                 tag = concept["tag"]
                 taxonomy = concept["taxonomy"]
                 units = concept["units"]

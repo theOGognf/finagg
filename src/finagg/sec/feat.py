@@ -473,19 +473,7 @@ class QuarterlyFeatures(feat.Features):
     ]
 
     #: XBRL disclosure concepts to pull for a company.
-    concepts: list[api.Concept] = [
-        {"tag": "AssetsCurrent", "taxonomy": "us-gaap", "units": "USD"},
-        {
-            "tag": "EarningsPerShareBasic",
-            "taxonomy": "us-gaap",
-            "units": "USD/shares",
-        },
-        {"tag": "InventoryNet", "taxonomy": "us-gaap", "units": "USD"},
-        {"tag": "LiabilitiesCurrent", "taxonomy": "us-gaap", "units": "USD"},
-        {"tag": "NetIncomeLoss", "taxonomy": "us-gaap", "units": "USD"},
-        {"tag": "OperatingIncomeLoss", "taxonomy": "us-gaap", "units": "USD"},
-        {"tag": "StockholdersEquity", "taxonomy": "us-gaap", "units": "USD"},
-    ]
+    concepts: list[api.Concept] = api.common_concepts
 
     #: Quarterly features aggregated by industry.
     industry = IndustryQuarterlyFeatures()
