@@ -138,6 +138,9 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
     Returns:
         Successful responses.
 
+    Raises:
+        RuntimeError if a user agent isn't provided or found in the environment.
+
     """
     user_agent = user_agent or os.environ.get(
         "INDICES_API_USER_AGENT",

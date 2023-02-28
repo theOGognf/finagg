@@ -10,16 +10,20 @@ See the official BEA API user guide for more info:
 
 Examples:
     List datasets.
+
     >>> import finagg.bea.api as bea
     >>> bea.get_dataset_list()
 
-    Listing parameters for GDP by industry.
+    List the GDP by industry API parameters.
+
     >>> bea.gdp_by_industry.get_parameter_list()
 
-    Listing possible parameter values.
+    List possible parameter values.
+
     >>> bea.gdp_by_industry.get_parameter_values("year")
 
     Getting GDP by industry for specific years.
+
     >>> bea.gdp_by_industry.get(year=[1995, 1996])
 
 """
@@ -79,7 +83,7 @@ class FixedAssets(_API):
     """US fixed assets (assets for long-term use).
 
     Details low-level US economic details.
-    See `_GDPByIndustry` for more coarse/high-level industry data.
+    See :class:`GDPByIndustry` for more coarse/high-level industry data.
 
     """
 
@@ -157,7 +161,7 @@ class GDPByIndustry(_API):
     """GDP (a single summary statistic) for each industry.
 
     Data provided by this API is considered coarse/high-level.
-    See `_InputOutput` for more granular/low-level industry data.
+    See :class:`InputOutput` for more granular/low-level industry data.
 
     """
 
@@ -232,7 +236,7 @@ class InputOutput(_API):
     """Specific input-output statistics for each industry.
 
     Data provided by this API is considered granular/low-level.
-    See `_GDPByIndustry` for more coarse/high-level industry data.
+    See :class:`GDPByIndustry` for more coarse/high-level industry data.
 
     Data is provided for different "rows" and "columns" where:
         - a row is an industry and
@@ -431,8 +435,8 @@ def get(
 ) -> dict[str, list[dict[str, Any]]]:
     """Main get method used by dataset APIs.
 
-    Handles throttle watchdog state updates, API key validation,
-    and common formatting/parameters between API methods.
+    Handles API key validation, formatting, and parameters common
+    amongst several API methods.
 
     Args:
         params: Params specific to the API method.
@@ -441,8 +445,8 @@ def get(
         A list of result dictionaries.
 
     Raises:
-        RuntimeError: If no BEA API key is passed or found.
-        BEAAPIException: If a BEA API error occurs.
+        `RuntimeError`: If no BEA API key is passed or found.
+        `BEAAPIError`: If a BEA API error occurs.
 
     """
     api_key = api_key or os.environ.get("BEA_API_KEY", None)
@@ -476,7 +480,7 @@ def get_parameter_list(dataset: str, /, *, api_key: None | str = None) -> pd.Dat
     """Get a dataset's list of parameters.
 
     Args:
-        dataset: Dataset API to inspect. See meth:`get_dataset_list` for a
+        dataset: Dataset API to inspect. See :meth:`get_dataset_list` for a
             list of datasets.
 
     Returns:
@@ -497,7 +501,7 @@ def get_parameter_values(
     """Get potential values for a dataset's parameter.
 
     Args:
-        dataset: Dataset API to inspect. See meth:`get_dataset_list` for
+        dataset: Dataset API to inspect. See :meth:`get_dataset_list` for a
             list of datasets.
         param: Dataset API's parameter to inspect.
 

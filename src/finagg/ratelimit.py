@@ -18,9 +18,9 @@ class RateLimit(ABC):
     Args:
         limit: Max limit within `period` (e.g., max number of
             requests, errors, size in memory, etc.).
-        period: Time interval for evaluating `limit`.
-        buffer: Reduce `limit` by this fraction. Adds a bit of
-            leeway to ensure `limit` is not reached. Useful for
+        period: Time interval for evaluating ``limit``.
+        buffer: Reduce ``limit`` by this fraction. Adds a bit of
+            leeway to ensure ``limit`` is not reached. Useful for
             enforcing response size limits.
 
     """
@@ -62,15 +62,11 @@ class RateLimit(ABC):
 
         Returns:
             A number indicating the request/response's contribution
-            to the rate limit
+            to the rate limit OR a dictionary containing:
 
-            OR
-
-            a dictionary containing:
-                "limit": A number indicating the request/response's
+                - "limit": A number indicating the request/response's
                     contribution to the rate limit.
-                "wait": Time to wait before a new request can be
-                    made.
+                - "wait": Time to wait before a new request can be made.
 
         """
 

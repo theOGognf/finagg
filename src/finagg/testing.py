@@ -30,8 +30,12 @@ def sqlite_engine(
         and whose respective database file is deleted
         after use.
 
+    Raises:
+        ValueError if both `metadata` and `table` are provided.
+
     Examples:
-        # Using the testing util as a pytest fixture
+        Using the testing util as a pytest fixture
+
         >>> import pytest
         >>> from sqlalchemy.engine import Engine
         >>>

@@ -20,7 +20,7 @@ Optionally install the recommended datasets from 3rd party APIs into a local
 SQL database.
 
 ```python
-finagg install
+finagg install -a
 ```
 
 The installation will point you where to get free API keys and write them to a

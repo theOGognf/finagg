@@ -20,6 +20,7 @@ def CamelCase(s: str, /) -> str:
         https://stackoverflow.com/a/1176023
 
     Examples:
+
         >>> CamelCase("snakes_are_dope")
         "SnakesAreDope"
 
@@ -34,6 +35,7 @@ def join_with(s: str | list[str], /, delim: str) -> str:
     """Join a sequence of strings with the delimiter `delim`.
 
     Examples:
+
         >>> join_with(["foo", "bar"], ",")
         "foo,bar"
 
@@ -139,6 +141,7 @@ def snake_case(s: str, /) -> str:
         https://stackoverflow.com/a/1176023
 
     Examples:
+
         >>> snake_case("CamelsAreCool")
         "camels_are_cool"
 

@@ -75,9 +75,11 @@ class IndustryFundamentalFeatures:
             level: Industry level to aggregate features at.
                 The industry used according to `ticker` or `code`
                 is subsampled according to this value. Options include:
-                    2 = major group (e.g., furniture and fixtures)
-                    3 = industry group (e.g., office furnitures)
-                    4 = industry (e.g., wood office furniture)
+
+                    - 2 = major group (e.g., furniture and fixtures)
+                    - 3 = industry group (e.g., office furnitures)
+                    - 4 = industry (e.g., wood office furniture)
+
             start: The start date of the observation period.
             end: The end date of the observation period.
             engine: Raw data and feature data SQL database engine.
@@ -87,7 +89,7 @@ class IndustryFundamentalFeatures:
             separate column. Sorted by date.
 
         Raises:
-            ValueError if neither a `ticker` nor `code` are provided.
+            `ValueError` if neither a `ticker` nor `code` are provided.
 
         """
         with engine.begin() as conn:
@@ -159,9 +161,11 @@ class NormalizedFundamentalFeatures:
             level: Industry level to aggregate relative features at.
                 The industry used according to `ticker` is subsampled
                 according to this value. Options include:
-                    2 = major group (e.g., furniture and fixtures)
-                    3 = industry group (e.g., office furnitures)
-                    4 = industry (e.g., wood office furniture)
+
+                    - 2 = major group (e.g., furniture and fixtures)
+                    - 3 = industry group (e.g., office furnitures)
+                    - 4 = industry (e.g., wood office furniture)
+
             start: The start date of the observation period.
             end: The end date of the observation period.
             engine: Feature store database engine.
@@ -295,6 +299,9 @@ class NormalizedFundamentalFeatures:
 
         Returns:
             Tickers sorted by a feature column.
+
+        Raises:
+            ValueError if the integer date is positive.
 
         """
         with backend.engine.begin() as conn:

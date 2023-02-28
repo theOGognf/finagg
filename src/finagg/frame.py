@@ -55,6 +55,7 @@ class FiscalFrame:
     Examples:
         Getting quarter differences between frames and determining if the sequence
         is valid.
+
         >>> import finagg
         >>> df = finagg.sec.api.company_concept.get("AssetsCurrent", ticker="AAPL")
         >>> frames: pd.Series = df["fy"].astype(int).astype(str) + df["fp"].astype(str)

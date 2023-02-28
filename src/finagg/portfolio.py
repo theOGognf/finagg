@@ -9,7 +9,7 @@ class Position:
 
     Args:
         cost: Initial purchase cost.
-        quantity: Shares held at `cost`.
+        quantity: Number of shares held at `cost`.
 
     """
 
@@ -23,7 +23,7 @@ class Position:
     #: Current number of shares owned in the position.
     quantity: float
 
-    def __init__(self, cost: float, quantity: float) -> None:
+    def __init__(self, cost: float, quantity: float, /) -> None:
         self.cost_basis_total = cost * quantity
         self.average_cost_basis = cost
         self.quantity = quantity
@@ -54,7 +54,7 @@ class Position:
 
         return self.average_cost_basis < __o
 
-    def buy(self, cost: float, quantity: float) -> float:
+    def buy(self, cost: float, quantity: float, /) -> float:
         """Buy `quantity` of the position for `cost`.
 
         Args:
@@ -70,7 +70,7 @@ class Position:
         self.average_cost_basis = self.cost_basis_total / self.quantity
         return cost * quantity
 
-    def sell(self, cost: float, quantity: float) -> float:
+    def sell(self, cost: float, quantity: float, /) -> float:
         """Sell `quantity` of the position for `cost`.
 
         Args:
@@ -81,8 +81,8 @@ class Position:
             Value of the sold position.
 
         Raises:
-            ValueError if there aren't enough shares
-            to sell in the position.
+            `ValueError`: If there aren't enough shares
+                to sell in the position.
 
         """
         if self.quantity < quantity:
@@ -91,7 +91,7 @@ class Position:
         self.cost_basis_total = self.average_cost_basis * self.quantity
         return cost * quantity
 
-    def total_dollar_change(self, cost: float) -> float:
+    def total_dollar_change(self, cost: float, /) -> float:
         """Compute the total dollar change relative to the average
         cost basis and the current value of the security.
 
@@ -104,7 +104,7 @@ class Position:
         """
         return (cost - self.average_cost_basis) * self.quantity
 
-    def total_percent_change(self, cost: float) -> float:
+    def total_percent_change(self, cost: float, /) -> float:
         """Compute the total percent change relative to the average
         cost basis and the current value of the security.
 
@@ -139,7 +139,7 @@ class Portfolio:
     #: Total cash withdrawn since starting the portfolio.
     withdrawals_total: float
 
-    def __init__(self, cash: float) -> None:
+    def __init__(self, cash: float, /) -> None:
         self.cash = cash
         self.deposits_total = cash
         self.withdrawals_total = 0
@@ -159,7 +159,7 @@ class Portfolio:
         """
         return self.positions[symbol]
 
-    def buy(self, symbol: str, cost: float, quantity: float) -> float:
+    def buy(self, symbol: str, cost: float, quantity: float, /) -> float:
         """Buy `quantity` of security with `symbol` for `cost`.
 
         Args:
@@ -172,8 +172,8 @@ class Portfolio:
             portfolio.
 
         Raises:
-            ValueError if the portfolio doesn't have enough cash
-            to execute the buy order.
+            `ValueError`: If the portfolio doesn't have enough cash
+                to execute the buy order.
 
         """
         current_value = cost * quantity
@@ -186,7 +186,7 @@ class Portfolio:
         else:
             return self.positions[symbol].buy(cost, quantity)
 
-    def deposit(self, cash: float) -> float:
+    def deposit(self, cash: float, /) -> float:
         """Deposit more cash into the portfolio.
 
         Args:
@@ -200,7 +200,7 @@ class Portfolio:
         self.deposits_total += cash
         return self.cash
 
-    def sell(self, symbol: str, cost: float, quantity: float) -> float:
+    def sell(self, symbol: str, cost: float, quantity: float, /) -> float:
         """Sell `quantity` of security with `symbol` for `cost`.
 
         Args:
@@ -219,7 +219,7 @@ class Portfolio:
         self.cash += cost * quantity
         return current_value
 
-    def total_dollar_change(self, costs: dict[str, float]) -> float:
+    def total_dollar_change(self, costs: dict[str, float], /) -> float:
         """Compute the total dollar change relative to the total
         deposits made into the portfolio.
 
@@ -232,7 +232,7 @@ class Portfolio:
         """
         return self.total_dollar_value(costs) - self.deposits_total
 
-    def total_dollar_value(self, costs: dict[str, float]) -> float:
+    def total_dollar_value(self, costs: dict[str, float], /) -> float:
         """Compute the total dollar value of the portfolio.
 
         Args:
@@ -248,7 +248,7 @@ class Portfolio:
                 dollar_value_total += cost * self.positions[symbol].quantity
         return dollar_value_total
 
-    def total_percent_change(self, costs: dict[str, float]) -> float:
+    def total_percent_change(self, costs: dict[str, float], /) -> float:
         """Compute the total percent change relative to the total
         deposits made into the portfolio.
 
@@ -262,7 +262,7 @@ class Portfolio:
         """
         return (self.total_dollar_value(costs) / self.deposits_total) - 1
 
-    def withdraw(self, cash: float) -> float:
+    def withdraw(self, cash: float, /) -> float:
         """Withdraw cash from the portfolio.
 
         Args:
@@ -272,7 +272,8 @@ class Portfolio:
             Total cash in the portfolio.
 
         Raises:
-            ValueError if there's not enough cash to withdraw.
+            `ValueError`: If the portfolio doesn't have at least `cash`
+                liquid cash to withdraw.
 
         """
         if self.cash < cash:

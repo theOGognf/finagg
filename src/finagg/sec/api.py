@@ -132,6 +132,10 @@ class CompanyConcept(_API):
         Returns:
             Dataframe with normalized column names.
 
+        Raises:
+            ValueError if both a `cik` and `ticker` are provided or neither
+            are provided.
+
         """
         if bool(cik) == bool(ticker):
             raise ValueError("Must provide a `cik` or a `ticker`.")
@@ -178,6 +182,10 @@ class CompanyFacts(_API):
 
         Returns:
             Dataframe with normalized column names.
+
+        Raises:
+            ValueError if both a `cik` and `ticker` are provided or neither
+            are provided.
 
         """
         if bool(cik) == bool(ticker):
@@ -299,6 +307,10 @@ class Submissions(_API):
 
         Returns:
             Metadata and a filings dataframe with normalized column names.
+
+        Raises:
+            ValueError if both a `cik` and `ticker` are provided or neither
+            are provided.
 
         """
         if bool(cik) == bool(ticker):
@@ -430,6 +442,9 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
 
     Returns:
         Successful responses.
+
+    Raises:
+        RuntimeError if a user agent is not provided or found in the environment.
 
     """
     user_agent = user_agent or os.environ.get("SEC_API_USER_AGENT", None)

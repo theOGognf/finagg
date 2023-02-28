@@ -108,9 +108,11 @@ class IndustryQuarterlyFeatures:
             level: Industry level to aggregate features at.
                 The industry used according to `ticker` or `code`
                 is subsampled according to this value. Options include:
-                    2 = major group (e.g., furniture and fixtures)
-                    3 = industry group (e.g., office furnitures)
-                    4 = industry (e.g., wood office furniture)
+
+                    - 2 = major group (e.g., furniture and fixtures)
+                    - 3 = industry group (e.g., office furnitures)
+                    - 4 = industry (e.g., wood office furniture)
+
             start: The start date of the observation period.
             end: The end date of the observation period.
             engine: Raw data and feature data SQL database engine.
@@ -195,9 +197,11 @@ class NormalizedQuarterlyFeatures:
             level: Industry level to aggregate relative features at.
                 The industry used according to `ticker` is subsampled
                 according to this value. Options include:
-                    2 = major group (e.g., furniture and fixtures)
-                    3 = industry group (e.g., office furnitures)
-                    4 = industry (e.g., wood office furniture)
+
+                    - 2 = major group (e.g., furniture and fixtures)
+                    - 3 = industry group (e.g., office furnitures)
+                    - 4 = industry (e.g., wood office furniture)
+
             start: The start date of the observation period.
             end: The end date of the observation period.
             engine: Feature store database engine.
