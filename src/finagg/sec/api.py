@@ -68,7 +68,7 @@ class Frame(Concept):
     instant: bool
 
 
-def frame_to_concept(frame: Frame) -> Concept:
+def frame_to_concept(frame: Frame, /) -> Concept:
     """Helper for converting from a frame to a concept."""
     return {
         "tag": frame["tag"],
@@ -252,8 +252,8 @@ class Frames(_API):
                 most closely matches a frame's year and quarter without a
                 time buffer). This flag should be enabled for most cases.
             taxonomy: Valid SEC EDGAR taxonomy.
-                See https://www.sec.gov/info/edgar/edgartaxonomies.shtml for taxonomies.
-            units: Current to view results in.
+                See https://www.sec.gov/info/edgar/edgartaxonomies for taxonomies.
+            units: Currency to view results in.
             user_agent: Self-declared bot header.
 
         Returns:
@@ -309,7 +309,7 @@ class Submissions(_API):
             Metadata and a filings dataframe with normalized column names.
 
         Raises:
-            ValueError if both a `cik` and `ticker` are provided or neither
+            `ValueError`: If both a `cik` and `ticker` are provided or neither
             are provided.
 
         """
@@ -381,12 +381,15 @@ frames = Frames()
 #: Get a company's metadata and recent submissions.
 submissions = Submissions()
 
-#: Used to get all SEC ticker data as opposed to
-#: an individual ticker's SEC CIK.
-tickers = Tickers()
+tickers: Tickers = Tickers()
+"""API for getting a dataframe representation of a JSON file containing
+all company tickers and CIKs tracked by the SEC EDGAR API. This is used
+by the :meth:`get_cik` and :meth:`get_ticker` functions for getting a
+company's CIK from its ticker and its ticker from its CIK, respectively.
 
-#: Company frames that have high availability. Units are in valid frame
-#: format.
+:meta hide-value:
+"""
+
 common_frames: list[Frame] = [
     {
         "tag": "AssetsCurrent",
@@ -426,10 +429,19 @@ common_frames: list[Frame] = [
         "instant": True,
     },
 ]
+"""Company frames that have high availability and are relatively popular
+for fundamental analysis. Frames are in valid format for usage with
+the :class:`Frames` API implementation.
 
-#: Company concepts that have high availability. Units are not in valid frame
-#: formats.
+:meta hide-value:
+"""
+
 common_concepts: list[Concept] = [frame_to_concept(frame) for frame in common_frames]
+"""Company concepts that have high availability and are relatively popular
+for fundamental analysis.
+
+:meta hide-value:
+"""
 
 
 @ratelimit.guard([ratelimit.RequestLimit(9, timedelta(seconds=1))])
@@ -491,6 +503,23 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
 
     This effectively gets the set of tickers whose data is at least
     somewhat available through the SEC EDGAR API.
+
+    Args:
+        user_agent: Self-declared SEC bot header. Defaults to the value
+            found in the `SEC_API_USER_AGENT` environment variable if
+            it's defined.
+
+    Returns:
+        Set of tickers whose data is at least somewhat available through
+        the SEC EDGAR API.
+
+    Examples:
+        Get recent filings a random company that has data available through
+        the SEC EDGAR API.
+
+        >>> import finagg
+        >>> tickers = finagg.sec.api.get_ticker_set()
+        >>> df = finagg.sec.api.submissions.get(ticker=tickers.pop())
 
     """
     year = datetime.now().year - 1

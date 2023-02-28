@@ -1,30 +1,15 @@
-"""BEA API.
+"""An implementation of the Bureau of Economic Analysis (BEA) API.
 
-This implementation of the BEA API returns tables with normalized column names
-and appropriately-casted dtypes. Throttling-prevention is handled internally,
-sleeping for estimated quantities in an attempt to avoid server-side
-rate-limiting.
+This was the first API implementation in this project, but has since
+lost priority in favor of the FRED API as the FRED API provides
+data that's found through the BEA API in addition to a plethora
+of other data. This BEA API implementation is still maintained
+and supported, but other features such as data installation are not
+and will never be supported.
 
-See the official BEA API user guide for more info:
-    https://apps.bea.gov/api/_pdf/bea_web_service_api_user_guide.pdf
+See the `official BEA API user guide`_ for more info.
 
-Examples:
-    List datasets.
-
-    >>> import finagg.bea.api as bea
-    >>> bea.get_dataset_list()
-
-    List the GDP by industry API parameters.
-
-    >>> bea.gdp_by_industry.get_parameter_list()
-
-    List possible parameter values.
-
-    >>> bea.gdp_by_industry.get_parameter_values("year")
-
-    Getting GDP by industry for specific years.
-
-    >>> bea.gdp_by_industry.get(year=[1995, 1996])
+.. _`official BEA API user guide`: https://apps.bea.gov/api/_pdf/bea_web_service_api_user_guide.pdf
 
 """
 
@@ -80,12 +65,7 @@ class _API(ABC):
 
 
 class FixedAssets(_API):
-    """US fixed assets (assets for long-term use).
-
-    Details low-level US economic details.
-    See :class:`GDPByIndustry` for more coarse/high-level industry data.
-
-    """
+    """US fixed assets (assets for long-term use)."""
 
     name = "FixedAssets"
 
@@ -163,6 +143,21 @@ class GDPByIndustry(_API):
     Data provided by this API is considered coarse/high-level.
     See :class:`InputOutput` for more granular/low-level industry data.
 
+    Examples:
+        List the GDP by industry API parameters.
+
+        >>> import finagg.bea.api as bea
+        >>> bea.gdp_by_industry.get_parameter_list()
+
+        List possible parameter values.
+
+        >>> bea.gdp_by_industry.get_parameter_values("table_id")
+
+        Get all types of GDP measurements by industry for all industries
+        and specific years.
+
+        >>> bea.gdp_by_industry.get(year=[1995, 1996])
+
     """
 
     name = "GdpByIndustry"
@@ -181,14 +176,17 @@ class GDPByIndustry(_API):
 
         Args:
             table_id: IDs associated with GDP value type. Use :meth:`get_parameter_values`
-                to see possible values.
-            freq: Data frequency to return. `"Q"` for quarterly, `"A"` for annually.
-            year: Years to return.
+                to see possible values. `"ALL"` indicates retrieve all GDP value
+                measurement type tables.
+            freq: Data frequency to return. `"Q"` for quarterly, `"A"` for
+                annually, and `"A,Q"` for both annually and quarterly.
+            year: Years to return. `"ALL"` indicates retrieve data for all
+                available years.
             industry: IDs associated with industries. Use :meth:`get_parameter_values`
                 to see possible values.
 
         Returns:
-            Dataframe with normalized column names and true dtypes.
+            Dataframe with normalized column names and dtypes.
 
         """
         params = {
@@ -261,12 +259,15 @@ class InputOutput(_API):
         """Get input-output statistics by industry.
 
         Args:
-            table_id: IDs associated with input-output stats. Use :meth:`get_parameter_values`
-                to see possible values.
-            year: Years to return.
+            table_id: IDs associated with input-output stats. Use
+                :meth:`get_parameter_values` to see possible values.
+                `"ALL"` indicates retrieve all tables for all types
+                of input-output statistics by industry.
+            year: Years to return. `"ALL"` indicates retrieve data for all
+                available years.
 
         Returns:
-            Dataframe with normalized column names and true dtypes.
+            Dataframe organized by table row and column codes.
 
         """
         params = {

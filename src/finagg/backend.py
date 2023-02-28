@@ -8,23 +8,43 @@ from urllib.parse import urlparse
 import numpy as np
 from sqlalchemy import create_engine
 
-#: Path to artifact parent directory.
 root_path = pathlib.Path(os.environ.get("FINAGG_ROOT_PATH", pathlib.Path.cwd()))
+"""Parent directory of the `findata` directory where the backend database
+and API cache file will be stored (unless otherwise configured according
+to the relevant environment variables). This defaults to and is typically
+set to the current working directory. It's recommended you permanently set
+this value using the `finagg install` CLI.
 
-#: Path to requests cache backend. Override to change the cache location.
-#: All submodules with APIs share the same cache backend.
+:meta hide-value:
+"""
+
 http_cache_path = os.environ.get(
     "FINAGG_HTTP_CACHE_PATH", root_path / "findata" / "http_cache"
 )
+"""Path to the API cache file. This can be set with the
+`FINAGG_HTTP_CACHE_PATH` environment variable and should NOT include a file
+extension. All submodules with API implementations share the same cache backend.
 
-#: Path/URL to data storage backend. Override to change the backend database location or type.
-#: All submodules with databases share the same database.
+:meta hide-value:
+"""
+
 database_path = root_path / "findata" / "finagg.sqlite"
+"""Default path to the database file. The `FINAGG_DATABASE_URL` environment
+variable will take precedence over this value.
+
+:meta hide-value:
+"""
+
 database_url = os.environ.get("FINAGG_DATABASE_URL", f"sqlite:///{database_path}")
+"""SQLAlchemy URL to the database. This can be set with the
+`FINAGG_DATABASE_URL` environment variable and should include a file extension.
+This defaults to `"sqlite:///{database_path}"`.
+
+:meta hide-value:
+"""
 
 
-# Adding some aggregation functions.
-class NumPyStdAggregate:
+class _NumPyStdAggregate:
 
     values: list[float]
 
@@ -38,15 +58,22 @@ class NumPyStdAggregate:
         return float(np.std(self.values))
 
 
-# Custom creator for enabline Write-Ahead Logging (WAL) and adding aggregate functions.
-# Adding aggregate functions is inspired by https://stackoverflow.com/a/997467.
-def creator() -> sqlite3.Connection:
+def _creator() -> sqlite3.Connection:
+    """Custom connection creator for enabling Write-Ahead Logging (WAL) and adding
+    aggregate functions.
+
+    Adding aggregate functions is inspired by https://stackoverflow.com/a/997467.
+
+    """
     conn = sqlite3.connect(urlparse(database_url).path)
-    conn.create_aggregate("std", 1, NumPyStdAggregate)  # type: ignore[arg-type]
+    conn.create_aggregate("std", 1, _NumPyStdAggregate)  # type: ignore[arg-type]
     conn.execute("PRAGMA journal_mode=WAL;")
     return conn
 
 
-#: SQLAlchemy engine for the database. Used by all submodules for
-#: creating/reading/writing.
-engine = create_engine(database_url, creator=creator)
+engine = create_engine(database_url, creator=_creator)
+"""SQLAlchemy engine for the backend database. Used by all submodules
+by default for creating/reading/writing.
+
+:meta hide-value:
+"""
