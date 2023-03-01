@@ -54,14 +54,14 @@ class _API(ABC):
     @classmethod
     def get_parameter_list(cls, /, *, api_key: None | str = None) -> pd.DataFrame:
         """Return the list of parameters associated with the dataset API."""
-        return get_parameter_list(cls.name, api_key=api_key)
+        return _get_parameter_list(cls.name, api_key=api_key)
 
     @classmethod
     def get_parameter_values(
         cls, param: str, /, *, api_key: None | str = None
     ) -> pd.DataFrame:
         """Return all possible parameter values associated with the dataset API."""
-        return get_parameter_values(cls.name, param, api_key=api_key)
+        return _get_parameter_values(cls.name, param, api_key=api_key)
 
 
 class FixedAssets(_API):
@@ -101,7 +101,7 @@ class FixedAssets(_API):
                 "TableName": tid,
                 "Year": year,
             }
-            results_data = get(params, api_key=api_key)
+            results_data = _get(params, api_key=api_key)
             data = results_data["Data"]
             df = (
                 pd.DataFrame(data)
@@ -140,23 +140,35 @@ class FixedAssets(_API):
 class GDPByIndustry(_API):
     """GDP (a single summary statistic) for each industry.
 
+    The module variable :data:`finagg.bea.api.gdp_by_industry` is an instance
+    of this API implementation and is the typically interface for querying
+    this API.
+
     Data provided by this API is considered coarse/high-level.
     See :class:`InputOutput` for more granular/low-level industry data.
 
     Examples:
         List the GDP by industry API parameters.
 
-        >>> import finagg.bea.api as bea
-        >>> bea.gdp_by_industry.get_parameter_list()
+        >>> import finagg
+        >>> finagg.bea.api.gdp_by_industry.get_parameter_list()  # doctest: +ELLIPSIS
+          ParameterName ParameterDataType                               ParameterDescription ... AllValue
+        0     Frequency            string                            A - Annual, Q-Quarterly ...      ALL
+        1      Industry            string       List of industries to retrieve (ALL for All) ...      ALL
+        2       TableID           integer  The unique GDP by Industry table identifier (A... ...      ALL
+        3          Year           integer  List of year(s) of data to retrieve (ALL for All) ...      ALL
 
-        List possible parameter values.
+        List possible GDP by industry tables we can query.
 
-        >>> bea.gdp_by_industry.get_parameter_values("table_id")
+        >>> finagg.bea.api.gdp_by_industry.get_parameter_values("TableID").head(1)
+                                                  ParamValue
+        0  {'Key': '1', 'Desc': 'Value Added by Industry ...
 
-        Get all types of GDP measurements by industry for all industries
-        and specific years.
+        Get the GDP value added by an industry for a specific year.
 
-        >>> bea.gdp_by_industry.get(year=[1995, 1996])
+        >>> finagg.bea.api.gdp_by_industry.get(table_id=1, freq="A", year=2020).head(1)
+           table_id freq  year quarter industry                         industry_description       value
+        0         1    A  2020    2020       11  Agriculture, forestry, fishing, and hunting  162.199997
 
     """
 
@@ -197,15 +209,18 @@ class GDPByIndustry(_API):
             "Year": year,
             "Industry": industry,
         }
-        (results_data,) = get(params, api_key=api_key)
+        (results_data,) = _get(params, api_key=api_key)
         data = results_data["Data"]  # type: ignore
         df = pd.DataFrame(data)
 
-        def _roman_to_int(item: str) -> int:
-            _map = {"I": 1, "II": 2, "III": 3, "IV": 4}
-            return _map[item]
+        if freq != "A":
 
-        df["Quarter"] = df["Quarter"].apply(_roman_to_int)
+            def _roman_to_int(item: str) -> int:
+                _map = {"I": 1, "II": 2, "III": 3, "IV": 4}
+                return _map[item]
+
+            df["Quarter"] = df["Quarter"].apply(_roman_to_int)
+
         df.drop("NoteRef", axis=1, inplace=True)
         return df.rename(
             columns={
@@ -276,7 +291,7 @@ class InputOutput(_API):
             "TableID": table_id,
             "Year": year,
         }
-        (results_data,) = get(params, api_key=api_key)
+        (results_data,) = _get(params, api_key=api_key)
         data = results_data["Data"]  # type: ignore
         return (
             pd.DataFrame(data)
@@ -355,7 +370,7 @@ class NIPA(_API):
                 "Year": year,
                 "Frequency": freq,
             }
-            results_data = get(params, api_key=api_key)
+            results_data = _get(params, api_key=api_key)
             data = results_data["Data"]
             df = pd.DataFrame(data)
             df[["Year", "Quarter"]] = df["TimePeriod"].str.split("Q", n=1, expand=True)
@@ -392,19 +407,34 @@ class NIPA(_API):
         return pd.concat(results)
 
 
-#: "FixedAssets" dataset API.
-fixed_assets = FixedAssets()
+fixed_assets: FixedAssets = FixedAssets()
+"""The most popular way for accessing the :class:`FixedAssets` API
+implementation.
 
-#: "GdpByIndustry" dataset API.
-gdp_by_industry = GDPByIndustry()
+:meta hide-value:
+"""
 
-#: "InputOutput" dataset API.
-input_output = InputOutput()
+gdp_by_industry: GDPByIndustry = GDPByIndustry()
+"""The most popular way for accessing the :class:`GDPByIndustry` API
+implementation.
 
-#: "NIPA" dataset API.
+:meta hide-value:
+"""
+
+input_output: InputOutput = InputOutput()
+"""The most popular way for accessing the :class:`InputOutput` API
+implementation.
+
+:meta hide-value:
+"""
+
 nipa = NIPA()
+"""The most popular way for accessing the :class:`NIPA` API implementation.
 
-#: BEA API URL.
+:meta hide-value:
+"""
+
+#: The BEA API endpoint URL. All API requests are made to this URL.
 url = "https://apps.bea.gov/api/data"
 
 
@@ -416,19 +446,7 @@ def _api_error_as_response(error: dict[str, str]) -> requests.Response:
     return response
 
 
-@ratelimit.guard(
-    [
-        ratelimit.RequestLimit(90, timedelta(minutes=1)),
-        ratelimit.ErrorLimit(20, timedelta(minutes=1)),
-        ratelimit.SizeLimit(90e6, timedelta(minutes=1)),
-    ],
-)
-def _guarded_get(url: str, params: dict[str, Any], /) -> requests.Response:
-    """Guarded version of `session.get`."""
-    return session.get(url, params=params)
-
-
-def get(
+def _get(
     params: dict[str, Any],
     /,
     *,
@@ -443,7 +461,7 @@ def get(
         params: Params specific to the API method.
 
     Returns:
-        A list of result dictionaries.
+        Results from the API request (typically a list of records).
 
     Raises:
         `RuntimeError`: If no BEA API key is passed or found.
@@ -465,19 +483,13 @@ def get(
     if "Error" in content:
         error = _api_error_as_response(content["Error"])
         raise BEAAPIError(response.request, error, error.content)
+    if "Error" in content["Results"]:
+        error = _api_error_as_response(content["Results"]["Error"])
+        raise BEAAPIError(response.request, error, error.content)
     return content["Results"]  # type: ignore
 
 
-def get_dataset_list(*, api_key: None | str = None) -> pd.DataFrame:
-    """Return a list of datasets provided by the BEA API."""
-    params = {
-        "Method": "GetDatasetList",
-    }
-    results = get(params, api_key=api_key)["Dataset"]
-    return pd.DataFrame(results)
-
-
-def get_parameter_list(dataset: str, /, *, api_key: None | str = None) -> pd.DataFrame:
+def _get_parameter_list(dataset: str, /, *, api_key: None | str = None) -> pd.DataFrame:
     """Get a dataset's list of parameters.
 
     Args:
@@ -492,11 +504,11 @@ def get_parameter_list(dataset: str, /, *, api_key: None | str = None) -> pd.Dat
         "Method": "GetParameterList",
         "DatasetName": dataset,
     }
-    results = get(params, api_key=api_key)["Parameter"]
+    results = _get(params, api_key=api_key)["Parameter"]
     return pd.DataFrame(results)
 
 
-def get_parameter_values(
+def _get_parameter_values(
     dataset: str, param: str, /, *, api_key: None | str = None
 ) -> pd.DataFrame:
     """Get potential values for a dataset's parameter.
@@ -515,9 +527,52 @@ def get_parameter_values(
         "DatasetName": dataset,
         "ParameterName": param,
     }
-    results = get(params, api_key=api_key)["ParamValue"]
+    results = _get(params, api_key=api_key)
+    return pd.DataFrame(results)
+
+
+@ratelimit.guard(
+    [
+        ratelimit.RequestLimit(90, timedelta(minutes=1)),
+        ratelimit.ErrorLimit(20, timedelta(minutes=1)),
+        ratelimit.SizeLimit(90e6, timedelta(minutes=1)),
+    ],
+)
+def _guarded_get(url: str, params: dict[str, Any], /) -> requests.Response:
+    """Guarded version of `session.get`."""
+    return session.get(url, params=params)
+
+
+def get_dataset_list(*, api_key: None | str = None) -> pd.DataFrame:
+    """Return a list of datasets provided by the BEA API.
+
+    Returns:
+        A dataframe describing the datasets available through the BEA API.
+
+    Examples:
+        >>> import finagg
+        >>> finagg.bea.api.get_dataset_list()
+                        DatasetName                    DatasetDescription
+        0                      NIPA                  Standard NIPA tables
+        1        NIUnderlyingDetail  Standard NI underlying detail tables
+        2                       MNE             Multinational Enterprises
+        3               FixedAssets          Standard Fixed Assets tables
+        4                       ITA   International Transactions Accounts
+        5                       IIP     International Investment Position
+        6               InputOutput                     Input-Output Data
+        7             IntlServTrade          International Services Trade
+        8             GDPbyIndustry                       GDP by Industry
+        9                  Regional                    Regional data sets
+        10  UnderlyingGDPbyIndustry            Underlying GDP by Industry
+        11       APIDatasetMetaData     Metadata about other API datasets
+
+    """
+    params = {
+        "Method": "GetDatasetList",
+    }
+    results = _get(params, api_key=api_key)["Dataset"]
     return pd.DataFrame(results)
 
 
 class BEAAPIError(requests.RequestException):
-    """Custom exception for BEA API errors."""
+    """An error raised in response to BEA API request errors."""
