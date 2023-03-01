@@ -3,23 +3,6 @@
 See the official SEC EDGAR API page for more info:
     https://www.sec.gov/edgar/sec-api-documentation
 
-Examples:
-    Get the historical values of a company concept (e.g., net income/loss).
-    >>> import finagg.sec.api as sec
-    >>> sec.company_concept.get(ticker="AAPL")
-
-    Get all company facts (multiple concepts).
-    >>> sec.company_facts.get(ticker="AAPL")
-
-    Get a concept for a period from all companies.
-    >>> sec.frames.get("NetIncomeLoss", 2020, 3)
-
-    Get the SEC CIK string representation of a ticker.
-    >>> sec.get_cik("AAPL")
-
-    Get the ticker from an SEC CIK.
-    >>> sec.get_ticker("0000320193")
-
 """
 
 import logging
@@ -514,12 +497,15 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
         the SEC EDGAR API.
 
     Examples:
-        Get recent filings a random company that has data available through
-        the SEC EDGAR API.
 
         >>> import finagg
         >>> tickers = finagg.sec.api.get_ticker_set()
-        >>> df = finagg.sec.api.submissions.get(ticker=tickers.pop())
+        >>> "AAPL" in tickers
+        True
+        >>> "GOOG" in tickers
+        True
+        >>> "MSFT" in tickers
+        True
 
     """
     year = datetime.now().year - 1
