@@ -1,7 +1,20 @@
-"""SEC EDGAR API.
+"""An implementation of the Securities and Exchange Commission's (SEC) EDGAR API.
 
-See the official SEC EDGAR API page for more info:
-    https://www.sec.gov/edgar/sec-api-documentation
+An SEC EDGAR API user agent declaration is required to use this API.
+You can pass your user agent directlyto the implemented API getters, or you
+can set the ``SEC_API_USER_AGENT`` environment variable to have the user agent
+be passed to the implemented API getters for you.
+
+Alternatively, running ``finagg sec install`` (or the broader
+``finagg install -a``) will prompt you to enter an SEC EDGAR API user agent
+and will automatically store it in an ``.env`` file in your current working
+directory. The environment variables set in that ``.env`` file will be loaded
+into your shell upon using ``finagg`` (whether that be through the Python
+interface or through the CLI tools).
+
+See the official `SEC EDGAR API docs`_ for more info on the SEC API.
+
+.. _`SEC API docs`: https://www.sec.gov/edgar/sec-api-documentation
 
 """
 
@@ -128,7 +141,7 @@ class CompanyConcept(_API):
 
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik, taxonomy=taxonomy, tag=tag)
-        response = get(url, user_agent=user_agent)
+        response = _get(url, user_agent=user_agent)
         content = response.json()
         units = content.pop("units")
         results_list = []
@@ -179,7 +192,7 @@ class CompanyFacts(_API):
 
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik)
-        response = get(url, user_agent=user_agent)
+        response = _get(url, user_agent=user_agent)
         content = response.json()
         facts = content.pop("facts")
         results_list = []
@@ -252,7 +265,7 @@ class Frames(_API):
         url = cls.url.format(
             taxonomy=taxonomy, tag=tag, units=units, year=year, quarter=quarter
         )
-        response = get(url, user_agent=user_agent)
+        response = _get(url, user_agent=user_agent)
         content = response.json()
         data = content.pop("data")
         df = pd.DataFrame(data)
@@ -307,7 +320,7 @@ class Submissions(_API):
 
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik)
-        response = get(url, user_agent=user_agent)
+        response = _get(url, user_agent=user_agent)
         content = response.json()
         recent_filings = content.pop("filings")["recent"]
         df = pd.DataFrame(recent_filings)
@@ -339,7 +352,7 @@ class Tickers(_API):
             - company title
 
         """
-        response = get(cls.url, user_agent=user_agent)
+        response = _get(cls.url, user_agent=user_agent)
         content: dict[str, dict[str, str]] = response.json()
         df = pd.DataFrame([items for _, items in content.items()])
         return df.rename(columns={"cik_str": "cik"})
@@ -352,17 +365,17 @@ _cik_to_tickers: dict[str, str] = {}
 _tickers_to_cik: dict[str, str] = {}
 
 #: Get the full history of a company's concept (taxonomy and tag).
-company_concept = CompanyConcept()
+company_concept: CompanyConcept = CompanyConcept()
 
 #: Get all XBRL disclosures from a single company (CIK).
-company_facts = CompanyFacts()
+company_facts: CompanyFacts = CompanyFacts()
 
 #: Get one fact for each reporting entity that most closely fits
 #: the calendrical period requested.
-frames = Frames()
+frames: Frames = Frames()
 
 #: Get a company's metadata and recent submissions.
-submissions = Submissions()
+submissions: Submissions = Submissions()
 
 tickers: Tickers = Tickers()
 """API for getting a dataframe representation of a JSON file containing
@@ -413,33 +426,36 @@ common_frames: list[Frame] = [
     },
 ]
 """Company frames that have high availability and are relatively popular
-for fundamental analysis. Frames are in valid format for usage with
-the :class:`Frames` API implementation.
+for fundamental analysis. Includes things like earnings per share, current
+assets, etc.. Frames are in valid format for usage with the :class:`Frames`
+API implementation.
 
 :meta hide-value:
 """
 
 common_concepts: list[Concept] = [frame_to_concept(frame) for frame in common_frames]
 """Company concepts that have high availability and are relatively popular
-for fundamental analysis.
+for fundamental analysis. Includes things like earnings per share, current
+assets, etc..
 
 :meta hide-value:
 """
 
 
 @ratelimit.guard([ratelimit.RequestLimit(9, timedelta(seconds=1))])
-def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
+def _get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
     """SEC EDGAR API request helper.
 
     Args:
-        url: Complete URL to get from.
-        user_agent: Required user agent header declaration to avoid errors.
+        url: Complete SEC EDGAR API URL to request from.
+        user_agent: Self-declared SEC bot header. Defaults to the value
+            found in the ``SEC_API_USER_AGENT`` environment variable.
 
     Returns:
         Successful responses.
 
     Raises:
-        RuntimeError if a user agent is not provided or found in the environment.
+        `RuntimeError`: If a user agent is not provided or found in the environment.
 
     """
     user_agent = user_agent or os.environ.get("SEC_API_USER_AGENT", None)
@@ -455,9 +471,26 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
 
 
 def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
-    """Return a ticker's SEC CIK."""
+    """Return a company's SEC CIK from its ticker.
+
+    Args:
+        ticker: A company's ticker symbol.
+        user_agent: Self-declared SEC bot header. Defaults to the value
+            found in the ``SEC_API_USER_AGENT`` environment variable.
+
+    Returns:
+        The company's corresponding SEC CIK.
+
+    Examples:
+        Get Apple's SEC CIK from its ticker.
+
+        >>> import finagg
+        >>> finagg.sec.api.get_cik("AAPL")
+        "0000320193"
+
+    """
     if not _tickers_to_cik:
-        response = get(Tickers.url, user_agent=user_agent)
+        response = _get(Tickers.url, user_agent=user_agent)
         content: dict[str, dict[str, str]] = response.json()
         for _, items in content.items():
             normalized_cik = str(items["cik_str"]).zfill(10)
@@ -467,9 +500,26 @@ def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
 
 
 def get_ticker(cik: str, /, *, user_agent: None | str = None) -> str:
-    """Return an SEC CIK's ticker."""
+    """Return a company's ticker from its SEC CIK.
+
+    Args:
+        cik: A company's 10-character SEC CIK.
+        user_agent: Self-declared SEC bot header. Defaults to the value
+            found in the ``SEC_API_USER_AGENT`` environment variable.
+
+    Returns:
+        The company's corresponding ticker.
+
+    Examples:
+        Get Apple's ticker from its SEC CIK.
+
+        >>> import finagg
+        >>> finagg.sec.api.get_ticker("0000320193")
+        "AAPL"
+
+    """
     if not _cik_to_tickers:
-        response = get(Tickers.url, user_agent=user_agent)
+        response = _get(Tickers.url, user_agent=user_agent)
         content: dict[str, dict[str, str]] = response.json()
         for _, items in content.items():
             normalized_cik = str(items["cik_str"]).zfill(10)
@@ -489,8 +539,7 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
 
     Args:
         user_agent: Self-declared SEC bot header. Defaults to the value
-            found in the `SEC_API_USER_AGENT` environment variable if
-            it's defined.
+            found in the ``SEC_API_USER_AGENT`` environment variable.
 
     Returns:
         Set of tickers whose data is at least somewhat available through

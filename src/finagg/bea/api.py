@@ -1,15 +1,31 @@
 """An implementation of the Bureau of Economic Analysis (BEA) API.
 
-This was the first API implementation in this project, but has since
-lost priority in favor of the FRED API as the FRED API provides
-data that's found through the BEA API in addition to a plethora
-of other data. This BEA API implementation is still maintained
-and supported, but other features such as data installation are not
-and will never be supported.
+A BEA API key is required to use this API. You can register for
+a BEA API key at the `BEA API signup page`_. You can pass your
+BEA API key directly to the implemented API getters, or you
+can set the ``BEA_API_KEY`` environment variable to have the
+BEA API key be passed to the implemented API getters for you.
 
-See the `official BEA API user guide`_ for more info.
+Alternatively, running ``finagg bea install`` (or the broader
+``finagg install -a``) will  prompt you where to aquire a BEA API
+key and will automatically store it in an ``.env`` file in
+your current working directory. The environment variables set
+in that ``.env`` file will be loaded into your shell upon
+using ``finagg`` (whether that be through the Python interface
+or through the CLI tools).
 
-.. _`official BEA API user guide`: https://apps.bea.gov/api/_pdf/bea_web_service_api_user_guide.pdf
+See the official `BEA API user guide`_ for more info on the BEA API.
+
+.. _`BEA API signup page`: https://apps.bea.gov/api/signup/
+.. _`BEA API user guide`: https://apps.bea.gov/api/_pdf/bea_web_service_api_user_guide.pdf
+
+.. note::
+    This was the first API implementation in this project, but has since
+    lost priority in favor of the FRED API as the FRED API provides
+    data that's found through the BEA API in addition to a plethora
+    of other data. This BEA API implementation is still maintained
+    and supported, but other features such as data installation are not
+    and will never be supported.
 
 """
 

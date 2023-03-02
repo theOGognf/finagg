@@ -31,20 +31,17 @@ def sqlite_engine(
         after use.
 
     Raises:
-        ValueError if both `metadata` and `table` are provided.
+        `ValueError`: If both ``metadata`` and ``table`` are provided.
 
     Examples:
-        Using the testing util as a pytest fixture
+        Using the testing util as a pytest fixture.
 
+        >>> import finagg
         >>> import pytest
         >>> from sqlalchemy.engine import Engine
-        >>>
-        >>> import finagg
-        >>>
         >>> @pytest.fixture
         ... def engine() -> Engine:
         ...     yield from finagg.testing.sqlite_engine("/path/to/db.sqlite")
-        ...
 
     """
     if metadata and table:

@@ -1,9 +1,4 @@
-packaging
-Pillow
-platformdirs
-setuptools>=64.0
-setuptools_scm
+pytest
 sphinx>=3.2.1
 sphinx-copybutton
 sphinx_rtd_theme
-tomlkit

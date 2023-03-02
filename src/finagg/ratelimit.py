@@ -16,7 +16,7 @@ class RateLimit(ABC):
     """Interface for defining a rate limit with an external API.
 
     Args:
-        limit: Max limit within `period` (e.g., max number of
+        limit: Max limit within ``period`` (e.g., max number of
             requests, errors, size in memory, etc.).
         period: Time interval for evaluating ``limit``.
         buffer: Reduce ``limit`` by this fraction. Adds a bit of
