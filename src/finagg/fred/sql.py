@@ -70,7 +70,6 @@ def get_id_set(lb: int = 1) -> set[str]:
         series_ids = set()
         for row in conn.execute(
             sa.select(series.c.series_id)
-            .distinct()
             .group_by(series.c.series_id)
             .having(sa.func.count(series.c.date) >= lb)
         ):

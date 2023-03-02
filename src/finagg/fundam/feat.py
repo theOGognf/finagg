@@ -263,7 +263,6 @@ class NormalizedFundamentalFeatures:
             tickers = set()
             for row in conn.execute(
                 sa.select(sql.normalized_fundam.c.ticker)
-                .distinct()
                 .group_by(sql.normalized_fundam.c.ticker)
                 .having(
                     *[
@@ -665,7 +664,6 @@ class FundamentalFeatures(feat.Features):
             tickers = set()
             for row in conn.execute(
                 sa.select(sql.fundam.c.ticker)
-                .distinct()
                 .group_by(sql.fundam.c.ticker)
                 .having(
                     *[

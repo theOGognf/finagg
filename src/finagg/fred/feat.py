@@ -1,6 +1,5 @@
 """Features from FRED sources."""
 
-from functools import cache
 
 import pandas as pd
 import sqlalchemy as sa
@@ -139,40 +138,6 @@ class NormalizedEconomicFeatures:
         df.columns = df.columns.rename(None)
         df = df[EconomicFeatures.columns]
         return df
-
-    @classmethod
-    def get_candidate_id_set(cls, lb: int = 1) -> set[str]:
-        """The candidate ID set is just the `economic` ID set."""
-        return EconomicFeatures.get_id_set(lb=lb)
-
-    @classmethod
-    @cache
-    def get_id_set(
-        cls,
-        lb: int = 1,
-    ) -> set[str]:
-        """Get all unique series IDs in the feature's SQL table.
-
-        Args:
-            lb: Minimum number of rows required to include a series ID in the
-                returned set.
-
-        Returns:
-            All unique series IDs that contain all the columns for creating
-            economic features that also have at least `lb` rows.
-
-        """
-        with backend.engine.begin() as conn:
-            tickers = set()
-            for row in conn.execute(
-                sa.select(sql.normalized_economic.c.series_id)
-                .distinct()
-                .group_by(sql.normalized_economic.c.series_id)
-                .having(sa.func.count(sql.normalized_economic.c.date) >= lb)
-            ):
-                (ticker,) = row
-                tickers.add(str(ticker))
-        return tickers
 
     @classmethod
     def install(cls) -> int:
@@ -391,55 +356,6 @@ class EconomicFeatures(feat.Features):
         df.columns = df.columns.rename(None)
         df = df[cls.columns]
         return df
-
-    @classmethod
-    def get_candidate_id_set(
-        cls,
-        lb: int = 1,
-    ) -> set[str]:
-        """Get all unique series IDs in the raw SQL table that MAY BE ELIGIBLE
-        to be in the feature's SQL table.
-
-        Args:
-            lb: Minimum number of rows required to include a series in the
-                returned set.
-
-        Returns:
-            All unique series that may be valid for creating economic features
-            that also have at least `lb` rows used for constructing the
-            features.
-
-        """
-        return sql.get_id_set(lb=lb)
-
-    @classmethod
-    @cache
-    def get_id_set(
-        cls,
-        lb: int = 1,
-    ) -> set[str]:
-        """Get all unique series IDs in the feature's SQL table.
-
-        Args:
-            lb: Minimum number of rows required to include a series ID in the
-                returned set.
-
-        Returns:
-            All unique series IDs that contain all the columns for creating
-            economic features that also have at least `lb` rows.
-
-        """
-        with backend.engine.begin() as conn:
-            tickers = set()
-            for row in conn.execute(
-                sa.select(sql.economic.c.series_id)
-                .distinct()
-                .group_by(sql.economic.c.series_id)
-                .having(sa.func.count(sql.economic.c.date) >= lb)
-            ):
-                (ticker,) = row
-                tickers.add(str(ticker))
-        return tickers
 
     @classmethod
     def install(cls) -> int:

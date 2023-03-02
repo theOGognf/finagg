@@ -194,7 +194,6 @@ class DailyFeatures(feat.Features):
             tickers = set()
             for row in conn.execute(
                 sa.select(sql.daily.c.ticker)
-                .distinct()
                 .group_by(sql.daily.c.ticker)
                 .having(
                     *[

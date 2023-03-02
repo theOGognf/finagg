@@ -48,7 +48,6 @@ def get_ticker_set(lb: int = 1) -> set[str]:
         tickers = set()
         for row in conn.execute(
             sa.select(fundam.c.ticker)
-            .distinct()
             .group_by(fundam.c.ticker)
             .having(sa.func.count(fundam.c.date) >= lb)
         ):
