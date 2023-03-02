@@ -1,7 +1,8 @@
 """An implementation of the Securities and Exchange Commission's (SEC) EDGAR API.
 
 An SEC EDGAR API user agent declaration is required to use this API.
-You can pass your user agent directlyto the implemented API getters, or you
+The user agent should be of format ``FIRST_NAME LAST_NAME E_MAIL``. You
+can pass your user agent directly to the implemented API getters, or you
 can set the ``SEC_API_USER_AGENT`` environment variable to have the user agent
 be passed to the implemented API getters for you.
 
@@ -14,7 +15,7 @@ interface or through the CLI tools).
 
 See the official `SEC EDGAR API docs`_ for more info on the SEC API.
 
-.. _`SEC API docs`: https://www.sec.gov/edgar/sec-api-documentation
+.. _`SEC EDGAR API docs`: https://www.sec.gov/edgar/sec-api-documentation
 
 """
 
@@ -64,7 +65,7 @@ class Frame(Concept):
     instant: bool
 
 
-def frame_to_concept(frame: Frame, /) -> Concept:
+def _frame_to_concept(frame: Frame, /) -> Concept:
     """Helper for converting from a frame to a concept."""
     return {
         "tag": frame["tag"],
@@ -129,8 +130,8 @@ class CompanyConcept(_API):
             Dataframe with normalized column names.
 
         Raises:
-            ValueError if both a `cik` and `ticker` are provided or neither
-            are provided.
+            `ValueError`: If both a ``cik`` and ``ticker`` are provided or
+            neither are provided.
 
         """
         if bool(cik) == bool(ticker):
@@ -305,7 +306,7 @@ class Submissions(_API):
             Metadata and a filings dataframe with normalized column names.
 
         Raises:
-            `ValueError`: If both a `cik` and `ticker` are provided or neither
+            `ValueError`: If both a ``cik`` and ``ticker`` are provided or neither
             are provided.
 
         """
@@ -339,17 +340,44 @@ class Submissions(_API):
 
 
 class Tickers(_API):
+    """SEC-registered ticker info.
+
+    This is a broader method in comparison to :meth:`get_ticker_set`.
+    :meth:`get_ticker_set` will get all the tickers that have popular
+    fundamentals data available through the SEC EDGAR API for the
+    previous year, while this method will get all tickers and CIKs
+    that have ever had data available via the SEC EDGAR API.
+
+    The module variable :data:`finagg.sec.api.tickers` is an instance of this
+    API implementation and is the most popular interface for querying this
+    API.
+
+    Examples:
+        >>> import finagg
+        >>> finagg.sec.api.tickers.get().head(5)
+                   cik  ticker                           title
+        0       320193    AAPL                      Apple Inc.
+        1       789019    MSFT                  MICROSOFT CORP
+        2      1652044   GOOGL                   Alphabet Inc.
+        3      1018724    AMZN                  AMAZON COM INC
+        4      1067983   BRK-B          BERKSHIRE HATHAWAY INC
+
+    """
 
     url = "https://www.sec.gov/files/company_tickers.json"
 
     @classmethod
     def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
-        """Get a dataframe containing all SEC-registered, basic ticker info.
+        """Get a dataframe containing all SEC-registered ticker
+        info.
 
-        Contains:
-            - SEC CIK
-            - (uppercase) ticker
-            - company title
+        Args:
+            user_agent: Self-declared SEC bot header. Defaults to the value
+                found in the ``SEC_API_USER_AGENT`` environment variable.
+
+        Returns:
+            A dataframe containing company names, their SEC CIKs, and their
+            ticker symbols.
 
         """
         response = _get(cls.url, user_agent=user_agent)
@@ -364,24 +392,35 @@ _cik_to_tickers: dict[str, str] = {}
 #: Mapping of (uppercase) tickers to SEC CIK strings.
 _tickers_to_cik: dict[str, str] = {}
 
-#: Get the full history of a company's concept (taxonomy and tag).
 company_concept: CompanyConcept = CompanyConcept()
+"""The most popular way for accessing the :class:`CompanyConcept` API
+implementation.
 
-#: Get all XBRL disclosures from a single company (CIK).
+:meta hide-value:
+"""
+
 company_facts: CompanyFacts = CompanyFacts()
+"""The most popular way for accessing the :class:`CompanyFacts` API
+implementation.
 
-#: Get one fact for each reporting entity that most closely fits
-#: the calendrical period requested.
+:meta hide-value:
+"""
+
 frames: Frames = Frames()
+"""The most popular way for accessing the :class:`Frames` API implementation.
 
-#: Get a company's metadata and recent submissions.
+:meta hide-value:
+"""
+
 submissions: Submissions = Submissions()
+"""The most popular way for accessing the :class:`Submissions` API
+implementation.
+
+:meta hide-value:
+"""
 
 tickers: Tickers = Tickers()
-"""API for getting a dataframe representation of a JSON file containing
-all company tickers and CIKs tracked by the SEC EDGAR API. This is used
-by the :meth:`get_cik` and :meth:`get_ticker` functions for getting a
-company's CIK from its ticker and its ticker from its CIK, respectively.
+"""The most popular way for accessing the :class:`Tickers` API implementation.
 
 :meta hide-value:
 """
@@ -433,7 +472,7 @@ API implementation.
 :meta hide-value:
 """
 
-common_concepts: list[Concept] = [frame_to_concept(frame) for frame in common_frames]
+common_concepts: list[Concept] = [_frame_to_concept(frame) for frame in common_frames]
 """Company concepts that have high availability and are relatively popular
 for fundamental analysis. Includes things like earnings per share, current
 assets, etc..
@@ -551,9 +590,9 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
         >>> tickers = finagg.sec.api.get_ticker_set()
         >>> "AAPL" in tickers
         True
-        >>> "GOOG" in tickers
-        True
         >>> "MSFT" in tickers
+        True
+        >>> "GOOG" in tickers
         True
 
     """

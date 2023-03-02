@@ -157,7 +157,7 @@ class GDPByIndustry(_API):
     """GDP (a single summary statistic) for each industry.
 
     The module variable :data:`finagg.bea.api.gdp_by_industry` is an instance
-    of this API implementation and is the typically interface for querying
+    of this API implementation and is the most popular interface for querying
     this API.
 
     Data provided by this API is considered coarse/high-level.
@@ -214,7 +214,7 @@ class GDPByIndustry(_API):
                 to see possible values.
 
         Returns:
-            Dataframe with normalized column names and dtypes.
+            Dataframe with GDP by industry, separated by year and/or quarter.
 
         """
         params = {
