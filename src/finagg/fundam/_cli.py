@@ -2,6 +2,7 @@
 
 import logging
 import multiprocessing as mp
+import os
 from typing import Literal
 
 import click
@@ -55,6 +56,13 @@ def install(
     all_: bool = False,
     processes: int = mp.cpu_count() - 1,
 ) -> int:
+    if "SEC_API_USER_AGENT" not in os.environ:
+        logger.warning(
+            "No SEC API user agent found in the environment. "
+            "Skipping finagg.fundam installation."
+        )
+        return 0
+
     total_rows = 0
     all_refined = set()
     if all_:

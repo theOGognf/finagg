@@ -112,10 +112,13 @@ def install(
             "Enter your FRED API key below.\n\n"
             "You can request a FRED API key at\n"
             "https://fred.stlouisfed.org/docs/api/api_key.html.\n\n"
-            "FRED API key: "
+            "FRED API key (leave blank and hit ENTER to skip): "
         ).strip()
         if not api_key:
-            raise RuntimeError("An empty FRED API key was given.")
+            logger.warning(
+                "An empty FRED API key was given. Skipping finagg.fred installation."
+            )
+            return 0
         p = utils.setenv("FRED_API_KEY", api_key)
         logger.info(f"FRED API key written to {p}")
     else:

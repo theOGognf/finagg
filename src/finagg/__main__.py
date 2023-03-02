@@ -8,7 +8,7 @@ from typing import Literal
 
 import click
 
-from . import fred, fundam, indices, sec, utils, yfinance
+from . import bea, fred, fundam, indices, sec, utils, yfinance
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
@@ -21,6 +21,7 @@ def cli() -> None:
     ...
 
 
+cli.add_command(bea._cli.entry_point, "bea")
 cli.add_command(fred._cli.entry_point, "fred")
 cli.add_command(fundam._cli.entry_point, "fundam")
 cli.add_command(indices._cli.entry_point, "indices")
@@ -106,6 +107,7 @@ def install(
         logger.info("FINAGG_ROOT_PATH found in the environment")
 
     if all_ or raw:
+        ctx.invoke(bea._cli.install)
         ctx.invoke(fred._cli.install, raw=raw, all_=all_, verbose=verbose)
         ctx.invoke(indices._cli.install, all_=all_)
         ctx.invoke(

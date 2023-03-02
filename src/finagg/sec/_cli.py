@@ -160,10 +160,16 @@ def install(
 
     if "SEC_API_USER_AGENT" not in os.environ:
         user_agent = input(
-            "Enter your SEC API user agent below.\n\nSEC API user agent: "
+            "Enter your SEC API user agent below (this should be of format "
+            "'FIRST_NAME LAST_NAME E_MAIL').\n\n"
+            "SEC API user agent (leave blank and hit ENTER to skip): "
         ).strip()
         if not user_agent:
-            raise RuntimeError("An empty SEC API user agent was given.")
+            logger.warning(
+                "An empty SEC API user agent was given. Skipping finagg.sec "
+                "installation."
+            )
+            return 0
         p = utils.setenv("SEC_API_USER_AGENT", user_agent)
         logger.info(f"SEC API user agent written to {p}")
     else:

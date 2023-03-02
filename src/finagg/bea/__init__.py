@@ -1,3 +1,3 @@
 """BEA top-level interface."""
 
-from . import api, sql
+from . import _cli, api, sql
