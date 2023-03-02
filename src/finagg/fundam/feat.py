@@ -95,9 +95,9 @@ class IndustryFundamentalFeatures:
         with engine.begin() as conn:
             if ticker:
                 (row,) = conn.execute(
-                    sa.select(sec.sql.submissions.c.sic)
-                    .distinct()
-                    .where(sec.sql.submissions.c.ticker == ticker)
+                    sa.select(sec.sql.submissions.c.sic).where(
+                        sec.sql.submissions.c.ticker == ticker
+                    )
                 ).fetchall()
                 (sic,) = row
                 code = str(sic)[:level]
@@ -323,7 +323,6 @@ class NormalizedFundamentalFeatures:
             tickers = []
             for row in conn.execute(
                 sa.select(sql.normalized_fundam.c.ticker)
-                .distinct()
                 .where(
                     sql.normalized_fundam.c.name == column,
                     sql.normalized_fundam.c.date == date,

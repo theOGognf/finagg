@@ -308,7 +308,6 @@ class NormalizedQuarterlyFeatures:
             tickers = set()
             for row in conn.execute(
                 sa.select(sql.submissions.c.ticker)
-                .distinct()
                 .join(
                     sql.normalized_quarterly,
                     sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
@@ -371,7 +370,6 @@ class NormalizedQuarterlyFeatures:
             tickers = []
             for row in conn.execute(
                 sa.select(sql.submissions.c.ticker)
-                .distinct()
                 .join(
                     sql.normalized_quarterly,
                     sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
@@ -677,7 +675,6 @@ class QuarterlyFeatures(feat.Features):
                         for concept in cls.concepts
                     ],
                 )
-                .distinct()
                 .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
                 .group_by(sql.tags.c.cik)
                 .having(
@@ -709,7 +706,6 @@ class QuarterlyFeatures(feat.Features):
             tickers = set()
             for row in conn.execute(
                 sa.select(sql.submissions.c.ticker)
-                .distinct()
                 .join(sql.quarterly, sql.quarterly.c.cik == sql.submissions.c.cik)
                 .group_by(sql.quarterly.c.cik)
                 .having(

@@ -305,12 +305,14 @@ def get_tickers_in_industry(
     code: None | str = None,
     level: Literal[2, 3, 4] = 2,
 ) -> set[str]:
-    """Get a set of tickers that all share the same industry.
+    """Get a set of tickers that all share the same industry using raw SQL data.
 
     This method is convenient for finding tickers within the same
     industry so they can be compared. A related and common pattern is to use
     :data:`finagg.sec.feat.quarterly.normalized` to get industry-normalized
-    features for a particular company.
+    features for a particular company. Similar to other methods in this
+    submodule, this will only return tickers that have raw SQL data associated
+    with them.
 
     Args:
         ticker: Company ticker. Lookup the industry associated

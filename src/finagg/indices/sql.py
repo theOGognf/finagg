@@ -52,7 +52,7 @@ def get_ticker_set() -> set[str]:
     with backend.engine.begin() as conn:
         tickers = set()
         for table in (djia, nasdaq100, sp500):
-            for row in conn.execute(sa.select(table.c.ticker).distinct()):
+            for row in conn.execute(sa.select(table.c.ticker)):
                 (ticker,) = row
                 tickers.add(str(ticker))
     return tickers
