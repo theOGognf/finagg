@@ -166,7 +166,6 @@ class GDPByIndustry(_API):
     Examples:
         List the GDP by industry API parameters.
 
-        >>> import finagg
         >>> finagg.bea.api.gdp_by_industry.get_parameter_list()  # doctest: +ELLIPSIS
           ParameterName ParameterDataType                               ParameterDescription ... AllValue
         0     Frequency            string                            A - Annual, Q-Quarterly ...      ALL
@@ -566,7 +565,6 @@ def get_dataset_list(*, api_key: None | str = None) -> pd.DataFrame:
         A dataframe describing the datasets available through the BEA API.
 
     Examples:
-        >>> import finagg
         >>> finagg.bea.api.get_dataset_list()
                         DatasetName                    DatasetDescription
         0                      NIPA                  Standard NIPA tables

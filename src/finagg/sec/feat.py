@@ -128,9 +128,9 @@ class IndustryQuarterlyFeatures:
         with engine.begin() as conn:
             if ticker:
                 (row,) = conn.execute(
-                    sa.select(sql.submissions.c.sic)
-                    .distinct()
-                    .where(sql.submissions.c.ticker == ticker)
+                    sa.select(sql.submissions.c.sic).where(
+                        sql.submissions.c.ticker == ticker
+                    )
                 ).fetchall()
                 (sic,) = row
                 code = str(sic)[:level]

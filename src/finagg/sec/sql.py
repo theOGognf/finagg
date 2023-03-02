@@ -1,6 +1,7 @@
 """SEC SQLAlchemy interfaces."""
 
 from functools import cache
+from typing import Any, Literal
 
 import sqlalchemy as sa
 
@@ -159,22 +160,106 @@ normalized_quarterly = sa.Table(
 
 
 def get_cik(ticker: str, /) -> str:
-    """Return a company's SEC CIK."""
+    """Use raw SQL data to find a company's SEC CIK from its ticker symbol.
+
+    This is the preferred method for getting a company's SEC CIK if raw SQL
+    data is installed. This method is a convenience over
+    :meth:`finagg.sec.api.get_cik` for repeatedly getting company SEC
+    CIKs without having to query the SEC EDGAR API. Use
+    :meth:`finagg.sec.api.get_cik` if you want to get a company's ticker
+    symbol without installing or accessing locally installed raw SQL data.
+
+    Args:
+        ticker: A company's ticker symbol.
+
+    Returns:
+        The company's corresponding SEC CIK.
+
+    Examples:
+        Get Apple's SEC CIK from its ticker.
+
+        >>> finagg.sec.sql.get_cik("AAPL")
+        "0000320193"
+
+    """
     with backend.engine.begin() as conn:
         (row,) = conn.execute(
-            sa.select(submissions.c.cik)
-            .distinct()
-            .where(submissions.c.ticker == ticker)
+            sa.select(submissions.c.cik).where(submissions.c.ticker == ticker)
         ).fetchall()
         (cik,) = row
     return str(cik)
 
 
-def get_ticker(cik: str, /) -> str:
-    """Return an SEC CIK's ticker."""
+def get_metadata(
+    *, cik: None | str = None, ticker: None | str = None
+) -> dict[str, Any]:
+    """Return a company's metadata (its SEC CIK, ticker, name, and industry
+    code) from its SEC CIK or its ticker symbol.
+
+    A convenient method for getting a company's metadata using raw SQL
+    data. This method is a convenience over
+    :data:`finagg.sec.api.submissions` for repeatedly getting company
+    metadata without having to query the SEC EDGAR API. Use
+    :data:`finagg.sec.api.submissions` if you want to get a company's
+    metadata without installing or accessing locally installed raw SQL data.
+
+    Args:
+        cik: Company SEC CIK. Mutually exclusive with ``ticker``.
+        ticker: Company ticker. Mutually exclusive with ``cik``.
+
+    Returns:
+        A company's metadata as a dictionary.
+
+    Examples:
+        >>> finagg.sec.sql.get_metadata("MSFT")
+        {'cik': '0000789019', 'ticker': 'MSFT', 'name': 'microsoft corp', 'sic': '7372'}
+
+    """
+    if bool(cik) == bool(ticker):
+        raise ValueError("Must provide a `cik` or a `ticker`.")
+
+    if ticker:
+        cik = str(get_cik(ticker))
+
     with backend.engine.begin() as conn:
         (row,) = conn.execute(
-            sa.select(submissions.c.ticker).distinct().where(submissions.c.cik == cik)
+            sa.select(
+                submissions.c.cik,
+                submissions.c.ticker,
+                submissions.c.name,
+                submissions.c.sic,
+            ).where(submissions.c.cik == cik)
+        )
+    return row._asdict()
+
+
+def get_ticker(cik: str, /) -> str:
+    """Use raw SQL data to find a company's ticker from its SEC CIK.
+
+    This is the preferred method for getting a company's ticker if raw SQL
+    data is installed. This method is a convenience over
+    :meth:`finagg.sec.api.get_ticker` for repeatedly getting company tickers
+    without having to query the SEC EDGAR API. Use
+    :meth:`finagg.sec.api.get_ticker` if you want to get a company's
+    ticker symbol without installing or accessing locally installed raw
+    SQL data.
+
+    Args:
+        cik: A company's SEC CIK.
+
+    Returns:
+        The company's corresponding ticker symbol.
+
+    Examples:
+        Get Apple's ticker from its SEC CIK.
+
+        >>> finagg.sec.sql.get_ticker("0000320193")
+        "AAPL"
+
+    """
+    with backend.engine.begin() as conn:
+        (row,) = conn.execute(
+            sa.select(submissions.c.ticker).where(submissions.c.cik == cik)
         ).fetchall()
         (ticker,) = row
     return str(ticker)
@@ -182,15 +267,89 @@ def get_ticker(cik: str, /) -> str:
 
 @cache
 def get_ticker_set(lb: int = 1) -> set[str]:
-    """Get all unique tickers in the raw SQL tables."""
+    """Get all unique ticker symbols in the raw SQL tables that have at least
+    ``lb`` rows.
+
+    This method is convenient for accessing the tickers that have raw SQL data
+    associated with them so the data associated with those tickers can be
+    further refined. A common pattern is to use this method and other
+    ``get_ticker_set`` methods (such as those found in :mod:`finagg.sec.feat`)
+    to determine which tickers are missing data from other tables or features.
+
+    Args:
+        lb: Lower bound number of rows that a company must have for its ticker
+            to be included in the set returned by this method.
+
+    Examples:
+        >>> "AAPL" in finagg.sec.sql.get_ticker_set()
+        True
+
+    """
     with backend.engine.begin() as conn:
         tickers = set()
         for row in conn.execute(
             sa.select(submissions.c.ticker)
-            .distinct()
             .join(tags, tags.c.cik == submissions.c.cik)
             .group_by(tags.c.cik)
             .having(sa.func.count(tags.c.filed) >= lb)
+        ):
+            (ticker,) = row
+            tickers.add(str(ticker))
+    return tickers
+
+
+@cache
+def get_tickers_in_industry(
+    *,
+    ticker: None | str = None,
+    code: None | str = None,
+    level: Literal[2, 3, 4] = 2,
+) -> set[str]:
+    """Get a set of tickers that all share the same industry.
+
+    This method is convenient for finding tickers within the same
+    industry so they can be compared. A related and common pattern is to use
+    :data:`finagg.sec.feat.quarterly.normalized` to get industry-normalized
+    features for a particular company.
+
+    Args:
+        ticker: Company ticker. Lookup the industry associated
+            with this company. Mutually exclusive with ``code``.
+        code: Industry SIC code to use for industry lookup.
+            Mutually exclusive with ``ticker``.
+        level: Industry level to find tickers within.
+            The industry used according to ``ticker`` or ``code``
+            is subsampled according to this value. Options include:
+
+                - 2 = major group (e.g., furniture and fixtures)
+                - 3 = industry group (e.g., office furnitures)
+                - 4 = industry (e.g., wood office furniture)
+
+    Returns:
+        A set of tickers that all share the same industry as denoted by
+        another ticker (using the ``ticker`` arg) or an industry SIC code
+        (using the ``code`` arg).
+
+    Examples:
+        >>> "ETSY" in finagg.sec.sql.get_tickers_in_industry(ticker="MSFT")
+        True
+
+    """
+    with backend.engine.begin() as conn:
+        if ticker:
+            (row,) = conn.execute(
+                sa.select(submissions.c.sic).where(submissions.c.ticker == ticker)
+            ).fetchall()
+            (sic,) = row
+            code = str(sic)[:level]
+        elif code:
+            code = code[:level]
+        else:
+            raise ValueError("Must provide a `ticker` or `code`.")
+
+        tickers = set()
+        for row in conn.execute(
+            sa.select(submissions.c.ticker).where(submissions.c.sic.startswith(code))
         ):
             (ticker,) = row
             tickers.add(str(ticker))

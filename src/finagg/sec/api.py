@@ -283,6 +283,23 @@ class Frames(_API):
 
 
 class Submissions(_API):
+    """Get a company's metadata and all its recent SEC filings.
+
+    Not all the metadata typically found with the submissions API is supported
+    by this API. Only common company metadata (e.g., company name, industry
+    code, fiscal year end date, etc.) is returned by this implementation.
+
+    The module variable :data:`finagg.sec.api.submissions` is an instance of
+    this API implementation and is the most popular interface for querying this
+    API.
+
+    Examples:
+        >>> import finagg
+        >>> out = finagg.sec.api.submissions.get(ticker="AAPL")
+        >>> out["metadata"]
+
+
+    """
 
     url = "https://data.sec.gov/submissions/CIK{cik}.json"
 
@@ -295,15 +312,16 @@ class Submissions(_API):
         ticker: None | str = None,
         user_agent: None | str = None,
     ) -> SubmissionsResult:
-        """Return all recent filings from a single company (CIK).
+        """Return a company's metadata and all its recent SEC filings.
 
         Args:
-            cik: Company SEC CIK. Mutually exclusive with `ticker`.
-            ticker: Company ticker. Mutually exclusive with `cik`.
-            user_agent: Self-declared bot header.
+            cik: Company SEC CIK. Mutually exclusive with ``ticker``.
+            ticker: Company ticker. Mutually exclusive with ``cik``.
+            user_agent: Self-declared SEC bot header. Defaults to the value
+                found in the ``SEC_API_USER_AGENT`` environment variable.
 
         Returns:
-            Metadata and a filings dataframe with normalized column names.
+            Company metadata and a dataframe with recent SEC filings.
 
         Raises:
             `ValueError`: If both a ``cik`` and ``ticker`` are provided or neither
@@ -353,7 +371,6 @@ class Tickers(_API):
     API.
 
     Examples:
-        >>> import finagg
         >>> finagg.sec.api.tickers.get().head(5)
                    cik  ticker                           title
         0       320193    AAPL                      Apple Inc.
@@ -552,7 +569,6 @@ def get_ticker(cik: str, /, *, user_agent: None | str = None) -> str:
     Examples:
         Get Apple's ticker from its SEC CIK.
 
-        >>> import finagg
         >>> finagg.sec.api.get_ticker("0000320193")
         "AAPL"
 

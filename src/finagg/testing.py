@@ -36,7 +36,6 @@ def sqlite_engine(
     Examples:
         Using the testing util as a pytest fixture.
 
-        >>> import finagg
         >>> import pytest
         >>> from sqlalchemy.engine import Engine
         >>> @pytest.fixture
