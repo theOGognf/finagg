@@ -13,7 +13,7 @@ _P = ParamSpec("_P")
 
 
 class RateLimit(ABC):
-    """Interface for defining a rate limit with an external API.
+    """Interface for defining a rate limit for an external API getter.
 
     Args:
         limit: Max limit within ``period`` (e.g., max number of
@@ -25,24 +25,24 @@ class RateLimit(ABC):
 
     """
 
-    #: Max limit within `period`.
+    #: Max limit within ``period``.
     limit: float
 
-    #: Time interval for evaluating `limit`
+    #: Time interval for evaluating ``limit``
     period: float
 
-    #: Deque of responses containing limits from `eval` and
+    #: Deque of responses containing limits from ``eval`` and
     #: the timestep they were observed.
     responses: deque[tuple[float, float]]
 
-    #: Running total contributing to `limit` within `period`.
+    #: Running total contributing to ``limit`` within ``period``.
     total_limit: float
 
     #: Running total time to wait before next valid request.
     total_wait: float
 
     def __init__(
-        self, limit: float, period: float | timedelta, *, buffer: float = 0.0
+        self, limit: float, period: float | timedelta, /, *, buffer: float = 0.0
     ) -> None:
         self.limit = limit * (1 - buffer)
         self.period = (
@@ -53,7 +53,7 @@ class RateLimit(ABC):
         self.responses = deque()
 
     @abstractmethod
-    def eval(self, response: requests.Response) -> float | dict[str, float]:
+    def eval(self, response: requests.Response, /) -> float | dict[str, float]:
         """Evaluate a response and determine how much it contributes
         to the max limit imposed by this instance.
 
@@ -64,19 +64,23 @@ class RateLimit(ABC):
             A number indicating the request/response's contribution
             to the rate limit OR a dictionary containing:
 
-                - "limit": A number indicating the request/response's
-                    contribution to the rate limit.
-                - "wait": Time to wait before a new request can be made.
+                - "limit": a number indicating the request/response's
+                    contribution to the rate limit
+                - "wait": time to wait before a new request can be made
 
         """
 
     @property
     def ts(self) -> float:
-        """Get the most recent response timestamp."""
+        """Get the most recent response timestamp as a result of calling
+        the underlying getter.
+
+        """
         return self.responses[-1][1] if self.responses else time.perf_counter()
 
-    def update(self, response: requests.Response) -> float:
-        """Update the rate limit's running `total` and `responses` collection.
+    def update(self, response: requests.Response, /) -> float:
+        """Update the rate limit's running ``total`` and ``responses``
+        collection.
 
         Args:
             response: Request response (possibly cached).
@@ -126,27 +130,27 @@ class RateLimit(ABC):
 
 
 class RequestLimit(RateLimit):
-    """Limit the number of requests made."""
+    """Limit the number of requests made by the underlying getter."""
 
-    def eval(self, response: requests.Response) -> float | dict[str, float]:
+    def eval(self, response: requests.Response, /) -> float | dict[str, float]:
         if hasattr(response, "from_cache") and response.from_cache:
             return 0.0
         return float(1)
 
 
 class ErrorLimit(RateLimit):
-    """Limit the number of errors occurred."""
+    """Limit the number of errors occurred when using the underlying getter."""
 
-    def eval(self, response: requests.Response) -> float | dict[str, float]:
+    def eval(self, response: requests.Response, /) -> float | dict[str, float]:
         if hasattr(response, "from_cache") and response.from_cache:
             return 0.0
         return float(response.status_code != 200)
 
 
 class SizeLimit(RateLimit):
-    """Limit the size of responses."""
+    """Limit the size of responses when using the underlying getter."""
 
-    def eval(self, response: requests.Response) -> float | dict[str, float]:
+    def eval(self, response: requests.Response, /) -> float | dict[str, float]:
         if hasattr(response, "from_cache") and response.from_cache:
             return 0.0
         return float(len(response.content))
@@ -155,6 +159,12 @@ class SizeLimit(RateLimit):
 class RateLimitGuard(Generic[_P]):
     """Wraps requests-like getters to introduce blocking functionality
     when requests are getting close to violating call limits.
+
+    .. seealso::
+        `finagg.ratelimit.guard`: For the intended usage of getting a
+            :class:`finagg.ratelimit.RateLimitGuard` instance.
+        `finagg.ratelimit.RequestLimit`: For an example of a request
+            rate limiter.
 
     """
 
@@ -207,9 +217,29 @@ class RateLimitGuard(Generic[_P]):
 def guard(
     limits: Sequence[RateLimit], /, *, warn: bool = False
 ) -> Callable[[Callable[_P, requests.Response],], RateLimitGuard[_P]]:
-    """Apply `limits` to a requests-style getter."""
+    """Apply ``limits`` to a requests-style getter.
 
-    def decorator(f: Callable[_P, requests.Response]) -> RateLimitGuard[_P]:
+    Args:
+        limits: Rate limits to apply to the requests-style getter.
+        warn: Whether to print a message when rate-limiting is occurring.
+
+    Returns:
+        A decorator that wraps the original requests-style getter in a
+        :class:`RateLimitGuard` to avoid exceeding ``limits``.
+
+    Examples:
+        Limit requests to Google to be no more than 5 per second.
+
+        >>> import requests
+        >>> @finagg.ratelimit.guard([finagg.ratelimit.RequestLimit(5, timedelta(seconds=1))])
+        ... def get() -> None:
+        ...     requests.get("https://google.com")
+        >>> get()
+        None
+
+    """
+
+    def decorator(f: Callable[_P, requests.Response], /) -> RateLimitGuard[_P]:
         return RateLimitGuard(f, tuple(limits), warn=warn)
 
     return decorator

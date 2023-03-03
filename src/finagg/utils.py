@@ -3,10 +3,7 @@
 import os
 import pathlib
 import re
-import time
-from contextlib import contextmanager
 from datetime import datetime
-from typing import Callable, Generator
 
 import numpy as np
 import pandas as pd
@@ -14,17 +11,22 @@ from dotenv import set_key
 
 
 def CamelCase(s: str, /) -> str:
-    """Convert a string to CamelCase.
+    """Transform a string to CamelCase.
 
     Credit:
         https://stackoverflow.com/a/1176023
 
-    Examples:
+    Args:
+        s: Any string.
 
-        >>> CamelCase("snakes_are_dope")
+    Returns:
+        A string in CamelCase format.
+
+    Examples:
+        >>> finagg.utils.CamelCase("snakes_are_dope")
         "SnakesAreDope"
 
-        >>> CamelCase("bar")
+        >>> finagg.utils.CamelCase("bar")
         "Bar"
 
     """
@@ -36,10 +38,10 @@ def join_with(s: str | list[str], /, delim: str) -> str:
 
     Examples:
 
-        >>> join_with(["foo", "bar"], ",")
+        >>> finagg.utils.join_with(["foo", "bar"], ",")
         "foo,bar"
 
-        >>> join_with("foo")
+        >>> finagg.utils.join_with("foo")
         "foo"
 
     """
@@ -48,54 +50,21 @@ def join_with(s: str | list[str], /, delim: str) -> str:
     return delim.join(s)
 
 
-@contextmanager
-def profile_ms() -> Generator[Callable[[], float], None, None]:
-    """Profiling context manager in milliseconds."""
-    start = time.perf_counter_ns()
-    yield lambda: 1e6 * (time.perf_counter_ns() - start)
-
-
-def quantile_clip(
-    df: pd.DataFrame, /, *, lower: float = 0.01, upper: float = 0.99
-) -> pd.DataFrame:
-    """Clip dataframe values to be within the specified quantiles.
-
-    Args:
-        df: Dataframe to clip.
-        lower: Lower bound quantile.
-        upper: Upper bound quantile.
-
-    Returns:
-        A dataframe whose values are within the quantiles
-        specified by `lower` and `upper`.
-
-    """
-    df = df.replace([-np.inf, np.inf], np.nan)
-    # Lower quantile clipping
-    df_q_lower = df.quantile(lower, numeric_only=True)
-    df = df.clip(lower=df_q_lower, axis=1)  # type: ignore
-    # Upper quantile clipping
-    df_q_upper = df.quantile(upper, numeric_only=True)
-    df = df.clip(upper=df_q_upper, axis=1)  # type: ignore
-    return df.fillna(method="ffill")
-
-
-def safe_pct_change(col: pd.Series) -> pd.Series:  # type: ignore
+def safe_pct_change(series: pd.Series, /) -> pd.Series:  # type: ignore
     """Safely compute percent change on a column.
 
-    Replaces Inf values with NaN and forward-fills.
-    This function is meant to be used with
-    `pd.Series.apply`.
+    Replaces ``Inf`` values with ``NaN`` and forward-fills.
+    This function is meant to be used with ``pd.Series.apply``.
 
     Args:
-        col: Series of values.
+        series: Series of values.
 
     Returns:
-        A series representing percent changes of `col`.
+        A series representing percent changes of ``col``.
 
     """
     return (
-        col.pct_change()
+        series.pct_change()
         .replace([-np.inf, np.inf], np.nan)
         .fillna(method="ffill")
         .dropna()
@@ -103,7 +72,7 @@ def safe_pct_change(col: pd.Series) -> pd.Series:  # type: ignore
 
 
 def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:
-    """Set the value of the environment variable `name` to `value`.
+    """Set the value of the environment variable ``name`` to ``value``.
 
     The environment variable is permanently set in the environment
     and in the current process.
@@ -112,14 +81,14 @@ def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:
         name: Environment variable name.
         value: Environment variable value.
         exist_ok: Whether it's okay if an environment variable of the
-            same name already exists. If `True`, it will be overwritten.
+            same name already exists. If ``True``, it will be overwritten.
 
     Returns:
         Path to the file the environment variable was written to.
 
     Raises:
-        RuntimeError if `exist_ok` is `False` and an environment variable
-            of the same name already exists
+        `RuntimeError`: If ``exist_ok`` is ``False`` and an environment variable
+            of the same name already exists.
 
     """
     if not exist_ok and name in os.environ:
@@ -135,17 +104,22 @@ def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:
 
 
 def snake_case(s: str, /) -> str:
-    """Convert a string to snake_case.
+    """Transform a string to snake_case.
 
     Credit:
         https://stackoverflow.com/a/1176023
 
-    Examples:
+    Args:
+        s: Any string.
 
-        >>> snake_case("CamelsAreCool")
+    Returns:
+        A string in snake_case format.
+
+    Examples:
+        >>> finagg.utils.snake_case("CamelsAreCool")
         "camels_are_cool"
 
-        >>> snake_case("Foo")
+        >>> finagg.utils.snake_case("Foo")
         "foo"
 
     """
@@ -156,3 +130,8 @@ def snake_case(s: str, /) -> str:
 
 
 today = datetime.today().strftime("%Y-%m-%d")
+"""Today's date. Used by a number of submodules as the default end date
+when gettings data from APIs or SQL tables.
+
+:meta hide-value:
+"""
