@@ -1,4 +1,4 @@
-"""Testing utils."""
+"""Testing utils used for ``finagg``'s own unit tests."""
 
 import pathlib
 from typing import Generator
