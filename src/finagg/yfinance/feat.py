@@ -192,6 +192,10 @@ class DailyFeatures(feat.Features):
             that also have at least ``lb`` rows used for constructing the
             features.
 
+        Examples:
+            >>> "AAPL" in finagg.yfinance.feat.get_candidate_ticker_set()
+            True
+
         """
         return sql.get_ticker_set(lb=lb)
 
@@ -210,6 +214,10 @@ class DailyFeatures(feat.Features):
         Returns:
             All unique tickers that contain all the columns for creating
             daily features that also have at least ``lb`` rows.
+
+        Examples:
+            >>> "AAPL" in finagg.yfinance.feat.get_ticker_set()
+            True
 
         """
         with backend.engine.begin() as conn:
@@ -285,8 +293,14 @@ class DailyFeatures(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
+        Raises:
+            `ValueError`: If the given dataframe's columns do not match this
+            feature's columns.
+
         """
         df = df.reset_index("date")
+        if set(df.columns) != set(cls.columns):
+            raise ValueError(f"Dataframe must have columns {cls.columns}")
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:

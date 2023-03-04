@@ -765,7 +765,7 @@ class QuarterlyFeatures(feat.Features):
         *,
         engine: Engine = backend.engine,
     ) -> int:
-        """Write the dataframe to the feature store for `ticker`.
+        """Write the dataframe to the feature store for ``ticker``.
 
         Args:
             ticker: Company ticker.
@@ -776,8 +776,14 @@ class QuarterlyFeatures(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
+        Raises:
+            `ValueError`: If the given dataframe's columns do not match this
+            feature's columns.
+
         """
         df = df.reset_index(["fy", "fp", "filed"])
+        if set(df.columns) != set(cls.columns):
+            raise ValueError(f"Dataframe must have columns {cls.columns}")
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker)
         with engine.begin() as conn:
