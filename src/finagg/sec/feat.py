@@ -446,8 +446,14 @@ class NormalizedQuarterlyFeatures:
         Returns:
             Number of rows written to the SQL table.
 
+        Raises:
+            `ValueError`: If the given dataframe's columns do not match this
+            feature's columns.
+
         """
         df = df.reset_index(["fy", "fp", "filed"])
+        if set(df.columns) != set(QuarterlyFeatures.columns):
+            raise ValueError(f"Dataframe must have columns {QuarterlyFeatures.columns}")
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker)
         with engine.begin() as conn:

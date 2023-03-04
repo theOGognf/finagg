@@ -176,8 +176,14 @@ class NormalizedEconomicFeatures:
         Returns:
             Number of rows written to the SQL table.
 
+        Raises:
+            `ValueError`: If the given dataframe's columns do not match this
+            feature's columns.
+
         """
         df = df.reset_index("date")
+        if set(df.columns) != set(EconomicFeatures.columns):
+            raise ValueError(f"Dataframe must have columns {EconomicFeatures.columns}")
         df = df.melt("date", var_name="name", value_name="value")
         with engine.begin() as conn:
             conn.execute(sql.normalized_economic.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
@@ -394,8 +400,14 @@ class EconomicFeatures(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
+        Raises:
+            `ValueError`: If the given dataframe's columns do not match this
+            feature's columns.
+
         """
         df = df.reset_index("date")
+        if set(df.columns) != set(cls.columns):
+            raise ValueError(f"Dataframe must have columns {cls.columns}")
         df = df.melt("date", var_name="name", value_name="value")
         with engine.begin() as conn:
             conn.execute(sql.economic.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]

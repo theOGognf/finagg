@@ -393,8 +393,16 @@ class NormalizedFundamentalFeatures:
         Returns:
             Number of rows written to the SQL table.
 
+        Raises:
+            `ValueError`: If the given dataframe's columns do not match this
+            feature's columns.
+
         """
         df = df.reset_index("date")
+        if set(df.columns) != set(FundamentalFeatures.columns):
+            raise ValueError(
+                f"Dataframe must have columns {FundamentalFeatures.columns}"
+            )
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:
@@ -733,8 +741,14 @@ class FundamentalFeatures(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
+        Raises:
+            `ValueError`: If the given dataframe's columns do not match this
+            feature's columns.
+
         """
         df = df.reset_index("date")
+        if set(df.columns) != set(cls.columns):
+            raise ValueError(f"Dataframe must have columns {cls.columns}")
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:
