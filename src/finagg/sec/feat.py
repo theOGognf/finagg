@@ -462,9 +462,31 @@ class NormalizedQuarterlyFeatures:
 
 
 class QuarterlyFeatures(feat.Features):
-    """Quarterly features from SEC EDGAR data."""
+    """Methods for gathering quarterly features from SEC EDGAR data.
 
-    #: Columns within this feature set.
+    The module variable :data:`finagg.sec.feat.quarterly` is an instance of
+    this feature set implementation and is the most popular interface for
+    calling feature methods.
+
+    Examples:
+        It doesn't matter which data source you use to gather features.
+        They all return equivalent dataframes.
+
+        >>> import pandas as pd
+        >>> df1 = finagg.sec.feat.daily.from_api("AAPL")
+        >>> df2 = finagg.sec.feat.daily.from_raw("AAPL")
+        >>> df3 = finagg.sec.feat.daily.from_refined("AAPL")
+        >>> df1.equals(df2)
+        True
+        >>> df1.equals(df3)
+        True
+
+    """
+
+    #: Columns within this feature set. Dataframes returned by this class's
+    #: methods will always contain these columns. The refined data SQL table
+    #: corresponding to these features will also have rows that have these
+    #: names.
     columns: list[str] = [
         "AssetsCurrent_pct_change",
         "DebtEquityRatio",
@@ -480,14 +502,28 @@ class QuarterlyFeatures(feat.Features):
         "WorkingCapitalRatio",
     ]
 
-    #: XBRL disclosure concepts to pull for a company.
     concepts: list[api.Concept] = api.common_concepts
+    """XBRL disclosure concepts to pull to construct the columns in this
+    feature set.
 
-    #: Quarterly features aggregated by industry.
-    industry = IndustryQuarterlyFeatures()
+    :meta hide-value:
+    """
 
-    #: A company's quarterly features normalized by its industry.
-    normalized = NormalizedQuarterlyFeatures()
+    industry: IndustryQuarterlyFeatures = IndustryQuarterlyFeatures()
+    """Quarterly features aggregated for an entire industry.
+    The most popular way for accessing :class:`IndustryQuarterlyFeatures`
+    feature set.
+
+    :meta hide-value:
+    """
+
+    normalized: NormalizedQuarterlyFeatures = NormalizedQuarterlyFeatures()
+    """A company's quarterly features normalized by its industry.
+    The most popular way for accessing :class:`NormalizedQuarterlyFeatures`
+    feature set.
+
+    :meta hide-value:
+    """
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
@@ -609,7 +645,7 @@ class QuarterlyFeatures(feat.Features):
         end: str = utils.today,
         engine: Engine = backend.engine,
     ) -> pd.DataFrame:
-        """Get features from the features SQL table.
+        """Get features from the refined SQL table.
 
         This is the preferred method for accessing features for
         offline analysis (assuming data in the local SQL table
@@ -665,8 +701,12 @@ class QuarterlyFeatures(feat.Features):
 
         Returns:
             All unique tickers that may be valid for creating quarterly features
-            that also have at least `lb` rows for each tag used for
+            that also have at least ``lb`` rows for each tag used for
             constructing the features.
+
+        Examples:
+            >>> "AAPL" in finagg.sec.feat.get_candidate_ticker_set()
+            True
 
         """
         with backend.engine.begin() as conn:
@@ -705,7 +745,11 @@ class QuarterlyFeatures(feat.Features):
 
         Returns:
             All unique tickers that contain all the columns for creating
-            quarterly features that also have at least `lb` rows.
+            quarterly features that also have at least ``lb`` rows.
+
+        Examples:
+            >>> "AAPL" in finagg.sec.feat.get_ticker_set()
+            True
 
         """
         with backend.engine.begin() as conn:
@@ -771,12 +815,12 @@ class QuarterlyFeatures(feat.Features):
         *,
         engine: Engine = backend.engine,
     ) -> int:
-        """Write the dataframe to the feature store for ``ticker``.
+        """Write the given dataframe to the refined feature table
+        while using the ticker ``ticker``.
 
         Args:
             ticker: Company ticker.
-            df: Dataframe to store completely as rows in a local SQL
-                table.
+            df: Dataframe to store as rows in a local SQL table
             engine: Feature store database engine.
 
         Returns:
@@ -858,6 +902,14 @@ class TagFeatures:
         return df
 
 
-#: Module variable intended for fully qualified name usage.
-quarterly = QuarterlyFeatures()
-tags = TagFeatures()
+quarterly: QuarterlyFeatures = QuarterlyFeatures()
+"""The most popular way for accessing :class:`QuarterlyFeatures`.
+
+:meta hide-value:
+"""
+
+tags: TagFeatures = TagFeatures()
+"""The most popular way for accessing :class:`TagFeatures`.
+
+:meta hide-value:
+"""
