@@ -1,4 +1,4 @@
-"""Features from yfinance sources."""
+"""Features from :mod:`yfinance` sources."""
 
 import multiprocessing as mp
 from functools import cache, partial
@@ -29,9 +29,31 @@ def _refined_daily_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
 
 
 class DailyFeatures(feat.Features):
-    """Methods for gathering daily stock data from Yahoo! finance."""
+    """Methods for gathering daily stock data features from Yahoo! finance.
 
-    #: Columns within this feature set.
+    The module variable :data:`finagg.yfinance.feat.daily` is an instance of
+    this feature set implementation and is the most popular interface for
+    calling feature methods.
+
+    Examples:
+        It doesn't matter which data source you use to gather features.
+        They all return equivalent dataframes.
+
+        >>> import pandas as pd
+        >>> df1 = finagg.yfinance.feat.daily.from_api("AAPL")
+        >>> df2 = finagg.yfinance.feat.daily.from_raw("AAPL")
+        >>> df3 = finagg.yfinance.feat.daily.from_refined("AAPL")
+        >>> df1.equals(df2)
+        True
+        >>> df1.equals(df3)
+        True
+
+    """
+
+    #: Columns within this feature set. Dataframes returned by this class's
+    #: methods will always contain these columns. The refined data SQL table
+    #: corresponding to these features will also have rows that have these
+    #: names.
     columns: list[str] = [
         "price",
         "open_pct_change",
@@ -58,7 +80,7 @@ class DailyFeatures(feat.Features):
     def from_api(
         cls, ticker: str, /, *, start: str = "1776-07-04", end: str = utils.today
     ) -> pd.DataFrame:
-        """Get daily features directly from the yfinance API.
+        """Get daily features directly from the :mod:`yfinance` API.
 
         Args:
             ticker: Company ticker.
@@ -68,7 +90,7 @@ class DailyFeatures(feat.Features):
                 Defaults to the last recorded date.
 
         Returns:
-            Daily stock price dataframe. Sorted by date.
+            Daily stock price dataframe sorted by date.
 
         """
         df = api.get(ticker, start=start, end=end)
@@ -95,7 +117,7 @@ class DailyFeatures(feat.Features):
             engine: Raw store database engine.
 
         Returns:
-            Daily stock price dataframe. Sorted by date.
+            Daily stock price dataframe sorted by date.
 
         """
         with engine.begin() as conn:
@@ -124,7 +146,7 @@ class DailyFeatures(feat.Features):
 
         This is the preferred method for accessing features for
         offline analysis (assuming data in the local SQL tables
-        is current).
+        is installed and is up-to-date).
 
         Args:
             ticker: Company ticker.
@@ -135,7 +157,7 @@ class DailyFeatures(feat.Features):
             engine: Feature store database engine.
 
         Returns:
-            Daily stock price dataframe. Sorted by date.
+            Daily stock price dataframe sorted by date.
 
         """
         with engine.begin() as conn:
@@ -159,7 +181,7 @@ class DailyFeatures(feat.Features):
         lb: int = 1,
     ) -> set[str]:
         """Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE
-        to be in the feature's SQL table.
+        to be in the feature's refined SQL table.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
@@ -167,7 +189,7 @@ class DailyFeatures(feat.Features):
 
         Returns:
             All unique tickers that may be valid for creating daily features
-            that also have at least `lb` rows used for constructing the
+            that also have at least ``lb`` rows used for constructing the
             features.
 
         """
@@ -187,7 +209,7 @@ class DailyFeatures(feat.Features):
 
         Returns:
             All unique tickers that contain all the columns for creating
-            daily features that also have at least `lb` rows.
+            daily features that also have at least ``lb`` rows.
 
         """
         with backend.engine.begin() as conn:
@@ -209,13 +231,13 @@ class DailyFeatures(feat.Features):
     @classmethod
     def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
         """Drop the feature's table, create a new one, and insert data
-        transformed from another raw SQL table.
+        transformed from the raw SQL table.
 
         Args:
             processes: Number of background processes to use for installation.
 
         Returns:
-            Number of rows written to the feature's SQL table.
+            Number of rows written to the feature's refined SQL table.
 
         """
         sql.daily.drop(backend.engine, checkfirst=True)
@@ -252,12 +274,12 @@ class DailyFeatures(feat.Features):
         *,
         engine: Engine = backend.engine,
     ) -> int:
-        """Write the dataframe to the feature store for `ticker`.
+        """Write the given dataframe to the refined feature table
+        while using the ticker ``ticker``.
 
         Args:
             ticker: Company ticker.
-            df: Dataframe to store completely as rows in a local SQL
-                table.
+            df: Dataframe to store as rows in a local SQL table.
             engine: Feature store database engine.
 
         Returns:
@@ -272,5 +294,8 @@ class DailyFeatures(feat.Features):
         return len(df.index)
 
 
-#: Module variable intended for fully qualified name usage.
-daily = DailyFeatures()
+daily: DailyFeatures = DailyFeatures()
+"""The most popular way for accessing :class:`DailyFeatures`.
+
+:meta hide-value:
+"""

@@ -17,14 +17,14 @@ def get(
     """Get a ticker's stock price history.
 
     Does a simple transform on yfinance's ticker API dataframe result to be
-    a bit more consistent with other APIs.
+    a bit more consistent with other API implementations.
 
     Args:
         ticker: Company ticker to get historical price data for.
         start: Start date for stock price history.
         end: End date for stock price history.
         interval: Frequency at which stock price history is grabbed.
-        period: Time period to get in the past. ``"max"`` is the full
+        period: Time period to get in the past. ``"max"`` returns the full
             stock price history and the default.
         debug: Debug mode passed to ``yfinance``.
 

@@ -45,7 +45,7 @@ def test_request_limit_update(expected_wait: list[int]) -> None:
     limit = finagg.ratelimit.RequestLimit(LIMIT, PERIOD)
     response = requests.Response()
     for wait in expected_wait:
-        assert limit.update(response) == wait
+        assert limit._update(response) == wait
 
 
 @patch("time.perf_counter", side_effect=[0, 0, 1, 2])
@@ -55,9 +55,9 @@ def test_request_limit_update_with_wait(_) -> None:
     ok_response.status_code = 200
     bad_response = requests.Response()
     bad_response.status_code = 404
-    assert limit.update(ok_response) == 0.0
-    assert limit.update(bad_response) == 100.0
-    assert limit.update(ok_response) == 99.0
+    assert limit._update(ok_response) == 0.0
+    assert limit._update(bad_response) == 100.0
+    assert limit._update(ok_response) == 99.0
 
 
 def test_error_limit_update(expected_wait: list[int]) -> None:
@@ -65,7 +65,7 @@ def test_error_limit_update(expected_wait: list[int]) -> None:
     response = requests.Response()
     response.status_code = 404
     for wait in expected_wait:
-        assert limit.update(response) == wait
+        assert limit._update(response) == wait
 
 
 def test_size_limit_update(expected_wait: list[int]) -> None:
@@ -73,4 +73,4 @@ def test_size_limit_update(expected_wait: list[int]) -> None:
     response = requests.Response()
     response._content = b"0"
     for wait in expected_wait:
-        assert limit.update(response) == wait
+        assert limit._update(response) == wait

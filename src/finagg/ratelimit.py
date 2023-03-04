@@ -20,6 +20,9 @@ _P = ParamSpec("_P")
 class RateLimit(ABC):
     """Interface for defining a rate limit for an external API getter.
 
+    You can create a custom rate-limiter by inheriting from this class
+    and implementing a custom :meth:`eval` method.
+
     Args:
         limit: Max limit within ``period`` (e.g., max number of
             requests, errors, size in memory, etc.).
@@ -28,23 +31,30 @@ class RateLimit(ABC):
             leeway to ensure ``limit`` is not reached. Useful for
             enforcing response size limits.
 
+    .. seealso::
+        :meth:`guard`: For the intended usage of getting a
+            :class:`finagg.ratelimit.RateLimitGuard` instance.
+        :class:`RequestLimit`: For an example of a request
+            rate limiter.
+
     """
-
-    #: Max limit within ``period``.
-    limit: float
-
-    #: Time interval for evaluating ``limit``
-    period: float
 
     #: Deque of responses containing limits from ``eval`` and
     #: the timestep they were observed.
-    responses: deque[tuple[float, float]]
+    _responses: deque[tuple[float, float]]
 
     #: Running total contributing to ``limit`` within ``period``.
-    total_limit: float
+    _total_limit: float
 
-    #: Running total time to wait before next valid request.
-    total_wait: float
+    #: Running total time to wait before next valid request (in seconds).
+    _total_wait: float
+
+    #: Max quantity allowed within ``period``. The quantity type being limited
+    #: is dependent on what's returned by :meth:`eval`.
+    limit: float
+
+    #: Time interval for evaluating ``limit`` (in seconds).
+    period: float
 
     def __init__(
         self, limit: float, period: float | timedelta, /, *, buffer: float = 0.0
@@ -53,39 +63,25 @@ class RateLimit(ABC):
         self.period = (
             period.total_seconds() if isinstance(period, timedelta) else period
         )
-        self.total_limit = 0.0
-        self.total_wait = 0.0
-        self.responses = deque()
-
-    @abstractmethod
-    def eval(self, response: requests.Response, /) -> float | dict[str, float]:
-        """Evaluate a response and determine how much it contributes
-        to the max limit imposed by this instance.
-
-        Args:
-            response: Request response (possibly cached).
-
-        Returns:
-            A number indicating the request/response's contribution
-            to the rate limit OR a dictionary containing:
-
-                - "limit": a number indicating the request/response's
-                    contribution to the rate limit
-                - "wait": time to wait before a new request can be made
-
-        """
+        self._total_limit = 0.0
+        self._total_wait = 0.0
+        self._responses = deque()
 
     @property
-    def ts(self) -> float:
+    def _ts(self) -> float:
         """Get the most recent response timestamp as a result of calling
         the underlying getter.
 
         """
-        return self.responses[-1][1] if self.responses else time.perf_counter()
+        return self._responses[-1][1] if self._responses else time.perf_counter()
 
-    def update(self, response: requests.Response, /) -> float:
+    def _update(self, response: requests.Response, /) -> float:
         """Update the rate limit's running ``total`` and ``responses``
         collection.
+
+        This method calls :meth:`eval` and uses its return value to
+        update the client-side throttling wait time (if there is any) to
+        avoid exceeding server-side API limits.
 
         Args:
             response: Request response (possibly cached).
@@ -104,34 +100,57 @@ class RateLimit(ABC):
         wait = v["wait"]
 
         ts = time.perf_counter()
-        dt = max(ts - self.ts, 0.0)
-        self.total_limit += limit
-        self.total_wait = max(self.total_wait - dt, 0.0)
-        self.total_wait = max(self.total_wait, wait)
+        dt = max(ts - self._ts, 0.0)
+        self._total_limit += limit
+        self._total_wait = max(self._total_wait - dt, 0.0)
+        self._total_wait = max(self._total_wait, wait)
         new = (limit, ts)
-        self.responses.append(new)
+        self._responses.append(new)
 
         # Remove timed-out responses and remove their contributions
         # to the total limit.
-        while self.responses and (
-            (self.responses[-1][1] - self.responses[0][1]) >= self.period
+        while self._responses and (
+            (self._responses[-1][1] - self._responses[0][1]) >= self.period
         ):
-            old = self.responses.popleft()
-            self.total_limit -= old[0]
+            old = self._responses.popleft()
+            self._total_limit -= old[0]
 
         # Update total wait time according to the max limit.
-        tmp_limit = self.total_limit
+        tmp_limit = self._total_limit
         tmp_wait = 0.0
-        if self.total_limit >= self.limit:
-            for r in self.responses:
+        if self._total_limit >= self.limit:
+            for r in self._responses:
                 limit, ts = r
                 tmp_limit -= limit
-                tmp_wait += self.period - (self.ts - ts)
+                tmp_wait += self.period - (self._ts - ts)
                 if tmp_limit < self.limit:
                     break
 
-        self.total_wait = max(self.total_wait, tmp_wait)
-        return self.total_wait
+        self._total_wait = max(self._total_wait, tmp_wait)
+        return self._total_wait
+
+    @abstractmethod
+    def eval(self, response: requests.Response, /) -> float | dict[str, float]:
+        """Evaluate a response and determine how much it contributes
+        to the max limit imposed by this instance.
+
+        This is the main method that should be overwritten by subclasses
+        to create custom rate-limiters. This method is called with each
+        requests's response to determine how much that request/response
+        contributes to the rate-limiting.
+
+        Args:
+            response: Request response (possibly cached).
+
+        Returns:
+            A number indicating the request/response's contribution
+            to the rate limit OR a dictionary containing:
+
+                - "limit": a number indicating the request/response's
+                    contribution to the rate limit
+                - "wait": time to wait before a new request can be made
+
+        """
 
 
 class RequestLimit(RateLimit):
@@ -164,6 +183,12 @@ class SizeLimit(RateLimit):
 class RateLimitGuard(Generic[_P]):
     """Wraps requests-like getters to introduce blocking functionality
     when requests are getting close to violating call limits.
+
+    Args:
+        f: Requests-style getter that's wrapped and rate-limited.
+        limits: Limits to apply to the requests-style getter.
+        warn: Whether to print a message to stdout whenever client-side
+            throttling is occurring to respect ``limits``.
 
     .. seealso::
         :meth:`guard`: For the intended usage of getting a
@@ -211,7 +236,7 @@ class RateLimitGuard(Generic[_P]):
         r = self.f(*args, **kwargs)
         wait = 0.0
         for limit in self.limits:
-            tmp_wait = limit.update(r)
+            tmp_wait = limit._update(r)
             wait = max(wait, tmp_wait)
         if wait > 0:
             if self.warn:
@@ -227,7 +252,8 @@ def guard(
 
     Args:
         limits: Rate limits to apply to the requests-style getter.
-        warn: Whether to print a message when rate-limiting is occurring.
+        warn: Whether to print a message when client-side throttling is
+            occurring.
 
     Returns:
         A decorator that wraps the original requests-style getter in a
