@@ -1,12 +1,23 @@
-"""finagg features interfaces."""
+""":mod:`finagg` features interfaces. These definitions aren't really necessary
+unless you intend to extend :mod:`finagg` with your own custom feature
+definitions.
 
-from typing import Any, Protocol
+"""
+
+from typing import Any, ClassVar, Protocol
 
 import pandas as pd
 
 
 class Features:
-    columns: list[str]
+    """Though not required, all features inherit from this class as it provides
+    a couple of methods for selecting column names related to percent changes.
+
+    """
+
+    #: Each feature has a class variable that details all the columns in the
+    #: dataframes returned by its methods.
+    columns: ClassVar[list[str]]
 
     @classmethod
     def pct_change_source_columns(cls) -> list[str]:

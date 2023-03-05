@@ -211,7 +211,7 @@ class EconomicFeatures(feat.Features):
     ]
 
     #: Columns within this feature set.
-    columns: list[str] = [
+    columns = [
         "CIVPART_pct_change",
         "CPIAUCNS_pct_change",
         "CSUSHPINSA_pct_change",

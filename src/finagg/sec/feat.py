@@ -51,11 +51,18 @@ def get_unique_filings(
 
     Args:
         df: Dataframe without unique rows.
-        form: Only keep rows with form type `form`.
-        units: Only keep rows with units `units` if not `None`.
+        form: Only keep rows with form type ``form``.
+        units: Only keep rows with units ``units`` if not ``None``.
 
     Returns:
         Dataframe with unique rows.
+
+    Examples:
+        Only get a company's original quarterly earnings-per-share filings.
+
+        >>> df = finagg.sec.api.company_concept.get("EarningsPerShare", ticker="AAPL", taxonomy="us-gaap", units="USD/shares")
+        >>> finagg.sec.feat.get_unique_filings(df, form="10-Q", units="USD/shares").head(5)
+
 
     """
     mask = df["form"] == form
@@ -97,16 +104,16 @@ class IndustryQuarterlyFeatures:
 
         The industry can be chosen according to a company or
         by an industry code directly. If a company is provided,
-        then the first `level` digits of the company's SIC code
+        then the first ``level`` digits of the company's SIC code
         is used for the industry code.
 
         Args:
             ticker: Company ticker. Lookup the industry associated
-                with this company. Mutually exclusive with `code`.
+                with this company. Mutually exclusive with ``code``.
             code: Industry SIC code to use for industry lookup.
-                Mutually exclusive with `ticker`.
+                Mutually exclusive with ``ticker``.
             level: Industry level to aggregate features at.
-                The industry used according to `ticker` or `code`
+                The industry used according to ``ticker`` or ``code``
                 is subsampled according to this value. Options include:
 
                     - 2 = major group (e.g., furniture and fixtures)
@@ -122,7 +129,7 @@ class IndustryQuarterlyFeatures:
             separate column. Sorted by filing date.
 
         Raises:
-            ValueError if neither a `ticker` nor `code` are provided.
+            ValueError if neither a ``ticker`` nor ``code`` are provided.
 
         """
         with engine.begin() as conn:
@@ -177,6 +184,20 @@ class NormalizedQuarterlyFeatures:
     """Quarterly features from SEC EDGAR data normalized according to industry
     averages and standard deviations.
 
+    The class variable :data:`finagg.sec.feat.quarterly.normalized` is an
+    instance of this feature set implementation and is the most popular
+    interface for calling feature methods.
+
+    Examples:
+        It doesn't matter which data source you use to gather features.
+        They both return equivalent dataframes.
+
+        >>> import pandas as pd
+        >>> df1 = finagg.sec.feat.quarterly.normalized.from_other_refeind("AAPL")
+        >>> df2 = finagg.sec.feat.quarterly.normalized.from_refined("AAPL")
+        >>> df1.equals(df2)
+        True
+
     """
 
     @classmethod
@@ -195,7 +216,7 @@ class NormalizedQuarterlyFeatures:
         Args:
             ticker: Company ticker.
             level: Industry level to aggregate relative features at.
-                The industry used according to `ticker` is subsampled
+                The industry used according to ``ticker`` is subsampled
                 according to this value. Options include:
 
                     - 2 = major group (e.g., furniture and fixtures)
@@ -284,7 +305,25 @@ class NormalizedQuarterlyFeatures:
 
     @classmethod
     def get_candidate_ticker_set(cls, lb: int = 1) -> set[str]:
-        """The candidate ticker set is just the `quarterly` ticker set."""
+        """Get all unique tickers in the quarterly SQL table that MAY BE
+        ELIGIBLE to be in the feature's SQL table.
+
+        This is just an alias for :meth:`finagg.sec.feat.quarterly.get_ticker_set`.
+
+        Args:
+            lb: Minimum number of rows required to include a ticker in the
+                returned set.
+
+        Returns:
+            All unique tickers that may be valid for creating
+            industry-normalized quarterly features that also have at least
+            ``lb`` rows for each tag used for constructing the features.
+
+        Examples:
+            >>> "AAPL" in finagg.sec.feat.quarterly.normalized.get_candidate_ticker_set()
+            True
+
+        """
         return QuarterlyFeatures.get_ticker_set(lb=lb)
 
     @classmethod
@@ -301,7 +340,12 @@ class NormalizedQuarterlyFeatures:
 
         Returns:
             All unique tickers that contain all the columns for creating
-            quarterly features that also have at least `lb` rows.
+            industry-normalized quarterly features that also have at least
+            ``lb`` rows.
+
+        Examples:
+            >>> "AAPL" in finagg.sec.feat.quarterly.normalized.get_ticker_set()
+            True
 
         """
         with backend.engine.begin() as conn:
@@ -340,7 +384,7 @@ class NormalizedQuarterlyFeatures:
         Args:
             column: Feature column to sort by.
             ascending: Whether to return results in ascending order according
-                to the values in `column`.
+                to the values in ``column``.
             year: Year to select from. Defaults to the most recent year that
                 has data available.
             quarter: Quarter to select from. Defaults to the most recent quarter
@@ -348,6 +392,11 @@ class NormalizedQuarterlyFeatures:
 
         Returns:
             Tickers sorted by a feature column for a particular year and quarter.
+
+        Examples:
+            >>> ts = finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by("EarningsPerShare", year=2020, quarter=3)
+            >>> "NOV" == ts[0]
+            True
 
         """
         with backend.engine.begin() as conn:
@@ -435,7 +484,7 @@ class NormalizedQuarterlyFeatures:
         *,
         engine: Engine = backend.engine,
     ) -> int:
-        """Write the dataframe to the feature store for `ticker`.
+        """Write the dataframe to the feature store for ``ticker``.
 
         Args:
             ticker: Company ticker.
@@ -473,9 +522,9 @@ class QuarterlyFeatures(feat.Features):
         They all return equivalent dataframes.
 
         >>> import pandas as pd
-        >>> df1 = finagg.sec.feat.daily.from_api("AAPL")
-        >>> df2 = finagg.sec.feat.daily.from_raw("AAPL")
-        >>> df3 = finagg.sec.feat.daily.from_refined("AAPL")
+        >>> df1 = finagg.sec.feat.quarterly.from_api("AAPL")
+        >>> df2 = finagg.sec.feat.quarterly.from_raw("AAPL")
+        >>> df3 = finagg.sec.feat.quarterly.from_refined("AAPL")
         >>> df1.equals(df2)
         True
         >>> df1.equals(df3)
@@ -487,7 +536,7 @@ class QuarterlyFeatures(feat.Features):
     #: methods will always contain these columns. The refined data SQL table
     #: corresponding to these features will also have rows that have these
     #: names.
-    columns: list[str] = [
+    columns = [
         "AssetsCurrent_pct_change",
         "DebtEquityRatio",
         "EarningsPerShare",
@@ -502,14 +551,14 @@ class QuarterlyFeatures(feat.Features):
         "WorkingCapitalRatio",
     ]
 
-    concepts: list[api.Concept] = api.common_concepts
+    concepts = api.common_concepts
     """XBRL disclosure concepts to pull to construct the columns in this
     feature set.
 
     :meta hide-value:
     """
 
-    industry: IndustryQuarterlyFeatures = IndustryQuarterlyFeatures()
+    industry = IndustryQuarterlyFeatures()
     """Quarterly features aggregated for an entire industry.
     The most popular way for accessing :class:`IndustryQuarterlyFeatures`
     feature set.
@@ -517,7 +566,7 @@ class QuarterlyFeatures(feat.Features):
     :meta hide-value:
     """
 
-    normalized: NormalizedQuarterlyFeatures = NormalizedQuarterlyFeatures()
+    normalized = NormalizedQuarterlyFeatures()
     """A company's quarterly features normalized by its industry.
     The most popular way for accessing :class:`NormalizedQuarterlyFeatures`
     feature set.
@@ -705,7 +754,7 @@ class QuarterlyFeatures(feat.Features):
             constructing the features.
 
         Examples:
-            >>> "AAPL" in finagg.sec.feat.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.quarterly.get_candidate_ticker_set()
             True
 
         """
@@ -748,7 +797,7 @@ class QuarterlyFeatures(feat.Features):
             quarterly features that also have at least ``lb`` rows.
 
         Examples:
-            >>> "AAPL" in finagg.sec.feat.get_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.quarterly.get_ticker_set()
             True
 
         """

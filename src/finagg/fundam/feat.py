@@ -414,7 +414,7 @@ class FundamentalFeatures(feat.Features):
     """Method for gathering fundamental data on a stock using several sources."""
 
     #: Columns within this feature set.
-    columns: list[str] = (
+    columns = (
         yfinance.feat.daily.columns
         + sec.feat.quarterly.columns
         + ["PriceEarningsRatio"]

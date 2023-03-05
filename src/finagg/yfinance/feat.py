@@ -54,7 +54,7 @@ class DailyFeatures(feat.Features):
     #: methods will always contain these columns. The refined data SQL table
     #: corresponding to these features will also have rows that have these
     #: names.
-    columns: list[str] = [
+    columns = [
         "price",
         "open_pct_change",
         "high_pct_change",
@@ -193,7 +193,7 @@ class DailyFeatures(feat.Features):
             features.
 
         Examples:
-            >>> "AAPL" in finagg.yfinance.feat.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.yfinance.feat.daily.get_candidate_ticker_set()
             True
 
         """
@@ -216,7 +216,7 @@ class DailyFeatures(feat.Features):
             daily features that also have at least ``lb`` rows.
 
         Examples:
-            >>> "AAPL" in finagg.yfinance.feat.get_ticker_set()
+            >>> "AAPL" in finagg.yfinance.feat.daily.get_ticker_set()
             True
 
         """

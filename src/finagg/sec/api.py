@@ -409,34 +409,34 @@ _cik_to_tickers: dict[str, str] = {}
 #: Mapping of (uppercase) tickers to SEC CIK strings.
 _tickers_to_cik: dict[str, str] = {}
 
-company_concept: CompanyConcept = CompanyConcept()
+company_concept = CompanyConcept()
 """The most popular way for accessing the :class:`CompanyConcept` API
 implementation.
 
 :meta hide-value:
 """
 
-company_facts: CompanyFacts = CompanyFacts()
+company_facts = CompanyFacts()
 """The most popular way for accessing the :class:`CompanyFacts` API
 implementation.
 
 :meta hide-value:
 """
 
-frames: Frames = Frames()
+frames = Frames()
 """The most popular way for accessing the :class:`Frames` API implementation.
 
 :meta hide-value:
 """
 
-submissions: Submissions = Submissions()
+submissions = Submissions()
 """The most popular way for accessing the :class:`Submissions` API
 implementation.
 
 :meta hide-value:
 """
 
-tickers: Tickers = Tickers()
+tickers = Tickers()
 """The most popular way for accessing the :class:`Tickers` API implementation.
 
 :meta hide-value:

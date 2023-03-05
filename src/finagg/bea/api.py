@@ -422,21 +422,21 @@ class NIPA(_API):
         return pd.concat(results)
 
 
-fixed_assets: FixedAssets = FixedAssets()
+fixed_assets = FixedAssets()
 """The most popular way for accessing the :class:`FixedAssets` API
 implementation.
 
 :meta hide-value:
 """
 
-gdp_by_industry: GDPByIndustry = GDPByIndustry()
+gdp_by_industry = GDPByIndustry()
 """The most popular way for accessing the :class:`GDPByIndustry` API
 implementation.
 
 :meta hide-value:
 """
 
-input_output: InputOutput = InputOutput()
+input_output = InputOutput()
 """The most popular way for accessing the :class:`InputOutput` API
 implementation.
 
