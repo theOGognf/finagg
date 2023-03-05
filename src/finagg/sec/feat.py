@@ -143,7 +143,9 @@ class IndustryQuarterlyFeatures:
             separate column. Sorted by filing date.
 
         Raises:
-            ValueError if neither a ``ticker`` nor ``code`` are provided.
+            `ValueError`: If neither a ``ticker`` nor ``code`` are provided.
+            `NoResultFound`: If there are no rows for ``ticker`` or ``code``
+                in the refined SQL table.
 
         """
         with engine.begin() as conn:
@@ -295,6 +297,10 @@ class NormalizedQuarterlyFeatures:
         Returns:
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` in the
+                refined SQL table.
 
         """
         with engine.begin() as conn:
@@ -680,6 +686,10 @@ class QuarterlyFeatures(feat.Features):
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
 
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` in the
+                raw SQL table.
+
         """
         with engine.begin() as conn:
             df = pd.DataFrame(
@@ -728,6 +738,10 @@ class QuarterlyFeatures(feat.Features):
         Returns:
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` in the
+                refined SQL table.
 
         """
         with engine.begin() as conn:
@@ -942,6 +956,10 @@ class TagFeatures:
         Returns:
             A dataframe containing the company concept tag values
             across the specified period.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` and ``tag``
+                in the raw SQL table.
 
         """
         with engine.begin() as conn:

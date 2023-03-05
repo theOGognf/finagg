@@ -90,7 +90,9 @@ class IndustryFundamentalFeatures:
             separate column. Sorted by date.
 
         Raises:
-            `ValueError` if neither a `ticker` nor `code` are provided.
+            `ValueError`: If neither a ``ticker`` nor ``code`` are provided.
+            `NoResultFound`: If there are no rows for ``ticker`` or ``code``
+                in the refined SQL table.
 
         """
         with engine.begin() as conn:
@@ -222,6 +224,10 @@ class NormalizedFundamentalFeatures:
         Returns:
             Fundamental data dataframe with each feature as a
             separate column. Sorted by date.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` in the
+                refined SQL table.
 
         """
         with engine.begin() as conn:
@@ -618,6 +624,10 @@ class FundamentalFeatures(feat.Features):
         Returns:
             Combined quarterly and daily feature dataframe.
             Sorted by date.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` in the
+                refined SQL table.
 
         """
         with engine.begin() as conn:

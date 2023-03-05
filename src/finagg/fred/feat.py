@@ -37,6 +37,9 @@ class TimeSummarizedEconomicFeatures:
             Average and standard deviation of each economic series
             across its respective history.
 
+        Raises:
+            `NoResultFound`: If there are no rows in the refined SQL table.
+
         """
         with engine.begin() as conn:
             stmt = sa.select(
@@ -126,6 +129,9 @@ class NormalizedEconomicFeatures:
         Returns:
             Economic data series dataframe with each series
             as a separate column. Sorted by date.
+
+        Raises:
+            `NoResultFound`: If there are no rows in the refined SQL table.
 
         """
         with engine.begin() as conn:
@@ -315,6 +321,9 @@ class EconomicFeatures(feat.Features):
             Economic data series dataframe with each series
             as a separate column. Sorted by date.
 
+        Raises:
+            `NoResultFound`: If there are no rows in the raw SQL table.
+
         """
         with engine.begin() as conn:
             df = pd.DataFrame(
@@ -355,6 +364,9 @@ class EconomicFeatures(feat.Features):
         Returns:
             Economic data series dataframe with each series
             as a separate column. Sorted by date.
+
+        Raises:
+            `NoResultFound`: If there are no rows in the refined SQL table.
 
         """
         with engine.begin() as conn:
@@ -450,6 +462,10 @@ class SeriesFeatures:
         Returns:
             A dataframe containing the economic data series values
             across the specified period.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``series_id`` in the
+                raw SQL table.
 
         """
         with engine.begin() as conn:

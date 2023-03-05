@@ -119,6 +119,10 @@ class DailyFeatures(feat.Features):
         Returns:
             Daily stock price dataframe sorted by date.
 
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` in the
+                raw SQL table.
+
         """
         with engine.begin() as conn:
             df = pd.DataFrame(
@@ -160,6 +164,10 @@ class DailyFeatures(feat.Features):
 
         Returns:
             Daily stock price dataframe sorted by date.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` in the
+                refined SQL table.
 
         """
         with engine.begin() as conn:
