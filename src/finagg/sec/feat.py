@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
 from .. import backend, feat, utils
@@ -185,6 +186,10 @@ class IndustryQuarterlyFeatures:
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(
+                f"No industry quarterly rows found for industry {code}."
+            )
         df = df.pivot(
             index=["fy", "fp", "filed"],
             columns="name",
@@ -308,6 +313,10 @@ class NormalizedQuarterlyFeatures:
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(
+                f"No industry-normalized quarterly rows found for {ticker}."
+            )
         df = df.pivot(
             index=["fy", "fp", "filed"], columns="name", values="value"
         ).sort_index()
@@ -413,17 +422,15 @@ class NormalizedQuarterlyFeatures:
         """
         with backend.engine.begin() as conn:
             if year == -1:
-                (row,) = conn.execute(
+                (max_year,) = conn.execute(
                     sa.select(sa.func.max(sql.normalized_quarterly.c.fy))
-                ).fetchall()
-                (max_year,) = row
+                ).one()
                 year = int(max_year)
 
             if quarter == -1:
-                (row,) = conn.execute(
+                (max_quarter,) = conn.execute(
                     sa.select(sa.func.max(sql.normalized_quarterly.c.fp))
-                ).fetchall()
-                (max_quarter,) = row
+                ).one()
                 fp = str(max_quarter)
             else:
                 fp = f"Q{quarter}"
@@ -693,6 +700,8 @@ class QuarterlyFeatures(feat.Features):
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(f"No quarterly rows found for {ticker}.")
         return cls._normalize(df)
 
     @classmethod
@@ -737,6 +746,8 @@ class QuarterlyFeatures(feat.Features):
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(f"No quarterly rows found for {ticker}.")
         df = df.pivot(
             index=["fy", "fp", "filed"],
             columns="name",
@@ -935,31 +946,29 @@ class TagFeatures:
 
         """
         with engine.begin() as conn:
-            df = (
-                pd.DataFrame(
-                    conn.execute(
-                        sa.select(
-                            sql.tags.c.fy,
-                            sql.tags.c.fp,
-                            sql.tags.c.filed,
-                            sql.tags.c.value,
-                        )
-                        .join(
-                            sql.submissions,
-                            (sql.submissions.c.cik == sql.tags.c.cik)
-                            & (sql.submissions.c.ticker == ticker),
-                        )
-                        .where(
-                            sql.tags.c.tag == tag,
-                            sql.tags.c.filed >= start,
-                            sql.tags.c.filed <= end,
-                        )
+            df = pd.DataFrame(
+                conn.execute(
+                    sa.select(
+                        sql.tags.c.fy,
+                        sql.tags.c.fp,
+                        sql.tags.c.filed,
+                        sql.tags.c.value,
+                    )
+                    .join(
+                        sql.submissions,
+                        (sql.submissions.c.cik == sql.tags.c.cik)
+                        & (sql.submissions.c.ticker == ticker),
+                    )
+                    .where(
+                        sql.tags.c.tag == tag,
+                        sql.tags.c.filed >= start,
+                        sql.tags.c.filed <= end,
                     )
                 )
-                .set_index(["fy", "fp", "filed"])
-                .sort_index()
             )
-        return df
+        if not len(df.index):
+            raise NoResultFound(f"No {tag} rows found for {ticker}.")
+        return df.set_index(["fy", "fp", "filed"]).sort_index()
 
 
 quarterly: QuarterlyFeatures = QuarterlyFeatures()

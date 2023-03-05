@@ -4,6 +4,7 @@
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import NoResultFound
 
 from .. import backend, feat, utils
 from . import api, sql
@@ -54,6 +55,8 @@ class TimeSummarizedEconomicFeatures:
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(f"No time-summarized economic rows found.")
         df = df.pivot(
             index=["date"],
             columns="name",
@@ -134,6 +137,8 @@ class NormalizedEconomicFeatures:
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(f"No normalized economic rows found.")
         df = df.pivot(index="date", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
         df = df[EconomicFeatures.columns]
@@ -321,6 +326,8 @@ class EconomicFeatures(feat.Features):
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(f"No economic rows found.")
         return cls._normalize(df)
 
     @classmethod
@@ -358,6 +365,8 @@ class EconomicFeatures(feat.Features):
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(f"No economic rows found.")
         df = df.pivot(index="date", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
         df = df[cls.columns]
@@ -444,20 +453,18 @@ class SeriesFeatures:
 
         """
         with engine.begin() as conn:
-            df = (
-                pd.DataFrame(
-                    conn.execute(
-                        sa.select(sql.series.c.date, sql.series.c.value).where(
-                            sql.series.c.series_id == series_id,
-                            sql.series.c.date >= start,
-                            sql.series.c.date <= end,
-                        )
+            df = pd.DataFrame(
+                conn.execute(
+                    sa.select(sql.series.c.date, sql.series.c.value).where(
+                        sql.series.c.series_id == series_id,
+                        sql.series.c.date >= start,
+                        sql.series.c.date <= end,
                     )
                 )
-                .set_index(["date"])
-                .sort_index()
             )
-        return df
+        if not len(df.index):
+            raise NoResultFound(f"No series rows found for {series_id}.")
+        return df.set_index(["date"]).sort_index()
 
 
 #: Module variable intended for fully qualified name usage.

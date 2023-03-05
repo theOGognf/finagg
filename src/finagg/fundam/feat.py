@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
 from .. import backend, feat, sec, utils, yfinance
@@ -94,12 +95,11 @@ class IndustryFundamentalFeatures:
         """
         with engine.begin() as conn:
             if ticker:
-                (row,) = conn.execute(
+                (sic,) = conn.execute(
                     sa.select(sec.sql.submissions.c.sic).where(
                         sec.sql.submissions.c.ticker == ticker
                     )
-                ).fetchall()
-                (sic,) = row
+                ).one()
                 code = str(sic)[:level]
             elif code:
                 code = code[:level]
@@ -129,6 +129,8 @@ class IndustryFundamentalFeatures:
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(f"No industry fundamental rows found for {code}.")
         df = df.pivot(
             index="date",
             columns="name",
@@ -232,6 +234,10 @@ class NormalizedFundamentalFeatures:
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(
+                f"No industry-normalized fundamental rows found for {ticker}."
+            )
         df = df.pivot(index="date", columns="name", values="value").sort_index()
         df.columns = df.columns.rename(None)
         df = df[FundamentalFeatures.columns]
@@ -308,10 +314,9 @@ class NormalizedFundamentalFeatures:
                 if date > 0:
                     raise ValueError("Date should be non-positive")
 
-                (row,) = conn.execute(
+                (max_date,) = conn.execute(
                     sa.select(sa.func.max(sql.normalized_fundam.c.date))
-                ).fetchall()
-                (max_date,) = row
+                ).one()
                 if date == 0:
                     date = str(max_date)
                 else:
@@ -625,6 +630,8 @@ class FundamentalFeatures(feat.Features):
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(f"No fundamental rows found for {ticker}.")
         df = df.pivot(index="date", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
         df = df[cls.columns]

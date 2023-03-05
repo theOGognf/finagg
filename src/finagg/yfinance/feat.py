@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
 from .. import backend, feat, utils
@@ -129,6 +130,8 @@ class DailyFeatures(feat.Features):
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(f"No daily rows found for {ticker}.")
         return cls._normalize(df)
 
     @classmethod
@@ -169,6 +172,8 @@ class DailyFeatures(feat.Features):
                     )
                 )
             )
+        if not len(df.index):
+            raise NoResultFound(f"No daily rows found for {ticker}.")
         df = df.pivot(index="date", columns="name", values="value").sort_index()
         df.columns = df.columns.rename(None)
         df = df[cls.columns]
