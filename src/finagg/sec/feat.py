@@ -148,12 +148,11 @@ class IndustryQuarterlyFeatures:
         """
         with engine.begin() as conn:
             if ticker:
-                (row,) = conn.execute(
+                (sic,) = conn.execute(
                     sa.select(sql.submissions.c.sic).where(
                         sql.submissions.c.ticker == ticker
                     )
-                ).fetchall()
-                (sic,) = row
+                ).one()
                 code = str(sic)[:level]
             elif code:
                 code = code[:level]

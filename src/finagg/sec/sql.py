@@ -337,10 +337,9 @@ def get_tickers_in_industry(
     """
     with backend.engine.begin() as conn:
         if ticker:
-            (row,) = conn.execute(
+            (sic,) = conn.execute(
                 sa.select(submissions.c.sic).where(submissions.c.ticker == ticker)
-            ).fetchall()
-            (sic,) = row
+            ).one()
             code = str(sic)[:level]
         elif code:
             code = code[:level]
