@@ -233,20 +233,21 @@ class DailyFeatures(feat.Features):
 
         """
         with backend.engine.begin() as conn:
-            tickers = set()
-            for row in conn.execute(
-                sa.select(sql.daily.c.ticker)
-                .group_by(sql.daily.c.ticker)
-                .having(
-                    *[
-                        sa.func.count(sql.daily.c.name == col) >= lb
-                        for col in cls.columns
-                    ]
+            tickers = (
+                conn.execute(
+                    sa.select(sql.daily.c.ticker)
+                    .group_by(sql.daily.c.ticker)
+                    .having(
+                        *[
+                            sa.func.count(sql.daily.c.name == col) >= lb
+                            for col in cls.columns
+                        ]
+                    )
                 )
-            ):
-                (ticker,) = row
-                tickers.add(str(ticker))
-        return tickers
+                .scalars()
+                .all()
+            )
+        return set(tickers)
 
     @classmethod
     def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:

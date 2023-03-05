@@ -375,24 +375,25 @@ class NormalizedQuarterlyFeatures:
 
         """
         with backend.engine.begin() as conn:
-            tickers = set()
-            for row in conn.execute(
-                sa.select(sql.submissions.c.ticker)
-                .join(
-                    sql.normalized_quarterly,
-                    sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
+            tickers = (
+                conn.execute(
+                    sa.select(sql.submissions.c.ticker)
+                    .join(
+                        sql.normalized_quarterly,
+                        sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
+                    )
+                    .group_by(sql.normalized_quarterly.c.cik)
+                    .having(
+                        *[
+                            sa.func.count(sql.normalized_quarterly.c.name == col) >= lb
+                            for col in QuarterlyFeatures.columns
+                        ]
+                    )
                 )
-                .group_by(sql.normalized_quarterly.c.cik)
-                .having(
-                    *[
-                        sa.func.count(sql.normalized_quarterly.c.name == col) >= lb
-                        for col in QuarterlyFeatures.columns
-                    ]
-                )
-            ):
-                (ticker,) = row
-                tickers.add(str(ticker))
-        return tickers
+                .scalars()
+                .all()
+            )
+        return set(tickers)
 
     @classmethod
     def get_tickers_sorted_by(
@@ -440,25 +441,26 @@ class NormalizedQuarterlyFeatures:
             else:
                 fp = f"Q{quarter}"
 
-            tickers = []
-            for row in conn.execute(
-                sa.select(sql.submissions.c.ticker)
-                .join(
-                    sql.normalized_quarterly,
-                    sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
+            tickers = (
+                conn.execute(
+                    sa.select(sql.submissions.c.ticker)
+                    .join(
+                        sql.normalized_quarterly,
+                        sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
+                    )
+                    .where(
+                        sql.normalized_quarterly.c.name == column,
+                        sql.normalized_quarterly.c.fy == year,
+                        sql.normalized_quarterly.c.fp == fp,
+                    )
+                    .order_by(sql.normalized_quarterly.c.value)
                 )
-                .where(
-                    sql.normalized_quarterly.c.name == column,
-                    sql.normalized_quarterly.c.fy == year,
-                    sql.normalized_quarterly.c.fp == fp,
-                )
-                .order_by(sql.normalized_quarterly.c.value)
-            ):
-                (ticker,) = row
-                tickers.append(str(ticker))
+                .scalars()
+                .all()
+            )
         if not ascending:
-            tickers = list(reversed(tickers))
-        return tickers
+            return list(reversed(tickers))
+        return list(tickers)
 
     @classmethod
     def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
@@ -794,26 +796,32 @@ class QuarterlyFeatures(feat.Features):
 
         """
         with backend.engine.begin() as conn:
-            tickers = set()
-            for row in conn.execute(
-                sa.select(
-                    sql.submissions.c.ticker,
-                    *[
-                        sa.func.sum(
-                            sa.case({concept["tag"]: 1}, value=sql.tags.c.tag, else_=0)
-                        ).label(concept["tag"])
-                        for concept in cls.concepts
-                    ],
+            tickers = (
+                conn.execute(
+                    sa.select(
+                        sql.submissions.c.ticker,
+                        *[
+                            sa.func.sum(
+                                sa.case(
+                                    {concept["tag"]: 1}, value=sql.tags.c.tag, else_=0
+                                )
+                            ).label(concept["tag"])
+                            for concept in cls.concepts
+                        ],
+                    )
+                    .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
+                    .group_by(sql.tags.c.cik)
+                    .having(
+                        *[
+                            sa.text(f"{concept['tag']} >= {lb}")
+                            for concept in cls.concepts
+                        ]
+                    )
                 )
-                .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
-                .group_by(sql.tags.c.cik)
-                .having(
-                    *[sa.text(f"{concept['tag']} >= {lb}") for concept in cls.concepts]
-                )
-            ):
-                ticker = row[0]
-                tickers.add(str(ticker))
-        return tickers
+                .scalars()
+                .all()
+            )
+        return set(tickers)
 
     @classmethod
     @cache
@@ -837,21 +845,22 @@ class QuarterlyFeatures(feat.Features):
 
         """
         with backend.engine.begin() as conn:
-            tickers = set()
-            for row in conn.execute(
-                sa.select(sql.submissions.c.ticker)
-                .join(sql.quarterly, sql.quarterly.c.cik == sql.submissions.c.cik)
-                .group_by(sql.quarterly.c.cik)
-                .having(
-                    *[
-                        sa.func.count(sql.quarterly.c.name == col) >= lb
-                        for col in cls.columns
-                    ]
+            tickers = (
+                conn.execute(
+                    sa.select(sql.submissions.c.ticker)
+                    .join(sql.quarterly, sql.quarterly.c.cik == sql.submissions.c.cik)
+                    .group_by(sql.quarterly.c.cik)
+                    .having(
+                        *[
+                            sa.func.count(sql.quarterly.c.name == col) >= lb
+                            for col in cls.columns
+                        ]
+                    )
                 )
-            ):
-                (ticker,) = row
-                tickers.add(str(ticker))
-        return tickers
+                .scalars()
+                .all()
+            )
+        return set(tickers)
 
     @classmethod
     def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:

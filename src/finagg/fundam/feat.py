@@ -272,20 +272,21 @@ class NormalizedFundamentalFeatures:
 
         """
         with backend.engine.begin() as conn:
-            tickers = set()
-            for row in conn.execute(
-                sa.select(sql.normalized_fundam.c.ticker)
-                .group_by(sql.normalized_fundam.c.ticker)
-                .having(
-                    *[
-                        sa.func.count(sql.normalized_fundam.c.name == col) >= lb
-                        for col in FundamentalFeatures.columns
-                    ]
+            tickers = (
+                conn.execute(
+                    sa.select(sql.normalized_fundam.c.ticker)
+                    .group_by(sql.normalized_fundam.c.ticker)
+                    .having(
+                        *[
+                            sa.func.count(sql.normalized_fundam.c.name == col) >= lb
+                            for col in FundamentalFeatures.columns
+                        ]
+                    )
                 )
-            ):
-                (ticker,) = row
-                tickers.add(str(ticker))
-        return tickers
+                .scalars()
+                .all()
+            )
+        return set(tickers)
 
     @classmethod
     def get_tickers_sorted_by(
@@ -330,20 +331,21 @@ class NormalizedFundamentalFeatures:
                         datetime.fromisoformat(str(max_date)) - timedelta(days=date)
                     ).strftime("%Y-%m-%d")
 
-            tickers = []
-            for row in conn.execute(
-                sa.select(sql.normalized_fundam.c.ticker)
-                .where(
-                    sql.normalized_fundam.c.name == column,
-                    sql.normalized_fundam.c.date == date,
+            tickers = (
+                conn.execute(
+                    sa.select(sql.normalized_fundam.c.ticker)
+                    .where(
+                        sql.normalized_fundam.c.name == column,
+                        sql.normalized_fundam.c.date == date,
+                    )
+                    .order_by(sql.normalized_fundam.c.value)
                 )
-                .order_by(sql.normalized_fundam.c.value)
-            ):
-                (ticker,) = row
-                tickers.append(str(ticker))
+                .scalars()
+                .all()
+            )
         if not ascending:
-            tickers = list(reversed(tickers))
-        return tickers
+            return list(reversed(tickers))
+        return list(tickers)
 
     @classmethod
     def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
@@ -686,20 +688,21 @@ class FundamentalFeatures(feat.Features):
 
         """
         with backend.engine.begin() as conn:
-            tickers = set()
-            for row in conn.execute(
-                sa.select(sql.fundam.c.ticker)
-                .group_by(sql.fundam.c.ticker)
-                .having(
-                    *[
-                        sa.func.count(sql.fundam.c.name == col) >= lb
-                        for col in cls.columns
-                    ]
+            tickers = (
+                conn.execute(
+                    sa.select(sql.fundam.c.ticker)
+                    .group_by(sql.fundam.c.ticker)
+                    .having(
+                        *[
+                            sa.func.count(sql.fundam.c.name == col) >= lb
+                            for col in cls.columns
+                        ]
+                    )
                 )
-            ):
-                (ticker,) = row
-                tickers.add(str(ticker))
-        return tickers
+                .scalars()
+                .all()
+            )
+        return set(tickers)
 
     @classmethod
     def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:

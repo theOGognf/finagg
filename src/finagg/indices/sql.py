@@ -50,9 +50,7 @@ sp500 = sa.Table(
 def get_ticker_set() -> set[str]:
     """Get all unique tickers in the raw SQL tables."""
     with backend.engine.begin() as conn:
-        tickers = set()
+        tickers: set[str] = set()
         for table in (djia, nasdaq100, sp500):
-            for row in conn.execute(sa.select(table.c.ticker)):
-                (ticker,) = row
-                tickers.add(str(ticker))
+            tickers.update(conn.execute(sa.select(table.c.ticker)).scalars().all())
     return tickers

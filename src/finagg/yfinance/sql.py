@@ -1,5 +1,4 @@
 """Yahoo! finance SQLAlchemy interfaces."""
-
 from functools import cache
 
 import sqlalchemy as sa
@@ -57,12 +56,13 @@ def get_ticker_set(lb: int = 1) -> set[str]:
 
     """
     with backend.engine.begin() as conn:
-        tickers = set()
-        for row in conn.execute(
-            sa.select(prices.c.ticker)
-            .group_by(prices.c.ticker)
-            .having(sa.func.count(prices.c.date) >= lb)
-        ):
-            (ticker,) = row
-            tickers.add(str(ticker))
+        tickers = set(
+            conn.execute(
+                sa.select(prices.c.ticker)
+                .group_by(prices.c.ticker)
+                .having(sa.func.count(prices.c.date) >= lb)
+            )
+            .scalars()
+            .all()
+        )
     return tickers

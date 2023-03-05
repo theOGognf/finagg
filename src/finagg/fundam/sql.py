@@ -45,12 +45,13 @@ normalized_fundam = sa.Table(
 def get_ticker_set(lb: int = 1) -> set[str]:
     """Get all unique tickers in the raw SQL tables."""
     with backend.engine.begin() as conn:
-        tickers = set()
-        for row in conn.execute(
-            sa.select(fundam.c.ticker)
-            .group_by(fundam.c.ticker)
-            .having(sa.func.count(fundam.c.date) >= lb)
-        ):
-            (ticker,) = row
-            tickers.add(str(ticker))
-    return tickers
+        tickers = (
+            conn.execute(
+                sa.select(fundam.c.ticker)
+                .group_by(fundam.c.ticker)
+                .having(sa.func.count(fundam.c.date) >= lb)
+            )
+            .scalars()
+            .all()
+        )
+    return set(tickers)

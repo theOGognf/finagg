@@ -284,16 +284,17 @@ def get_ticker_set(lb: int = 1) -> set[str]:
 
     """
     with backend.engine.begin() as conn:
-        tickers = set()
-        for row in conn.execute(
-            sa.select(submissions.c.ticker)
-            .join(tags, tags.c.cik == submissions.c.cik)
-            .group_by(tags.c.cik)
-            .having(sa.func.count(tags.c.filed) >= lb)
-        ):
-            (ticker,) = row
-            tickers.add(str(ticker))
-    return tickers
+        tickers = (
+            conn.execute(
+                sa.select(submissions.c.ticker)
+                .join(tags, tags.c.cik == submissions.c.cik)
+                .group_by(tags.c.cik)
+                .having(sa.func.count(tags.c.filed) >= lb)
+            )
+            .scalars()
+            .all()
+        )
+    return set(tickers)
 
 
 @cache
@@ -346,10 +347,13 @@ def get_tickers_in_industry(
         else:
             raise ValueError("Must provide a `ticker` or `code`.")
 
-        tickers = set()
-        for row in conn.execute(
-            sa.select(submissions.c.ticker).where(submissions.c.sic.startswith(code))
-        ):
-            (ticker,) = row
-            tickers.add(str(ticker))
-    return tickers
+        tickers = (
+            conn.execute(
+                sa.select(submissions.c.ticker).where(
+                    submissions.c.sic.startswith(code)
+                )
+            )
+            .scalars()
+            .all()
+        )
+    return set(tickers)

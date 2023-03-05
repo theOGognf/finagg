@@ -78,12 +78,13 @@ def get_id_set(lb: int = 1) -> set[str]:
 
     """
     with backend.engine.begin() as conn:
-        series_ids = set()
-        for row in conn.execute(
-            sa.select(series.c.series_id)
-            .group_by(series.c.series_id)
-            .having(sa.func.count(series.c.date) >= lb)
-        ):
-            (series_id,) = row
-            series_ids.add(str(series_id))
-    return series_ids
+        series_ids = (
+            conn.execute(
+                sa.select(series.c.series_id)
+                .group_by(series.c.series_id)
+                .having(sa.func.count(series.c.date) >= lb)
+            )
+            .scalars()
+            .all()
+        )
+    return set(series_ids)
