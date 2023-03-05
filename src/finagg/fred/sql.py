@@ -65,7 +65,18 @@ normalized_economic = sa.Table(
 
 @cache
 def get_id_set(lb: int = 1) -> set[str]:
-    """Get all unique series IDs in the raw SQL tables."""
+    """Get all unique economic series IDs in the raw SQL tables that have at least
+    ``lb`` rows.
+
+    Args:
+        lb: Lower bound number of rows that a series must have for its ID
+            to be included in the set returned by this method.
+
+    Examples:
+        >>> "FEDFUNDS" in finagg.fred.sql.get_id_set()
+        True
+
+    """
     with backend.engine.begin() as conn:
         series_ids = set()
         for row in conn.execute(

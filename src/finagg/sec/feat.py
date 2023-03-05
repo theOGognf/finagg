@@ -94,8 +94,8 @@ class IndustryQuarterlyFeatures:
         You can aggregate this feature set using a ticker or an industry code
         directly.
 
-        >>> df1 = finagg.sec.feat.quarterly.industry.from_refined(ticker="AAPL")
-        >>> df2 = finagg.sec.feat.quarterly.industry.from_refined(code=32)
+        >>> df1 = finagg.sec.feat.quarterly.industry.from_refined(ticker="MSFT")
+        >>> df2 = finagg.sec.feat.quarterly.industry.from_refined(code=73)
         >>> df1.equals(df2)
         True
 
