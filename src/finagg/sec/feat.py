@@ -46,12 +46,13 @@ def _refined_normalized_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFr
 def get_unique_filings(
     df: pd.DataFrame, /, *, form: str = "10-Q", units: None | str = None
 ) -> pd.DataFrame:
-    """Get all unique rows as determined by the filing date
-    and tag for a period.
+    """Get all unique rows as determined by the filing date and tag for a
+    period.
 
     Args:
         df: Dataframe without unique rows.
-        form: Only keep rows with form type ``form``.
+        form: Only keep rows with form type ``form``. Most popular choices
+            include ``"10-K"`` for annual and ``"10-Q"`` for quarterly.
         units: Only keep rows with units ``units`` if not ``None``.
 
     Returns:
@@ -62,7 +63,6 @@ def get_unique_filings(
 
         >>> df = finagg.sec.api.company_concept.get("EarningsPerShare", ticker="AAPL", taxonomy="us-gaap", units="USD/shares")
         >>> finagg.sec.feat.get_unique_filings(df, form="10-Q", units="USD/shares").head(5)
-
 
     """
     mask = df["form"] == form
@@ -84,6 +84,19 @@ def get_unique_filings(
 class IndustryQuarterlyFeatures:
     """Methods for gathering industry-averaged quarterly data from SEC
     features.
+
+    The class variable :data:`finagg.sec.feat.quarterly.industry` is an
+    instance of this feature set implementation and is the most popular
+    interface for calling feature methods.
+
+    Examples:
+        You can aggregate this feature set using a ticker or an industry code
+        directly.
+
+        >>> df1 = finagg.sec.feat.quarterly.industry.from_refined(ticker="AAPL")
+        >>> df2 = finagg.sec.feat.quarterly.industry.from_refined(code=32)
+        >>> df1.equals(df2)
+        True
 
     """
 
@@ -192,8 +205,7 @@ class NormalizedQuarterlyFeatures:
         It doesn't matter which data source you use to gather features.
         They both return equivalent dataframes.
 
-        >>> import pandas as pd
-        >>> df1 = finagg.sec.feat.quarterly.normalized.from_other_refeind("AAPL")
+        >>> df1 = finagg.sec.feat.quarterly.normalized.from_other_refined("AAPL")
         >>> df2 = finagg.sec.feat.quarterly.normalized.from_refined("AAPL")
         >>> df1.equals(df2)
         True
@@ -521,7 +533,6 @@ class QuarterlyFeatures(feat.Features):
         It doesn't matter which data source you use to gather features.
         They all return equivalent dataframes.
 
-        >>> import pandas as pd
         >>> df1 = finagg.sec.feat.quarterly.from_api("AAPL")
         >>> df2 = finagg.sec.feat.quarterly.from_raw("AAPL")
         >>> df3 = finagg.sec.feat.quarterly.from_refined("AAPL")

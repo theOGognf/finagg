@@ -22,14 +22,22 @@ def is_valid_fiscal_seq(seq: list[int], /) -> bool:
         This fiscal quarter difference sequence is synonymous with
         the quarter sequence [Q2, Q3, Q1, Q2, Q3].
 
-        >>> finagg.frame.is_valid_fiscal_seq([1, 2, 1, 1])
+        >>> from finagg.frame import is_valid_fiscal_seq
+        >>> is_valid_fiscal_seq([1, 2, 1, 1])
         True
 
         This fiscal quarter difference sequence is synonymous with
         the quarter sequence [Q2, Q3, Q4, Q1, Q2].
 
-        >>> finagg.frame.is_valid_fiscal_seq([1, 1, 1, 1])
+        >>> is_valid_fiscal_seq([1, 1, 1, 1])
         True
+
+        This fiscal quarter difference sequence is synonymous with
+        the quarter sequence [Q1, Q4] which is not a valid fiscal
+        sequence.
+
+        >>> is_valid_fiscal_seq([3])
+        False
 
     """
     valid = {(1, 1, 2), (1, 2, 1), (2, 1, 1), (1, 1), (2, 1), (1, 2)}
@@ -74,29 +82,31 @@ class FiscalFrame:
     Examples:
         Getting the fiscal frame a couple years and quarters ahead.
 
-        >>> frame = finagg.frame.FiscalFrame(1995, 1)
-        >>> frame + finagg.frame.FiscalDelta(2, 2)
-        finagg.frame.FiscalFrame(1997, 3)
+        >>> from finagg.frame import FiscalDelta, FiscalFrame
+        >>> frame = FiscalFrame(1995, 1)
+        >>> frame + FiscalDelta(2, 2)
+        FiscalFrame(1997, 3)
 
         Adding/subtracting with integers assumes integers are quarters.
 
         >>> frame + 2
-        finagg.frame.FiscalFrame(1995, 3)
+        FiscalFrame(1995, 3)
 
         Adding/subtracting with tuples converts tuuples to :class:`FiscalDelta`.
 
         >>> frame + (2, 2)
-        finagg.frame.FiscalFrame(1997, 3)
+        FiscalFrame(1997, 3)
 
         Getting quarter differences between frames and determining if the sequence
         is a valid, ordered quarterly sequence.
 
         >>> import pandas as pd
+        >>> from finagg.frame import is_valid_fiscal_seq
         >>> df = finagg.sec.api.company_concept.get("AssetsCurrent", ticker="AAPL")
         >>> frames: pd.Series = df["fy"].astype(int).astype(str) + df["fp"].astype(str)
-        >>> frames = frames.apply(lambda row: finagg.frame.FiscalFrame.fromstr(row))
+        >>> frames = frames.apply(lambda row: FiscalFrame.fromstr(row))
         >>> frames = frames.diff(periods=1).dropna().astype(int)
-        >>> finagg.frame.is_valid_fiscal_seq(frames.tolist())
+        >>> is_valid_fiscal_seq(frames.tolist())
         True
 
     """

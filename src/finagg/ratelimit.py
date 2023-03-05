@@ -1,6 +1,6 @@
 """Customizable rate-limiting for requests-style getters.
 
-The definitions within this submodule are used throughout ``finagg`` for
+The definitions within this submodule are used throughout :mod:`finagg` for
 respecting 3rd party API rate limits to avoid server-side throttling.
 
 """
@@ -33,7 +33,7 @@ class RateLimit(ABC):
 
     .. seealso::
         :meth:`guard`: For the intended usage of getting a
-            :class:`finagg.ratelimit.RateLimitGuard` instance.
+            :class:`RateLimitGuard` instance.
         :class:`RequestLimit`: For an example of a request
             rate limiter.
 
@@ -192,7 +192,7 @@ class RateLimitGuard(Generic[_P]):
 
     .. seealso::
         :meth:`guard`: For the intended usage of getting a
-            :class:`finagg.ratelimit.RateLimitGuard` instance.
+            :class:`RateLimitGuard` instance.
         :class:`RequestLimit`: For an example of a request
             rate limiter.
 
@@ -263,7 +263,9 @@ def guard(
         Limit 5 requests to Google per second.
 
         >>> import requests
-        >>> @finagg.ratelimit.guard([finagg.ratelimit.RequestLimit(5, timedelta(seconds=1))])
+        >>> from datetime import timedelta
+        >>> from finagg.ratelimit import RequestLimit, guard
+        >>> @guard([RequestLimit(5, timedelta(seconds=1))])
         ... def get() -> requests.Response:
         ...     return requests.get("https://google.com")
 

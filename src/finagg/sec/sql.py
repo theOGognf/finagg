@@ -183,10 +183,9 @@ def get_cik(ticker: str, /) -> str:
 
     """
     with backend.engine.begin() as conn:
-        (row,) = conn.execute(
+        (cik,) = conn.execute(
             sa.select(submissions.c.cik).where(submissions.c.ticker == ticker)
-        ).fetchall()
-        (cik,) = row
+        ).one()
     return str(cik)
 
 
@@ -222,14 +221,14 @@ def get_metadata(
         cik = str(get_cik(ticker))
 
     with backend.engine.begin() as conn:
-        (row,) = conn.execute(
+        row = conn.execute(
             sa.select(
                 submissions.c.cik,
                 submissions.c.ticker,
                 submissions.c.name,
                 submissions.c.sic,
             ).where(submissions.c.cik == cik)
-        )
+        ).one()
     return row._asdict()
 
 
@@ -258,10 +257,9 @@ def get_ticker(cik: str, /) -> str:
 
     """
     with backend.engine.begin() as conn:
-        (row,) = conn.execute(
+        (ticker,) = conn.execute(
             sa.select(submissions.c.ticker).where(submissions.c.cik == cik)
-        ).fetchall()
-        (ticker,) = row
+        ).one()
     return str(ticker)
 
 

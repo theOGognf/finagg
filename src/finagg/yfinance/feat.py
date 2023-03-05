@@ -39,7 +39,6 @@ class DailyFeatures(feat.Features):
         It doesn't matter which data source you use to gather features.
         They all return equivalent dataframes.
 
-        >>> import pandas as pd
         >>> df1 = finagg.yfinance.feat.daily.from_api("AAPL")
         >>> df2 = finagg.yfinance.feat.daily.from_raw("AAPL")
         >>> df3 = finagg.yfinance.feat.daily.from_refined("AAPL")
