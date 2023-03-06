@@ -131,7 +131,7 @@ class CompanyConcept(_API):
 
         Raises:
             `ValueError`: If both a ``cik`` and ``ticker`` are provided or
-            neither are provided.
+                neither are provided.
 
         """
         if bool(cik) == bool(ticker):
@@ -181,8 +181,8 @@ class CompanyFacts(_API):
             Dataframe with normalized column names.
 
         Raises:
-            ValueError if both a `cik` and `ticker` are provided or neither
-            are provided.
+            `ValueError`: If both a ``cik`` and ``ticker`` are provided or
+                neither are provided.
 
         """
         if bool(cik) == bool(ticker):
@@ -294,10 +294,9 @@ class Submissions(_API):
     API.
 
     Examples:
-        >>> import finagg
         >>> out = finagg.sec.api.submissions.get(ticker="AAPL")
-        >>> out["metadata"]
-
+        >>> out["metadata"]  # doctest: +ELLIPSIS
+        {'cik': '0000320193', 'entityType': 'operating', 'sic': '3571', ...}
 
     """
 
@@ -325,7 +324,7 @@ class Submissions(_API):
 
         Raises:
             `ValueError`: If both a ``cik`` and ``ticker`` are provided or neither
-            are provided.
+                are provided.
 
         """
         if bool(cik) == bool(ticker):
@@ -372,12 +371,12 @@ class Tickers(_API):
 
     Examples:
         >>> finagg.sec.api.tickers.get().head(5)
-                   cik  ticker                           title
-        0       320193    AAPL                      Apple Inc.
-        1       789019    MSFT                  MICROSOFT CORP
-        2      1652044   GOOGL                   Alphabet Inc.
-        3      1018724    AMZN                  AMAZON COM INC
-        4      1067983   BRK-B          BERKSHIRE HATHAWAY INC
+               cik ticker                   title
+        0   320193   AAPL              Apple Inc.
+        1   789019   MSFT          MICROSOFT CORP
+        2  1652044  GOOGL           Alphabet Inc.
+        3  1018724   AMZN          AMAZON COM INC
+        4  1067983  BRK-B  BERKSHIRE HATHAWAY INC
 
     """
 
@@ -541,8 +540,8 @@ def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
         Get Apple's SEC CIK from its ticker.
 
         >>> import finagg
-        >>> finagg.sec.api.get_cik("AAPL")
-        "0000320193"
+        >>> finagg.sec.api.get_cik("AAPL") == "0000320193"
+        True
 
     """
     if not _tickers_to_cik:
@@ -569,8 +568,8 @@ def get_ticker(cik: str, /, *, user_agent: None | str = None) -> str:
     Examples:
         Get Apple's ticker from its SEC CIK.
 
-        >>> finagg.sec.api.get_ticker("0000320193")
-        "AAPL"
+        >>> finagg.sec.api.get_ticker("0000320193") == "AAPL"
+        True
 
     """
     if not _cik_to_tickers:

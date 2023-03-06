@@ -23,11 +23,10 @@ def CamelCase(s: str, /) -> str:
         A string in CamelCase format.
 
     Examples:
-        >>> finagg.utils.CamelCase("snakes_are_dope")
-        "SnakesAreDope"
-
-        >>> finagg.utils.CamelCase("bar")
-        "Bar"
+        >>> finagg.utils.CamelCase("snakes_are_dope") == "SnakesAreDope"
+        True
+        >>> finagg.utils.CamelCase("bar") == "Bar"
+        True
 
     """
     return "".join(word.title() for word in s.split("_"))
@@ -38,11 +37,10 @@ def join_with(s: str | list[str], /, delim: str) -> str:
 
     Examples:
 
-        >>> finagg.utils.join_with(["foo", "bar"], ",")
-        "foo,bar"
-
-        >>> finagg.utils.join_with("foo")
-        "foo"
+        >>> finagg.utils.join_with(["foo", "bar"], ",") == "foo,bar"
+        True
+        >>> finagg.utils.join_with("foo", ",") == "foo"
+        True
 
     """
     if isinstance(s, str):
@@ -116,11 +114,10 @@ def snake_case(s: str, /) -> str:
         A string in snake_case format.
 
     Examples:
-        >>> finagg.utils.snake_case("CamelsAreCool")
-        "camels_are_cool"
-
-        >>> finagg.utils.snake_case("Foo")
-        "foo"
+        >>> finagg.utils.snake_case("CamelsAreCool") == "camels_are_cool"
+        True
+        >>> finagg.utils.snake_case("Foo") == "foo"
+        True
 
     """
     s = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", s)

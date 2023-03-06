@@ -189,11 +189,11 @@ class NormalizedEconomicFeatures:
 
         Raises:
             `ValueError`: If the given dataframe's columns do not match this
-            feature's columns.
+                feature's columns.
 
         """
         df = df.reset_index("date")
-        if set(df.columns) != set(EconomicFeatures.columns):
+        if set(df.columns) < set(EconomicFeatures.columns):
             raise ValueError(f"Dataframe must have columns {EconomicFeatures.columns}")
         df = df.melt("date", var_name="name", value_name="value")
         with engine.begin() as conn:
@@ -423,11 +423,11 @@ class EconomicFeatures(feat.Features):
 
         Raises:
             `ValueError`: If the given dataframe's columns do not match this
-            feature's columns.
+                feature's columns.
 
         """
         df = df.reset_index("date")
-        if set(df.columns) != set(cls.columns):
+        if set(df.columns) < set(cls.columns):
             raise ValueError(f"Dataframe must have columns {cls.columns}")
         df = df.melt("date", var_name="name", value_name="value")
         with engine.begin() as conn:

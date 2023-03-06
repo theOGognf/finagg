@@ -139,7 +139,7 @@ def get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
         Successful responses.
 
     Raises:
-        RuntimeError if a user agent isn't provided or found in the environment.
+        `RuntimeError`: If a user agent isn't provided or found in the environment.
 
     """
     user_agent = user_agent or os.environ.get(

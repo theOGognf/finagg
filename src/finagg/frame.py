@@ -40,10 +40,14 @@ def is_valid_fiscal_seq(seq: list[int], /) -> bool:
         False
 
     """
-    valid = {(1, 1, 2), (1, 2, 1), (2, 1, 1), (1, 1), (2, 1), (1, 2)}
-    for i in range(len(seq) - 1):
-        subseq = tuple(seq[i : i + 3])
-        if subseq not in valid:
+    valid = {(1, 1, 1), (1, 1, 2), (1, 2, 1), (2, 1, 1), (1, 1), (2, 1), (1, 2)}
+    if len(seq) > 1:
+        for i in range(len(seq) - 1):
+            subseq = tuple(seq[i : i + 3])
+            if subseq not in valid:
+                return False
+    else:
+        if seq[0] not in {1, 2}:
             return False
     return True
 
@@ -85,17 +89,17 @@ class FiscalFrame:
         >>> from finagg.frame import FiscalDelta, FiscalFrame
         >>> frame = FiscalFrame(1995, 1)
         >>> frame + FiscalDelta(2, 2)
-        FiscalFrame(1997, 3)
+        FiscalFrame(year=1997, quarter=3)
 
         Adding/subtracting with integers assumes integers are quarters.
 
         >>> frame + 2
-        FiscalFrame(1995, 3)
+        FiscalFrame(year=1995, quarter=3)
 
         Adding/subtracting with tuples converts tuuples to :class:`FiscalDelta`.
 
         >>> frame + (2, 2)
-        FiscalFrame(1997, 3)
+        FiscalFrame(year=1997, quarter=3)
 
         Getting quarter differences between frames and determining if the sequence
         is a valid, ordered quarterly sequence.

@@ -62,8 +62,14 @@ def get_unique_filings(
     Examples:
         Only get a company's original quarterly earnings-per-share filings.
 
-        >>> df = finagg.sec.api.company_concept.get("EarningsPerShare", ticker="AAPL", taxonomy="us-gaap", units="USD/shares")
-        >>> finagg.sec.feat.get_unique_filings(df, form="10-Q", units="USD/shares").head(5)
+        >>> df = finagg.sec.api.company_concept.get("EarningsPerShareBasic", ticker="AAPL", taxonomy="us-gaap", units="USD/shares")
+        >>> finagg.sec.feat.get_unique_filings(df, form="10-Q", units="USD/shares").head(5)  # doctest: +ELLIPSIS
+             fy  fp  ...
+        0  2009  Q3  ...
+        1  2010  Q1  ...
+        2  2010  Q2  ...
+        3  2010  Q3  ...
+        4  2011  Q1  ...
 
     """
     mask = df["form"] == form
@@ -523,11 +529,11 @@ class NormalizedQuarterlyFeatures:
 
         Raises:
             `ValueError`: If the given dataframe's columns do not match this
-            feature's columns.
+                feature's columns.
 
         """
         df = df.reset_index(["fy", "fp", "filed"])
-        if set(df.columns) != set(QuarterlyFeatures.columns):
+        if set(df.columns) < set(QuarterlyFeatures.columns):
             raise ValueError(f"Dataframe must have columns {QuarterlyFeatures.columns}")
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker)
@@ -921,11 +927,11 @@ class QuarterlyFeatures(feat.Features):
 
         Raises:
             `ValueError`: If the given dataframe's columns do not match this
-            feature's columns.
+                feature's columns.
 
         """
         df = df.reset_index(["fy", "fp", "filed"])
-        if set(df.columns) != set(cls.columns):
+        if set(df.columns) < set(cls.columns):
             raise ValueError(f"Dataframe must have columns {cls.columns}")
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker)

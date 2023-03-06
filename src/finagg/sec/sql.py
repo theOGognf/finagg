@@ -178,8 +178,8 @@ def get_cik(ticker: str, /) -> str:
     Examples:
         Get Apple's SEC CIK from its ticker.
 
-        >>> finagg.sec.sql.get_cik("AAPL")
-        "0000320193"
+        >>> finagg.sec.sql.get_cik("AAPL") == "0000320193"
+        True
 
     """
     with backend.engine.begin() as conn:
@@ -252,8 +252,8 @@ def get_ticker(cik: str, /) -> str:
     Examples:
         Get Apple's ticker from its SEC CIK.
 
-        >>> finagg.sec.sql.get_ticker("0000320193")
-        "AAPL"
+        >>> finagg.sec.sql.get_ticker("0000320193") == "AAPL"
+        True
 
     """
     with backend.engine.begin() as conn:

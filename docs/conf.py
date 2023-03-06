@@ -84,6 +84,12 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 autodoc_member_order = "bysource"
 
+# -- doctest options ---------------------------------------------------------
+
+doctest_global_setup = """
+import finagg
+"""
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
