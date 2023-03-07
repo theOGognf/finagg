@@ -175,15 +175,13 @@ class GDPByIndustry(_API):
 
         List possible GDP by industry tables we can query.
 
-        >>> finagg.bea.api.gdp_by_industry.get_parameter_values("TableID").head(1)
+        >>> finagg.bea.api.gdp_by_industry.get_parameter_values("TableID").head(5)
                                                   ParamValue
         0  {'Key': '1', 'Desc': 'Value Added by Industry ...
-
-        Get the GDP value added by an industry for a specific year.
-
-        >>> finagg.bea.api.gdp_by_industry.get(table_id=1, freq="A", year=2020).head(1)
-           table_id freq  year quarter industry                         industry_description       value
-        0         1    A  2020    2020       11  Agriculture, forestry, fishing, and hunting  162.199997
+        1  {'Key': '5', 'Desc': 'Value added by Industry ...
+        2  {'Key': '6', 'Desc': 'Components of Value Adde...
+        3  {'Key': '7', 'Desc': 'Components of Value Adde...
+        4  {'Key': '8', 'Desc': 'Chain-Type Quantity Inde...
 
     """
 
@@ -214,6 +212,17 @@ class GDPByIndustry(_API):
 
         Returns:
             Dataframe with GDP by industry, separated by year and/or quarter.
+
+        Examples:
+            Get the GDP value added by an industry for a specific year.
+
+            >>> finagg.bea.api.gdp_by_industry.get(table_id=1, freq="A", year=2020).head(5)
+               table_id freq  year quarter industry                         industry_description       value
+            0         1    A  2020    2020       11  Agriculture, forestry, fishing, and hunting  162.199997
+            1         1    A  2020    2020    111CA                                        Farms  120.699997
+            2         1    A  2020    2020    113FF    Forestry, fishing, and related activities   41.500000
+            3         1    A  2020    2020       21                                       Mining  201.100006
+            4         1    A  2020    2020      211                       Oil and gas extraction  110.900002
 
         """
         params = {

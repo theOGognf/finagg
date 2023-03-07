@@ -62,8 +62,17 @@ def get_unique_filings(
     Examples:
         Only get a company's original quarterly earnings-per-share filings.
 
-        >>> df = finagg.sec.api.company_concept.get("EarningsPerShareBasic", ticker="AAPL", taxonomy="us-gaap", units="USD/shares")
-        >>> finagg.sec.feat.get_unique_filings(df, form="10-Q", units="USD/shares").head(5)  # doctest: +ELLIPSIS
+        >>> df = finagg.sec.api.company_concept.get(
+        ...     "EarningsPerShareBasic",
+        ...     ticker="AAPL",
+        ...     taxonomy="us-gaap",
+        ...     units="USD/shares",
+        ... )
+        >>> finagg.sec.feat.get_unique_filings(
+        ...     df,
+        ...     form="10-Q",
+        ...     units="USD/shares"
+        ... ).head(5)  # doctest: +ELLIPSIS
              fy  fp  ...
         0  2009  Q3  ...
         1  2010  Q1  ...
@@ -163,7 +172,7 @@ class IndustryQuarterlyFeatures:
                 ).one()
                 code = str(sic)[:level]
             elif code:
-                code = code[:level]
+                code = str(code)[:level]
             else:
                 raise ValueError("Must provide a `ticker` or `code`.")
 
@@ -427,7 +436,11 @@ class NormalizedQuarterlyFeatures:
             Tickers sorted by a feature column for a particular year and quarter.
 
         Examples:
-            >>> ts = finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by("EarningsPerShare", year=2020, quarter=3)
+            >>> ts = finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by(
+            ...         "EarningsPerShare",
+            ...         year=2020,
+            ...         quarter=3
+            ... )
             >>> "NOV" == ts[0]
             True
 
@@ -975,6 +988,16 @@ class TagFeatures:
         Raises:
             `NoResultFound`: If there are no rows for ``ticker`` and ``tag``
                 in the raw SQL table.
+
+        Examples:
+            >>> finagg.sec.feat.tags.from_raw("AAPL", "EarningsPerShareBasic").head(5)
+                                value
+            fy   fp filed
+            2009 Q3 2009-07-22   4.20
+            2010 Q1 2010-01-25   2.54
+                 Q2 2010-04-21   4.35
+                 Q3 2010-07-21   6.40
+            2011 Q1 2011-01-19   3.74
 
         """
         with engine.begin() as conn:

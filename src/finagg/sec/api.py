@@ -57,7 +57,7 @@ class Concept(TypedDict):
 
 class Frame(Concept):
     """A frame is just a concept with a flag indicating if it supports
-    'instantaneous' frame data.
+    "instantaneous" frame data.
 
     """
 
@@ -95,6 +95,14 @@ class _API(ABC):
 
 
 class CompanyConcept(_API):
+    """Get all XBRL disclosures for a single company and concept (a taxonomy
+    and tag) in a single dataframe.
+
+    The module variable :data:`finagg.sec.api.company_concept` is an instance of
+    this API implementation and is the most popular interface for querying this
+    API.
+
+    """
 
     url = (
         "https://data.sec.gov/api/xbrl"
@@ -114,7 +122,7 @@ class CompanyConcept(_API):
         units: str = "USD",
         user_agent: None | str = None,
     ) -> pd.DataFrame:
-        """Return all XBRL disclosures from a single company (CIK)
+        """Return all XBRL disclosures for a single company (CIK)
         and concept (a taxonomy and tag) in a single dataframe.
 
         Args:
@@ -132,6 +140,20 @@ class CompanyConcept(_API):
         Raises:
             `ValueError`: If both a ``cik`` and ``ticker`` are provided or
                 neither are provided.
+
+        Examples:
+            >>> finagg.sec.api.company_concept.get(
+            ...     "EarningsPerShareBasic",
+            ...     ticker="AAPL",
+            ...     taxonomy="us-gaap",
+            ...     units="USD/shares",
+            ... ).head(5)  # doctest: +ELLIPSIS
+                    start         end  value                  accn    fy  fp ...
+            0  2006-10-01  2007-09-29   4.04  0001193125-09-214859  2009  FY ...
+            1  2006-10-01  2007-09-29   4.04  0001193125-10-012091  2009  FY ...
+            2  2007-09-30  2008-06-28   4.20  0001193125-09-153165  2009  Q3 ...
+            3  2008-03-30  2008-06-28   1.21  0001193125-09-153165  2009  Q3 ...
+            4  2007-09-30  2008-09-27   5.48  0001193125-09-214859  2009  FY ...
 
         """
         if bool(cik) == bool(ticker):
@@ -158,6 +180,13 @@ class CompanyConcept(_API):
 
 
 class CompanyFacts(_API):
+    """Get all XBRL disclosures for a single company.
+
+    The module variable :data:`finagg.sec.api.company_facts` is an instance of
+    this API implementation and is the most popular interface for querying this
+    API.
+
+    """
 
     url = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 
@@ -170,7 +199,7 @@ class CompanyFacts(_API):
         ticker: None | str = None,
         user_agent: None | str = None,
     ) -> pd.DataFrame:
-        """Return all XBRL disclosures from a single company (CIK).
+        """Return all XBRL disclosures for a single company (CIK).
 
         Args:
             cik: Company SEC CIK. Mutually exclusive with `ticker`.
@@ -183,6 +212,15 @@ class CompanyFacts(_API):
         Raises:
             `ValueError`: If both a ``cik`` and ``ticker`` are provided or
                 neither are provided.
+
+        Examples:
+            >>> finagg.sec.api.company_facts.get(ticker="AAPL").head(5)  # doctest: +ELLIPSIS
+                      end        value                  accn    fy  fp    form ...
+            0  2009-06-27  895816758.0  0001193125-09-153165  2009  Q3    10-Q ...
+            1  2009-10-16  900678473.0  0001193125-09-214859  2009  FY    10-K ...
+            2  2009-10-16  900678473.0  0001193125-10-012091  2009  FY  10-K/A ...
+            3  2010-01-15  906794589.0  0001193125-10-012085  2010  Q1    10-Q ...
+            4  2010-04-09  909938383.0  0001193125-10-088957  2010  Q2    10-Q ...
 
         """
         if bool(cik) == bool(ticker):
@@ -217,6 +255,14 @@ class CompanyFacts(_API):
 
 
 class Frames(_API):
+    """Get all company filings for one particular fact that most closely
+    matches the requested calendrical period.
+
+    The module variable :data:`finagg.sec.api.frames` is an instance of
+    this API implementation and is the most popular interface for querying this
+    API.
+
+    """
 
     url = (
         "https://data.sec.gov/api/xbrl"
@@ -241,20 +287,37 @@ class Frames(_API):
         the calendrical period requested.
 
         Args:
-            tag: Valid tag within the given `taxonomy`.
+            tag: Valid tag within the given ``taxonomy``.
             year: Year to retrieve.
             quarter: Quarter to retrieve data for. Most data is only provided
                 at a quarterly rate, so this should be provided for most cases.
             instant: Whether to get instantaneous data for the frame (data that
                 most closely matches a frame's year and quarter without a
-                time buffer). This flag should be enabled for most cases.
+                time buffer). This flag should be enabled for most cases. See
+                :data:`common_frames` for which tags should be ``instant``.
             taxonomy: Valid SEC EDGAR taxonomy.
                 See https://www.sec.gov/info/edgar/edgartaxonomies for taxonomies.
-            units: Currency to view results in.
+            units: Units to view results in.
             user_agent: Self-declared bot header.
 
         Returns:
             Dataframe with slightly improved column names.
+
+        Examples:
+            >>> finagg.sec.api.frames.get(
+            ...     "EarningsPerShareBasic",
+            ...     2020,
+            ...     quarter=3,
+            ...     instant=False,
+            ...     taxonomy="us-gaap",
+            ...     units="USD-per-shares",
+            ... ).head(5)  # doctest: +ELLIPSIS
+                               accn   cik                          entity    loc ...  value ...
+            0  0001104659-21-118843  1750                       AAR CORP.  US-IL ...  -0.42 ...
+            1  0001104659-21-133629  1800             ABBOTT LABORATORIES  US-IL ...   0.69 ...
+            2  0001264931-20-000235  1961                     WORLDS INC.  US-MA ...  -0.01 ...
+            3  0001564590-21-055818  2098                ACME UNITED CORP  US-CT ... 470.00 ...
+            4  0000002178-22-000033  2178  ADAMS RESOURCES & ENERGY, INC.  US-TX ...   0.72 ...
 
         """
         if quarter:
@@ -263,6 +326,7 @@ class Frames(_API):
                 quarter = f"{quarter}I"
         else:
             quarter = ""
+        units = "-per-".join(units.split("/"))
         url = cls.url.format(
             taxonomy=taxonomy, tag=tag, units=units, year=year, quarter=quarter
         )
@@ -293,11 +357,6 @@ class Submissions(_API):
     this API implementation and is the most popular interface for querying this
     API.
 
-    Examples:
-        >>> out = finagg.sec.api.submissions.get(ticker="AAPL")
-        >>> out["metadata"]  # doctest: +ELLIPSIS
-        {'cik': '0000320193', 'entityType': 'operating', 'sic': '3571', ...}
-
     """
 
     url = "https://data.sec.gov/submissions/CIK{cik}.json"
@@ -325,6 +384,11 @@ class Submissions(_API):
         Raises:
             `ValueError`: If both a ``cik`` and ``ticker`` are provided or neither
                 are provided.
+
+        Examples:
+            >>> out = finagg.sec.api.submissions.get(ticker="AAPL")
+            >>> out["metadata"]  # doctest: +ELLIPSIS
+            {'cik': '0000320193', 'entityType': 'operating', 'sic': '3571', ...}
 
         """
         if bool(cik) == bool(ticker):
@@ -369,15 +433,6 @@ class Tickers(_API):
     API implementation and is the most popular interface for querying this
     API.
 
-    Examples:
-        >>> finagg.sec.api.tickers.get().head(5)
-               cik ticker                   title
-        0   320193   AAPL              Apple Inc.
-        1   789019   MSFT          MICROSOFT CORP
-        2  1652044  GOOGL           Alphabet Inc.
-        3  1018724   AMZN          AMAZON COM INC
-        4  1067983  BRK-B  BERKSHIRE HATHAWAY INC
-
     """
 
     url = "https://www.sec.gov/files/company_tickers.json"
@@ -394,6 +449,15 @@ class Tickers(_API):
         Returns:
             A dataframe containing company names, their SEC CIKs, and their
             ticker symbols.
+
+        Examples:
+            >>> finagg.sec.api.tickers.get().head(5)
+                   cik ticker                   title
+            0   320193   AAPL              Apple Inc.
+            1   789019   MSFT          MICROSOFT CORP
+            2  1652044  GOOGL           Alphabet Inc.
+            3  1018724   AMZN          AMAZON COM INC
+            4  1067983  BRK-B  BERKSHIRE HATHAWAY INC
 
         """
         response = _get(cls.url, user_agent=user_agent)

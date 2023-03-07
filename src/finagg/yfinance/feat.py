@@ -80,7 +80,7 @@ class DailyFeatures(feat.Features):
     def from_api(
         cls, ticker: str, /, *, start: str = "1776-07-04", end: str = utils.today
     ) -> pd.DataFrame:
-        """Get daily features directly from the :mod:`yfinance` API.
+        """Get daily features directly from :meth:`finagg.yfinance.api.get`.
 
         Args:
             ticker: Company ticker.
@@ -122,6 +122,16 @@ class DailyFeatures(feat.Features):
         Raises:
             `NoResultFound`: If there are no rows for ``ticker`` in the
                 raw SQL table.
+
+        Examples:
+            >>> finagg.yfinance.feat.daily.from_raw("AAPL").head(5)
+                           price  open_pct_change  high_pct_change  low_pct_change ...
+            date                                                                   ...
+            1980-12-15  0.094519        -0.047823        -0.051945       -0.052171 ...
+            1980-12-16  0.087582        -0.073063        -0.073063       -0.073398 ...
+            1980-12-17  0.089749         0.019703         0.024629        0.024751 ...
+            1980-12-18  0.092351         0.028993         0.028853        0.028993 ...
+            1980-12-19  0.097987         0.061029         0.060744        0.061029 ...
 
         """
         with engine.begin() as conn:
@@ -168,6 +178,16 @@ class DailyFeatures(feat.Features):
         Raises:
             `NoResultFound`: If there are no rows for ``ticker`` in the
                 refined SQL table.
+
+        Examples:
+            >>> finagg.yfinance.feat.daily.from_refined("AAPL").head(5)
+                           price  open_pct_change  high_pct_change  low_pct_change ...
+            date                                                                   ...
+            1980-12-15  0.094519        -0.047823        -0.051945       -0.052171 ...
+            1980-12-16  0.087582        -0.073063        -0.073063       -0.073398 ...
+            1980-12-17  0.089749         0.019703         0.024629        0.024751 ...
+            1980-12-18  0.092351         0.028993         0.028853        0.028993 ...
+            1980-12-19  0.097987         0.061029         0.060744        0.061029 ...
 
         """
         with engine.begin() as conn:
@@ -321,7 +341,7 @@ class DailyFeatures(feat.Features):
         return len(df.index)
 
 
-daily: DailyFeatures = DailyFeatures()
+daily = DailyFeatures()
 """The most popular way for accessing :class:`DailyFeatures`.
 
 :meta hide-value:

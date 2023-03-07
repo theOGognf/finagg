@@ -343,7 +343,7 @@ def get_tickers_in_industry(
             ).one()
             code = str(sic)[:level]
         elif code:
-            code = code[:level]
+            code = str(code)[:level]
         else:
             raise ValueError("Must provide a `ticker` or `code`.")
 

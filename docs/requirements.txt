@@ -1,4 +1,4 @@
 pytest
-sphinx>=3.2.1
+sphinx
 sphinx-copybutton
 sphinx_rtd_theme

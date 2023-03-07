@@ -29,8 +29,17 @@ def get(
         debug: Debug mode passed to ``yfinance``.
 
     Returns:
-        ``yfinance`` auto-adjusted stock price history with slightly
+        :mod:`yfinance` auto-adjusted stock price history with slightly
         different (more normalized) column names.
+
+    Examples:
+        >>> finagg.yfinance.api.get("AAPL").head(5)
+                 date      open      high       low     close     volume ticker
+        0  1980-12-12  0.099722  0.100155  0.099722  0.099722  469033600   AAPL
+        1  1980-12-15  0.094953  0.094953  0.094519  0.094519  175884800   AAPL
+        2  1980-12-16  0.088015  0.088015  0.087582  0.087582  105728000   AAPL
+        3  1980-12-17  0.089749  0.090183  0.089749  0.089749   86441600   AAPL
+        4  1980-12-18  0.092351  0.092785  0.092351  0.092351   73449600   AAPL
 
     """
     stock = yf.Ticker(ticker)
