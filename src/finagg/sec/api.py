@@ -603,7 +603,6 @@ def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
     Examples:
         Get Apple's SEC CIK from its ticker.
 
-        >>> import finagg
         >>> finagg.sec.api.get_cik("AAPL") == "0000320193"
         True
 
@@ -664,8 +663,6 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
         the SEC EDGAR API.
 
     Examples:
-
-        >>> import finagg
         >>> tickers = finagg.sec.api.get_ticker_set()
         >>> "AAPL" in tickers
         True

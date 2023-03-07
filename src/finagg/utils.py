@@ -36,7 +36,6 @@ def join_with(s: str | list[str], /, delim: str) -> str:
     """Join a sequence of strings with the delimiter `delim`.
 
     Examples:
-
         >>> finagg.utils.join_with(["foo", "bar"], ",") == "foo,bar"
         True
         >>> finagg.utils.join_with("foo", ",") == "foo"
