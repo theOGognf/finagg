@@ -217,12 +217,12 @@ class GDPByIndustry(_API):
             Get the GDP value added by an industry for a specific year.
 
             >>> finagg.bea.api.gdp_by_industry.get(table_id=1, freq="A", year=2020).head(5)
-               table_id freq  year quarter industry                         industry_description       value
-            0         1    A  2020    2020       11  Agriculture, forestry, fishing, and hunting  162.199997
-            1         1    A  2020    2020    111CA                                        Farms  120.699997
-            2         1    A  2020    2020    113FF    Forestry, fishing, and related activities   41.500000
-            3         1    A  2020    2020       21                                       Mining  201.100006
-            4         1    A  2020    2020      211                       Oil and gas extraction  110.900002
+               table_id freq  year quarter industry                         industry_description  value
+            0         1    A  2020    2020       11  Agriculture, forestry, fishing, and hunting  162.2
+            1         1    A  2020    2020    111CA                                        Farms  120.7
+            2         1    A  2020    2020    113FF    Forestry, fishing, and related activities   41.5
+            3         1    A  2020    2020       21                                       Mining  201.1
+            4         1    A  2020    2020      211                       Oil and gas extraction  110.9
 
         """
         params = {

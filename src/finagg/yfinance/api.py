@@ -34,12 +34,12 @@ def get(
 
     Examples:
         >>> finagg.yfinance.api.get("AAPL").head(5)
-                 date      open      high       low     close     volume ticker
-        0  1980-12-12  0.099722  0.100155  0.099722  0.099722  469033600   AAPL
-        1  1980-12-15  0.094953  0.094953  0.094519  0.094519  175884800   AAPL
-        2  1980-12-16  0.088015  0.088015  0.087582  0.087582  105728000   AAPL
-        3  1980-12-17  0.089749  0.090183  0.089749  0.089749   86441600   AAPL
-        4  1980-12-18  0.092351  0.092785  0.092351  0.092351   73449600   AAPL
+                 date    open    high     low   close     volume ticker
+        0  1980-12-12  0.0997  0.1002  0.0997  0.0997  469033600   AAPL
+        1  1980-12-15  0.0950  0.0950  0.0945  0.0945  175884800   AAPL
+        2  1980-12-16  0.0880  0.0880  0.0876  0.0876  105728000   AAPL
+        3  1980-12-17  0.0897  0.0902  0.0897  0.0897   86441600   AAPL
+        4  1980-12-18  0.0924  0.0928  0.0924  0.0924   73449600   AAPL
 
     """
     stock = yf.Ticker(ticker)
@@ -51,7 +51,7 @@ def get(
         auto_adjust=True,
         debug=debug,
     )
-    df.index = pd.to_datetime(df.index).date
+    df.index = pd.to_datetime(df.index).date.astype(str)
     df = df.rename_axis("date").reset_index()
     df["ticker"] = stock.ticker
     df = df.drop(columns=["Dividends", "Stock Splits"], errors="ignore")

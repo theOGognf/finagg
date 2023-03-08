@@ -48,7 +48,13 @@ sp500 = sa.Table(
 
 @cache
 def get_ticker_set() -> set[str]:
-    """Get all unique tickers in the raw SQL tables."""
+    """Get all unique tickers in the raw SQL tables.
+
+    Examples:
+        >>> "AAPL" in finagg.indices.sql.get_ticker_set()
+        True
+
+    """
     with backend.engine.begin() as conn:
         tickers: set[str] = set()
         for table in (djia, nasdaq100, sp500):

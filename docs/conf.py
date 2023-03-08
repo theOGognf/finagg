@@ -89,6 +89,8 @@ autodoc_member_order = "bysource"
 
 doctest_global_setup = """
 import finagg
+import pandas as pd
+pd.set_option("display.precision", 4)
 """
 
 # -- Options for HTML output -------------------------------------------------

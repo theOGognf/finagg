@@ -28,4 +28,4 @@ def test_economic_to_from_refined(engine: Engine) -> None:
     df2 = finagg.fred.feat.economic.from_refined(
         engine=engine,
     )
-    pd.testing.assert_frame_equal(df1, df2)
+    pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)

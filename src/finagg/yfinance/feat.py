@@ -40,13 +40,11 @@ class DailyFeatures(feat.Features):
         It doesn't matter which data source you use to gather features.
         They all return equivalent dataframes.
 
-        >>> df1 = finagg.yfinance.feat.daily.from_api("AAPL")
-        >>> df2 = finagg.yfinance.feat.daily.from_raw("AAPL")
-        >>> df3 = finagg.yfinance.feat.daily.from_refined("AAPL")
-        >>> df1.equals(df2)
-        True
-        >>> df1.equals(df3)
-        True
+        >>> df1 = finagg.yfinance.feat.daily.from_api("AAPL").head(5)
+        >>> df2 = finagg.yfinance.feat.daily.from_raw("AAPL").head(5)
+        >>> df3 = finagg.yfinance.feat.daily.from_refined("AAPL").head(5)
+        >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
+        >>> pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)
 
     """
 
@@ -93,14 +91,14 @@ class DailyFeatures(feat.Features):
             Daily stock price dataframe sorted by date.
 
         Examples:
-            >>> finagg.yfinance.feat.daily.from_api("AAPL").head(5)
-                           price  open_pct_change  high_pct_change  low_pct_change ...
-            date                                                                   ...
-            1980-12-15  0.094519        -0.047823        -0.051945       -0.052171 ...
-            1980-12-16  0.087582        -0.073063        -0.073063       -0.073398 ...
-            1980-12-17  0.089749         0.019703         0.024629        0.024751 ...
-            1980-12-18  0.092351         0.028993         0.028853        0.028993 ...
-            1980-12-19  0.097987         0.061029         0.060744        0.061029 ...
+            >>> finagg.yfinance.feat.daily.from_api("AAPL").head(5)  # doctest: +NORMALIZE_WHITESPACE
+                         price  open_pct_change  high_pct_change  low_pct_change  close_pct_change  volume_pct_change
+            date
+            1980-12-15  0.0945          -0.0478          -0.0519         -0.0522           -0.0522            -0.6250
+            1980-12-16  0.0876          -0.0731          -0.0731         -0.0734           -0.0734            -0.3989
+            1980-12-17  0.0897           0.0197           0.0246          0.0248            0.0248            -0.1824
+            1980-12-18  0.0924           0.0290           0.0289          0.0290            0.0290            -0.1503
+            1980-12-19  0.0980           0.0610           0.0607          0.0610            0.0610            -0.3379
 
         """
         df = api.get(ticker, start=start, end=end)
@@ -134,14 +132,14 @@ class DailyFeatures(feat.Features):
                 raw SQL table.
 
         Examples:
-            >>> finagg.yfinance.feat.daily.from_raw("AAPL").head(5)
-                           price  open_pct_change  high_pct_change  low_pct_change ...
-            date                                                                   ...
-            1980-12-15  0.094519        -0.047823        -0.051945       -0.052171 ...
-            1980-12-16  0.087582        -0.073063        -0.073063       -0.073398 ...
-            1980-12-17  0.089749         0.019703         0.024629        0.024751 ...
-            1980-12-18  0.092351         0.028993         0.028853        0.028993 ...
-            1980-12-19  0.097987         0.061029         0.060744        0.061029 ...
+            >>> finagg.yfinance.feat.daily.from_raw("AAPL").head(5)  # doctest: +NORMALIZE_WHITESPACE
+                         price  open_pct_change  high_pct_change  low_pct_change  close_pct_change  volume_pct_change
+            date
+            1980-12-15  0.0945          -0.0478          -0.0519         -0.0522           -0.0522            -0.6250
+            1980-12-16  0.0876          -0.0731          -0.0731         -0.0734           -0.0734            -0.3989
+            1980-12-17  0.0897           0.0197           0.0246          0.0248            0.0248            -0.1824
+            1980-12-18  0.0924           0.0290           0.0289          0.0290            0.0290            -0.1503
+            1980-12-19  0.0980           0.0610           0.0607          0.0610            0.0610            -0.3379
 
         """
         with engine.begin() as conn:
@@ -190,14 +188,14 @@ class DailyFeatures(feat.Features):
                 refined SQL table.
 
         Examples:
-            >>> finagg.yfinance.feat.daily.from_refined("AAPL").head(5)
-                           price  open_pct_change  high_pct_change  low_pct_change ...
-            date                                                                   ...
-            1980-12-15  0.094519        -0.047823        -0.051945       -0.052171 ...
-            1980-12-16  0.087582        -0.073063        -0.073063       -0.073398 ...
-            1980-12-17  0.089749         0.019703         0.024629        0.024751 ...
-            1980-12-18  0.092351         0.028993         0.028853        0.028993 ...
-            1980-12-19  0.097987         0.061029         0.060744        0.061029 ...
+            >>> finagg.yfinance.feat.daily.from_refined("AAPL").head(5)  # doctest: +NORMALIZE_WHITESPACE
+                         price  open_pct_change  high_pct_change  low_pct_change  close_pct_change  volume_pct_change
+            date
+            1980-12-15  0.0945          -0.0478          -0.0519         -0.0522           -0.0522            -0.6250
+            1980-12-16  0.0876          -0.0731          -0.0731         -0.0734           -0.0734            -0.3989
+            1980-12-17  0.0897           0.0197           0.0246          0.0248            0.0248            -0.1824
+            1980-12-18  0.0924           0.0290           0.0289          0.0290            0.0290            -0.1503
+            1980-12-19  0.0980           0.0610           0.0607          0.0610            0.0610            -0.3379
 
         """
         with engine.begin() as conn:

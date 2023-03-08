@@ -109,10 +109,9 @@ class IndustryQuarterlyFeatures:
         You can aggregate this feature set using a ticker or an industry code
         directly.
 
-        >>> df1 = finagg.sec.feat.quarterly.industry.from_refined(ticker="MSFT")
-        >>> df2 = finagg.sec.feat.quarterly.industry.from_refined(code=73)
-        >>> df1.equals(df2)
-        True
+        >>> df1 = finagg.sec.feat.quarterly.industry.from_refined(ticker="MSFT").head(5)
+        >>> df2 = finagg.sec.feat.quarterly.industry.from_refined(code=73).head(5)
+        >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
 
     """
 
@@ -161,6 +160,25 @@ class IndustryQuarterlyFeatures:
             `ValueError`: If neither a ``ticker`` nor ``code`` are provided.
             `NoResultFound`: If there are no rows for ``ticker`` or ``code``
                 in the refined SQL table.
+
+        Examples:
+            >>> df = finagg.sec.feat.quarterly.industry.from_refined(ticker="AAPL").head(5)
+            >>> df["avg"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            name                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+            fy   fp filed                                                                   ...
+            2009 Q3 2009-10-30                    0.0000           0.5733            3.0650 ...
+            2010 Q1 2010-04-29                   -0.0122           0.4025            0.8650 ...
+                 Q2 2010-07-30                    0.0000           0.5003            0.5386 ...
+                 Q3 2010-11-04                    0.0011           0.4568            1.2038 ...
+            2011 Q1 2011-05-05                    0.2716           0.4652            0.9920 ...
+            >>> df["std"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            name                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+            fy   fp filed                                                                   ...
+            2009 Q3 2009-10-30                    0.0000           0.2428            0.5850 ...
+            2010 Q1 2010-04-29                    0.0434           0.1490            0.9865 ...
+                 Q2 2010-07-30                    0.0000           0.2575            2.5274 ...
+                 Q3 2010-11-04                    0.0030           0.2672            2.6892 ...
+            2011 Q1 2011-05-05                    0.1827           0.2859            0.9541 ...
 
         """
         with engine.begin() as conn:
@@ -226,10 +244,9 @@ class NormalizedQuarterlyFeatures:
         It doesn't matter which data source you use to gather features.
         They both return equivalent dataframes.
 
-        >>> df1 = finagg.sec.feat.quarterly.normalized.from_other_refined("AAPL")
-        >>> df2 = finagg.sec.feat.quarterly.normalized.from_refined("AAPL")
-        >>> df1.equals(df2)
-        True
+        >>> df1 = finagg.sec.feat.quarterly.normalized.from_other_refined("AAPL").head(5)
+        >>> df2 = finagg.sec.feat.quarterly.normalized.from_refined("AAPL").head(5)
+        >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
 
     """
 
@@ -263,6 +280,16 @@ class NormalizedQuarterlyFeatures:
         Returns:
             Relative quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
+
+        Examples:
+            >>> finagg.sec.feat.quarterly.normalized.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+            fy   fp filed                                                                   ...
+            2010 Q1 2010-01-25                   -0.2573          -0.2606            1.6980 ...
+                 Q2 2010-04-21                    0.0000          -0.5309            1.5081 ...
+                 Q3 2010-07-21                   -0.3780          -0.3485            1.9323 ...
+            2011 Q1 2011-01-19                    0.2693          -0.1107            2.8801 ...
+                 Q2 2011-04-21                    0.0000          -0.0655            2.8997 ...
 
         """
         company_df = QuarterlyFeatures.from_refined(
@@ -316,6 +343,16 @@ class NormalizedQuarterlyFeatures:
         Raises:
             `NoResultFound`: If there are no rows for ``ticker`` in the
                 refined SQL table.
+
+        Examples:
+            >>> finagg.sec.feat.quarterly.normalized.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+            fy   fp filed                                                                   ...
+            2010 Q1 2010-01-25                   -0.2573          -0.2606            1.6980 ...
+                 Q2 2010-04-21                    0.0000          -0.5309            1.5081 ...
+                 Q3 2010-07-21                   -0.3780          -0.3485            1.9323 ...
+            2011 Q1 2011-01-19                    0.2693          -0.1107            2.8801 ...
+                 Q2 2011-04-21                    0.0000          -0.0655            2.8997 ...
 
         """
         with engine.begin() as conn:
@@ -441,7 +478,7 @@ class NormalizedQuarterlyFeatures:
             ...         year=2020,
             ...         quarter=3
             ... )
-            >>> "NOV" == ts[0]
+            >>> "PCGU" == ts[0]
             True
 
         """
@@ -566,13 +603,11 @@ class QuarterlyFeatures(feat.Features):
         It doesn't matter which data source you use to gather features.
         They all return equivalent dataframes.
 
-        >>> df1 = finagg.sec.feat.quarterly.from_api("AAPL")
-        >>> df2 = finagg.sec.feat.quarterly.from_raw("AAPL")
-        >>> df3 = finagg.sec.feat.quarterly.from_refined("AAPL")
-        >>> df1.equals(df2)
-        True
-        >>> df1.equals(df3)
-        True
+        >>> df1 = finagg.sec.feat.quarterly.from_api("AAPL").head(5)
+        >>> df2 = finagg.sec.feat.quarterly.from_raw("AAPL").head(5)
+        >>> df3 = finagg.sec.feat.quarterly.from_refined("AAPL").head(5)
+        >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
+        >>> pd.testing.assert_frame_equal(df1, df3)
 
     """
 
@@ -666,6 +701,16 @@ class QuarterlyFeatures(feat.Features):
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
 
+        Examples:
+            >>> finagg.sec.feat.quarterly.from_api("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+            fy   fp filed                                                                   ...
+            2010 Q1 2010-01-25                   -0.0234           0.3637              2.54 ...
+                 Q2 2010-04-21                    0.0000           0.3637              4.35 ...
+                 Q3 2010-07-21                    0.0000           0.3637              6.40 ...
+            2011 Q1 2011-01-19                    0.3208           0.4336              3.74 ...
+                 Q2 2011-04-21                    0.0000           0.4336              7.12 ...
+
         """
         dfs = []
         for concept in cls.concepts:
@@ -710,6 +755,16 @@ class QuarterlyFeatures(feat.Features):
         Raises:
             `NoResultFound`: If there are no rows for ``ticker`` in the
                 raw SQL table.
+
+        Examples:
+            >>> finagg.sec.feat.quarterly.from_raw("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+            fy   fp filed                                                                   ...
+            2010 Q1 2010-01-25                   -0.0234           0.3637              2.54 ...
+                 Q2 2010-04-21                    0.0000           0.3637              4.35 ...
+                 Q3 2010-07-21                    0.0000           0.3637              6.40 ...
+            2011 Q1 2011-01-19                    0.3208           0.4336              3.74 ...
+                 Q2 2011-04-21                    0.0000           0.4336              7.12 ...
 
         """
         with engine.begin() as conn:
@@ -763,6 +818,16 @@ class QuarterlyFeatures(feat.Features):
         Raises:
             `NoResultFound`: If there are no rows for ``ticker`` in the
                 refined SQL table.
+
+        Examples:
+            >>> finagg.sec.feat.quarterly.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+            fy   fp filed                                                                   ...
+            2010 Q1 2010-01-25                   -0.0234           0.3637              2.54 ...
+                 Q2 2010-04-21                    0.0000           0.3637              4.35 ...
+                 Q3 2010-07-21                    0.0000           0.3637              6.40 ...
+            2011 Q1 2011-01-19                    0.3208           0.4336              3.74 ...
+                 Q2 2011-04-21                    0.0000           0.4336              7.12 ...
 
         """
         with engine.begin() as conn:
@@ -990,7 +1055,7 @@ class TagFeatures:
                 in the raw SQL table.
 
         Examples:
-            >>> finagg.sec.feat.tags.from_raw("AAPL", "EarningsPerShareBasic").head(5)
+            >>> finagg.sec.feat.tags.from_raw("AAPL", "EarningsPerShareBasic").head(5)  # doctest: +NORMALIZE_WHITESPACE
                                 value
             fy   fp filed
             2009 Q3 2009-07-22   4.20

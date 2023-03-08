@@ -104,9 +104,9 @@ class FiscalFrame:
         Getting quarter differences between frames and determining if the sequence
         is a valid, ordered quarterly sequence.
 
-        >>> import pandas as pd
-        >>> from finagg.frame import is_valid_fiscal_seq
+        >>> from finagg.frame import FiscalFrame, is_valid_fiscal_seq
         >>> df = finagg.sec.api.company_concept.get("AssetsCurrent", ticker="AAPL")
+        >>> df = finagg.sec.feat.get_unique_filings(df, form="10-Q", units="USD")
         >>> frames: pd.Series = df["fy"].astype(int).astype(str) + df["fp"].astype(str)
         >>> frames = frames.apply(lambda row: FiscalFrame.fromstr(row))
         >>> frames = frames.diff(periods=1).dropna().astype(int)

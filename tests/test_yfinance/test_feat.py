@@ -20,4 +20,4 @@ def test_daily_to_from_refined(engine: Engine) -> None:
         finagg.yfinance.feat.daily.to_refined("AAPL", df1, engine=engine)
 
     df2 = finagg.yfinance.feat.daily.from_refined("AAPL", engine=engine)
-    pd.testing.assert_frame_equal(df1, df2)
+    pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)

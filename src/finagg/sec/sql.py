@@ -210,7 +210,7 @@ def get_metadata(
         A company's metadata as a dictionary.
 
     Examples:
-        >>> finagg.sec.sql.get_metadata("MSFT")
+        >>> finagg.sec.sql.get_metadata(ticker="MSFT")
         {'cik': '0000789019', 'ticker': 'MSFT', 'name': 'microsoft corp', 'sic': '7372'}
 
     """

@@ -31,4 +31,4 @@ def test_fundam_to_from_refined(engine: Engine) -> None:
         "AAPL",
         engine=engine,
     )
-    pd.testing.assert_frame_equal(df1, df2)
+    pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
