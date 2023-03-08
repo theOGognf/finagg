@@ -9,7 +9,7 @@ class Position:
 
     Args:
         cost: Initial purchase cost.
-        quantity: Number of shares held at `cost`.
+        quantity: Number of shares held at ``cost``.
 
     """
 
@@ -55,7 +55,7 @@ class Position:
         return self.average_cost_basis < __o
 
     def buy(self, cost: float, quantity: float, /) -> float:
-        """Buy `quantity` of the position for `cost`.
+        """Buy ``quantity`` of the position for ``cost``.
 
         Args:
             cost: Cost to buy at.
@@ -71,7 +71,7 @@ class Position:
         return cost * quantity
 
     def sell(self, cost: float, quantity: float, /) -> float:
-        """Sell `quantity` of the position for `cost`.
+        """Sell ``quantity`` of the position for ``cost``.
 
         Args:
             cost: Cost to sell at.
@@ -147,7 +147,7 @@ class Portfolio:
 
     def __contains__(self, symbol: str) -> bool:
         """Return whether the portfolio contains a position
-        in `symbol`.
+        in ``symbol``.
 
         """
         return symbol in self.positions
@@ -160,7 +160,7 @@ class Portfolio:
         return self.positions[symbol]
 
     def buy(self, symbol: str, cost: float, quantity: float, /) -> float:
-        """Buy `quantity` of security with `symbol` for `cost`.
+        """Buy ``quantity`` of security with ``symbol`` for ``cost``.
 
         Args:
             symbol: Security ticker.
@@ -201,7 +201,7 @@ class Portfolio:
         return self.cash
 
     def sell(self, symbol: str, cost: float, quantity: float, /) -> float:
-        """Sell `quantity` of security with `symbol` for `cost`.
+        """Sell ``quantity`` of security with `symbol` for ``cost``.
 
         Args:
             symbol: Security ticker.
@@ -272,7 +272,7 @@ class Portfolio:
             Total cash in the portfolio.
 
         Raises:
-            `ValueError`: If the portfolio doesn't have at least `cash`
+            `ValueError`: If the portfolio doesn't have at least ``cash``
                 liquid cash to withdraw.
 
         """

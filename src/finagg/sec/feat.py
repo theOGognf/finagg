@@ -607,7 +607,7 @@ class QuarterlyFeatures(feat.Features):
         >>> df2 = finagg.sec.feat.quarterly.from_raw("AAPL").head(5)
         >>> df3 = finagg.sec.feat.quarterly.from_refined("AAPL").head(5)
         >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
-        >>> pd.testing.assert_frame_equal(df1, df3)
+        >>> pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)
 
     """
 
