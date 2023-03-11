@@ -6,70 +6,15 @@ import os
 from typing import Literal
 
 import click
-from requests.exceptions import HTTPError
-from sqlalchemy.exc import IntegrityError
-from tqdm import tqdm
 
-from .. import backend, indices, utils
+from .. import indices, utils
 from . import api as _api
 from . import feat as _feat
-from . import sql as _sql
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
 )
 logger = logging.getLogger(__name__)
-
-
-def _install_raw_data(ticker: str, /) -> tuple[bool, int]:
-    """Helper for creating and inserting data into the SEC raw data
-    table.
-
-    No data is inserted if no rows are found.
-
-    Args:
-        ticker: Ticker to aggregate data for.
-
-    Returns:
-        Whether an error occurred and the total rows inserted for the ticker.
-
-    """
-    errored = False
-    total_rows = 0
-    with backend.engine.begin() as conn:
-        try:
-            rowcount = conn.execute(
-                _sql.submissions.insert(),
-                _api.submissions.get(ticker=ticker)["metadata"],
-            ).rowcount
-            if not rowcount:
-                logger.debug(f"Skipping {ticker} due to missing metadata")
-                return True, 0
-            for concept in _api.common_concepts:
-                tag = concept["tag"]
-                taxonomy = concept["taxonomy"]
-                units = concept["units"]
-                df = _api.company_concept.get(
-                    tag,
-                    ticker=ticker,
-                    taxonomy=taxonomy,
-                    units=units,
-                )
-                df = _feat.get_unique_filings(df, form="10-Q", units=units)
-                rowcount = len(df.index)
-                if not rowcount:
-                    logger.debug(
-                        f"Skipping {ticker} concept {tag} due to missing filings"
-                    )
-                    errored = True
-                    continue
-                conn.execute(_sql.tags.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
-                total_rows += rowcount
-        except (HTTPError, IntegrityError, KeyError) as e:
-            logger.debug(f"Skipping {ticker} due to {e}")
-            return True, total_rows
-    logger.debug(f"{total_rows} total rows inserted for {ticker}")
-    return errored, total_rows
 
 
 @click.group(help="Securities and Exchange Commission (SEC) tools.")
@@ -156,7 +101,7 @@ def install(
     verbose: bool = False,
 ) -> int:
     if verbose:
-        logger.setLevel(logging.DEBUG)
+        logging.getLogger(__package__).setLevel(logging.DEBUG)
 
     if "SEC_API_USER_AGENT" not in os.environ:
         user_agent = input(
@@ -177,35 +122,14 @@ def install(
 
     total_rows = 0
     if all_ or raw:
-        _sql.submissions.drop(backend.engine, checkfirst=True)
-        _sql.submissions.create(backend.engine)
-        _sql.tags.drop(backend.engine, checkfirst=True)
-        _sql.tags.create(backend.engine)
-
         match ticker_set:
             case "indices":
                 tickers = indices.api.get_ticker_set()
             case "sec":
                 tickers = _api.get_ticker_set()
 
-        total_errors = 0
-        with tqdm(
-            total=len(tickers),
-            desc="Installing raw SEC quarterly data",
-            position=0,
-            leave=True,
-            disable=verbose,
-        ) as pbar:
-            for ticker in tickers:
-                errored, rowcount = _install_raw_data(ticker)
-                total_errors += errored
-                total_rows += rowcount
-                pbar.update()
-
-        logger.info(
-            f"{pbar.total - total_errors}/{pbar.total} company datasets "
-            "sucessfully inserted"
-        )
+        total_rows += _feat.submissions.install(tickers)
+        total_rows += _feat.tags.install(tickers)
 
     all_refined = set()
     if all_:

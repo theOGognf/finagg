@@ -1,5 +1,6 @@
 """Features from SEC sources."""
 
+import logging
 import multiprocessing as mp
 from functools import cache, partial
 from typing import Literal
@@ -13,6 +14,11 @@ from tqdm import tqdm
 
 from .. import backend, feat, utils
 from . import api, sql
+
+logging.basicConfig(
+    format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 
 def _refined_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
@@ -519,7 +525,9 @@ class RefinedNormalizedQuarterly:
         return list(tickers)
 
     @classmethod
-    def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
+    def install(
+        cls, tickers: None | set[str] = None, *, processes: int = mp.cpu_count() - 1
+    ) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
 
@@ -530,10 +538,11 @@ class RefinedNormalizedQuarterly:
             Number of rows written to the feature's SQL table.
 
         """
-        sql.normalized_quarterly.drop(backend.engine, checkfirst=True)
-        sql.normalized_quarterly.create(backend.engine)
+        tickers = tickers or cls.get_candidate_ticker_set()
+        if tickers:
+            sql.normalized_quarterly.drop(backend.engine, checkfirst=True)
+            sql.normalized_quarterly.create(backend.engine)
 
-        tickers = cls.get_candidate_ticker_set()
         total_rows = 0
         with (
             tqdm(
@@ -554,6 +563,9 @@ class RefinedNormalizedQuarterly:
                 if rowcount:
                     cls.to_refined(ticker, df)
                     total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                else:
+                    logger.debug(f"Skipping {ticker} due to missing data")
                 pbar.update()
         return total_rows
 
@@ -947,7 +959,9 @@ class RefinedQuarterly(feat.Features):
         return set(tickers)
 
     @classmethod
-    def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
+    def install(
+        cls, tickers: None | set[str] = None, *, processes: int = mp.cpu_count() - 1
+    ) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
 
@@ -958,10 +972,11 @@ class RefinedQuarterly(feat.Features):
             Number of rows written to the feature's SQL table.
 
         """
-        sql.quarterly.drop(backend.engine, checkfirst=True)
-        sql.quarterly.create(backend.engine)
+        tickers = tickers or cls.get_candidate_ticker_set()
+        if tickers:
+            sql.quarterly.drop(backend.engine, checkfirst=True)
+            sql.quarterly.create(backend.engine)
 
-        tickers = cls.get_candidate_ticker_set()
         total_rows = 0
         with (
             tqdm(
@@ -980,6 +995,9 @@ class RefinedQuarterly(feat.Features):
                 if rowcount:
                     cls.to_refined(ticker, df)
                     total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                else:
+                    logger.debug(f"Skipping {ticker} due to missing data")
                 pbar.update()
         return total_rows
 
@@ -1018,8 +1036,134 @@ class RefinedQuarterly(feat.Features):
         return len(df.index)
 
 
+class RawSubmissions:
+    """Get a single company's metadata as-is from raw SEC data."""
+
+    @classmethod
+    def install(
+        cls, tickers: None | set[str] = None, /, *, engine: Engine = backend.engine
+    ) -> int:
+        tickers = tickers or api.get_ticker_set()
+        if tickers:
+            sql.submissions.drop(backend.engine, checkfirst=True)
+            sql.submissions.create(backend.engine)
+
+        total_rows = 0
+        with tqdm(
+            total=len(tickers),
+            desc="Installing raw SEC submissions data",
+            position=0,
+            leave=True,
+        ) as pbar:
+            for ticker in tickers:
+                try:
+                    metadata = api.submissions.get(ticker=ticker)["metadata"]
+                    df = pd.DataFrame(metadata)
+                    rowcount = len(df.index)
+                    if rowcount:
+                        cls.to_raw(df, engine=engine)
+                        total_rows += rowcount
+                        logger.debug(f"{rowcount} rows inserted for {ticker}")
+                    else:
+                        logger.debug(f"Skipping {ticker} due to missing submissions")
+                except Exception as e:
+                    logger.debug(f"Skipping {ticker} due to {e}")
+                pbar.update()
+        return total_rows
+
+    @classmethod
+    def from_raw(
+        cls,
+        ticker: str,
+        /,
+        *,
+        engine: Engine = backend.engine,
+    ) -> pd.DataFrame:
+        """Get a single company's metadata as-is from raw SEC data.
+
+        The metadata provided for each company varies and each company's
+        metadata may be incomplete. Only their SEC CIK and SIC industry
+        code are guaranteed to be provided.
+
+        Args:
+            ticker: Company ticker.
+            engine: Feature store database engine.
+
+        Returns:
+            A dataframe containing the company's metadata.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` in the raw
+                SQL table.
+
+        Examples:
+            >>> finagg.sec.feat.submissions.from_raw("AAPL")  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                      cik ticker entity_type   sic sic_description ...
+            0  0000320193   AAPL        None  3571            None ...
+
+        """
+        with engine.begin() as conn:
+            df = pd.DataFrame(
+                conn.execute(
+                    sql.submissions.select().where(sql.submissions.c.ticker == ticker)
+                )
+            )
+        if not len(df.index):
+            raise NoResultFound(f"No rows found for {ticker}.")
+        return df
+
+    @classmethod
+    def to_raw(cls, df: pd.DataFrame, /, *, engine: Engine = backend.engine) -> int:
+        with engine.begin() as conn:
+            conn.execute(sql.submissions.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+        return len(df)
+
+
 class RawTags:
     """Get a single company concept tag as-is from raw SEC data."""
+
+    @classmethod
+    def install(
+        cls, tickers: None | set[str] = None, *, engine: Engine = backend.engine
+    ) -> int:
+        tickers = tickers or api.get_ticker_set()
+        if tickers:
+            sql.tags.drop(backend.engine, checkfirst=True)
+            sql.tags.create(backend.engine)
+
+        total_rows = 0
+        with tqdm(
+            total=len(tickers),
+            desc="Installing raw SEC tags data",
+            position=0,
+            leave=True,
+        ) as pbar:
+            for ticker in tickers:
+                for concept in api.common_concepts:
+                    tag = concept["tag"]
+                    taxonomy = concept["taxonomy"]
+                    units = concept["units"]
+                    try:
+                        df = api.company_concept.get(
+                            tag,
+                            ticker=ticker,
+                            taxonomy=taxonomy,
+                            units=units,
+                        )
+                        df = get_unique_filings(df, form="10-Q", units=units)
+                        rowcount = len(df.index)
+                        if rowcount:
+                            cls.to_raw(df, engine=engine)
+                            total_rows += rowcount
+                            logger.debug(
+                                f"{rowcount} rows inserted for {ticker} tag {tag}"
+                            )
+                        else:
+                            logger.debug(f"Skipping {ticker} due to missing filings")
+                    except Exception as e:
+                        logger.debug(f"Skipping {ticker} due to {e}")
+                pbar.update()
+        return total_rows
 
     @classmethod
     def from_raw(
@@ -1090,14 +1234,26 @@ class RawTags:
             raise NoResultFound(f"No {tag} rows found for {ticker}.")
         return df.set_index(["fy", "fp", "filed"]).sort_index()
 
+    @classmethod
+    def to_raw(cls, df: pd.DataFrame, /, *, engine: Engine = backend.engine) -> int:
+        with engine.begin() as conn:
+            conn.execute(sql.tags.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+        return len(df)
 
-quarterly: RefinedQuarterly = RefinedQuarterly()
+
+quarterly = RefinedQuarterly()
 """The most popular way for accessing :class:`RefinedQuarterly`.
 
 :meta hide-value:
 """
 
-tags: RawTags = RawTags()
+submissions = RawSubmissions()
+"""The most popular way for accessing :class:`RawSubmissions`.
+
+:meta hide-value:
+"""
+
+tags = RawTags()
 """The most popular way for accessing :class:`RawTags`.
 
 :meta hide-value:
