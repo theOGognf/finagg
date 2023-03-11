@@ -25,11 +25,11 @@ def _refined_daily_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
         The ticker and the returned feature dataframe.
 
     """
-    df = DailyFeatures.from_raw(ticker)
+    df = RefinedDaily.from_raw(ticker)
     return ticker, df
 
 
-class DailyFeatures(feat.Features):
+class RefinedDaily(feat.Features):
     """Methods for gathering daily stock data features from Yahoo! finance.
 
     The module variable :data:`finagg.yfinance.feat.daily` is an instance of
@@ -349,8 +349,8 @@ class DailyFeatures(feat.Features):
         return len(df.index)
 
 
-daily = DailyFeatures()
-"""The most popular way for accessing :class:`DailyFeatures`.
+daily = RefinedDaily()
+"""The most popular way for accessing :class:`RefinedDaily`.
 
 :meta hide-value:
 """

@@ -26,7 +26,7 @@ def _refined_fundam_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
         The ticker and the returned feature dataframe.
 
     """
-    df = FundamentalFeatures.from_other_refined(ticker)
+    df = RefinedFundamental.from_other_refined(ticker)
     return ticker, df
 
 
@@ -41,11 +41,11 @@ def _refined_normalized_fundam_helper(ticker: str, /) -> tuple[str, pd.DataFrame
         The ticker and the returned feature dataframe.
 
     """
-    df = NormalizedFundamentalFeatures.from_other_refined(ticker)
+    df = RefinedNormalizedFundamental.from_other_refined(ticker)
     return ticker, df
 
 
-class IndustryFundamentalFeatures:
+class RefinedIndustryFundamental:
     """Methods for gathering industry-averaged fundamental data."""
 
     @classmethod
@@ -141,7 +141,7 @@ class IndustryFundamentalFeatures:
         return df
 
 
-class NormalizedFundamentalFeatures:
+class RefinedNormalizedFundamental:
     """Fundamental features from quarterly and daily data, normalized
     according to industry averages and standard deviations.
 
@@ -179,15 +179,15 @@ class NormalizedFundamentalFeatures:
             separate column. Sorted by filing date.
 
         """
-        company_df = FundamentalFeatures.from_refined(
+        company_df = RefinedFundamental.from_refined(
             ticker, start=start, end=end, engine=engine
         )
-        industry_df = IndustryFundamentalFeatures.from_refined(
+        industry_df = RefinedIndustryFundamental.from_refined(
             ticker=ticker, level=level, start=start, end=end, engine=engine
         )
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
         company_df = company_df.sort_index()
-        pct_change_columns = FundamentalFeatures.pct_change_target_columns()
+        pct_change_columns = RefinedFundamental.pct_change_target_columns()
         company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
             value=0.0
         )
@@ -246,13 +246,13 @@ class NormalizedFundamentalFeatures:
             )
         df = df.pivot(index="date", columns="name", values="value").sort_index()
         df.columns = df.columns.rename(None)
-        df = df[FundamentalFeatures.columns]
+        df = df[RefinedFundamental.columns]
         return df
 
     @classmethod
     def get_candidate_ticker_set(cls, lb: int = 1) -> set[str]:
         """The candidate ticker set is just the `fundam` ticker set."""
-        return FundamentalFeatures.get_ticker_set(lb=lb)
+        return RefinedFundamental.get_ticker_set(lb=lb)
 
     @classmethod
     @cache
@@ -279,7 +279,7 @@ class NormalizedFundamentalFeatures:
                     .having(
                         *[
                             sa.func.count(sql.normalized_fundam.c.name == col) >= lb
-                            for col in FundamentalFeatures.columns
+                            for col in RefinedFundamental.columns
                         ]
                     )
                 )
@@ -412,9 +412,9 @@ class NormalizedFundamentalFeatures:
 
         """
         df = df.reset_index("date")
-        if set(df.columns) < set(FundamentalFeatures.columns):
+        if set(df.columns) < set(RefinedFundamental.columns):
             raise ValueError(
-                f"Dataframe must have columns {FundamentalFeatures.columns}"
+                f"Dataframe must have columns {RefinedFundamental.columns}"
             )
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
@@ -423,7 +423,7 @@ class NormalizedFundamentalFeatures:
         return len(df.index)
 
 
-class FundamentalFeatures(feat.Features):
+class RefinedFundamental(feat.Features):
     """Method for gathering fundamental data on a stock using several sources."""
 
     #: Columns within this feature set.
@@ -434,10 +434,10 @@ class FundamentalFeatures(feat.Features):
     )
 
     #: Fundamental features aggregated by industry.
-    industry = IndustryFundamentalFeatures()
+    industry = RefinedIndustryFundamental()
 
     #: A company's fundamental features normalized by its industry.
-    normalized = NormalizedFundamentalFeatures()
+    normalized = RefinedNormalizedFundamental()
 
     @classmethod
     def _normalize(
@@ -451,12 +451,12 @@ class FundamentalFeatures(feat.Features):
         quarterly_abs = quarterly.groupby(["filed"], as_index=False)[
             [
                 col
-                for col in sec.feat.QuarterlyFeatures.columns
+                for col in sec.feat.RefinedQuarterly.columns
                 if not col.endswith("pct_change")
             ]
         ].last()
         quarterly_pct_change_cols = (
-            sec.feat.QuarterlyFeatures.pct_change_target_columns()
+            sec.feat.RefinedQuarterly.pct_change_target_columns()
         )
         quarterly[quarterly_pct_change_cols] += 1
         quarterly_pct_change = quarterly.groupby(["filed"], as_index=False).agg(
@@ -666,9 +666,9 @@ class FundamentalFeatures(feat.Features):
             features.
 
         """
-        return sec.feat.QuarterlyFeatures.get_ticker_set(
+        return sec.feat.RefinedQuarterly.get_ticker_set(
             lb=lb
-        ) & yfinance.feat.DailyFeatures.get_ticker_set(lb=lb)
+        ) & yfinance.feat.RefinedDaily.get_ticker_set(lb=lb)
 
     @classmethod
     @cache
@@ -777,4 +777,4 @@ class FundamentalFeatures(feat.Features):
 
 
 #: Module variable intended for fully qualified name usage.
-fundam = FundamentalFeatures()
+fundam = RefinedFundamental()

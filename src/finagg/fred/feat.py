@@ -10,7 +10,7 @@ from .. import backend, feat, utils
 from . import api, sql
 
 
-class TimeSummarizedEconomicFeatures:
+class RefinedTimeSummarizedEconomic:
     """Methods for gathering time-averaged economic data from FRED
     features.
 
@@ -68,7 +68,7 @@ class TimeSummarizedEconomicFeatures:
         return df
 
 
-class NormalizedEconomicFeatures:
+class RefinedNormalizedEconomic:
     """Economic features from FRED data normalized according to historical
     averages.
 
@@ -94,13 +94,13 @@ class NormalizedEconomicFeatures:
             separate column. Sorted by date.
 
         """
-        economic_df = EconomicFeatures.from_refined(start=start, end=end, engine=engine)
-        summarized_df = TimeSummarizedEconomicFeatures.from_refined(
+        economic_df = RefinedEconomic.from_refined(start=start, end=end, engine=engine)
+        summarized_df = RefinedTimeSummarizedEconomic.from_refined(
             start=start, end=end, engine=engine
         )
         economic_df = (economic_df - summarized_df["avg"]) / summarized_df["std"]
         economic_df = economic_df.sort_index()
-        pct_change_cols = EconomicFeatures.pct_change_target_columns()
+        pct_change_cols = RefinedEconomic.pct_change_target_columns()
         economic_df[pct_change_cols] = economic_df[pct_change_cols].fillna(value=0.0)
         return economic_df.fillna(method="ffill").dropna()
 
@@ -147,7 +147,7 @@ class NormalizedEconomicFeatures:
             raise NoResultFound(f"No normalized economic rows found.")
         df = df.pivot(index="date", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
-        df = df[EconomicFeatures.columns]
+        df = df[RefinedEconomic.columns]
         return df
 
     @classmethod
@@ -193,15 +193,15 @@ class NormalizedEconomicFeatures:
 
         """
         df = df.reset_index("date")
-        if set(df.columns) < set(EconomicFeatures.columns):
-            raise ValueError(f"Dataframe must have columns {EconomicFeatures.columns}")
+        if set(df.columns) < set(RefinedEconomic.columns):
+            raise ValueError(f"Dataframe must have columns {RefinedEconomic.columns}")
         df = df.melt("date", var_name="name", value_name="value")
         with engine.begin() as conn:
             conn.execute(sql.normalized_economic.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 
-class EconomicFeatures(feat.Features):
+class RefinedEconomic(feat.Features):
     """Methods for gathering economic data series from FRED sources."""
 
     #: Economic series IDs (typical economic indicators).
@@ -239,10 +239,10 @@ class EconomicFeatures(feat.Features):
     ]
 
     #: Economic features averaged over time.
-    normalized = NormalizedEconomicFeatures()
+    normalized = RefinedNormalizedEconomic()
 
     #: Economic features aggregated over time.
-    summary = TimeSummarizedEconomicFeatures()
+    summary = RefinedTimeSummarizedEconomic()
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
@@ -435,7 +435,7 @@ class EconomicFeatures(feat.Features):
         return len(df.index)
 
 
-class SeriesFeatures:
+class RawSeries:
     """Get a single economic series as-is from raw FRED data."""
 
     @classmethod
@@ -484,5 +484,5 @@ class SeriesFeatures:
 
 
 #: Module variable intended for fully qualified name usage.
-economic = EconomicFeatures()
-series = SeriesFeatures()
+economic = RefinedEconomic()
+series = RawSeries()

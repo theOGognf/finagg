@@ -25,7 +25,7 @@ def _refined_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
         The ticker and the returned feature dataframe.
 
     """
-    df = QuarterlyFeatures.from_raw(ticker)
+    df = RefinedQuarterly.from_raw(ticker)
     return ticker, df
 
 
@@ -40,7 +40,7 @@ def _refined_normalized_quarterly_helper(ticker: str, /) -> tuple[str, pd.DataFr
         The ticker and the returned feature dataframe.
 
     """
-    df = NormalizedQuarterlyFeatures.from_other_refined(ticker)
+    df = RefinedNormalizedQuarterly.from_other_refined(ticker)
     return ticker, df
 
 
@@ -97,7 +97,7 @@ def get_unique_filings(
     )
 
 
-class IndustryQuarterlyFeatures:
+class RefinedIndustryQuarterly:
     """Methods for gathering industry-averaged quarterly data from SEC
     features.
 
@@ -232,7 +232,7 @@ class IndustryQuarterlyFeatures:
         return df
 
 
-class NormalizedQuarterlyFeatures:
+class RefinedNormalizedQuarterly:
     """Quarterly features from SEC EDGAR data normalized according to industry
     averages and standard deviations.
 
@@ -292,16 +292,16 @@ class NormalizedQuarterlyFeatures:
                  Q2 2011-04-21                    0.0000          -0.0655            2.8997 ...
 
         """
-        company_df = QuarterlyFeatures.from_refined(
+        company_df = RefinedQuarterly.from_refined(
             ticker, start=start, end=end, engine=engine
         ).reset_index(["filed"])
         filed = company_df["filed"]
-        industry_df = IndustryQuarterlyFeatures.from_refined(
+        industry_df = RefinedIndustryQuarterly.from_refined(
             ticker=ticker, level=level, start=start, end=end, engine=engine
         ).reset_index(["filed"])
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
         company_df["filed"] = filed
-        pct_change_columns = QuarterlyFeatures.pct_change_target_columns()
+        pct_change_columns = RefinedQuarterly.pct_change_target_columns()
         company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
             value=0.0
         )
@@ -378,7 +378,7 @@ class NormalizedQuarterlyFeatures:
             index=["fy", "fp", "filed"], columns="name", values="value"
         ).sort_index()
         df.columns = df.columns.rename(None)
-        df = df[QuarterlyFeatures.columns]
+        df = df[RefinedQuarterly.columns]
         return df
 
     @classmethod
@@ -402,7 +402,7 @@ class NormalizedQuarterlyFeatures:
             True
 
         """
-        return QuarterlyFeatures.get_ticker_set(lb=lb)
+        return RefinedQuarterly.get_ticker_set(lb=lb)
 
     @classmethod
     @cache
@@ -438,7 +438,7 @@ class NormalizedQuarterlyFeatures:
                     .having(
                         *[
                             sa.func.count(sql.normalized_quarterly.c.name == col) >= lb
-                            for col in QuarterlyFeatures.columns
+                            for col in RefinedQuarterly.columns
                         ]
                     )
                 )
@@ -583,8 +583,8 @@ class NormalizedQuarterlyFeatures:
 
         """
         df = df.reset_index(["fy", "fp", "filed"])
-        if set(df.columns) < set(QuarterlyFeatures.columns):
-            raise ValueError(f"Dataframe must have columns {QuarterlyFeatures.columns}")
+        if set(df.columns) < set(RefinedQuarterly.columns):
+            raise ValueError(f"Dataframe must have columns {RefinedQuarterly.columns}")
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker)
         with engine.begin() as conn:
@@ -592,7 +592,7 @@ class NormalizedQuarterlyFeatures:
         return len(df.index)
 
 
-class QuarterlyFeatures(feat.Features):
+class RefinedQuarterly(feat.Features):
     """Methods for gathering quarterly features from SEC EDGAR data.
 
     The module variable :data:`finagg.sec.feat.quarterly` is an instance of
@@ -637,17 +637,17 @@ class QuarterlyFeatures(feat.Features):
     :meta hide-value:
     """
 
-    industry = IndustryQuarterlyFeatures()
+    industry = RefinedIndustryQuarterly()
     """Quarterly features aggregated for an entire industry.
-    The most popular way for accessing :class:`IndustryQuarterlyFeatures`
+    The most popular way for accessing :class:`RefinedIndustryQuarterly`
     feature set.
 
     :meta hide-value:
     """
 
-    normalized = NormalizedQuarterlyFeatures()
+    normalized = RefinedNormalizedQuarterly()
     """A company's quarterly features normalized by its industry.
-    The most popular way for accessing :class:`NormalizedQuarterlyFeatures`
+    The most popular way for accessing :class:`RefinedNormalizedQuarterly`
     feature set.
 
     :meta hide-value:
@@ -1018,7 +1018,7 @@ class QuarterlyFeatures(feat.Features):
         return len(df.index)
 
 
-class TagFeatures:
+class RawTags:
     """Get a single company concept tag as-is from raw SEC data."""
 
     @classmethod
@@ -1091,14 +1091,14 @@ class TagFeatures:
         return df.set_index(["fy", "fp", "filed"]).sort_index()
 
 
-quarterly: QuarterlyFeatures = QuarterlyFeatures()
-"""The most popular way for accessing :class:`QuarterlyFeatures`.
+quarterly: RefinedQuarterly = RefinedQuarterly()
+"""The most popular way for accessing :class:`RefinedQuarterly`.
 
 :meta hide-value:
 """
 
-tags: TagFeatures = TagFeatures()
-"""The most popular way for accessing :class:`TagFeatures`.
+tags: RawTags = RawTags()
+"""The most popular way for accessing :class:`RawTags`.
 
 :meta hide-value:
 """
