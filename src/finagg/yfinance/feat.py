@@ -1,5 +1,6 @@
 """Features from :mod:`yfinance` sources."""
 
+import logging
 import multiprocessing as mp
 from functools import cache, partial
 
@@ -10,8 +11,13 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from .. import backend, feat, utils
+from .. import backend, feat, indices, utils
 from . import api, sql
+
+logging.basicConfig(
+    format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 
 def _refined_daily_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
@@ -349,8 +355,161 @@ class RefinedDaily(feat.Features):
         return len(df.index)
 
 
+class RawPrices:
+    """Get a single company's daily stock history as-is from raw Yahoo! Finance
+    data.
+
+    The module variable :data:`finagg.yfinance.feat.prices` is an instance of
+    this feature set implementation and is the most popular interface for
+    calling feature methods.
+
+    """
+
+    #: Columns within this dataset's SQL table. These columns are required to
+    #: write new rows to the SQL table.
+    columns = [
+        "ticker",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+    ]
+
+    @classmethod
+    def install(
+        cls, tickers: None | set[str] = None, *, engine: Engine = backend.engine
+    ) -> int:
+        """Drop the feature's table, create a new one, and insert data
+        as-is using Yahoo! Finance.
+
+        Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+            engine: Feature store database engine.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
+        tickers = tickers or indices.api.get_ticker_set()
+        if tickers:
+            sql.prices.drop(backend.engine, checkfirst=True)
+            sql.prices.create(backend.engine)
+
+        total_rows = 0
+        with tqdm(
+            total=len(tickers),
+            desc="Installing raw Yahoo! Finance stock data",
+            position=0,
+            leave=True,
+        ) as pbar:
+            for ticker in tickers:
+                try:
+                    df = api.get(ticker, interval="1d", period="max")
+                    rowcount = len(df.index)
+                    if rowcount:
+                        cls.to_raw(df, engine=engine)
+                        total_rows += rowcount
+                        logger.debug(f"{rowcount} rows inserted for {ticker}")
+                    else:
+                        logger.debug(f"Skipping {ticker} due to missing stock data")
+                except Exception as e:
+                    logger.debug(f"Skipping {ticker} due to {e}")
+                pbar.update()
+        return total_rows
+
+    @classmethod
+    def from_raw(
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: str = "1776-07-04",
+        end: str = utils.today,
+        engine: Engine = backend.engine,
+    ) -> pd.DataFrame:
+        """Get a single company's daily stock history as-is from raw
+        Yahoo! Finance SQL tables.
+
+        Args:
+            ticker: Company ticker.
+            start: The start date of the observation period.
+            end: The end date of the observation period.
+            engine: Feature store database engine.
+
+        Returns:
+            A dataframe containing the company's daily stock history
+            across the specified period.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` in the raw
+                SQL table.
+
+        Examples:
+            >>> finagg.yfinance.feat.prices.from_raw("AAPL").head(5)  # doctest: +NORMALIZE_WHITESPACE
+                          open    high     low   close      volume
+            date
+            1980-12-12  0.0997  0.1002  0.0997  0.0997  4.6903e+08
+            1980-12-15  0.0950  0.0950  0.0945  0.0945  1.7588e+08
+            1980-12-16  0.0880  0.0880  0.0876  0.0876  1.0573e+08
+            1980-12-17  0.0897  0.0902  0.0897  0.0897  8.6442e+07
+            1980-12-18  0.0924  0.0928  0.0924  0.0924  7.3450e+07
+
+        """
+        with engine.begin() as conn:
+            df = pd.DataFrame(
+                conn.execute(
+                    sa.select(
+                        sql.prices.c.date,
+                        sql.prices.c.open,
+                        sql.prices.c.high,
+                        sql.prices.c.low,
+                        sql.prices.c.close,
+                        sql.prices.c.volume,
+                    ).where(
+                        sql.prices.c.ticker == ticker,
+                        sql.prices.c.date >= start,
+                        sql.prices.c.date <= end,
+                    )
+                )
+            )
+        if not len(df.index):
+            raise NoResultFound(f"No rows found for {ticker}.")
+        return df.set_index(["date"]).sort_index()
+
+    @classmethod
+    def to_raw(cls, df: pd.DataFrame, /, *, engine: Engine = backend.engine) -> int:
+        """Write the given dataframe to the raw feature table.
+
+        Args:
+            df: Dataframe to store as rows in a local SQL table
+            engine: Feature store database engine.
+
+        Returns:
+            Number of rows written to the SQL table.
+
+        Raises:
+            `ValueError`: If the given dataframe's columns do not match this
+                feature's columns.
+
+        """
+        if set(df.columns) != set(cls.columns):
+            raise ValueError(f"Dataframe must have columns {cls.columns}")
+        with engine.begin() as conn:
+            conn.execute(sql.prices.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+        return len(df)
+
+
 daily = RefinedDaily()
 """The most popular way for accessing :class:`RefinedDaily`.
+
+:meta hide-value:
+"""
+
+prices = RawPrices()
+"""The most popular way for accessing :class:`RawPrices`.
 
 :meta hide-value:
 """

@@ -12,7 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from .. import backend, feat, utils
+from .. import backend, feat, indices, utils
 from . import api, sql
 
 logging.basicConfig(
@@ -1051,8 +1051,8 @@ class RawSubmissions:
 
     """
 
-    #: Columns within this dataset. Dataframes returned by this class's
-    #: methods will always contain these columns.
+    #: Columns within this dataset's SQL table. These columns are required to
+    #: write new rows to the SQL table.
     columns = [
         "cik",
         "ticker",
@@ -1076,14 +1076,14 @@ class RawSubmissions:
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.sec.api.get_ticker_set`.
+                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
             engine: Feature store database engine.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        tickers = tickers or api.get_ticker_set()
+        tickers = tickers or indices.api.get_ticker_set()
         if tickers:
             sql.submissions.drop(backend.engine, checkfirst=True)
             sql.submissions.create(backend.engine)
@@ -1168,6 +1168,8 @@ class RawSubmissions:
                 feature's columns.
 
         """
+        if set(df.columns) != set(cls.columns):
+            raise ValueError(f"Dataframe must have columns {cls.columns}")
         with engine.begin() as conn:
             conn.execute(sql.submissions.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df)
@@ -1182,8 +1184,8 @@ class RawTags:
 
     """
 
-    #: Columns within this dataset. Dataframes returned by this class's
-    #: methods will always contain these columns.
+    #: Columns within this dataset's SQL table. These columns are required to
+    #: write new rows to the SQL table.
     columns = [
         "cik",
         "accn",
@@ -1212,14 +1214,14 @@ class RawTags:
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.sec.api.get_ticker_set`.
+                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
             engine: Feature store database engine.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        tickers = tickers or api.get_ticker_set()
+        tickers = tickers or indices.api.get_ticker_set()
         if tickers:
             sql.tags.drop(backend.engine, checkfirst=True)
             sql.tags.create(backend.engine)
@@ -1271,8 +1273,6 @@ class RawTags:
     ) -> pd.DataFrame:
         """Get a single company concept tag as-is from raw SEC data.
 
-        The tag is in the units it was in when it was originally retrieved
-        from the SEC API prior to being stored (this is usually USD).
         This is the preferred method for accessing raw SEC data without
         using the SEC API.
 
@@ -1293,13 +1293,13 @@ class RawTags:
 
         Examples:
             >>> finagg.sec.feat.tags.from_raw("AAPL", "EarningsPerShareBasic").head(5)  # doctest: +NORMALIZE_WHITESPACE
-                                value
+                                     units  value
             fy   fp filed
-            2009 Q3 2009-07-22   4.20
-            2010 Q1 2010-01-25   2.54
-                 Q2 2010-04-21   4.35
-                 Q3 2010-07-21   6.40
-            2011 Q1 2011-01-19   3.74
+            2009 Q3 2009-07-22  USD/shares   4.20
+            2010 Q1 2010-01-25  USD/shares   2.54
+                 Q2 2010-04-21  USD/shares   4.35
+                 Q3 2010-07-21  USD/shares   6.40
+            2011 Q1 2011-01-19  USD/shares   3.74
 
         """
         with engine.begin() as conn:
@@ -1309,6 +1309,7 @@ class RawTags:
                         sql.tags.c.fy,
                         sql.tags.c.fp,
                         sql.tags.c.filed,
+                        sql.tags.c.units,
                         sql.tags.c.value,
                     )
                     .join(
@@ -1343,8 +1344,8 @@ class RawTags:
                 feature's columns.
 
         """
-        if set(df.columns) != set(RawTags.columns):
-            raise ValueError(f"Dataframe must have columns {RawTags.columns}")
+        if set(df.columns) != set(cls.columns):
+            raise ValueError(f"Dataframe must have columns {cls.columns}")
         with engine.begin() as conn:
             conn.execute(sql.tags.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df)
