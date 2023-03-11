@@ -532,6 +532,9 @@ class RefinedNormalizedQuarterly:
         transformed from another raw SQL table.
 
         Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the candidate tickers from
+                :meth:`RefinedNormalizedQuarterly.get_candidate_ticker_set`.
             processes: Number of background processes to use for installation.
 
         Returns:
@@ -966,6 +969,9 @@ class RefinedQuarterly(feat.Features):
         transformed from another raw SQL table.
 
         Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the candidate tickers from
+                :meth:`RefinedQuarterly.get_candidate_ticker_set`.
             processes: Number of background processes to use for installation.
 
         Returns:
@@ -1038,6 +1044,22 @@ class RefinedQuarterly(feat.Features):
 
 class RawSubmissions:
     """Get a single company's metadata as-is from raw SEC data."""
+
+    #: Columns within this dataset. Dataframes returned by this class's
+    #: methods will always contain these columns.
+    columns = [
+        "cik",
+        "ticker",
+        "entity_type",
+        "sic",
+        "sic_description",
+        "name",
+        "exchanges",
+        "ein",
+        "description",
+        "category",
+        "fiscal_year_end",
+    ]
 
     @classmethod
     def install(
@@ -1122,10 +1144,43 @@ class RawSubmissions:
 class RawTags:
     """Get a single company concept tag as-is from raw SEC data."""
 
+    #: Columns within this dataset. Dataframes returned by this class's
+    #: methods will always contain these columns.
+    columns = [
+        "cik",
+        "accn",
+        "taxonomy",
+        "tag",
+        "form",
+        "units",
+        "fy",
+        "fp",
+        "start",
+        "end",
+        "filed",
+        "frame",
+        "label",
+        "description",
+        "entity",
+        "value",
+    ]
+
     @classmethod
     def install(
         cls, tickers: None | set[str] = None, *, engine: Engine = backend.engine
     ) -> int:
+        """Drop the feature's table, create a new one, and insert data
+        as-is from the SEC API.
+
+        Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the tickers from :meth:`finagg.sec.api.get_ticker_set`.
+            engine: Feature store database engine.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
         tickers = tickers or api.get_ticker_set()
         if tickers:
             sql.tags.drop(backend.engine, checkfirst=True)
@@ -1236,6 +1291,22 @@ class RawTags:
 
     @classmethod
     def to_raw(cls, df: pd.DataFrame, /, *, engine: Engine = backend.engine) -> int:
+        """Write the given dataframe to the raw feature table.
+
+        Args:
+            df: Dataframe to store as rows in a local SQL table
+            engine: Feature store database engine.
+
+        Returns:
+            Number of rows written to the SQL table.
+
+        Raises:
+            `ValueError`: If the given dataframe's columns do not match this
+                feature's columns.
+
+        """
+        if set(df.columns) != set(RawTags.columns):
+            raise ValueError(f"Dataframe must have columns {RawTags.columns}")
         with engine.begin() as conn:
             conn.execute(sql.tags.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df)
