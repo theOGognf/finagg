@@ -1043,7 +1043,13 @@ class RefinedQuarterly(feat.Features):
 
 
 class RawSubmissions:
-    """Get a single company's metadata as-is from raw SEC data."""
+    """Get a single company's metadata as-is from raw SEC data.
+
+    The module variable :data:`finagg.sec.feat.submissions` is an instance of
+    this feature set implementation and is the most popular interface for
+    calling feature methods.
+
+    """
 
     #: Columns within this dataset. Dataframes returned by this class's
     #: methods will always contain these columns.
@@ -1065,6 +1071,18 @@ class RawSubmissions:
     def install(
         cls, tickers: None | set[str] = None, /, *, engine: Engine = backend.engine
     ) -> int:
+        """Drop the feature's table, create a new one, and insert data
+        as-is from the SEC API.
+
+        Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the tickers from :meth:`finagg.sec.api.get_ticker_set`.
+            engine: Feature store database engine.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
         tickers = tickers or api.get_ticker_set()
         if tickers:
             sql.submissions.drop(backend.engine, checkfirst=True)
@@ -1136,13 +1154,33 @@ class RawSubmissions:
 
     @classmethod
     def to_raw(cls, df: pd.DataFrame, /, *, engine: Engine = backend.engine) -> int:
+        """Write the given dataframe to the raw feature table.
+
+        Args:
+            df: Dataframe to store as rows in a local SQL table
+            engine: Feature store database engine.
+
+        Returns:
+            Number of rows written to the SQL table.
+
+        Raises:
+            `ValueError`: If the given dataframe's columns do not match this
+                feature's columns.
+
+        """
         with engine.begin() as conn:
             conn.execute(sql.submissions.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df)
 
 
 class RawTags:
-    """Get a single company concept tag as-is from raw SEC data."""
+    """Get a single company concept tag as-is from raw SEC data.
+
+    The module variable :data:`finagg.sec.feat.tags` is an instance of
+    this feature set implementation and is the most popular interface for
+    calling feature methods.
+
+    """
 
     #: Columns within this dataset. Dataframes returned by this class's
     #: methods will always contain these columns.
