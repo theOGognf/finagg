@@ -294,7 +294,7 @@ class Frames(_API):
             instant: Whether to get instantaneous data for the frame (data that
                 most closely matches a frame's year and quarter without a
                 time buffer). This flag should be enabled for most cases. See
-                :data:`common_frames` for which tags should be ``instant``.
+                :data:`popular_frames` for which tags should be ``instant``.
             taxonomy: Valid SEC EDGAR taxonomy.
                 See https://www.sec.gov/info/edgar/edgartaxonomies for taxonomies.
             units: Units to view results in.
@@ -505,7 +505,7 @@ tickers = Tickers()
 :meta hide-value:
 """
 
-common_frames: list[Frame] = [
+popular_frames: list[Frame] = [
     {
         "tag": "AssetsCurrent",
         "taxonomy": "us-gaap",
@@ -552,7 +552,7 @@ API implementation.
 :meta hide-value:
 """
 
-common_concepts: list[Concept] = [_frame_to_concept(frame) for frame in common_frames]
+popular_concepts: list[Concept] = [_frame_to_concept(frame) for frame in popular_frames]
 """Company concepts that have high availability and are relatively popular
 for fundamental analysis. Includes things like earnings per share, current
 assets, etc..
@@ -675,7 +675,7 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
     year = datetime.now().year - 1
     tickers = set()
 
-    for frame in common_frames:
+    for frame in popular_frames:
         tag = frame["tag"]
         instant = frame["instant"]
         taxonomy = frame["taxonomy"]

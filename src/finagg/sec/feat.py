@@ -645,7 +645,7 @@ class RefinedQuarterly(feat.Features):
         "WorkingCapitalRatio",
     ]
 
-    concepts = api.common_concepts
+    concepts = api.popular_concepts
     """XBRL disclosure concepts to pull to construct the columns in this
     feature set.
 
@@ -1234,7 +1234,7 @@ class RawTags:
             leave=True,
         ) as pbar:
             for ticker in tickers:
-                for concept in api.common_concepts:
+                for concept in api.popular_concepts:
                     tag = concept["tag"]
                     taxonomy = concept["taxonomy"]
                     units = concept["units"]
