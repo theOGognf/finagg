@@ -54,8 +54,8 @@ except Exception as e:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "finagg"
-copyright = "Andrew B."
-author = "Andrew B."
+copyright = "Andrew B"
+author = "Andrew B"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
