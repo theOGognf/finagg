@@ -21,7 +21,8 @@ from sqlalchemy import create_engine
 root_path = pathlib.Path(os.environ.get("FINAGG_ROOT_PATH", pathlib.Path.cwd()))
 """Parent directory of the ``findata`` directory where the backend database
 and API cache file will be stored (unless otherwise configured according
-to the relevant environment variables). This defaults to and is typically
+to the relevant environment variables). This can be set with the
+``FINAGG_ROOT_PATH`` environment variable. This defaults to and is typically
 set to the current working directory. It's recommended you permanently set
 this value using the ``finagg install -a`` CLI.
 
@@ -48,7 +49,7 @@ variable will take precedence over this value.
 database_url = os.environ.get("FINAGG_DATABASE_URL", f"sqlite:///{database_path}")
 """SQLAlchemy URL to the database. This can be set with the
 ``FINAGG_DATABASE_URL`` environment variable and should include a file extension.
-This defaults to `"sqlite:///{database_path}"`.
+This defaults to ``f"sqlite:///{finagg.backend.database_path}"``.
 
 :meta hide-value:
 """

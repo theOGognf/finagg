@@ -44,6 +44,11 @@ session = requests_cache.CachedSession(
 
 
 class Concept(TypedDict):
+    """A collection of XBRL tag (data field), SEC EDGAR taxonomy that
+    tag is in, and units for that tag.
+
+    """
+
     #: Valid tag within the given `taxonomy`.
     tag: str
 
@@ -56,7 +61,7 @@ class Concept(TypedDict):
 
 
 class Frame(Concept):
-    """A frame is just a concept with a flag indicating if it supports
+    """A frame is just a :class:`Concept` with a flag indicating if it supports
     "instantaneous" frame data.
 
     """
@@ -132,7 +137,8 @@ class CompanyConcept(_API):
             taxonomy: Valid SEC EDGAR taxonomy.
                 See https://www.sec.gov/info/edgar/edgartaxonomies.shtml for taxonomies.
             units: Currency to view results in.
-            user_agent: Self-declared bot header.
+            user_agent: Self-declared bot header. Defaults to the value
+                found in the ``SEC_API_USER_AGENT`` environment variable.
 
         Returns:
             Dataframe with normalized column names.
@@ -204,7 +210,8 @@ class CompanyFacts(_API):
         Args:
             cik: Company SEC CIK. Mutually exclusive with `ticker`.
             ticker: Company ticker. Mutually exclusive with `cik`.
-            user_agent: Self-declared bot header.
+            user_agent: Self-declared bot header. Defaults to the value
+                found in the ``SEC_API_USER_AGENT`` environment variable.
 
         Returns:
             Dataframe with normalized column names.
@@ -298,7 +305,8 @@ class Frames(_API):
             taxonomy: Valid SEC EDGAR taxonomy.
                 See https://www.sec.gov/info/edgar/edgartaxonomies for taxonomies.
             units: Units to view results in.
-            user_agent: Self-declared bot header.
+            user_agent: Self-declared bot header. Defaults to the value
+                found in the ``SEC_API_USER_AGENT`` environment variable.
 
         Returns:
             Dataframe with slightly improved column names.
