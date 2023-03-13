@@ -32,11 +32,12 @@ local ``.env`` file for storage.
 Basic Usage
 -----------
 
-Explore the APIs directly.
+Explore the APIs directly
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Get Bureau of Economic Analysis (BEA) data.
 
->>> finagg.bea.api.gdp_by_industry.get(year=[2019]).head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+>>> finagg.bea.api.gdp_by_industry.get(year=[2019]).head(5)
    table_id freq  year quarter industry                         industry_description       value
 0         1    Q  2019       1       11  Agriculture, forestry, fishing, and hunting  156.300003
 1         1    Q  2019       1    111CA                                        Farms  117.599998
@@ -69,7 +70,8 @@ Get Securities and Exchange Commission (SEC) filings.
 3  2010-01-15  906794589.0  0001193125-10-012085  2010  Q1    10-Q  2010-01-25 ...
 4  2010-04-09  909938383.0  0001193125-10-088957  2010  Q2    10-Q  2010-04-21 ...
 
-Use installed raw data for exploring the most popular features.
+Use installed raw data for exploring the most popular features
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Get the most popular FRED features all in one dataframe.
 
@@ -97,7 +99,8 @@ Get an aggregation of quarterly and daily features for a particular ticker.
 
 >>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)
 
-Use installed features for exploring refined aggregations of raw data.
+Use installed features for exploring refined aggregations of raw data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Get a ticker's industry's averaged quarterly report features.
 

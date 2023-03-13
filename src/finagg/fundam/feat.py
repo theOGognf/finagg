@@ -72,9 +72,9 @@ class RefinedIndustryFundamental:
             ticker: Company ticker. Lookup the industry associated
                 with this company. Mutually exclusive with `code`.
             code: Industry SIC code to use for industry lookup.
-                Mutually exclusive with `ticker`.
+                Mutually exclusive with ``ticker``.
             level: Industry level to aggregate features at.
-                The industry used according to `ticker` or `code`
+                The industry used according to ``ticker`` or ``code``
                 is subsampled according to this value. Options include:
 
                     - 2 = major group (e.g., furniture and fixtures)
@@ -268,7 +268,7 @@ class RefinedNormalizedFundamental:
 
         Returns:
             All unique tickers that contain all the columns for creating
-            fundamental features that also have at least `lb` rows.
+            fundamental features that also have at least ``lb`` rows.
 
         """
         with backend.engine.begin() as conn:
@@ -303,11 +303,11 @@ class RefinedNormalizedFundamental:
         Args:
             column: Feature column to sort by.
             ascending: Whether to return results in ascending order according
-                to the values in `column`.
+                to the values in ``column``.
             date: Date to select from. Defaults to the most recent date with
                 available data. If a string, should be in "%Y-%m-%d" format.
                 If an integer, should be days before the current date (e.g,
-                `-2` indicates two days before today).
+                ``-2`` indicates two days before today).
 
         Returns:
             Tickers sorted by a feature column.
@@ -400,7 +400,7 @@ class RefinedNormalizedFundamental:
         *,
         engine: Engine = backend.engine,
     ) -> int:
-        """Write the dataframe to the feature store for `ticker`.
+        """Write the dataframe to the feature store for ``ticker``.
 
         Args:
             ticker: Company ticker.
@@ -429,20 +429,47 @@ class RefinedNormalizedFundamental:
 
 
 class RefinedFundamental(feat.Features):
-    """Method for gathering fundamental data on a stock using several sources."""
+    """Method for gathering fundamental data on a stock using several sources.
 
-    #: Columns within this feature set.
+    The module variable :data:`finagg.fundam.feat.fundam` is an instance of
+    this feature set implementation and is the most popular interface for
+    calling feature methods.
+
+    Examples:
+        It doesn't matter which data source you use to gather features.
+        They all return equivalent dataframes.
+
+        >>> df1 = finagg.fundam.feat.fundam.from_api("AAPL").head(5)
+        >>> df2 = finagg.fundam.feat.fundam.from_raw("AAPL").head(5)
+        >>> df3 = finagg.fundam.feat.fundam.from_refined("AAPL").head(5)
+        >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
+        >>> pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)
+
+    """
+
+    #: Columns within this feature set. Dataframes returned by this class's
+    #: methods will always contain these columns.
     columns = (
         yfinance.feat.daily.columns
         + sec.feat.quarterly.columns
         + ["PriceEarningsRatio"]
     )
 
-    #: Fundamental features aggregated by industry.
     industry = RefinedIndustryFundamental()
+    """Fundamental features aggregated for an entire industry.
+    The most popular way for accessing :class:`RefinedIndustryFundamental`
+    feature set.
 
-    #: A company's fundamental features normalized by its industry.
+    :meta hide-value:
+    """
+
     normalized = RefinedNormalizedFundamental()
+    """A company's fundamental features normalized by its industry.
+    The most popular way for accessing :class:`RefinedNormalizedFundamental`
+    feature set.
+
+    :meta hide-value:
+    """
 
     @classmethod
     def _normalize(
@@ -514,6 +541,16 @@ class RefinedFundamental(feat.Features):
             Combined quarterly and daily feature dataframe.
             Sorted by date.
 
+        Examples:
+            >>> finagg.fundam.feat.fundam.from_api("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                         price  open_pct_change ... PriceEarningsRatio
+            date                                ...
+            2010-01-25  6.1727          -0.0207 ...             2.4302
+            2010-01-26  6.2600           0.0170 ...             2.4646
+            2010-01-27  6.3189           0.0044 ...             2.4878
+            2010-01-28  6.0578          -0.0093 ...             2.3850
+            2010-01-29  5.8381          -0.0188 ...             2.2984
+
         """
         quarterly = sec.feat.quarterly.from_api(
             ticker,
@@ -547,6 +584,16 @@ class RefinedFundamental(feat.Features):
         Returns:
             Combined quarterly and daily feature dataframe.
             Sorted by date.
+
+        Examples:
+            >>> finagg.fundam.feat.fundam.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                         price  open_pct_change ... PriceEarningsRatio
+            date                                ...
+            2010-01-25  6.1727          -0.0207 ...             2.4302
+            2010-01-26  6.2600           0.0170 ...             2.4646
+            2010-01-27  6.3189           0.0044 ...             2.4878
+            2010-01-28  6.0578          -0.0093 ...             2.3850
+            2010-01-29  5.8381          -0.0188 ...             2.2984
 
         """
         quarterly = sec.feat.quarterly.from_refined(
@@ -587,6 +634,16 @@ class RefinedFundamental(feat.Features):
         Returns:
             Combined quarterly and daily feature dataframe.
             Sorted by date.
+
+        Examples:
+            >>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                         price  open_pct_change ... PriceEarningsRatio
+            date                                ...
+            2010-01-25  6.1727          -0.0207 ...             2.4302
+            2010-01-26  6.2600           0.0170 ...             2.4646
+            2010-01-27  6.3189           0.0044 ...             2.4878
+            2010-01-28  6.0578          -0.0093 ...             2.3850
+            2010-01-29  5.8381          -0.0188 ...             2.2984
 
         """
         quarterly = sec.feat.quarterly.from_raw(
@@ -635,6 +692,16 @@ class RefinedFundamental(feat.Features):
         Raises:
             `NoResultFound`: If there are no rows for ``ticker`` in the
                 refined SQL table.
+
+        Examples:
+            >>> finagg.fundam.feat.fundam.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                         price  open_pct_change ... PriceEarningsRatio
+            date                                ...
+            2010-01-25  6.1727          -0.0207 ...             2.4302
+            2010-01-26  6.2600           0.0170 ...             2.4646
+            2010-01-27  6.3189           0.0044 ...             2.4878
+            2010-01-28  6.0578          -0.0093 ...             2.3850
+            2010-01-29  5.8381          -0.0188 ...             2.2984
 
         """
         with engine.begin() as conn:
