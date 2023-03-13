@@ -12,7 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from .. import backend, feat, sec, utils, yfinance
+from .. import backend, feat, indices, sec, utils, yfinance
 from . import sql
 
 
@@ -163,7 +163,7 @@ class RefinedNormalizedFundamental:
         Args:
             ticker: Company ticker.
             level: Industry level to aggregate relative features at.
-                The industry used according to `ticker` is subsampled
+                The industry used according to ``ticker`` is subsampled
                 according to this value. Options include:
 
                     - 2 = major group (e.g., furniture and fixtures)
@@ -348,21 +348,26 @@ class RefinedNormalizedFundamental:
         return list(tickers)
 
     @classmethod
-    def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
+    def install(
+        cls, tickers: None | set[str] = None, *, processes: int = mp.cpu_count() - 1
+    ) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
 
         Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
             processes: Number of background processes to use for installation.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        sql.normalized_fundam.drop(backend.engine, checkfirst=True)
-        sql.normalized_fundam.create(backend.engine)
+        tickers = tickers or indices.api.get_ticker_set()
+        if tickers:
+            sql.normalized_fundam.drop(backend.engine, checkfirst=True)
+            sql.normalized_fundam.create(backend.engine)
 
-        tickers = cls.get_candidate_ticker_set()
         total_rows = 0
         with (
             tqdm(
@@ -663,7 +668,12 @@ class RefinedFundamental(feat.Features):
 
         Returns:
             All unique tickers that may be valid for both quarterly and daily
-            features.
+            features that also have at least ``lb`` rows used for constructing
+            the features.
+
+        Examples:
+            >>> "AAPL" in finagg.fundam.feat.fundam.get_candidate_ticker_set()
+            True
 
         """
         return sec.feat.RefinedQuarterly.get_ticker_set(
@@ -684,7 +694,11 @@ class RefinedFundamental(feat.Features):
 
         Returns:
             All unique tickers that contain all the columns for creating
-            fundamental features that also have at least `lb` rows.
+            fundamental features that also have at least ``lb`` rows.
+
+        Examples:
+            >>> "AAPL" in finagg.fundam.feat.fundam.get_ticker_set()
+            True
 
         """
         with backend.engine.begin() as conn:
@@ -705,21 +719,26 @@ class RefinedFundamental(feat.Features):
         return set(tickers)
 
     @classmethod
-    def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
+    def install(
+        cls, tickers: None | set[str] = None, *, processes: int = mp.cpu_count() - 1
+    ) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
 
         Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
             processes: Number of background processes to use for installation.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        sql.fundam.drop(backend.engine, checkfirst=True)
-        sql.fundam.create(backend.engine)
+        tickers = tickers or indices.api.get_ticker_set()
+        if tickers:
+            sql.fundam.drop(backend.engine, checkfirst=True)
+            sql.fundam.create(backend.engine)
 
-        tickers = cls.get_candidate_ticker_set()
         total_rows = 0
         with (
             tqdm(
@@ -750,7 +769,7 @@ class RefinedFundamental(feat.Features):
         *,
         engine: Engine = backend.engine,
     ) -> int:
-        """Write the dataframe to the feature store for `ticker`.
+        """Write the dataframe to the feature store for ``ticker``.
 
         Args:
             ticker: Company ticker.
@@ -776,5 +795,8 @@ class RefinedFundamental(feat.Features):
         return len(df.index)
 
 
-#: Module variable intended for fully qualified name usage.
 fundam = RefinedFundamental()
+"""The most popular way for accessing :class:`RefinedFundamental`.
+
+:meta hide-value:
+"""

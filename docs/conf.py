@@ -83,7 +83,6 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # -- Autodoc options ---------------------------------------------------------
 
 autodoc_member_order = "bysource"
-# autodoc_preserve_defaults = True  # This option doesn't work with classmethods.
 
 # -- doctest options ---------------------------------------------------------
 
