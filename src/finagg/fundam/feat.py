@@ -1,4 +1,4 @@
-"""Features from several sources."""
+"""Fundamental features aggregated from several sources."""
 
 import multiprocessing as mp
 from datetime import datetime, timedelta
@@ -46,7 +46,21 @@ def _refined_normalized_fundam_helper(ticker: str, /) -> tuple[str, pd.DataFrame
 
 
 class RefinedIndustryFundamental:
-    """Methods for gathering industry-averaged fundamental data."""
+    """Methods for gathering industry-averaged fundamental data.
+
+    The class variable :data:`finagg.fundam.feat.fundam.industry` is an
+    instance of this feature set implementation and is the most popular
+    interface for calling feature methods.
+
+    Examples:
+        You can aggregate this feature set using a ticker or an industry code
+        directly.
+
+        >>> df1 = finagg.fundam.feat.fundam.industry.from_refined(ticker="MSFT").head(5)
+        >>> df2 = finagg.fundam.feat.fundam.industry.from_refined(code=73).head(5)
+        >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
+
+    """
 
     @classmethod
     def from_refined(
@@ -65,12 +79,12 @@ class RefinedIndustryFundamental:
 
         The industry can be chosen according to a company or
         by an industry code directly. If a company is provided,
-        then the first `level` digits of the company's SIC code
+        then the first ``level`` digits of the company's SIC code
         is used for the industry code.
 
         Args:
             ticker: Company ticker. Lookup the industry associated
-                with this company. Mutually exclusive with `code`.
+                with this company. Mutually exclusive with ``code``.
             code: Industry SIC code to use for industry lookup.
                 Mutually exclusive with ``ticker``.
             level: Industry level to aggregate features at.
@@ -93,6 +107,25 @@ class RefinedIndustryFundamental:
             `ValueError`: If neither a ``ticker`` nor ``code`` are provided.
             `NoResultFound`: If there are no rows for ``ticker`` or ``code``
                 in the refined SQL table.
+
+        Examples:
+            >>> df = finagg.fundam.feat.fundam.industry.from_refined(ticker="AAPL").head(5)
+            >>> df["avg"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            name        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+            date                                                                    ...
+            2009-10-23                       0.0           0.3305              2.48 ...
+            2009-10-26                       0.0           0.3305              2.48 ...
+            2009-10-27                       0.0           0.3305              2.48 ...
+            2009-10-28                       0.0           0.3305              2.48 ...
+            2009-10-29                       0.0           0.3305              2.48 ...
+            >>> df["std"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            name        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+            date                                                                    ...
+            2009-10-23                       0.0              0.0               0.0 ...
+            2009-10-26                       0.0              0.0               0.0 ...
+            2009-10-27                       0.0              0.0               0.0 ...
+            2009-10-28                       0.0              0.0               0.0 ...
+            2009-10-29                       0.0              0.0               0.0 ...
 
         """
         with engine.begin() as conn:
@@ -145,6 +178,18 @@ class RefinedNormalizedFundamental:
     """Fundamental features from quarterly and daily data, normalized
     according to industry averages and standard deviations.
 
+    The class variable :data:`finagg.fundam.feat.fundam.normalized` is an
+    instance of this feature set implementation and is the most popular
+    interface for calling feature methods.
+
+    Examples:
+        It doesn't matter which data source you use to gather features.
+        They all return equivalent dataframes.
+
+        >>> df1 = finagg.fundam.feat.fundam.normalized.from_other_refined("AAPL").head(5)
+        >>> df2 = finagg.fundam.feat.fundam.from_refined("AAPL").head(5)
+        >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
+
     """
 
     @classmethod
@@ -177,6 +222,16 @@ class RefinedNormalizedFundamental:
         Returns:
             Relative fundamental data dataframe with each feature as a
             separate column. Sorted by filing date.
+
+        Examples:
+            >>> finagg.fundam.feat.fundam.normalized.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+            date                                                                    ...
+            2010-01-25                   -1.4142          -0.6309           -0.6506 ...
+            2010-01-26                    0.0000          -0.6309           -0.6506 ...
+            2010-01-27                    0.0000          -0.6309           -0.6506 ...
+            2010-01-28                    0.5774          -0.5223            0.2046 ...
+            2010-01-29                    0.0000          -0.5940            0.4365 ...
 
         """
         company_df = RefinedFundamental.from_refined(
@@ -229,6 +284,16 @@ class RefinedNormalizedFundamental:
             `NoResultFound`: If there are no rows for ``ticker`` in the
                 refined SQL table.
 
+        Examples:
+            >>> finagg.fundam.feat.fundam.normalized.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+            date                                                                    ...
+            2010-01-25                   -1.4142          -0.6309           -0.6506 ...
+            2010-01-26                    0.0000          -0.6309           -0.6506 ...
+            2010-01-27                    0.0000          -0.6309           -0.6506 ...
+            2010-01-28                    0.5774          -0.5223            0.2046 ...
+            2010-01-29                    0.0000          -0.5940            0.4365 ...
+
         """
         with engine.begin() as conn:
             df = pd.DataFrame(
@@ -251,7 +316,25 @@ class RefinedNormalizedFundamental:
 
     @classmethod
     def get_candidate_ticker_set(cls, lb: int = 1) -> set[str]:
-        """The candidate ticker set is just the `fundam` ticker set."""
+        """Get all unique tickers in the fundamental SQL table that MAY BE
+        ELIGIBLE to be in the feature's SQL table.
+
+        This is just an alias for :meth:`finagg.fundam.feat.fundam.get_ticker_set`.
+
+        Args:
+            lb: Minimum number of rows required to include a ticker in the
+                returned set.
+
+        Returns:
+            All unique tickers that may be valid for creating
+            industry-normalized fundamental features that also have at least
+            ``lb`` rows for each tag used for constructing the features.
+
+        Examples:
+            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_candidate_ticker_set()
+            True
+
+        """
         return RefinedFundamental.get_ticker_set(lb=lb)
 
     @classmethod
@@ -269,6 +352,10 @@ class RefinedNormalizedFundamental:
         Returns:
             All unique tickers that contain all the columns for creating
             fundamental features that also have at least ``lb`` rows.
+
+        Examples:
+            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_ticker_set()
+            True
 
         """
         with backend.engine.begin() as conn:
@@ -310,10 +397,18 @@ class RefinedNormalizedFundamental:
                 ``-2`` indicates two days before today).
 
         Returns:
-            Tickers sorted by a feature column.
+            Tickers sorted by a feature column for a particular date.
 
         Raises:
             `ValueError`: If the integer date is positive.
+
+        Examples:
+            >>> ts = finagg.fundam.feat.fundam.normalized.get_tickers_sorted_by(
+            ...         "PriceEarningsRatio",
+            ...         date="2019-01-04"
+            ... )
+            >>> "AMD" == ts[0]
+            True
 
         """
         with backend.engine.begin() as conn:
