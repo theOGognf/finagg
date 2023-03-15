@@ -38,6 +38,7 @@ class RelatedTags(_api.API):
         """Get data for tags related to an economic release.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/related_tags.html
 
         Args:
@@ -47,29 +48,31 @@ class RelatedTags(_api.API):
                 to their publication date.
             tag_names: Find tags related to these tags.
             exclude_tag_names: Exclude tags related to these tags.
-            tag_group_id: A tag group ID to filter tags by.
-                Options include:
-                    - "freq" = frequency
-                    - "gen" = general or concept
-                    - "geo" = geography
-                    - "geot" = geography type
-                    - "rls" = release
-                    - "seas" = seasonal adjustment
-                    - "src" = source
+            tag_group_id: A tag group ID to filter tags by. Options include:
+
+                - "freq" = frequency
+                - "gen" = general or concept
+                - "geo" = geography
+                - "geot" = geography type
+                - "rls" = release
+                - "seas" = seasonal adjustment
+                - "src" = source
+
             search_text: The words to find matching tags with.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "series_count"
-                    - "popularity"
-                    - "created"
-                    - "name"
-                    - "group_id"
+            order_by: Variable to order results by. Options include:
+
+                - "series_count"
+                - "popularity"
+                - "created"
+                - "name"
+                - "group_id"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data for related FRED tags.
@@ -114,6 +117,7 @@ class Series(_api.API):
         """Get the economic data series matching tags.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/tags_series.html
 
         Args:
@@ -125,24 +129,25 @@ class Series(_api.API):
                 to their publication date.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "series_id"
-                    - "title"
-                    - "units"
-                    - "frequency"
-                    - "seasonal_adjustment"
-                    - "realtime_start"
-                    - "realtime_end"
-                    - "last_updated"
-                    - "observation_start"
-                    - "observation_end"
-                    - "popularity"
-                    - "group_popularity"
+            order_by: Variable to order results by. Options include:
+
+                - "series_id"
+                - "title"
+                - "units"
+                - "frequency"
+                - "seasonal_adjustment"
+                - "realtime_start"
+                - "realtime_end"
+                - "last_updated"
+                - "observation_start"
+                - "observation_end"
+                - "popularity"
+                - "group_popularity"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing series data for related tags.
@@ -190,6 +195,7 @@ class Tags(_api.API):
         """Get the FRED tags for a series.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/tags.html
 
         Args:
@@ -199,30 +205,32 @@ class Tags(_api.API):
             realtime_end: End date for fetching results according
                 to their publication date.
             tag_names: Filtering of tag names to include in the results.
-            tag_group_id: A tag group ID to filter tags by.
-                Options include:
-                    - "freq" = frequency
-                    - "gen" = general or concept
-                    - "geo" = geography
-                    - "geot" = geography type
-                    - "rls" = release
-                    - "seas" = seasonal adjustment
-                    - "src" = source
-                    - "cc" = citation and copyright
+            tag_group_id: A tag group ID to filter tags by. Options include:
+
+                - "freq" = frequency
+                - "gen" = general or concept
+                - "geo" = geography
+                - "geot" = geography type
+                - "rls" = release
+                - "seas" = seasonal adjustment
+                - "src" = source
+                - "cc" = citation and copyright
+
             search_text: The words to find matching tags with.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "series_count"
-                    - "popularity"
-                    - "created"
-                    - "name"
-                    - "group_id"
+            order_by: Variable to order results by. Options include:
+
+                - "series_count"
+                - "popularity"
+                - "created"
+                - "name"
+                - "group_id"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data for all FRED economic data tags.

@@ -36,6 +36,7 @@ class Releases(_api.API):
         """Get all releases for a source of economic data.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/source_releases.html
 
         Args:
@@ -46,17 +47,18 @@ class Releases(_api.API):
                 to their publication date.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "release_id"
-                    - "name"
-                    - "press_release"
-                    - "realtime_start"
-                    - "realtime_end"
+            order_by: Variable to order results by. Options include:
+
+                - "release_id"
+                - "name"
+                - "press_release"
+                - "realtime_start"
+                - "realtime_end"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data on all releases for a
@@ -99,6 +101,7 @@ class Source(_api.API):
         """Get overview data of an economic series.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/source.html
 
         Args:
@@ -107,8 +110,8 @@ class Source(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing high-level info on an economic source.
@@ -143,6 +146,7 @@ class Sources(_api.API):
         """Get all sources of economic data.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/sources.html
 
         Args:
@@ -152,17 +156,18 @@ class Sources(_api.API):
                 to their publication date.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "source_id"
-                    - "name"
-                    - "press_release"
-                    - "realtime_start"
-                    - "realtime_end"
+            order_by: Variable to order results by. Options include:
+
+                - "source_id"
+                - "name"
+                - "press_release"
+                - "realtime_start"
+                - "realtime_end"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data on all sources of economic

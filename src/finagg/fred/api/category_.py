@@ -34,6 +34,7 @@ class Children(_api.API):
         """Get all child categories for a specific parent category.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/category_children.html
 
         Args:
@@ -43,8 +44,8 @@ class Children(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data for a category's children.
@@ -78,6 +79,7 @@ class Related(_api.API):
         """Get categories related to a category.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/category_related.html
 
         Args:
@@ -87,8 +89,8 @@ class Related(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data for categories
@@ -131,6 +133,7 @@ class Series(_api.API):
         """Get series within a category.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/category_series.html
 
         Args:
@@ -142,26 +145,29 @@ class Series(_api.API):
                 to their publication date.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "series_count"
-                    - "popularity"
-                    - "created"
-                    - "name"
-                    - "group_id"
+            order_by: Variable to order results by. Options include:
+
+                - "series_count"
+                - "popularity"
+                - "created"
+                - "name"
+                - "group_id"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
             filter_variable: The attribute (or column) to filter results by.
                 Options include:
-                    - "frequency"
-                    - "units"
-                    - "seasonal_adjustment"
+
+                - "frequency"
+                - "units"
+                - "seasonal_adjustment"
+
             filter_value: The value of `filter_variable` to filter results
                 by.
             tag_names: Find tags related to these tags.
             exclude_tag_names: Exclude tags related to these tags.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data for a category's series
@@ -211,6 +217,7 @@ class Tags(_api.API):
         """Get data for a category's tags.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/category_tags.html
 
         Args:
@@ -221,29 +228,31 @@ class Tags(_api.API):
             realtime_end: End date for fetching results according
                 to their publication date.
             tag_names: Filtering of tag names to include in the results.
-            tag_group_id: A tag group ID to filter tags by.
-                Options include:
-                    - "freq" = frequency
-                    - "gen" = general or concept
-                    - "geo" = geography
-                    - "geot" = geography type
-                    - "rls" = release
-                    - "seas" = seasonal adjustment
-                    - "src" = source
+            tag_group_id: A tag group ID to filter tags by. Options include:
+
+                - "freq" = frequency
+                - "gen" = general or concept
+                - "geo" = geography
+                - "geot" = geography type
+                - "rls" = release
+                - "seas" = seasonal adjustment
+                - "src" = source
+
             search_text: The words to find matching tags with.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "series_count"
-                    - "popularity"
-                    - "created"
-                    - "name"
-                    - "group_id"
+            order_by: Variable to order results by. Options include:
+
+                - "series_count"
+                - "popularity"
+                - "created"
+                - "name"
+                - "group_id"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data for a category's tags
@@ -293,6 +302,7 @@ class RelatedTags(_api.API):
         """Get data for tags related to a category.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/category_related_tags.html
 
         Args:
@@ -304,29 +314,31 @@ class RelatedTags(_api.API):
                 to their publication date.
             tag_names: Find tags related to these tags.
             exclude_tag_names: Exclude tags related to these tags.
-            tag_group_id: A tag group ID to filter tags by.
-                Options include:
-                    - "freq" = frequency
-                    - "gen" = general or concept
-                    - "geo" = geography
-                    - "geot" = geography type
-                    - "rls" = release
-                    - "seas" = seasonal adjustment
-                    - "src" = source
+            tag_group_id: A tag group ID to filter tags by. Options include:
+
+                - "freq" = frequency
+                - "gen" = general or concept
+                - "geo" = geography
+                - "geot" = geography type
+                - "rls" = release
+                - "seas" = seasonal adjustment
+                - "src" = source
+
             search_text: The words to find matching tags with.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "series_count"
-                    - "popularity"
-                    - "created"
-                    - "name"
-                    - "group_id"
+            order_by: Variable to order results by. Options include:
+
+                - "series_count"
+                - "popularity"
+                - "created"
+                - "name"
+                - "group_id"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data for tags related to a category
@@ -356,6 +368,7 @@ class Category(_api.API):
     """Collection of `fred/category` APIs.
 
     See the related FRED API documentation at:
+
         https://fred.stlouisfed.org/docs/api/fred/category.html
 
     """
@@ -384,8 +397,8 @@ class Category(_api.API):
         Args:
             category_id: The category's ID. Use the
                 "category/children" API to explore categories.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             Dataframe of category details.

@@ -35,6 +35,7 @@ class ReleasesDates(_api.API):
         """Get all release dates of economic data.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/releases_dates.html
 
         Args:
@@ -44,17 +45,18 @@ class ReleasesDates(_api.API):
                 to their publication date.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "release_date"
-                    - "release_id"
-                    - "release_name"
+            order_by: Variable to order results by. Options include:
+
+                - "release_date"
+                - "release_id"
+                - "release_name"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
             include_release_dates_with_no_data: Whether to return release
                 dates that don't contain any data.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data on release dates for all
@@ -99,6 +101,7 @@ class Releases(_api.API):
         """Get all releases of economic data.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/releases.html
 
         Args:
@@ -108,17 +111,18 @@ class Releases(_api.API):
                 to their publication date.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "release_id"
-                    - "name"
-                    - "press_release"
-                    - "realtime_start"
-                    - "realtime_end"
+            order_by: Variable to order results by. Options include:
+
+                - "release_id"
+                - "name"
+                - "press_release"
+                - "realtime_start"
+                - "realtime_end"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data on all releases of economic
@@ -160,6 +164,7 @@ class ReleaseDates(_api.API):
         """Get data on release dates for a particular release of economic data.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/release_dates.html
 
         Args:
@@ -174,8 +179,8 @@ class ReleaseDates(_api.API):
                 descending ("desc") order.
             include_release_dates_with_no_data: Whether to return release
                 dates that don't contain any data.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data for an economic data release's release dates.
@@ -221,6 +226,7 @@ class Series(_api.API):
         """Get data on the series related to a release of economic data.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/release_series.html
 
         Args:
@@ -231,33 +237,36 @@ class Series(_api.API):
                 to their publication date.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "series_id"
-                    - "title"
-                    - "units"
-                    - "frequency"
-                    - "seasonal_adjustment"
-                    - "realtime_start"
-                    - "realtime_end"
-                    - "last_updated"
-                    - "observation_start"
-                    - "observation_end"
-                    - "popularity"
-                    - "group_popularity"
+            order_by: Variable to order results by. Options include:
+
+                - "series_id"
+                - "title"
+                - "units"
+                - "frequency"
+                - "seasonal_adjustment"
+                - "realtime_start"
+                - "realtime_end"
+                - "last_updated"
+                - "observation_start"
+                - "observation_end"
+                - "popularity"
+                - "group_popularity"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
             filter_variable: The attribute (or column) to filter results by.
                 Options include:
-                    - "frequency"
-                    - "units"
-                    - "seasonal_adjustment"
+
+                - "frequency"
+                - "units"
+                - "seasonal_adjustment"
+
             filter_value: The value of `filter_variable` to filter results
                 by.
             tag_names: Find tags related to these tags.
             exclude_tag_names: Exclude tags related to these tags.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing series data for a release.
@@ -299,6 +308,7 @@ class Sources(_api.API):
         """Get sources related to an economic release.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/release_sources.html
 
         Args:
@@ -307,8 +317,8 @@ class Sources(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing sources related to an economic release.
@@ -349,6 +359,7 @@ class Tags(_api.API):
         """Get tags for an economic release.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/release_tags.html
 
         Args:
@@ -358,29 +369,31 @@ class Tags(_api.API):
             realtime_end: End date for fetching results according
                 to their publication date.
             tag_names: Filtering of tag names to include in the results.
-            tag_group_id: A tag group ID to filter tags by.
-                Options include:
-                    - "freq" = frequency
-                    - "gen" = general or concept
-                    - "geo" = geography
-                    - "geot" = geography type
-                    - "rls" = release
-                    - "seas" = seasonal adjustment
-                    - "src" = source
+            tag_group_id: A tag group ID to filter tags by. Options include:
+
+                - "freq" = frequency
+                - "gen" = general or concept
+                - "geo" = geography
+                - "geot" = geography type
+                - "rls" = release
+                - "seas" = seasonal adjustment
+                - "src" = source
+
             search_text: The words to find matching tags with.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "series_count"
-                    - "popularity"
-                    - "created"
-                    - "name"
-                    - "group_id"
+            order_by: Variable to order results by. Options include:
+
+                - "series_count"
+                - "popularity"
+                - "created"
+                - "name"
+                - "group_id"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data for an economic release's tags
@@ -430,6 +443,7 @@ class RelatedTags(_api.API):
         """Get data for tags related to an economic release.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/release_related_tags.html
 
         Args:
@@ -440,29 +454,31 @@ class RelatedTags(_api.API):
                 to their publication date.
             tag_names: Find tags related to these tags.
             exclude_tag_names: Exclude tags related to these tags.
-            tag_group_id: A tag group ID to filter tags by.
-                Options include:
-                    - "freq" = frequency
-                    - "gen" = general or concept
-                    - "geo" = geography
-                    - "geot" = geography type
-                    - "rls" = release
-                    - "seas" = seasonal adjustment
-                    - "src" = source
+            tag_group_id: A tag group ID to filter tags by. Options include:
+
+                - "freq" = frequency
+                - "gen" = general or concept
+                - "geo" = geography
+                - "geot" = geography type
+                - "rls" = release
+                - "seas" = seasonal adjustment
+                - "src" = source
+
             search_text: The words to find matching tags with.
             limit: Maximum number of results to return.
             offset: Result start offset.
-            order_by: Variable to order results by.
-                Options include:
-                    - "series_count"
-                    - "popularity"
-                    - "created"
-                    - "name"
-                    - "group_id"
+            order_by: Variable to order results by. Options include:
+
+                - "series_count"
+                - "popularity"
+                - "created"
+                - "name"
+                - "group_id"
+
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data for tags related to an economic
@@ -506,6 +522,7 @@ class Tables(_api.API):
         """Get release tables for a given economic release.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/release_tables.html
 
         Args:
@@ -515,8 +532,8 @@ class Tables(_api.API):
                 need to be returned.
             observation_date: The observation date to be included with the
                 returned release table.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe of release tables for a given economic release.
@@ -570,6 +587,7 @@ class Release(_api.API):
         """Get overview data of an economic release.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/release.html
 
         Args:
@@ -578,8 +596,8 @@ class Release(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing high-level info on an economic release.

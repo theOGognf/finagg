@@ -44,6 +44,7 @@ class Categories(_api.API):
         """Get the categories for an economic data series.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/series_categories.html
 
         Args:
@@ -52,8 +53,8 @@ class Categories(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data on categories for the economic data series.
@@ -97,6 +98,7 @@ class Observations(_api.API):
         """Get the observations or data values for an economic data series.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/series_observations.html
 
         Args:
@@ -111,20 +113,22 @@ class Observations(_api.API):
                 descending ("desc") order.
             observation_start: The start date of the observation period.
             observation_end: The end date of the observation period.
-            units: Units to return the series values in.
-                Options include:
-                    - "lin" = levels (no unit transformation)
-                    - "chg" = change
-                    - "ch1" = change from a year ago
-                    - "pch" = percent change
-                    - "pc1" = percent change from a year ago
-                    - "pca" = compounded annual rate of change
-                    - "cch" = continuously compounded rate of change
-                    - "cca" = continuously compounded annual rate of change
-                    - "log" = natural log
+            units: Units to return the series values in. Options include:
+
+                - "lin" = levels (no unit transformation)
+                - "chg" = change
+                - "ch1" = change from a year ago
+                - "pch" = percent change
+                - "pc1" = percent change from a year ago
+                - "pca" = compounded annual rate of change
+                - "cch" = continuously compounded rate of change
+                - "cca" = continuously compounded annual rate of change
+                - "log" = natural log
+
             frequency: An optional parameter that indicates a lower frequency to
-                aggregate values to.
-                Frequency options without period descriptions include:
+                aggregate values to. Frequency options without period descriptions
+                include:
+
                     - "d" = daily
                     - "w" = weekly
                     - "bw" = biweekly
@@ -132,7 +136,9 @@ class Observations(_api.API):
                     - "q" = quarterly
                     - "sa" = semiannual
                     - "a" = annual
+
                 Frequency options with period descriptions include:
+
                     - "wef" = weekly, ending Friday
                     - "weth" = weekly, ending Thursday
                     - "wetu" = weekly, ending Wednesday
@@ -141,23 +147,27 @@ class Observations(_api.API):
                     - "wesa" = weekly, ending Saturday
                     - "bwew" = weekly, ending Wednesday
                     - "bwem" = weekly, Monday
+
             aggregation_method: A key that indicates the aggregation method used
-                for frequency aggregation.
-                Options include:
+                for frequency aggregation. Options include:
+
                     - "avg" = average
                     - "sum" = sum
                     - "eop" = end of period
+
             output_type: An integer indicating the type of observations to include.
                 Options include:
+
                     - 1 = observations by realtime period
                     - 2 = all observations by vintage dates
                     - 3 = new and revised observations only
                     - 4 = initial release observations only
+
             vintage_dates: Vintage dates used to download data as it existed on these
                 specified dates in history. Vintage dates can be specified instead of
                 realtime periods.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing economic data series observations/values according to
@@ -204,6 +214,7 @@ class Release(_api.API):
         """Get the release for an economic data series.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/series_release.html
 
         Args:
@@ -212,8 +223,8 @@ class Release(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data on a release for an economic data series.
@@ -255,6 +266,7 @@ class SearchRelatedTags(_api.API):
         """Get the related tags for a series search.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/series_search_tags.html
 
         Args:
@@ -265,29 +277,32 @@ class SearchRelatedTags(_api.API):
                 to their publication date.
             tag_names: Tag names to only include in the response.
             exclude_tag_names: Tag names that series match none of.
-            tag_group_id: A tag group ID to filter tags by type.
-                Options include:
-                    - "freq" = frequency
-                    - "gen" = general or concept
-                    - "geo" = geography
-                    - "geot" = geography type
-                    - "rls" = release
-                    - "seas" = seasonal adjustment
-                    - "src" = source
+            tag_group_id: A tag group ID to filter tags by type. Options include:
+
+                - "freq" = frequency
+                - "gen" = general or concept
+                - "geo" = geography
+                - "geot" = geography type
+                - "rls" = release
+                - "seas" = seasonal adjustment
+                - "src" = source
+
             tag_search_text: The words to find matching tags with.
             limit: Maximum number of results to return.
             offset: Result start offset.
             order_by: Order results by values of the specified attribute.
                 Options include:
+
                     - "series_count"
                     - "popularity"
                     - "created"
                     - "name"
                     - "group_id"
+
             sort_order: Sort results in ascending ("asc") or descending ("desc")
                 order for the attribute values specified by `order_by`.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing related FRED tags for a series search.
@@ -338,6 +353,7 @@ class SearchTags(_api.API):
         """Get the tags for a series search.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/series_search_tags.html
 
         Args:
@@ -347,29 +363,32 @@ class SearchTags(_api.API):
             realtime_end: End date for fetching results according
                 to their publication date.
             tag_names: Tag names to only include in the response.
-            tag_group_id: A tag group ID to filter tags by type.
-                Options include:
-                    - "freq" = frequency
-                    - "gen" = general or concept
-                    - "geo" = geography
-                    - "geot" = geography type
-                    - "rls" = release
-                    - "seas" = seasonal adjustment
-                    - "src" = source
+            tag_group_id: A tag group ID to filter tags by type. Options include:
+
+                - "freq" = frequency
+                - "gen" = general or concept
+                - "geo" = geography
+                - "geot" = geography type
+                - "rls" = release
+                - "seas" = seasonal adjustment
+                - "src" = source
+
             tag_search_text: The words to find matching tags with.
             limit: Maximum number of results to return.
             offset: Result start offset.
             order_by: Order results by values of the specified attribute.
                 Options include:
+
                     - "series_count"
                     - "popularity"
                     - "created"
                     - "name"
                     - "group_id"
+
             sort_order: Sort results in ascending ("asc") or descending ("desc")
                 order for the attribute values specified by `order_by`.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing FRED tags for a series search.
@@ -429,15 +448,17 @@ class Search(_api.API):
         """Get economic data series that match search text.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/series_search.html
 
         Args:
             search_text: The words to match against economic data series.
-            search_type: Determines the type of search to perform.
-                Options include:
-                    - "full_text" = search series attributes, units, frequency,
-                        and tags by parsing words into stems.
-                    - "series_id" = performs a substring search on series IDs.
+            search_type: Determines the type of search to perform. Options include:
+
+                - "full_text" = search series attributes, units, frequency,
+                    and tags by parsing words into stems.
+                - "series_id" = performs a substring search on series IDs.
+
             realtime_start: Start date for fetching results
                 according to their publication date.
             realtime_end: End date for fetching results according
@@ -446,6 +467,7 @@ class Search(_api.API):
             offset: Result start offset.
             order_by: Order results by values of the specified attribute.
                 Options include:
+
                     - "search_rank"
                     - "series_id"
                     - "title"
@@ -459,19 +481,21 @@ class Search(_api.API):
                     - "observation_end"
                     - "popularity"
                     - "group_popularity"
+
             sort_order: Sort results in ascending ("asc") or descending ("desc")
                 order for the attribute values specified by `order_by`.
-            filter_variable: The attribute to filter results by.
-                Options include:
-                    - "frequency"
-                    - "units"
-                    - "seasonal_adjustment"
+            filter_variable: The attribute to filter results by. Options include:
+
+                - "frequency"
+                - "units"
+                - "seasonal_adjustment"
+
             filter_value: The value of the `filter_variable` attribute to filter
                 results by.
             tag_names: List of tag names that series match all of.
             exclude_tag_names: List of tag names that series match none of.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data on series matching the search.
@@ -516,6 +540,7 @@ class Tags(_api.API):
         """Get the FRED tags for a series.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/series_tags.html
 
         Args:
@@ -526,15 +551,17 @@ class Tags(_api.API):
                 to their publication date.
             order_by: Order results by values of the specified attribute.
                 Options include:
+
                     - "series_count"
                     - "popularity"
                     - "created"
                     - "name"
                     - "group_id"
+
             sort_order: Sort results in ascending ("asc") or descending ("desc")
                 order for the attribute values specified by `order_by`.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing data on FRED tags for series.
@@ -577,6 +604,7 @@ class Updates(_api.API):
         weeks.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/series_updates.html
 
         Args:
@@ -587,17 +615,18 @@ class Updates(_api.API):
             limit: Maximum number of results to return.
             offset: Result start offset.
             filter_value: Limit results by geographic type of economic data
-                series.
-                Options include:
+                series. Options include:
+
                     - "macro" = limit results to macroeconomic data series
                     - "regional" = limit results to series for parts of the US
                     - "all" = does not filter results
+
             start_time: Start time for limiting results for a time range.
                 Can filter down to minutes. Expects format "YYYMMDDHhmm".
             end_time: Start time for limiting results for a time range.
                 Can filter down to minutes. Expects format "YYYMMDDHhmm".
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing info on recently updated economic
@@ -643,6 +672,7 @@ class VintageDates(_api.API):
         when the data for the series did not change.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/series_vintagedates.html
 
         Args:
@@ -717,6 +747,7 @@ class Series(_api.API):
         """Get an economic data series.
 
         See the related FRED API documentation at:
+
             https://fred.stlouisfed.org/docs/api/fred/series_updates.html
 
         Args:
@@ -725,8 +756,8 @@ class Series(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
-            api_key: Your FRED API key. Pulled from the `FRED_API_KEY`
-                environment variable if left `None`.
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
 
         Returns:
             A dataframe containing info on an economic data series.

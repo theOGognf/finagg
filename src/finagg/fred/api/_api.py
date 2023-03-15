@@ -21,7 +21,7 @@ session = requests_cache.CachedSession(
 class API(ABC):
     """Abstract FRED API."""
 
-    #: Request API URL endpoint after the base URL.
+    #: Request API URL.
     url: ClassVar[str]
 
     @classmethod
