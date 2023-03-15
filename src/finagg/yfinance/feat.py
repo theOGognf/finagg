@@ -284,19 +284,25 @@ class RefinedDaily(feat.Features):
         return set(tickers)
 
     @classmethod
-    def install(cls, *, processes: int = mp.cpu_count() - 1) -> int:
+    def install(
+        cls, tickers: None | set[str] = None, *, processes: int = mp.cpu_count() - 1
+    ) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from the raw SQL table.
 
         Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
             processes: Number of background processes to use for installation.
 
         Returns:
             Number of rows written to the feature's refined SQL table.
 
         """
-        sql.daily.drop(backend.engine, checkfirst=True)
-        sql.daily.create(backend.engine)
+        tickers = tickers or indices.api.get_ticker_set()
+        if tickers:
+            sql.daily.drop(backend.engine, checkfirst=True)
+            sql.daily.create(backend.engine)
 
         tickers = cls.get_candidate_ticker_set()
         total_rows = 0
@@ -379,7 +385,8 @@ class RawPrices:
 
     @classmethod
     def install(
-        cls, tickers: None | set[str] = None, *, engine: Engine = backend.engine
+        cls,
+        tickers: None | set[str] = None,
     ) -> int:
         """Drop the feature's table, create a new one, and insert data
         as-is using Yahoo! Finance.
@@ -387,7 +394,6 @@ class RawPrices:
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.indices.api.get_ticker_set`.
-            engine: Feature store database engine.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -410,7 +416,7 @@ class RawPrices:
                     df = api.get(ticker, interval="1d", period="max")
                     rowcount = len(df.index)
                     if rowcount:
-                        cls.to_raw(df, engine=engine)
+                        cls.to_raw(df, engine=backend.engine)
                         total_rows += rowcount
                         logger.debug(f"{rowcount} rows inserted for {ticker}")
                     else:
@@ -503,13 +509,13 @@ class RawPrices:
 
 
 daily = RefinedDaily()
-"""The most popular way for accessing :class:`RefinedDaily`.
+"""The most popular way for accessing the :class:`RefinedDaily`.
 
 :meta hide-value:
 """
 
 prices = RawPrices()
-"""The most popular way for accessing :class:`RawPrices`.
+"""The most popular way for accessing the :class:`RawPrices`.
 
 :meta hide-value:
 """

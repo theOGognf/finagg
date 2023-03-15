@@ -552,7 +552,7 @@ class RefinedFundamental(feat.Features):
 
     industry = RefinedIndustryFundamental()
     """Fundamental features aggregated for an entire industry.
-    The most popular way for accessing :class:`RefinedIndustryFundamental`
+    The most popular way for accessing the :class:`RefinedIndustryFundamental`
     feature set.
 
     :meta hide-value:
@@ -560,7 +560,7 @@ class RefinedFundamental(feat.Features):
 
     normalized = RefinedNormalizedFundamental()
     """A company's fundamental features normalized by its industry.
-    The most popular way for accessing :class:`RefinedNormalizedFundamental`
+    The most popular way for accessing the :class:`RefinedNormalizedFundamental`
     feature set.
 
     :meta hide-value:
@@ -958,7 +958,7 @@ class RefinedFundamental(feat.Features):
 
 
 fundam = RefinedFundamental()
-"""The most popular way for accessing :class:`RefinedFundamental`.
+"""The most popular way for accessing the :class:`RefinedFundamental`.
 
 :meta hide-value:
 """

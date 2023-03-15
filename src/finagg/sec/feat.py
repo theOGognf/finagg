@@ -654,7 +654,7 @@ class RefinedQuarterly(feat.Features):
 
     industry = RefinedIndustryQuarterly()
     """Quarterly features aggregated for an entire industry.
-    The most popular way for accessing :class:`RefinedIndustryQuarterly`
+    The most popular way for accessing the :class:`RefinedIndustryQuarterly`
     feature set.
 
     :meta hide-value:
@@ -662,7 +662,7 @@ class RefinedQuarterly(feat.Features):
 
     normalized = RefinedNormalizedQuarterly()
     """A company's quarterly features normalized by its industry.
-    The most popular way for accessing :class:`RefinedNormalizedQuarterly`
+    The most popular way for accessing the :class:`RefinedNormalizedQuarterly`
     feature set.
 
     :meta hide-value:
@@ -1069,7 +1069,8 @@ class RawSubmissions:
 
     @classmethod
     def install(
-        cls, tickers: None | set[str] = None, /, *, engine: Engine = backend.engine
+        cls,
+        tickers: None | set[str] = None,
     ) -> int:
         """Drop the feature's table, create a new one, and insert data
         as-is from the SEC API.
@@ -1077,7 +1078,6 @@ class RawSubmissions:
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.indices.api.get_ticker_set`.
-            engine: Feature store database engine.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -1101,7 +1101,7 @@ class RawSubmissions:
                     df = pd.DataFrame(metadata)
                     rowcount = len(df.index)
                     if rowcount:
-                        cls.to_raw(df, engine=engine)
+                        cls.to_raw(df, engine=backend.engine)
                         total_rows += rowcount
                         logger.debug(f"{rowcount} rows inserted for {ticker}")
                     else:
@@ -1207,7 +1207,8 @@ class RawTags:
 
     @classmethod
     def install(
-        cls, tickers: None | set[str] = None, *, engine: Engine = backend.engine
+        cls,
+        tickers: None | set[str] = None,
     ) -> int:
         """Drop the feature's table, create a new one, and insert data
         as-is from the SEC API.
@@ -1215,7 +1216,6 @@ class RawTags:
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.indices.api.get_ticker_set`.
-            engine: Feature store database engine.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -1248,7 +1248,7 @@ class RawTags:
                         df = get_unique_filings(df, form="10-Q", units=units)
                         rowcount = len(df.index)
                         if rowcount:
-                            cls.to_raw(df, engine=engine)
+                            cls.to_raw(df, engine=backend.engine)
                             total_rows += rowcount
                             logger.debug(
                                 f"{rowcount} rows inserted for {ticker} tag {tag}"
@@ -1352,19 +1352,19 @@ class RawTags:
 
 
 quarterly = RefinedQuarterly()
-"""The most popular way for accessing :class:`RefinedQuarterly`.
+"""The most popular way for accessing the :class:`RefinedQuarterly`.
 
 :meta hide-value:
 """
 
 submissions = RawSubmissions()
-"""The most popular way for accessing :class:`RawSubmissions`.
+"""The most popular way for accessing the :class:`RawSubmissions`.
 
 :meta hide-value:
 """
 
 tags = RawTags()
-"""The most popular way for accessing :class:`RawTags`.
+"""The most popular way for accessing the :class:`RawTags`.
 
 :meta hide-value:
 """
