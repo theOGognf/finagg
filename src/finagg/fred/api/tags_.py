@@ -12,6 +12,13 @@ from . import _api
 
 
 class RelatedTags(_api.API):
+    """Get FRED tags related to other FRED tags.
+
+    The module variable :data:`related_tags` is an instance of this API
+    implementation and is the most popular interface for calling
+    this API.
+
+    """
 
     url = "https://api.stlouisfed.org/fred/related_tags"
 
@@ -73,6 +80,15 @@ class RelatedTags(_api.API):
         Returns:
             A dataframe containing data for related FRED tags.
 
+        Examples:
+            >>> finagg.fred.api.related_tags.get(tag_names="bea", limit=5)  # doctest: +NORMALIZE_WHITESPACE
+                                            name group_id                     notes                 created  popularity  series_count
+            0  public domain: citation requested       cc                      None  2018-12-17 23:33:13-06          99         78680
+            1                                usa      geo  United States of America  2012-02-27 10:18:19-06         100         78434
+            2                                nsa     seas   Not Seasonally Adjusted  2012-02-27 10:18:19-06          99         67720
+            3                             annual     freq                            2012-02-27 10:18:19-06          88         66478
+            4                                gdp      gen    Gross Domestic Product  2012-02-27 10:18:19-06          81         60040
+
         """
         data = _api.get(
             cls.url,
@@ -93,6 +109,13 @@ class RelatedTags(_api.API):
 
 
 class Series(_api.API):
+    """Get FRED series related to FRED tags.
+
+    The class variable :data:`finagg.fred.api.tags.series` is an instance
+    of this API implementation and is the most popular interface for calling
+    this API.
+
+    """
 
     url = "https://api.stlouisfed.org/fred/tags/series"
 
@@ -148,6 +171,15 @@ class Series(_api.API):
         Returns:
             A dataframe containing series data for related tags.
 
+        Examples:
+            >>> finagg.fred.api.tags.series.get(tag_names="bea", limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                            id realtime_start realtime_end                                             title ...
+            0  A001RD3A086NBEA     2023-03-15   2023-03-15  Gross national product (implicit price deflator) ...
+            1  A001RG3A086NBEA     2023-03-15   2023-03-15   Gross national product (chain-type price index) ...
+            2  A001RI1A225NBEA     2023-03-15   2023-03-15   Gross National Product: Implicit Price Deflator ...
+            3  A001RI1Q225SBEA     2023-03-15   2023-03-15   Gross National Product: Implicit Price Deflator ...
+            4  A001RL1A225NBEA     2023-03-15   2023-03-15                       Real Gross National Product ...
+
         """
         data = _api.get(
             cls.url,
@@ -166,10 +198,20 @@ class Series(_api.API):
 
 
 class Tags(_api.API):
-    """Get FRED tags."""
+    """Get FRED tags.
 
-    #: "tags/series" FRED API. Get the series for a FRED tag.
+    The module variable :data:`tags` is an instance of this API
+    implementation and is the most popular interface for calling
+    this API.
+
+    """
+
     series = Series()
+    """"tags/series" FRED API. Get the series for a FRED tag.
+    The most popular way for accessing the :class:`Series` API.
+
+    :meta hide-value:
+    """
 
     url = "https://api.stlouisfed.org/fred/tags"
 
@@ -195,7 +237,6 @@ class Tags(_api.API):
             https://fred.stlouisfed.org/docs/api/fred/tags.html
 
         Args:
-            release_id: The ID for a release.
             realtime_start: Start date for fetching results
                 according to their publication date.
             realtime_end: End date for fetching results according
@@ -231,6 +272,15 @@ class Tags(_api.API):
         Returns:
             A dataframe containing data for all FRED economic data tags.
 
+        Examples:
+            >>> finagg.fred.api.tags.get(tag_group_id="src", limit=5)  # doctest: +NORMALIZE_WHITESPACE
+                      name group_id                        notes                 created  popularity  series_count
+            0       census      src                       Census  2012-02-27 10:18:19-06          79        237692
+            1          bls      src   Bureau of Labor Statistics  2012-02-27 10:18:19-06          89        175376
+            2  realtor.com      src                               2020-03-24 11:15:04-05          66         90632
+            3          bea      src  Bureau of Economic Analysis  2012-02-27 10:18:19-06          78         78842
+            4      frb stl      src                St. Louis Fed  2012-02-27 10:18:19-06          68         78442
+
         """
         data = _api.get(
             cls.url,
@@ -249,6 +299,14 @@ class Tags(_api.API):
         return pd.DataFrame(data)
 
 
-#: Public-facing "fred/tags" and "fred/related_tags" APIs.
 tags = Tags()
+"""The most popular way for accessing :class:`Tags`.
+
+:meta hide-value:
+"""
+
 related_tags = RelatedTags()
+"""The most popular way for accessing :class:`RelatedTags`.
+
+:meta hide-value:
+"""

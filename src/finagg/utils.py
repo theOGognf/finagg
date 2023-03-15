@@ -33,7 +33,7 @@ def CamelCase(s: str, /) -> str:
 
 
 def join_with(s: str | list[str], /, delim: str) -> str:
-    """Join a sequence of strings with the delimiter `delim`.
+    """Join a sequence of strings with the delimiter ``delim``.
 
     Examples:
         >>> finagg.utils.join_with(["foo", "bar"], ",") == "foo,bar"
@@ -127,7 +127,7 @@ def snake_case(s: str, /) -> str:
 
 today = datetime.today().strftime("%Y-%m-%d")
 """Today's date. Used by a number of submodules as the default end date
-when gettings data from APIs or SQL tables.
+when getting data from APIs or SQL tables.
 
 :meta hide-value:
 """

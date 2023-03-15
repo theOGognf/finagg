@@ -20,7 +20,6 @@ See the official `FRED API docs`_ for more info on the FRED API.
 
 """
 
-from ._api import get
 from .category_ import category
 from .release_ import release, releases
 from .series_ import series

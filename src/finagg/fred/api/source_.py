@@ -12,6 +12,13 @@ from . import _api
 
 
 class Releases(_api.API):
+    """Get all of a source's releases of economic data.
+
+    The class variable :data:`finagg.fred.api.source.releases` is an instance
+    of this API implementation and is the most popular interface for calling
+    this API.
+
+    """
 
     url = "https://api.stlouisfed.org/fred/source/releases"
 
@@ -60,6 +67,15 @@ class Releases(_api.API):
             A dataframe containing data on all releases for a
             source of economic data.
 
+        Examples:
+            >>> finagg.fred.api.source.releases.get(1, limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+               id realtime_start realtime_end                                               name  press_release                                         link
+            0  13     2023-03-15   2023-03-15  G.17 Industrial Production and Capacity Utiliz...           True  http://www.federalreserve.gov/releases/g17/
+            1  14     2023-03-15   2023-03-15                               G.19 Consumer Credit           True  http://www.federalreserve.gov/releases/g19/
+            2  15     2023-03-15   2023-03-15                         G.5 Foreign Exchange Rates           True   http://www.federalreserve.gov/releases/g5/
+            3  17     2023-03-15   2023-03-15                        H.10 Foreign Exchange Rates           True  http://www.federalreserve.gov/releases/h10/
+            4  18     2023-03-15   2023-03-15                       H.15 Selected Interest Rates           True  http://www.federalreserve.gov/releases/h15/
+
         """
         data = _api.get(
             cls.url,
@@ -77,10 +93,20 @@ class Releases(_api.API):
 
 
 class Source(_api.API):
-    """Get a source of economic data."""
+    """Get a source of economic data.
 
-    #: "source/releases" FRED API. Get the releases for a source of economic data.
+    The module variable :data:`finagg.fred.api.source` is an instance
+    of this API implementation and is the most popular interface for calling
+    this API.
+
+    """
+
     releases = Releases()
+    """"source/releases" FRED API. Get the releases for a source of economic
+    data. The most popular way for accessing the :class:`Releases` API.
+
+    :meta hide-value:
+    """
 
     url = "https://api.stlouisfed.org/fred/source"
 
@@ -112,6 +138,11 @@ class Source(_api.API):
         Returns:
             A dataframe containing high-level info on an economic source.
 
+        Examples:
+            >>> finagg.fred.api.source.get(1)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+               id realtime_start realtime_end                                               name                            link
+            0   1     2023-03-15   2023-03-15  Board of Governors of the Federal Reserve Syst...  http://www.federalreserve.gov/
+
         """
         data = _api.get(
             cls.url,
@@ -125,6 +156,13 @@ class Source(_api.API):
 
 
 class Sources(_api.API):
+    """Get all FRED sources of economic data.
+
+    The module variable :data:`finagg.fred.api.sources` is an instance
+    of this API implementation and is the most popular interface for calling
+    this API.
+
+    """
 
     url = "https://api.stlouisfed.org/fred/sources"
 
@@ -169,6 +207,15 @@ class Sources(_api.API):
             A dataframe containing data on all sources of economic
             data.
 
+        Examples:
+            >>> finagg.fred.api.sources.get(limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+               id realtime_start realtime_end                                               name                              link
+            0   1     2023-03-15   2023-03-15  Board of Governors of the Federal Reserve Syst...    http://www.federalreserve.gov/
+            1   3     2023-03-15   2023-03-15               Federal Reserve Bank of Philadelphia  https://www.philadelphiafed.org/
+            2   4     2023-03-15   2023-03-15                  Federal Reserve Bank of St. Louis        http://www.stlouisfed.org/
+            3   6     2023-03-15   2023-03-15  Federal Financial Institutions Examination Cou...             http://www.ffiec.gov/
+            4  11     2023-03-15   2023-03-15                                Dow Jones & Company           http://www.dowjones.com
+
         """
         data = _api.get(
             cls.url,
@@ -184,6 +231,14 @@ class Sources(_api.API):
         return pd.DataFrame(data)
 
 
-#: Public-facing "fred/source" and "fred/sources" API.
 source = Source()
+"""The most popular way for accessing :class:`Source`.
+
+:meta hide-value:
+"""
+
 sources = Sources()
+"""The most popular way for accessing :class:`Sources`.
+
+:meta hide-value:
+"""
