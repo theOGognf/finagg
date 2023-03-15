@@ -267,7 +267,9 @@ class RefinedNormalizedEconomic:
         engine = engine or backend.engine
         df = df.reset_index("date")
         if set(df.columns) < set(RefinedEconomic.columns):
-            raise ValueError(f"Dataframe must have columns {RefinedEconomic.columns}")
+            raise ValueError(
+                f"Dataframe must have columns {RefinedEconomic.columns} but got {df.columns}"
+            )
         df = df.melt("date", var_name="name", value_name="value")
         with engine.begin() as conn:
             conn.execute(sql.normalized_economic.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
@@ -573,7 +575,9 @@ class RefinedEconomic(feat.Features):
         engine = engine or backend.engine
         df = df.reset_index("date")
         if set(df.columns) < set(cls.columns):
-            raise ValueError(f"Dataframe must have columns {cls.columns}")
+            raise ValueError(
+                f"Dataframe must have columns {cls.columns} but got {df.columns}"
+            )
         df = df.melt("date", var_name="name", value_name="value")
         with engine.begin() as conn:
             conn.execute(sql.economic.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
@@ -588,16 +592,6 @@ class RawSeries:
     calling feature methods.
 
     """
-
-    #: Columns within this dataset's SQL table. These columns are required to
-    #: write new rows to the SQL table.
-    columns = [
-        "series_id",
-        "realtime_start",
-        "realtime_end",
-        "date",
-        "value",
-    ]
 
     @classmethod
     def from_raw(
@@ -707,14 +701,8 @@ class RawSeries:
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
-        if set(df.columns) != set(cls.columns):
-            raise ValueError(f"Dataframe must have columns {cls.columns}")
         with engine.begin() as conn:
             conn.execute(sql.series.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df)

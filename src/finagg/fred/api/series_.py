@@ -10,17 +10,6 @@ See the official FRED API docs for more info:
 
     https://fred.stlouisfed.org/docs/api/fred/
 
-Examples:
-    Get the latest release of an economic data series.
-    >>> import finagg.fred.api as fred
-    >>> fred.series.get("GDP")
-
-    Get all initial releases of an economic data series.
-    >>> fred.series.get("GDP", realtime_start=0, realtime_end=-1, output_type=4)
-
-    Search for economic data series.
-    >>> fred.series.search.get("Unemployment rate")
-
 """
 
 import pandas as pd

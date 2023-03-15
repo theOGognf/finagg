@@ -4,37 +4,37 @@ CLI
 **finagg**'s command-line interface (CLI). A selection of tools for aggregating
 popular data and features from each of the supported APIs.
 
-General Commands
-----------------
+General
+-------
 
 .. program-output:: finagg install --help
 
-BEA Commands
-------------
+BEA
+---
 
 .. program-output:: finagg bea install --help
 
-FRED Commands
--------------
+FRED
+----
 
 .. program-output:: finagg fred install --help
 
-Popular Index Commands
-----------------------
+Popular Indices
+---------------
 
 .. program-output:: finagg indices install --help
 
-SEC Commands
-------------
+SEC
+---
 
 .. program-output:: finagg sec install --help
 
-Yahoo! Finance Commands
------------------------
+Yahoo! Finance
+--------------
 
 .. program-output:: finagg yfinance install --help
 
-Fundamental Feature Commands
-----------------------------
+Fundamental Features
+--------------------
 
 .. program-output:: finagg fundam install --help

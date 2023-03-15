@@ -114,7 +114,7 @@ def install(
         all_refined = set(refined)
 
     if "daily" in all_refined:
-        total_rows += _feat.daily.install(processes=processes)
+        total_rows += _feat.daily.install(tickers=tickers, processes=processes)
 
     if all_ or all_refined or raw:
         logger.info(f"{total_rows} total rows inserted for {__package__}")

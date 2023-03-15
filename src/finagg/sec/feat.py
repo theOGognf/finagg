@@ -619,7 +619,9 @@ class RefinedNormalizedQuarterly:
         engine = engine or backend.engine
         df = df.reset_index(["fy", "fp", "filed"])
         if set(df.columns) < set(RefinedQuarterly.columns):
-            raise ValueError(f"Dataframe must have columns {RefinedQuarterly.columns}")
+            raise ValueError(
+                f"Dataframe must have columns {RefinedQuarterly.columns} but got {df.columns}"
+            )
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker)
         with engine.begin() as conn:
@@ -1072,7 +1074,9 @@ class RefinedQuarterly(feat.Features):
         engine = engine or backend.engine
         df = df.reset_index(["fy", "fp", "filed"])
         if set(df.columns) < set(cls.columns):
-            raise ValueError(f"Dataframe must have columns {cls.columns}")
+            raise ValueError(
+                f"Dataframe must have columns {cls.columns} but got {df.columns}"
+            )
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker)
         with engine.begin() as conn:
@@ -1088,22 +1092,6 @@ class RawSubmissions:
     calling feature methods.
 
     """
-
-    #: Columns within this dataset's SQL table. These columns are required to
-    #: write new rows to the SQL table.
-    columns = [
-        "cik",
-        "ticker",
-        "entity_type",
-        "sic",
-        "sic_description",
-        "name",
-        "exchanges",
-        "ein",
-        "description",
-        "category",
-        "fiscal_year_end",
-    ]
 
     @classmethod
     def install(
@@ -1136,7 +1124,7 @@ class RawSubmissions:
             for ticker in tickers:
                 try:
                     metadata = api.submissions.get(ticker=ticker)["metadata"]
-                    df = pd.DataFrame(metadata)
+                    df = pd.DataFrame(metadata, index=[0])
                     rowcount = len(df.index)
                     if rowcount:
                         cls.to_raw(df, engine=backend.engine)
@@ -1145,7 +1133,7 @@ class RawSubmissions:
                     else:
                         logger.debug(f"Skipping {ticker} due to missing submissions")
                 except Exception as e:
-                    logger.debug(f"Skipping {ticker} due to {e}")
+                    logger.debug(f"Skipping {ticker}", exc_info=e)
                 pbar.update()
         return total_rows
 
@@ -1204,14 +1192,8 @@ class RawSubmissions:
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
-        if set(df.columns) != set(cls.columns):
-            raise ValueError(f"Dataframe must have columns {cls.columns}")
         with engine.begin() as conn:
             conn.execute(sql.submissions.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df)
@@ -1225,27 +1207,6 @@ class RawTags:
     calling feature methods.
 
     """
-
-    #: Columns within this dataset's SQL table. These columns are required to
-    #: write new rows to the SQL table.
-    columns = [
-        "cik",
-        "accn",
-        "taxonomy",
-        "tag",
-        "form",
-        "units",
-        "fy",
-        "fp",
-        "start",
-        "end",
-        "filed",
-        "frame",
-        "label",
-        "description",
-        "entity",
-        "value",
-    ]
 
     @classmethod
     def install(
@@ -1298,7 +1259,7 @@ class RawTags:
                         else:
                             logger.debug(f"Skipping {ticker} due to missing filings")
                     except Exception as e:
-                        logger.debug(f"Skipping {ticker} due to {e}")
+                        logger.debug(f"Skipping {ticker}", exc_info=e)
                 pbar.update()
         return total_rows
 
@@ -1388,14 +1349,8 @@ class RawTags:
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
-        if set(df.columns) != set(cls.columns):
-            raise ValueError(f"Dataframe must have columns {cls.columns}")
         with engine.begin() as conn:
             conn.execute(sql.tags.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df)

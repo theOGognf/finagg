@@ -474,10 +474,10 @@ class Tickers(_API):
         return df.rename(columns={"cik_str": "cik"})
 
 
-#: Mapping of SEC CIK strings to (uppercase) tickers.
+# Mapping of SEC CIK strings to (uppercase) tickers.
 _cik_to_tickers: dict[str, str] = {}
 
-#: Mapping of (uppercase) tickers to SEC CIK strings.
+# Mapping of (uppercase) tickers to SEC CIK strings.
 _tickers_to_cik: dict[str, str] = {}
 
 company_concept = CompanyConcept()

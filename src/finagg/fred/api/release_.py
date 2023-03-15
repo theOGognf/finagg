@@ -4,11 +4,6 @@ See the official FRED API docs for more info:
 
     https://fred.stlouisfed.org/docs/api/fred/
 
-Examples:
-    Get all release dates.
-    >>> import finagg.fred.api as fred
-    >>> fred.releases.dates.get()
-
 """
 
 import pandas as pd

@@ -534,7 +534,7 @@ class RefinedNormalizedFundamental:
         df = df.reset_index("date")
         if set(df.columns) < set(RefinedFundamental.columns):
             raise ValueError(
-                f"Dataframe must have columns {RefinedFundamental.columns}"
+                f"Dataframe must have columns {RefinedFundamental.columns} but got {df.columns}"
             )
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
@@ -985,7 +985,9 @@ class RefinedFundamental(feat.Features):
         engine = engine or backend.engine
         df = df.reset_index("date")
         if set(df.columns) < set(cls.columns):
-            raise ValueError(f"Dataframe must have columns {cls.columns}")
+            raise ValueError(
+                f"Dataframe must have columns {cls.columns} but got {df.columns}"
+            )
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:
