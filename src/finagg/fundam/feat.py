@@ -70,9 +70,9 @@ class RefinedIndustryFundamental:
         ticker: None | str = None,
         code: None | str = None,
         level: Literal[2, 3, 4] = 2,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get fundamental features from the feature store,
         aggregated for an entire industry.
@@ -95,9 +95,12 @@ class RefinedIndustryFundamental:
                     - 3 = industry group (e.g., office furnitures)
                     - 4 = industry (e.g., wood office furniture)
 
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Raw data and feature data SQL database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Fundamental data dataframe with each feature as a
@@ -128,6 +131,9 @@ class RefinedIndustryFundamental:
             2009-10-29                       0.0              0.0               0.0 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             if ticker:
                 (sic,) = conn.execute(
@@ -199,9 +205,9 @@ class RefinedNormalizedFundamental:
         /,
         *,
         level: Literal[2, 3, 4] = 2,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features from other feature SQL tables.
 
@@ -215,9 +221,12 @@ class RefinedNormalizedFundamental:
                     - 3 = industry group (e.g., office furnitures)
                     - 4 = industry (e.g., wood office furniture)
 
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Relative fundamental data dataframe with each feature as a
@@ -234,6 +243,9 @@ class RefinedNormalizedFundamental:
             2010-01-29                    0.0000          -0.5940            0.4365 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         company_df = RefinedFundamental.from_refined(
             ticker, start=start, end=end, engine=engine
         )
@@ -260,9 +272,9 @@ class RefinedNormalizedFundamental:
         ticker: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features from the features SQL table.
 
@@ -272,9 +284,12 @@ class RefinedNormalizedFundamental:
 
         Args:
             ticker: Company ticker.
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Fundamental data dataframe with each feature as a
@@ -295,6 +310,9 @@ class RefinedNormalizedFundamental:
             2010-01-29                    0.0000          -0.5940            0.4365 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -493,7 +511,7 @@ class RefinedNormalizedFundamental:
         df: pd.DataFrame,
         /,
         *,
-        engine: Engine = backend.engine,
+        engine: None | Engine = None,
     ) -> int:
         """Write the dataframe to the feature store for ``ticker``.
 
@@ -501,7 +519,8 @@ class RefinedNormalizedFundamental:
             ticker: Company ticker.
             df: Dataframe to store completely as rows in a local SQL
                 table.
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the SQL table.
@@ -511,6 +530,7 @@ class RefinedNormalizedFundamental:
                 feature's columns.
 
         """
+        engine = engine or backend.engine
         df = df.reset_index("date")
         if set(df.columns) < set(RefinedFundamental.columns):
             raise ValueError(
@@ -620,17 +640,17 @@ class RefinedFundamental(feat.Features):
         ticker: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
+        start: None | str = None,
+        end: None | str = None,
     ) -> pd.DataFrame:
         """Get features directly from APIs.
 
         Args:
             ticker: Company ticker.
-            start: The start date of the observation period.
-                Defaults to the first recorded date.
-            end: The end date of the observation period.
-                Defaults to the last recorded date.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
 
         Returns:
             Combined quarterly and daily feature dataframe.
@@ -647,6 +667,8 @@ class RefinedFundamental(feat.Features):
             2010-01-29  5.8381          -0.0188 ...             2.2984
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
         quarterly = sec.feat.quarterly.from_api(
             ticker,
             start=start,
@@ -662,19 +684,20 @@ class RefinedFundamental(feat.Features):
         ticker: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features directly from other refined SQL tables.
 
         Args:
             ticker: Company ticker.
-            start: The start date of the observation period.
-                Defaults to the first recorded date.
-            end: The end date of the observation period.
-                Defaults to the last recorded date.
-            engine: Raw data and feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Combined quarterly and daily feature dataframe.
@@ -691,6 +714,9 @@ class RefinedFundamental(feat.Features):
             2010-01-29  5.8381          -0.0188 ...             2.2984
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         quarterly = sec.feat.quarterly.from_refined(
             ticker,
             start=start,
@@ -712,19 +738,20 @@ class RefinedFundamental(feat.Features):
         ticker: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features directly from other raw SQL tables.
 
         Args:
             ticker: Company ticker.
-            start: The start date of the observation period.
-                Defaults to the first recorded date.
-            end: The end date of the observation period.
-                Defaults to the last recorded date.
-            engine: Raw data and feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Combined quarterly and daily feature dataframe.
@@ -741,6 +768,9 @@ class RefinedFundamental(feat.Features):
             2010-01-29  5.8381          -0.0188 ...             2.2984
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         quarterly = sec.feat.quarterly.from_raw(
             ticker,
             start=start,
@@ -762,9 +792,9 @@ class RefinedFundamental(feat.Features):
         ticker: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -774,11 +804,12 @@ class RefinedFundamental(feat.Features):
 
         Args:
             ticker: Company ticker.
-            start: The start date of the observation period.
-                Defaults to the first recorded date.
-            end: The end date of the observation period.
-                Defaults to the last recorded date.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Combined quarterly and daily feature dataframe.
@@ -799,6 +830,9 @@ class RefinedFundamental(feat.Features):
             2010-01-29  5.8381          -0.0188 ...             2.2984
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -929,7 +963,7 @@ class RefinedFundamental(feat.Features):
         df: pd.DataFrame,
         /,
         *,
-        engine: Engine = backend.engine,
+        engine: None | Engine = None,
     ) -> int:
         """Write the dataframe to the feature store for ``ticker``.
 
@@ -937,7 +971,8 @@ class RefinedFundamental(feat.Features):
             ticker: Company ticker.
             df: Dataframe to store completely as rows in a local SQL
                 table.
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the SQL table.
@@ -947,6 +982,7 @@ class RefinedFundamental(feat.Features):
                 feature's columns.
 
         """
+        engine = engine or backend.engine
         df = df.reset_index("date")
         if set(df.columns) < set(cls.columns):
             raise ValueError(f"Dataframe must have columns {cls.columns}")
@@ -958,7 +994,7 @@ class RefinedFundamental(feat.Features):
 
 
 fundam = RefinedFundamental()
-"""The most popular way for accessing the :class:`RefinedFundamental`.
+"""The most popular way for accessing :class:`RefinedFundamental`.
 
 :meta hide-value:
 """

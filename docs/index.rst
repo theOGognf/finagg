@@ -146,6 +146,7 @@ Getting tickers sorted according to industry-normalized SEC EDGAR features.
 
    Installation <installation>
    Configuration <configuration>
+   CLI <cli>
    API <api/modules>
    References <references>
    FAQ <faq>

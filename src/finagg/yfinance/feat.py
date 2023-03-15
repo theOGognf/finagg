@@ -82,16 +82,16 @@ class RefinedDaily(feat.Features):
 
     @classmethod
     def from_api(
-        cls, ticker: str, /, *, start: str = "1776-07-04", end: str = utils.today
+        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
         """Get daily features directly from :meth:`finagg.yfinance.api.get`.
 
         Args:
             ticker: Company ticker.
-            start: The start date of the stock history.
-                Defaults to the first recorded date.
-            end: The end date of the stock history.
-                Defaults to the last recorded date.
+            start: The start date of the stock history. Defaults to the
+                first recorded date.
+            end: The end date of the stock history. Defaults to the
+                last recorded date.
 
         Returns:
             Daily stock price dataframe sorted by date.
@@ -107,6 +107,8 @@ class RefinedDaily(feat.Features):
             1980-12-19  0.0980           0.0610           0.0607          0.0610            0.0610            -0.3379
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
         df = api.get(ticker, start=start, end=end)
         return cls._normalize(df)
 
@@ -116,19 +118,20 @@ class RefinedDaily(feat.Features):
         ticker: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get daily features from local SQL tables.
 
         Args:
             ticker: Company ticker.
-            start: The start date of the stock history.
-                Defaults to the first recorded date.
-            end: The end date of the stock history.
-                Defaults to the last recorded date.
-            engine: Raw store database engine.
+            start: The start date of the stock history. Defaults to the
+                first recorded date.
+            end: The end date of the stock history. Defaults to the
+                last recorded date.
+            engine: Raw store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Daily stock price dataframe sorted by date.
@@ -148,6 +151,9 @@ class RefinedDaily(feat.Features):
             1980-12-19  0.0980           0.0610           0.0607          0.0610            0.0610            -0.3379
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -168,9 +174,9 @@ class RefinedDaily(feat.Features):
         ticker: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -180,11 +186,12 @@ class RefinedDaily(feat.Features):
 
         Args:
             ticker: Company ticker.
-            start: The start date of the observation period.
-                Defaults to the first recorded date.
-            end: The end date of the observation period.
-                Defaults to the last recorded date.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Daily stock price dataframe sorted by date.
@@ -204,6 +211,9 @@ class RefinedDaily(feat.Features):
             1980-12-19  0.0980           0.0610           0.0607          0.0610            0.0610            -0.3379
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -333,7 +343,7 @@ class RefinedDaily(feat.Features):
         df: pd.DataFrame,
         /,
         *,
-        engine: Engine = backend.engine,
+        engine: None | Engine = None,
     ) -> int:
         """Write the given dataframe to the refined feature table
         while using the ticker ``ticker``.
@@ -341,7 +351,8 @@ class RefinedDaily(feat.Features):
         Args:
             ticker: Company ticker.
             df: Dataframe to store as rows in a local SQL table.
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the SQL table.
@@ -351,6 +362,7 @@ class RefinedDaily(feat.Features):
                 feature's columns.
 
         """
+        engine = engine or backend.engine
         df = df.reset_index("date")
         if set(df.columns) < set(cls.columns):
             raise ValueError(f"Dataframe must have columns {cls.columns}")
@@ -432,18 +444,21 @@ class RawPrices:
         ticker: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get a single company's daily stock history as-is from raw
         Yahoo! Finance SQL tables.
 
         Args:
             ticker: Company ticker.
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             A dataframe containing the company's daily stock history
@@ -464,6 +479,9 @@ class RawPrices:
             1980-12-18  0.0924  0.0928  0.0924  0.0924  7.3450e+07
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -486,12 +504,13 @@ class RawPrices:
         return df.set_index(["date"]).sort_index()
 
     @classmethod
-    def to_raw(cls, df: pd.DataFrame, /, *, engine: Engine = backend.engine) -> int:
+    def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
         """Write the given dataframe to the raw feature table.
 
         Args:
             df: Dataframe to store as rows in a local SQL table
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the SQL table.
@@ -501,6 +520,7 @@ class RawPrices:
                 feature's columns.
 
         """
+        engine = engine or backend.engine
         if set(df.columns) != set(cls.columns):
             raise ValueError(f"Dataframe must have columns {cls.columns}")
         with engine.begin() as conn:
@@ -509,13 +529,13 @@ class RawPrices:
 
 
 daily = RefinedDaily()
-"""The most popular way for accessing the :class:`RefinedDaily`.
+"""The most popular way for accessing :class:`RefinedDaily`.
 
 :meta hide-value:
 """
 
 prices = RawPrices()
-"""The most popular way for accessing the :class:`RawPrices`.
+"""The most popular way for accessing :class:`RawPrices`.
 
 :meta hide-value:
 """

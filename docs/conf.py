@@ -75,6 +75,7 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx_copybutton",
     "sphinx_rtd_theme",
+    "sphinxcontrib.programoutput",
 ]
 
 templates_path = ["_templates"]

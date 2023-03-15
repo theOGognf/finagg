@@ -129,9 +129,9 @@ class RefinedIndustryQuarterly:
         ticker: None | str = None,
         code: None | str = None,
         level: Literal[2, 3, 4] = 2,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get quarterly features from the feature store,
         aggregated for an entire industry.
@@ -154,9 +154,12 @@ class RefinedIndustryQuarterly:
                     - 3 = industry group (e.g., office furnitures)
                     - 4 = industry (e.g., wood office furniture)
 
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Raw data and feature data SQL database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Quarterly data dataframe with each tag as a
@@ -187,6 +190,9 @@ class RefinedIndustryQuarterly:
             2011 Q1 2011-05-05                    0.1827           0.2859            0.9541 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             if ticker:
                 (sic,) = conn.execute(
@@ -263,9 +269,9 @@ class RefinedNormalizedQuarterly:
         /,
         *,
         level: Literal[2, 3, 4] = 2,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features from other feature SQL tables.
 
@@ -279,9 +285,12 @@ class RefinedNormalizedQuarterly:
                     - 3 = industry group (e.g., office furnitures)
                     - 4 = industry (e.g., wood office furniture)
 
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Relative quarterly data dataframe with each tag as a
@@ -298,6 +307,9 @@ class RefinedNormalizedQuarterly:
                  Q2 2011-04-21                    0.0000          -0.0655            2.8997 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         company_df = RefinedQuarterly.from_refined(
             ticker, start=start, end=end, engine=engine
         ).reset_index(["filed"])
@@ -326,9 +338,9 @@ class RefinedNormalizedQuarterly:
         ticker: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features from the features SQL table.
 
@@ -338,9 +350,12 @@ class RefinedNormalizedQuarterly:
 
         Args:
             ticker: Company ticker.
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Quarterly data dataframe with each tag as a
@@ -361,6 +376,9 @@ class RefinedNormalizedQuarterly:
                  Q2 2011-04-21                    0.0000          -0.0655            2.8997 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -579,7 +597,7 @@ class RefinedNormalizedQuarterly:
         df: pd.DataFrame,
         /,
         *,
-        engine: Engine = backend.engine,
+        engine: None | Engine = None,
     ) -> int:
         """Write the dataframe to the feature store for ``ticker``.
 
@@ -587,7 +605,8 @@ class RefinedNormalizedQuarterly:
             ticker: Company ticker.
             df: Dataframe to store completely as rows in a local SQL
                 table.
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the SQL table.
@@ -597,6 +616,7 @@ class RefinedNormalizedQuarterly:
                 feature's columns.
 
         """
+        engine = engine or backend.engine
         df = df.reset_index(["fy", "fp", "filed"])
         if set(df.columns) < set(RefinedQuarterly.columns):
             raise ValueError(f"Dataframe must have columns {RefinedQuarterly.columns}")
@@ -699,7 +719,7 @@ class RefinedQuarterly(feat.Features):
 
     @classmethod
     def from_api(
-        cls, ticker: str, /, *, start: str = "1776-07-04", end: str = utils.today
+        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
         """Get quarterly features directly from the SEC API.
 
@@ -709,8 +729,10 @@ class RefinedQuarterly(feat.Features):
 
         Args:
             ticker: Company ticker.
-            start: The start date of the observation period.
-            end: The end date of the observation period.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
 
         Returns:
             Quarterly data dataframe with each tag as a
@@ -727,6 +749,8 @@ class RefinedQuarterly(feat.Features):
                  Q2 2011-04-21                    0.0000           0.4336              7.12 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
         dfs = []
         for concept in cls.concepts:
             tag = concept["tag"]
@@ -747,9 +771,9 @@ class RefinedQuarterly(feat.Features):
         ticker: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get quarterly features from a local SEC SQL table.
 
@@ -759,9 +783,12 @@ class RefinedQuarterly(feat.Features):
 
         Args:
             ticker: Company ticker.
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Raw store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Quarterly data dataframe with each tag as a
@@ -782,6 +809,9 @@ class RefinedQuarterly(feat.Features):
                  Q2 2011-04-21                    0.0000           0.4336              7.12 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -810,9 +840,9 @@ class RefinedQuarterly(feat.Features):
         ticker: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features from the refined SQL table.
 
@@ -822,9 +852,12 @@ class RefinedQuarterly(feat.Features):
 
         Args:
             ticker: Company ticker.
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Quarterly data dataframe with each tag as a
@@ -845,6 +878,9 @@ class RefinedQuarterly(feat.Features):
                  Q2 2011-04-21                    0.0000           0.4336              7.12 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -1014,7 +1050,7 @@ class RefinedQuarterly(feat.Features):
         df: pd.DataFrame,
         /,
         *,
-        engine: Engine = backend.engine,
+        engine: None | Engine = None,
     ) -> int:
         """Write the given dataframe to the refined feature table
         while using the ticker ``ticker``.
@@ -1022,7 +1058,8 @@ class RefinedQuarterly(feat.Features):
         Args:
             ticker: Company ticker.
             df: Dataframe to store as rows in a local SQL table
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the SQL table.
@@ -1032,6 +1069,7 @@ class RefinedQuarterly(feat.Features):
                 feature's columns.
 
         """
+        engine = engine or backend.engine
         df = df.reset_index(["fy", "fp", "filed"])
         if set(df.columns) < set(cls.columns):
             raise ValueError(f"Dataframe must have columns {cls.columns}")
@@ -1117,7 +1155,7 @@ class RawSubmissions:
         ticker: str,
         /,
         *,
-        engine: Engine = backend.engine,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get a single company's metadata as-is from raw SEC data.
 
@@ -1127,7 +1165,8 @@ class RawSubmissions:
 
         Args:
             ticker: Company ticker.
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             A dataframe containing the company's metadata.
@@ -1142,6 +1181,7 @@ class RawSubmissions:
             0  0000320193   AAPL        None  3571            None ...
 
         """
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -1153,12 +1193,13 @@ class RawSubmissions:
         return df
 
     @classmethod
-    def to_raw(cls, df: pd.DataFrame, /, *, engine: Engine = backend.engine) -> int:
+    def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
         """Write the given dataframe to the raw feature table.
 
         Args:
             df: Dataframe to store as rows in a local SQL table
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the SQL table.
@@ -1168,6 +1209,7 @@ class RawSubmissions:
                 feature's columns.
 
         """
+        engine = engine or backend.engine
         if set(df.columns) != set(cls.columns):
             raise ValueError(f"Dataframe must have columns {cls.columns}")
         with engine.begin() as conn:
@@ -1267,9 +1309,9 @@ class RawTags:
         tag: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get a single company concept tag as-is from raw SEC data.
 
@@ -1279,9 +1321,12 @@ class RawTags:
         Args:
             ticker: Company ticker.
             tag: Company concept tag to retreive.
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             A dataframe containing the company concept tag values
@@ -1302,6 +1347,9 @@ class RawTags:
             2011 Q1 2011-01-19  USD/shares   3.74
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -1329,12 +1377,13 @@ class RawTags:
         return df.set_index(["fy", "fp", "filed"]).sort_index()
 
     @classmethod
-    def to_raw(cls, df: pd.DataFrame, /, *, engine: Engine = backend.engine) -> int:
+    def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
         """Write the given dataframe to the raw feature table.
 
         Args:
             df: Dataframe to store as rows in a local SQL table
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the SQL table.
@@ -1344,6 +1393,7 @@ class RawTags:
                 feature's columns.
 
         """
+        engine = engine or backend.engine
         if set(df.columns) != set(cls.columns):
             raise ValueError(f"Dataframe must have columns {cls.columns}")
         with engine.begin() as conn:
@@ -1352,19 +1402,19 @@ class RawTags:
 
 
 quarterly = RefinedQuarterly()
-"""The most popular way for accessing the :class:`RefinedQuarterly`.
+"""The most popular way for accessing :class:`RefinedQuarterly`.
 
 :meta hide-value:
 """
 
 submissions = RawSubmissions()
-"""The most popular way for accessing the :class:`RawSubmissions`.
+"""The most popular way for accessing :class:`RawSubmissions`.
 
 :meta hide-value:
 """
 
 tags = RawTags()
-"""The most popular way for accessing the :class:`RawTags`.
+"""The most popular way for accessing :class:`RawTags`.
 
 :meta hide-value:
 """

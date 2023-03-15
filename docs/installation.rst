@@ -28,7 +28,9 @@ recommended datasets from each 3rd party API individually.
     finagg indices install -a
     finagg sec install -a
     finagg yfinance install -a
+    finagg fundam install -a
 
 Installation will enable offline usage of aggregated and refined financial
 features without internet access or API keys (the recommended way to explore
-data uninterrupted).
+data uninterrupted). See the :doc:`CLI docs <cli>` for more **finagg** CLI
+details.

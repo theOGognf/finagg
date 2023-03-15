@@ -33,17 +33,20 @@ class RefinedTimeSummarizedEconomic:
         cls,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get the average and standard deviation of each series's
         feature across its history.
 
         Args:
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Raw data and feature data SQL database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Average and standard deviation of each economic series
@@ -64,6 +67,9 @@ class RefinedTimeSummarizedEconomic:
             2014-10-06              0.0017               0.0015 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             stmt = sa.select(
                 sql.economic.c.date,
@@ -113,16 +119,19 @@ class RefinedNormalizedEconomic:
     def from_other_refined(
         cls,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features from other feature SQL tables.
 
         Args:
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Relative economic data dataframe with each series ID as a
@@ -139,6 +148,9 @@ class RefinedNormalizedEconomic:
             2014-10-20              0.0000               0.0000 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         economic_df = RefinedEconomic.from_refined(start=start, end=end, engine=engine)
         summarized_df = RefinedTimeSummarizedEconomic.from_refined(
             start=start, end=end, engine=engine
@@ -154,9 +166,9 @@ class RefinedNormalizedEconomic:
         cls,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -165,11 +177,12 @@ class RefinedNormalizedEconomic:
         is current).
 
         Args:
-            start: The start date of the observation period.
-                Defaults to the first recorded date.
-            end: The end date of the observation period.
-                Defaults to the last recorded date.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Economic data series dataframe with each series
@@ -189,6 +202,9 @@ class RefinedNormalizedEconomic:
             2014-10-20              0.0000               0.0000 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -230,14 +246,15 @@ class RefinedNormalizedEconomic:
         df: pd.DataFrame,
         /,
         *,
-        engine: Engine = backend.engine,
+        engine: None | Engine = None,
     ) -> int:
         """Write the dataframe to the feature store.
 
         Args:
             df: Dataframe to store completely as rows in a local SQL
                 table.
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the SQL table.
@@ -247,6 +264,7 @@ class RefinedNormalizedEconomic:
                 feature's columns.
 
         """
+        engine = engine or backend.engine
         df = df.reset_index("date")
         if set(df.columns) < set(RefinedEconomic.columns):
             raise ValueError(f"Dataframe must have columns {RefinedEconomic.columns}")
@@ -348,7 +366,7 @@ class RefinedEconomic(feat.Features):
 
     @classmethod
     def from_api(
-        cls, *, start: str = "1776-07-04", end: str = utils.today
+        cls, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
         """Get economic features directly from the FRED API.
 
@@ -357,10 +375,10 @@ class RefinedEconomic(feat.Features):
         are forward filled.
 
         Args:
-            start: The start date of the observation period.
-                Defaults to the first recorded date.
-            end: The end date of the observation period.
-                Defaults to the last recorded date.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
 
         Returns:
             Economic data series dataframe with each series
@@ -377,6 +395,8 @@ class RefinedEconomic(feat.Features):
             2014-10-20                 0.0                  0.0 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
         dfs = []
         for series_id in cls.series_ids:
             df = api.series.observations.get(
@@ -395,9 +415,9 @@ class RefinedEconomic(feat.Features):
     def from_raw(
         cls,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get economic features from local FRED SQL tables.
 
@@ -406,11 +426,12 @@ class RefinedEconomic(feat.Features):
         are forward filled.
 
         Args:
-            start: The start date of the observation period.
-                Defaults to the first recorded date.
-            end: The end date of the observation period.
-                Defaults to the last recorded date.
-            engine: Raw store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Economic data series dataframe with each series
@@ -430,6 +451,9 @@ class RefinedEconomic(feat.Features):
             2014-10-20                 0.0                  0.0 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -449,9 +473,9 @@ class RefinedEconomic(feat.Features):
         cls,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get features from the feature-dedicated local SQL tables.
 
@@ -460,11 +484,12 @@ class RefinedEconomic(feat.Features):
         is current).
 
         Args:
-            start: The start date of the observation period.
-                Defaults to the first recorded date.
-            end: The end date of the observation period.
-                Defaults to the last recorded date.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Economic data series dataframe with each series
@@ -484,6 +509,9 @@ class RefinedEconomic(feat.Features):
             2014-10-20                 0.0                  0.0 ...
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -524,14 +552,15 @@ class RefinedEconomic(feat.Features):
         df: pd.DataFrame,
         /,
         *,
-        engine: Engine = backend.engine,
+        engine: None | Engine = None,
     ) -> int:
         """Write the dataframe to the feature store.
 
         Args:
             df: Dataframe to store completely as rows in a local SQL
                 table.
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the SQL table.
@@ -541,6 +570,7 @@ class RefinedEconomic(feat.Features):
                 feature's columns.
 
         """
+        engine = engine or backend.engine
         df = df.reset_index("date")
         if set(df.columns) < set(cls.columns):
             raise ValueError(f"Dataframe must have columns {cls.columns}")
@@ -575,9 +605,9 @@ class RawSeries:
         series_id: str,
         /,
         *,
-        start: str = "1776-07-04",
-        end: str = utils.today,
-        engine: Engine = backend.engine,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> pd.DataFrame:
         """Get a single economic data series as-is from raw FRED data.
 
@@ -586,9 +616,12 @@ class RawSeries:
 
         Args:
             series_id: Economic data series ID.
-            start: The start date of the observation period.
-            end: The end date of the observation period.
-            engine: Feature store database engine.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             A dataframe containing the economic data series values
@@ -609,6 +642,9 @@ class RawSeries:
             1949-07-01  168.5
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -660,12 +696,13 @@ class RawSeries:
         return total_rows
 
     @classmethod
-    def to_raw(cls, df: pd.DataFrame, /, *, engine: Engine = backend.engine) -> int:
+    def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
         """Write the given dataframe to the raw feature table.
 
         Args:
             df: Dataframe to store as rows in a local SQL table
-            engine: Feature store database engine.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the SQL table.
@@ -675,6 +712,7 @@ class RawSeries:
                 feature's columns.
 
         """
+        engine = engine or backend.engine
         if set(df.columns) != set(cls.columns):
             raise ValueError(f"Dataframe must have columns {cls.columns}")
         with engine.begin() as conn:
@@ -683,13 +721,13 @@ class RawSeries:
 
 
 economic = RefinedEconomic()
-"""The most popular way for accessing the :class:`RefinedEconomic`.
+"""The most popular way for accessing :class:`RefinedEconomic`.
 
 :meta hide-value:
 """
 
 series = RawSeries()
-"""The most popular way for accessing the :class:`RawSeries`.
+"""The most popular way for accessing :class:`RawSeries`.
 
 :meta hide-value:
 """

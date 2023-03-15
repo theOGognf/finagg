@@ -1,6 +1,7 @@
 """The "fred/release" and "fred/releases" API.
 
 See the official FRED API docs for more info:
+
     https://fred.stlouisfed.org/docs/api/fred/
 
 Examples:

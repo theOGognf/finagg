@@ -1,12 +1,13 @@
 """The "fred/series" API.
 
-This is probably the most popular API implementation.
+This is probably the most popular FRED API implementation.
 Useful for examining historical or projected economic data.
 The API comes with builtin methods for filtering data based
 on publication date or frequency. See the docs of each
 method for more details.
 
 See the official FRED API docs for more info:
+
     https://fred.stlouisfed.org/docs/api/fred/
 
 Examples:

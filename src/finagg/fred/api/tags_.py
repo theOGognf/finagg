@@ -1,12 +1,8 @@
 """The "fred/tags" APIs.
 
 See the official FRED API docs for more info:
-    https://fred.stlouisfed.org/docs/api/fred/
 
-Examples:
-    List tags related to an economic data series.
-    >>> import finagg.fred.api as fred
-    >>> fred.tags.series.get()
+    https://fred.stlouisfed.org/docs/api/fred/
 
 """
 

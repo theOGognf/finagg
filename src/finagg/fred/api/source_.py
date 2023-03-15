@@ -1,12 +1,8 @@
 """The "fred/source" and "fred/sources" APIs.
 
 See the official FRED API docs for more info:
-    https://fred.stlouisfed.org/docs/api/fred/
 
-Examples:
-    List sources of economic data.
-    >>> import finagg.fred.api as fred
-    >>> fred.sources.get()
+    https://fred.stlouisfed.org/docs/api/fred/
 
 """
 

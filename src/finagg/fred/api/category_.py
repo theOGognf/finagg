@@ -1,6 +1,7 @@
 """The "fred/category" API.
 
 See the official FRED API docs for more info:
+
     https://fred.stlouisfed.org/docs/api/fred/
 
 Examples:
@@ -409,5 +410,8 @@ class Category(_api.API):
         return pd.DataFrame(data)
 
 
-#: Public-facing "fred/category" API.
 category = Category()
+"""The most popular way for accessing the :class:`Category`.
+
+:meta hide-value:
+"""

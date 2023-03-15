@@ -1,4 +1,8 @@
-"""FRED top-level interface."""
+"""FRED API implementations.
+
+
+
+"""
 
 from ._api import get
 from .category_ import category
