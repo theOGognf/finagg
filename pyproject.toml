@@ -24,18 +24,18 @@ classifiers = [
     "Typing :: Typed"
 ]
 dependencies = [
-    "beautifulsoup4",
-    "click",
-    "pandas",
-    "pandas-stubs",
-    "python-dotenv",
-    "requests",
-    "requests-cache",
-    "SQLAlchemy",
-    "tqdm",
-    "types-requests",
-    "typing-extensions",
-    "yfinance"
+    "beautifulsoup4==4.*",
+    "click==8.*",
+    "pandas==1.*",
+    "pandas-stubs==1.*",
+    "python-dotenv==0.21.*",
+    "requests==2.*",
+    "requests-cache==0.9.*",
+    "SQLAlchemy==2.*",
+    "tqdm==4.*",
+    "types-requests==2.*",
+    "typing-extensions==4.*",
+    "yfinance==0.2.*"
 ]
 dynamic = ["version"]
 license = {file = "LICENSE"}

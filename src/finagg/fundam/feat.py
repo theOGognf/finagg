@@ -12,7 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from .. import backend, feat, indices, sec, utils, yfinance
+from .. import backend, feat, sec, utils, yfinance
 from . import sql
 
 
@@ -469,14 +469,14 @@ class RefinedNormalizedFundamental:
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+                the tickers from :meth:`finagg.fundam.feat.fundam.get_ticker_set`.
             processes: Number of background processes to use for installation.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        tickers = tickers or indices.api.get_ticker_set()
+        tickers = tickers or cls.get_candidate_ticker_set()
         if tickers:
             sql.normalized_fundam.drop(backend.engine, checkfirst=True)
             sql.normalized_fundam.create(backend.engine)
@@ -923,14 +923,14 @@ class RefinedFundamental(feat.Features):
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+                the tickers from :meth:`finagg.sec.feat.quarterly.get_ticker_set`.
             processes: Number of background processes to use for installation.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        tickers = tickers or indices.api.get_ticker_set()
+        tickers = tickers or cls.get_candidate_ticker_set()
         if tickers:
             sql.fundam.drop(backend.engine, checkfirst=True)
             sql.fundam.create(backend.engine)
