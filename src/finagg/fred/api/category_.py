@@ -331,7 +331,7 @@ class Tags(_api.API):
 class RelatedTags(_api.API):
     """Get FRED category's related tags.
 
-    The class variable :data:`finagg.fred.api.category.related_tags` is an'
+    The class variable :data:`finagg.fred.api.category.related_tags` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -443,9 +443,9 @@ class RelatedTags(_api.API):
 class Category(_api.API):
     """Collection of `fred/category` APIs.
 
-    See the related FRED API documentation at:
-
-        https://fred.stlouisfed.org/docs/api/fred/category.html
+    The class variable :data:`finagg.fred.api.category` is an
+    instance of this API implementation and is the most popular interface for
+    calling this API.
 
     """
 
