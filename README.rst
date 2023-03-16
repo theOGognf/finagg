@@ -151,9 +151,9 @@ APIs programmatically. The following environment variables are used for
 configuring API keys and user agents:
 
 * ``BEA_API_KEY`` is for the Bureau of Economic Analysis's API key. You can get
-  a free API key from the `BEA site`_.
+  a free API key from the `BEA API site`_.
 * ``FRED_API_KEY`` is for the Federal Reserve Economic Data API key. You can get
-  a free API key from the `FRED site`_.
+  a free API key from the `FRED API site`_.
 * ``INDICES_API_USER_AGENT`` is for scraping popular indices' compositions from
   Wikipedia and should be equivalent to a browser's user agent declaration.
   This defaults to a hardcoded value, but it may not always work.

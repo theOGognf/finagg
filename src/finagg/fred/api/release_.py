@@ -12,6 +12,13 @@ from . import _api
 
 
 class ReleasesDates(_api.API):
+    """Get all release dates of FRED economic data.
+
+    The class variable :data:`finagg.fred.api.releases.dates` is an instance
+    of this API implementation and is the most popular interface for calling
+    this API.
+
+    """
 
     url = "https://api.stlouisfed.org/fred/releases/dates"
 
@@ -78,7 +85,7 @@ class Releases(_api.API):
     """Get all releases of economic data."""
 
     #: "releases/dates" FRED API. Get dates for releases of economic data.
-    dates = ReleasesDates
+    dates = ReleasesDates()
 
     url = "https://api.stlouisfed.org/fred/releases"
 
