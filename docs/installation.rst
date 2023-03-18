@@ -13,13 +13,13 @@ SQL database.
 
 .. code:: console
 
-    finagg install -a
+    finagg install
 
 The installation will point you where to get free API keys for each API that
 requires one and write those API keys to a local ``.env`` file for storage.
-``finagg install -a`` is effectively an alias for installing the
+``finagg install`` is effectively an alias for installing the
 recommended datasets from each 3rd party API individually.
-``finagg install -a`` is equivalent to:
+``finagg install`` is equivalent to:
 
 .. code:: console
 

@@ -3,7 +3,7 @@ and SQLAlchemy engine database URLs are configured in this module at runtime
 according to environment variables.
 
 Environment variables should ideally be configured using an ``.env`` file
-in the desired working directory. Running ``finagg install -a`` will
+in the desired working directory. Running ``finagg install`` will
 automaticaly setup the ``.env`` file for you according to your input values.
 Environment variables assigned in the ``.env`` file are loaded on the
 :mod:`finagg` module's first instantiation.
@@ -24,7 +24,7 @@ and API cache file will be stored (unless otherwise configured according
 to the relevant environment variables). This can be set with the
 ``FINAGG_ROOT_PATH`` environment variable. This defaults to and is typically
 set to the current working directory. It's recommended you permanently set
-this value using the ``finagg install -a`` CLI.
+this value using the ``finagg install`` CLI.
 
 :meta hide-value:
 """

@@ -7,7 +7,7 @@ can set the ``SEC_API_USER_AGENT`` environment variable to have the user agent
 be passed to the implemented API getters for you.
 
 Alternatively, running ``finagg sec install`` (or the broader
-``finagg install -a``) will prompt you to enter an SEC EDGAR API user agent
+``finagg install``) will prompt you to enter an SEC EDGAR API user agent
 and will automatically store it in an ``.env`` file in your current working
 directory. The environment variables set in that ``.env`` file will be loaded
 into your shell upon using ``finagg`` (whether that be through the Python

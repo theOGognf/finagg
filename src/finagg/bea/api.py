@@ -7,7 +7,7 @@ can set the ``BEA_API_KEY`` environment variable to have the
 BEA API key be passed to the implemented API getters for you.
 
 Alternatively, running ``finagg bea install`` (or the broader
-``finagg install -a``) will  prompt you where to aquire a BEA API
+``finagg install``) will  prompt you where to aquire a BEA API
 key and will automatically store it in an ``.env`` file in
 your current working directory. The environment variables set
 in that ``.env`` file will be loaded into your shell upon

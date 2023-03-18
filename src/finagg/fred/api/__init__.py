@@ -7,7 +7,7 @@ variable to have the FRED API key be passed to the implemented API getters
 for you.
 
 Alternatively, running ``finagg fred install`` (or the broader
-``finagg install -a``) will prompt you where to acquire a FRED KEY and will
+``finagg install``) will prompt you where to acquire a FRED KEY and will
 automatically store it in an ``.env`` file in your current working directory.
 The environment variables set in that ``.env`` file will be loaded into your
 shell upon using ``finagg`` (whether that be through the Python interface or

@@ -24,7 +24,7 @@ SQL database.
 
 .. code:: console
 
-    finagg install -a
+    finagg install
 
 The installation will point you where to get free API keys and write them to a
 local ``.env`` file for storage.
