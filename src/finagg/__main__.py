@@ -33,6 +33,24 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
     "and install the recommended datasets into the SQL database.",
 )
 @click.option(
+    "--skip",
+    "-s",
+    type=click.Choice(["bea", "fred", "indices", "sec", "yfinance", "fundam"]),
+    multiple=True,
+    help=(
+        "Subpackage installations to skip. Useful to avoid reinstalling data "
+        "that you don't want to when using the general install command."
+    ),
+)
+@click.option(
+    "--stock-data",
+    is_flag=True,
+    help=(
+        "Whether to only install stock data (SEC, Yahoo! Finance, and "
+        "fundamental stock data)."
+    ),
+)
+@click.option(
     "--ticker",
     "-t",
     multiple=True,
@@ -78,6 +96,8 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
 @click.pass_context
 def install(
     ctx: click.Context,
+    skip: list[str] = [],
+    stock_data: bool = False,
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
     verbose: bool = False,
@@ -97,24 +117,36 @@ def install(
     else:
         logger.info("FINAGG_ROOT_PATH found in the environment")
 
-    ctx.invoke(bea._cli.install)
-    ctx.invoke(fred._cli.install, all_=True, verbose=verbose)
-    ctx.invoke(indices._cli.install, all_=True)
-    ctx.invoke(
-        sec._cli.install,
-        all_=True,
-        ticker=ticker,
-        ticker_set=ticker_set,
-        verbose=verbose,
-    )
-    ctx.invoke(
-        yfinance._cli.install,
-        all_=True,
-        ticker=ticker,
-        ticker_set=ticker_set,
-        verbose=verbose,
-    )
-    ctx.invoke(fundam._cli.install, all_=True)
+    all_skips = set(skip)
+    if not stock_data and "bea" not in all_skips:
+        ctx.invoke(bea._cli.install)
+
+    if not stock_data and "fred" not in all_skips:
+        ctx.invoke(fred._cli.install, all_=True, verbose=verbose)
+
+    if not stock_data and "indices" not in all_skips:
+        ctx.invoke(indices._cli.install, all_=True)
+
+    if "sec" not in all_skips:
+        ctx.invoke(
+            sec._cli.install,
+            all_=True,
+            ticker=ticker,
+            ticker_set=ticker_set,
+            verbose=verbose,
+        )
+
+    if "yfinance" not in all_skips:
+        ctx.invoke(
+            yfinance._cli.install,
+            all_=True,
+            ticker=ticker,
+            ticker_set=ticker_set,
+            verbose=verbose,
+        )
+
+    if "fundam" not in all_skips:
+        ctx.invoke(fundam._cli.install, all_=True)
 
 
 def main() -> int:
