@@ -1,7 +1,6 @@
 """SEC CLI and tools."""
 
 import logging
-import multiprocessing as mp
 import os
 from typing import Literal
 
@@ -97,17 +96,6 @@ def entry_point() -> None:
     ),
 )
 @click.option(
-    "--processes",
-    "-n",
-    type=int,
-    default=mp.cpu_count() - 1,
-    help=(
-        "Number of background processes to use for installing refined data. "
-        "Installation of raw SEC data is limited to one process because "
-        "the SEC rate-limits its API."
-    ),
-)
-@click.option(
     "--verbose",
     "-v",
     is_flag=True,
@@ -120,7 +108,6 @@ def install(
     all_: bool = False,
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
-    processes: int = mp.cpu_count() - 1,
     verbose: bool = False,
 ) -> int:
     if verbose:
@@ -150,8 +137,8 @@ def install(
     elif raw:
         all_raw = set(raw)
 
+    tickers = utils.expand_tickers(ticker)
     if all_raw:
-        tickers = utils.expand_tickers(ticker)
         match ticker_set:
             case "indices":
                 tickers |= indices.api.get_ticker_set()
@@ -178,10 +165,10 @@ def install(
         all_refined = set(refined)
 
     if "quarterly" in all_refined:
-        total_rows += _feat.quarterly.install(processes=processes)
+        total_rows += _feat.quarterly.install(tickers=tickers)
 
     if "quarterly.normalized" in all_refined:
-        total_rows += _feat.quarterly.normalized.install(processes=processes)
+        total_rows += _feat.quarterly.normalized.install(tickers=tickers)
 
     if all_ or all_refined or raw:
         logger.info(f"{total_rows} total rows inserted for {__package__}")
@@ -193,6 +180,7 @@ def install(
             )
     else:
         logger.info(
-            "Skipping installation because no installation options were provided"
+            f"Skipping {__package__} installation because no installation "
+            "options were provided"
         )
     return total_rows

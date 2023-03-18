@@ -1,7 +1,6 @@
 """Main CLI entry points."""
 
 import logging
-import multiprocessing as mp
 import os
 import pathlib
 from typing import Literal
@@ -85,13 +84,6 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
     ),
 )
 @click.option(
-    "--processes",
-    "-n",
-    type=int,
-    default=mp.cpu_count() - 1,
-    help="Number of background processes to use for installing feature data.",
-)
-@click.option(
     "--verbose",
     "-v",
     is_flag=True,
@@ -105,7 +97,6 @@ def install(
     all_: bool = False,
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
-    processes: int = mp.cpu_count() - 1,
     verbose: bool = False,
 ) -> None:
     if "FINAGG_ROOT_PATH" not in os.environ:
@@ -133,7 +124,6 @@ def install(
             all_=all_,
             ticker=ticker,
             ticker_set=ticker_set,
-            processes=processes,
             verbose=verbose,
         )
         ctx.invoke(
@@ -142,10 +132,9 @@ def install(
             all_=all_,
             ticker=ticker,
             ticker_set=ticker_set,
-            processes=processes,
             verbose=verbose,
         )
-        ctx.invoke(fundam._cli.install, all_=all_, processes=processes)
+        ctx.invoke(fundam._cli.install, all_=all_)
     else:
         logger.info(
             "Skipping installation because no installation options are provided"

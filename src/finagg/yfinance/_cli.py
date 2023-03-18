@@ -1,7 +1,6 @@
 """CLI and tools for yfinance."""
 
 import logging
-import multiprocessing as mp
 from typing import Literal
 
 import click
@@ -93,13 +92,6 @@ def entry_point() -> None:
     ),
 )
 @click.option(
-    "--processes",
-    "-n",
-    type=int,
-    default=mp.cpu_count() - 1,
-    help=("Number of background processes to use for installing refined data. "),
-)
-@click.option(
     "--verbose",
     "-v",
     is_flag=True,
@@ -112,7 +104,6 @@ def install(
     all_: bool = False,
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
-    processes: int = mp.cpu_count() - 1,
     verbose: bool = False,
 ) -> int:
     if verbose:
@@ -125,8 +116,8 @@ def install(
     elif raw:
         all_raw = set(raw)
 
+    tickers = utils.expand_tickers(ticker)
     if all_raw:
-        tickers = utils.expand_tickers(ticker)
         match ticker_set:
             case "indices":
                 tickers |= indices.api.get_ticker_set()
@@ -150,7 +141,7 @@ def install(
         all_refined = set(refined)
 
     if "daily" in all_refined:
-        total_rows += _feat.daily.install(tickers=tickers, processes=processes)
+        total_rows += _feat.daily.install(tickers=tickers)
 
     if all_ or all_refined or raw:
         logger.info(f"{total_rows} total rows inserted for {__package__}")
@@ -162,6 +153,7 @@ def install(
             )
     else:
         logger.info(
-            "Skipping installation because no installation options are provided"
+            f"Skipping {__package__} installation because no installation "
+            "options are provided"
         )
     return total_rows

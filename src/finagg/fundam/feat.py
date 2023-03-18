@@ -1,8 +1,8 @@
 """Fundamental features aggregated from several sources."""
 
-import multiprocessing as mp
+import logging
 from datetime import datetime, timedelta
-from functools import cache, partial
+from functools import cache
 from typing import Literal
 
 import numpy as np
@@ -15,34 +15,10 @@ from tqdm import tqdm
 from .. import backend, feat, sec, utils, yfinance
 from . import sql
 
-
-def _refined_fundam_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
-    """Helper for getting fundamental data in a multiprocessing pool.
-
-    Args:
-        ticker: Ticker to create features for.
-
-    Returns:
-        The ticker and the returned feature dataframe.
-
-    """
-    df = RefinedFundamental.from_other_refined(ticker)
-    return ticker, df
-
-
-def _refined_normalized_fundam_helper(ticker: str, /) -> tuple[str, pd.DataFrame]:
-    """Helper for getting industry-normalized fundamental data in a
-    multiprocessing pool.
-
-    Args:
-        ticker: Ticker to create features for.
-
-    Returns:
-        The ticker and the returned feature dataframe.
-
-    """
-    df = RefinedNormalizedFundamental.from_other_refined(ticker)
-    return ticker, df
+logging.basicConfig(
+    format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 
 class RefinedIndustryFundamental:
@@ -461,16 +437,13 @@ class RefinedNormalizedFundamental:
         return list(tickers)
 
     @classmethod
-    def install(
-        cls, tickers: None | set[str] = None, *, processes: int = mp.cpu_count() - 1
-    ) -> int:
+    def install(cls, tickers: None | set[str] = None) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.fundam.feat.fundam.get_ticker_set`.
-            processes: Number of background processes to use for installation.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -482,25 +455,24 @@ class RefinedNormalizedFundamental:
             sql.normalized_fundam.create(backend.engine)
 
         total_rows = 0
-        with (
-            tqdm(
-                total=len(tickers),
-                desc="Installing refined industry-normalized fundamental data",
-                position=0,
-                leave=True,
-            ) as pbar,
-            mp.Pool(
-                processes=processes,
-                initializer=partial(backend.engine.dispose, close=False),
-            ) as pool,
-        ):
-            for ticker, df in pool.imap_unordered(
-                _refined_normalized_fundam_helper, tickers
-            ):
-                rowcount = len(df.index)
-                if rowcount:
-                    cls.to_refined(ticker, df)
-                    total_rows += rowcount
+        with tqdm(
+            total=len(tickers),
+            desc="Installing refined industry-normalized fundamental data",
+            position=0,
+            leave=True,
+        ) as pbar:
+            for ticker in tickers:
+                try:
+                    df = cls.from_other_refined(ticker)
+                    rowcount = len(df.index)
+                    if rowcount:
+                        cls.to_refined(ticker, df)
+                        total_rows += rowcount
+                        logger.debug(f"{rowcount} rows inserted for {ticker}")
+                    else:
+                        logger.debug(f"Skipping {ticker} due to missing data")
+                except Exception as e:
+                    logger.debug(f"Skipping {ticker}", exc_info=e)
                 pbar.update()
         return total_rows
 
@@ -915,16 +887,13 @@ class RefinedFundamental(feat.Features):
         return set(tickers)
 
     @classmethod
-    def install(
-        cls, tickers: None | set[str] = None, *, processes: int = mp.cpu_count() - 1
-    ) -> int:
+    def install(cls, tickers: None | set[str] = None) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.sec.feat.quarterly.get_ticker_set`.
-            processes: Number of background processes to use for installation.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -936,23 +905,24 @@ class RefinedFundamental(feat.Features):
             sql.fundam.create(backend.engine)
 
         total_rows = 0
-        with (
-            tqdm(
-                total=len(tickers),
-                desc="Installing refined fundamental data",
-                position=0,
-                leave=True,
-            ) as pbar,
-            mp.Pool(
-                processes=processes,
-                initializer=partial(backend.engine.dispose, close=False),
-            ) as pool,
-        ):
-            for ticker, df in pool.imap_unordered(_refined_fundam_helper, tickers):
-                rowcount = len(df.index)
-                if rowcount:
-                    cls.to_refined(ticker, df)
-                    total_rows += rowcount
+        with tqdm(
+            total=len(tickers),
+            desc="Installing refined fundamental data",
+            position=0,
+            leave=True,
+        ) as pbar:
+            for ticker in tickers:
+                try:
+                    df = cls.from_other_refined(ticker)
+                    rowcount = len(df.index)
+                    if rowcount:
+                        cls.to_refined(ticker, df)
+                        total_rows += rowcount
+                        logger.debug(f"{rowcount} rows inserted for {ticker}")
+                    else:
+                        logger.debug(f"Skipping {ticker} due to missing data")
+                except Exception as e:
+                    logger.debug(f"Skipping {ticker}", exc_info=e)
                 pbar.update()
         return total_rows
 
