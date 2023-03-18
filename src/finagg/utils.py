@@ -1,9 +1,11 @@
 """Generic utils used by subpackages."""
 
+import csv
 import os
 import pathlib
 import re
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -30,6 +32,42 @@ def CamelCase(s: str, /) -> str:
 
     """
     return "".join(word.title() for word in s.split("_"))
+
+
+def expand_tickers(tickers: list[str], /) -> set[str]:
+    """Expand the given list of tickers into a set of tickers, where each value
+    in the list of tickers could be:
+
+        1. Comma-separated tickers
+        2. A path that points to a CSV file containing tickers
+        3. A regular ol' ticker
+
+    Args:
+        tickers: List of strings denoting tickers, comma-separated tickers,
+            or CSV files containing tickers.
+
+    Returns:
+        A set of all tickers found within the given list.
+
+    Examples:
+        >>> ts = finagg.utils.expand_tickers(["AAPL,MSFT"])
+        >>> "AAPL" in ts
+        True
+
+    """
+    out = set()
+    for ticker_csv in tickers:
+        ticker_list = ticker_csv.split(",")
+        for ticker in ticker_list:
+            ticker_path = Path(ticker)
+            if ticker_path.exists():
+                with open(ticker_path, "r") as f:
+                    reader = csv.reader(f)
+                    for row in reader:
+                        out.update(row)
+            else:
+                out.add(ticker)
+    return out
 
 
 def join_with(s: str | list[str], /, delim: str) -> str:
