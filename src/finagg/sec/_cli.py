@@ -147,7 +147,7 @@ def install(
 
         if not tickers:
             logger.info(
-                f"Skipping {__package__}installation because no tickers were "
+                f"Skipping {__package__} installation because no tickers were "
                 "provided (by the `ticker` option or by the `ticker-set` option)"
             )
             return total_rows
