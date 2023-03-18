@@ -105,7 +105,8 @@ def install(
         logger.info(f"{total_rows} total rows inserted for {__package__}")
     else:
         logger.info(
-            "Skipping installation because no installation options are provided"
+            f"Skipping {__package__} installation because no installation "
+            "options are provided"
         )
 
     return total_rows
