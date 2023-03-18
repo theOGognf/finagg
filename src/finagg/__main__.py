@@ -33,21 +33,6 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
     "and install the recommended datasets into the SQL database.",
 )
 @click.option(
-    "--raw",
-    "-r",
-    is_flag=True,
-    default=False,
-    help="Whether to install raw data (data directly from APIs as-is).",
-)
-@click.option(
-    "--all",
-    "-a",
-    "all_",
-    is_flag=True,
-    default=False,
-    help="Whether to install all defined tables (including all refined tables).",
-)
-@click.option(
     "--ticker",
     "-t",
     multiple=True,
@@ -93,8 +78,6 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
 @click.pass_context
 def install(
     ctx: click.Context,
-    raw: bool = False,
-    all_: bool = False,
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
     verbose: bool = False,
@@ -114,31 +97,24 @@ def install(
     else:
         logger.info("FINAGG_ROOT_PATH found in the environment")
 
-    if all_ or raw:
-        ctx.invoke(bea._cli.install)
-        ctx.invoke(fred._cli.install, raw=raw, all_=all_, verbose=verbose)
-        ctx.invoke(indices._cli.install, all_=all_)
-        ctx.invoke(
-            sec._cli.install,
-            raw=raw,
-            all_=all_,
-            ticker=ticker,
-            ticker_set=ticker_set,
-            verbose=verbose,
-        )
-        ctx.invoke(
-            yfinance._cli.install,
-            raw=raw,
-            all_=all_,
-            ticker=ticker,
-            ticker_set=ticker_set,
-            verbose=verbose,
-        )
-        ctx.invoke(fundam._cli.install, all_=all_)
-    else:
-        logger.info(
-            "Skipping installation because no installation options are provided"
-        )
+    ctx.invoke(bea._cli.install)
+    ctx.invoke(fred._cli.install, all_=True, verbose=verbose)
+    ctx.invoke(indices._cli.install, all_=True)
+    ctx.invoke(
+        sec._cli.install,
+        all_=True,
+        ticker=ticker,
+        ticker_set=ticker_set,
+        verbose=verbose,
+    )
+    ctx.invoke(
+        yfinance._cli.install,
+        all_=True,
+        ticker=ticker,
+        ticker_set=ticker_set,
+        verbose=verbose,
+    )
+    ctx.invoke(fundam._cli.install, all_=True)
 
 
 def main() -> int:
