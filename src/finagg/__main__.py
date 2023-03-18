@@ -49,14 +49,30 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
     help="Whether to install all defined tables (including all refined tables).",
 )
 @click.option(
+    "--ticker",
+    "-t",
+    multiple=True,
+    help=(
+        "Ticker whose data is attempted to be downloaded and inserted into "
+        "the SQL tables. Multiple tickers can be specified by providing "
+        "multiple `ticker` options, by separating tickers with a comma (e.g., "
+        "`AAPL,MSFT,NVDA`), or by providing tickers in a CSV file by "
+        "specifying a file path (e.g., `bank_tickers.txt`). The CSV file "
+        "can be formatted such that there's one ticker per line or multiple "
+        "tickers per line (delimited by a comma). The tickers specified "
+        "by this option are combined with the tickers specified by the "
+        "`ticker-set` option."
+    ),
+)
+@click.option(
     "--ticker-set",
     "-ts",
     "ticker_set",
     type=click.Choice(["indices", "sec"]),
-    default="indices",
+    default=None,
     help=(
         "Set of tickers whose data is attempted to be downloaded and "
-        "inserted into the raw SQL tables. 'indices' indicates the set "
+        "inserted into the SQL tables. 'indices' indicates the set "
         "of tickers from the three most popular indices (DJIA, "
         "Nasdaq 100, and S&P 500). 'sec' indicates all the tickers that "
         "have data available through the SEC API (which is approximately "
@@ -87,7 +103,8 @@ def install(
     ctx: click.Context,
     raw: bool = False,
     all_: bool = False,
-    ticker_set: Literal["indices", "sec"] = "indices",
+    ticker: list[str] = [],
+    ticker_set: None | Literal["indices", "sec"] = None,
     processes: int = mp.cpu_count() - 1,
     verbose: bool = False,
 ) -> None:
@@ -114,6 +131,7 @@ def install(
             sec._cli.install,
             raw=raw,
             all_=all_,
+            ticker=ticker,
             ticker_set=ticker_set,
             processes=processes,
             verbose=verbose,
@@ -122,6 +140,7 @@ def install(
             yfinance._cli.install,
             raw=raw,
             all_=all_,
+            ticker=ticker,
             ticker_set=ticker_set,
             processes=processes,
             verbose=verbose,

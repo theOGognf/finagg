@@ -6,7 +6,7 @@ from typing import Literal
 
 import click
 
-from .. import indices, sec
+from .. import indices, sec, utils
 from . import feat as _feat
 
 logging.basicConfig(
@@ -29,9 +29,13 @@ def entry_point() -> None:
 @click.option(
     "--raw",
     "-r",
-    is_flag=True,
-    default=False,
-    help="Whether to install raw Yahoo! Finance historical price data.",
+    type=click.Choice(["prices"]),
+    multiple=True,
+    help=(
+        "Raw tables to install. `prices` indicates daily historical stock "
+        "price data. `prices` must be specified to enable installing refined "
+        "data using the `refined` flag."
+    ),
 )
 @click.option(
     "--refined",
@@ -53,14 +57,30 @@ def entry_point() -> None:
     help="Whether to install all defined tables (including all refined tables).",
 )
 @click.option(
+    "--ticker",
+    "-t",
+    multiple=True,
+    help=(
+        "Ticker whose data is attempted to be downloaded and inserted into "
+        "the SQL tables. Multiple tickers can be specified by providing "
+        "multiple `ticker` options, by separating tickers with a comma (e.g., "
+        "`AAPL,MSFT,NVDA`), or by providing tickers in a CSV file by "
+        "specifying a file path (e.g., `bank_tickers.txt`). The CSV file "
+        "can be formatted such that there's one ticker per line or multiple "
+        "tickers per line (delimited by a comma). The tickers specified "
+        "by this option are combined with the tickers specified by the "
+        "`ticker-set` option."
+    ),
+)
+@click.option(
     "--ticker-set",
     "-ts",
     "ticker_set",
     type=click.Choice(["indices", "sec"]),
-    default="indices",
+    default=None,
     help=(
         "Set of tickers whose data is attempted to be downloaded and "
-        "inserted into the raw SQL tables. 'indices' indicates the set "
+        "inserted into the SQL tables. 'indices' indicates the set "
         "of tickers from the three most popular indices (DJIA, "
         "Nasdaq 100, and S&P 500). 'sec' indicates all the tickers that "
         "have data available through the SEC API (which is approximately "
@@ -90,7 +110,8 @@ def install(
     raw: bool = False,
     refined: list[Literal["daily"]] = [],
     all_: bool = False,
-    ticker_set: Literal["indices", "sec"] = "indices",
+    ticker: list[str] = [],
+    ticker_set: None | Literal["indices", "sec"] = None,
     processes: int = mp.cpu_count() - 1,
     verbose: bool = False,
 ) -> int:
@@ -98,14 +119,29 @@ def install(
         logger.setLevel(logging.DEBUG)
 
     total_rows = 0
-    if all_ or raw:
+    all_raw = set()
+    if all_:
+        all_raw = {"prices"}
+    elif raw:
+        all_raw = set(raw)
+
+    if all_raw:
+        tickers = utils.expand_tickers(ticker)
         match ticker_set:
             case "indices":
-                tickers = indices.api.get_ticker_set()
+                tickers |= indices.api.get_ticker_set()
             case "sec":
-                tickers = sec.api.get_ticker_set()
+                tickers |= sec.api.get_ticker_set()
 
-        total_rows += _feat.prices.install(tickers)
+        if not tickers:
+            logger.info(
+                "Skipping installation because no tickers were provided "
+                "(by the `ticker` option or by the `ticker-set` option)"
+            )
+            return total_rows
+
+        if "prices" in all_raw:
+            total_rows += _feat.prices.install(tickers)
 
     all_refined = set()
     if all_:
@@ -118,6 +154,12 @@ def install(
 
     if all_ or all_refined or raw:
         logger.info(f"{total_rows} total rows inserted for {__package__}")
+        if not total_rows:
+            logger.warning(
+                "No rows were inserted. This is likely an error. Set the "
+                "verbose flag with the `--verbose/-v` option to enable debug "
+                "logging."
+            )
     else:
         logger.info(
             "Skipping installation because no installation options are provided"

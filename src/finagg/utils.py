@@ -34,7 +34,7 @@ def CamelCase(s: str, /) -> str:
     return "".join(word.title() for word in s.split("_"))
 
 
-def expand_tickers(tickers: list[str], /) -> set[str]:
+def expand_tickers(tickers: str | list[str], /) -> set[str]:
     """Expand the given list of tickers into a set of tickers, where each value
     in the list of tickers could be:
 
@@ -55,6 +55,9 @@ def expand_tickers(tickers: list[str], /) -> set[str]:
         True
 
     """
+    if isinstance(tickers, str):
+        tickers = [tickers]
+
     out = set()
     for ticker_csv in tickers:
         ticker_list = ticker_csv.split(",")
