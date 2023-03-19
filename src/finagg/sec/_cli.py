@@ -170,13 +170,14 @@ def install(
     if "quarterly.normalized" in all_refined:
         total_rows += _feat.quarterly.normalized.install(tickers=tickers)
 
-    if all_ or all_refined or raw:
-        logger.info(f"{total_rows} total rows inserted for {__package__}")
-        if not total_rows:
+    if all_ or all_refined or all_raw:
+        if total_rows:
+            logger.info(f"{total_rows} total rows inserted for {__package__}")
+        else:
             logger.warning(
-                "No rows were inserted. This is likely an error. Set the "
-                "verbose flag with the `--verbose/-v` option to enable debug "
-                "logging."
+                f"No rows were inserted for {__package__}. This is likely an "
+                "error. Set the verbose flag with the `--verbose/-v` option "
+                "to enable debug logging."
             )
     else:
         logger.info(
