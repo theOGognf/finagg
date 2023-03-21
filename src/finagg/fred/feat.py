@@ -673,6 +673,8 @@ class RawSeries:
         Args:
             series_ids: Set of series to install features for. Defaults to all
                 the series from :data:`finagg.fred.feat.economic.series_ids`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the feature's SQL table.

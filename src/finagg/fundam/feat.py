@@ -907,6 +907,8 @@ class RefinedFundamental(feat.Features):
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.sec.feat.quarterly.get_ticker_set`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the feature's SQL table.
