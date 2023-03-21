@@ -3,6 +3,7 @@
 from functools import cache
 
 import sqlalchemy as sa
+from sqlalchemy.engine import Engine
 
 from .. import backend
 
@@ -47,15 +48,20 @@ sp500 = sa.Table(
 
 
 @cache
-def get_ticker_set() -> set[str]:
+def get_ticker_set(*, engine: None | Engine = None) -> set[str]:
     """Get all unique tickers in the raw SQL tables.
+
+    Args:
+        engine: Feature store database engine. Defaults to the engine
+            at :data:`finagg.backend.engine`.
 
     Examples:
         >>> "AAPL" in finagg.indices.sql.get_ticker_set()
         True
 
     """
-    with backend.engine.begin() as conn:
+    engine = engine or backend.engine
+    with engine.begin() as conn:
         tickers: set[str] = set()
         for table in (djia, nasdaq100, sp500):
             tickers.update(conn.execute(sa.select(table.c.ticker)).scalars().all())

@@ -99,7 +99,7 @@ def entry_point() -> None:
     help="Sets the log level to DEBUG to show installation errors for each ticker.",
 )
 def install(
-    raw: bool = False,
+    raw: list[Literal["prices"]] = [],
     refined: list[Literal["daily"]] = [],
     all_: bool = False,
     ticker: list[str] = [],

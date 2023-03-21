@@ -309,7 +309,9 @@ class RefinedNormalizedFundamental:
         return df
 
     @classmethod
-    def get_candidate_ticker_set(cls, lb: int = 1) -> set[str]:
+    def get_candidate_ticker_set(
+        cls, lb: int = 1, *, engine: None | Engine = None
+    ) -> set[str]:
         """Get all unique tickers in the fundamental SQL table that MAY BE
         ELIGIBLE to be in the feature's SQL table.
 
@@ -318,6 +320,8 @@ class RefinedNormalizedFundamental:
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             All unique tickers that may be valid for creating
@@ -329,19 +333,18 @@ class RefinedNormalizedFundamental:
             True
 
         """
-        return RefinedFundamental.get_ticker_set(lb=lb)
+        return RefinedFundamental.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
     @cache
-    def get_ticker_set(
-        cls,
-        lb: int = 1,
-    ) -> set[str]:
+    def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             All unique tickers that contain all the columns for creating
@@ -352,7 +355,8 @@ class RefinedNormalizedFundamental:
             True
 
         """
-        with backend.engine.begin() as conn:
+        engine = engine or backend.engine
+        with engine.begin() as conn:
             tickers = (
                 conn.execute(
                     sa.select(sql.normalized_fundam.c.ticker)
@@ -377,6 +381,7 @@ class RefinedNormalizedFundamental:
         *,
         ascending: bool = True,
         date: int | str = 0,
+        engine: None | Engine = None,
     ) -> list[str]:
         """Get all tickers in the feature's SQL table sorted by a particular
         column for a date.
@@ -389,6 +394,8 @@ class RefinedNormalizedFundamental:
                 available data. If a string, should be in "%Y-%m-%d" format.
                 If an integer, should be days before the current date (e.g,
                 ``-2`` indicates two days before today).
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Tickers sorted by a feature column for a particular date.
@@ -405,7 +412,8 @@ class RefinedNormalizedFundamental:
             True
 
         """
-        with backend.engine.begin() as conn:
+        engine = engine or backend.engine
+        with engine.begin() as conn:
             if isinstance(date, int):
                 if date > 0:
                     raise ValueError("Date should be non-positive")
@@ -437,43 +445,45 @@ class RefinedNormalizedFundamental:
         return list(tickers)
 
     @classmethod
-    def install(cls, tickers: None | set[str] = None) -> int:
+    def install(
+        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
+    ) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.fundam.feat.fundam.get_ticker_set`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        tickers = tickers or cls.get_candidate_ticker_set()
-        if tickers:
-            sql.normalized_fundam.drop(backend.engine, checkfirst=True)
-            sql.normalized_fundam.create(backend.engine)
+        engine = engine or backend.engine
+        tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
+        sql.normalized_fundam.drop(engine, checkfirst=True)
+        sql.normalized_fundam.create(engine)
 
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
+        for ticker in tqdm(
+            tickers,
             desc="Installing refined industry-normalized fundamental data",
             position=0,
             leave=True,
-        ) as pbar:
-            for ticker in tickers:
-                try:
-                    df = cls.from_other_refined(ticker)
-                    rowcount = len(df.index)
-                    if rowcount:
-                        cls.to_refined(ticker, df)
-                        total_rows += rowcount
-                        logger.debug(f"{rowcount} rows inserted for {ticker}")
-                    else:
-                        logger.debug(f"Skipping {ticker} due to missing data")
-                except Exception as e:
-                    logger.debug(f"Skipping {ticker}", exc_info=e)
-                pbar.update()
+        ):
+            try:
+                df = cls.from_other_refined(ticker, engine=engine)
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_refined(ticker, df, engine=engine)
+                    total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                else:
+                    logger.debug(f"Skipping {ticker} due to missing data")
+            except Exception as e:
+                logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
 
     @classmethod
@@ -824,8 +834,7 @@ class RefinedFundamental(feat.Features):
 
     @classmethod
     def get_candidate_ticker_set(
-        cls,
-        lb: int = 1,
+        cls, lb: int = 1, *, engine: None | Engine = None
     ) -> set[str]:
         """Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE
         to be in the feature's SQL table.
@@ -833,6 +842,8 @@ class RefinedFundamental(feat.Features):
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             All unique tickers that may be valid for both quarterly and daily
@@ -845,20 +856,19 @@ class RefinedFundamental(feat.Features):
 
         """
         return sec.feat.RefinedQuarterly.get_ticker_set(
-            lb=lb
-        ) & yfinance.feat.RefinedDaily.get_ticker_set(lb=lb)
+            lb=lb, engine=engine
+        ) & yfinance.feat.RefinedDaily.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
     @cache
-    def get_ticker_set(
-        cls,
-        lb: int = 1,
-    ) -> set[str]:
+    def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             All unique tickers that contain all the columns for creating
@@ -869,7 +879,8 @@ class RefinedFundamental(feat.Features):
             True
 
         """
-        with backend.engine.begin() as conn:
+        engine = engine or backend.engine
+        with engine.begin() as conn:
             tickers = (
                 conn.execute(
                     sa.select(sql.fundam.c.ticker)
@@ -887,7 +898,9 @@ class RefinedFundamental(feat.Features):
         return set(tickers)
 
     @classmethod
-    def install(cls, tickers: None | set[str] = None) -> int:
+    def install(
+        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
+    ) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
 
@@ -899,31 +912,29 @@ class RefinedFundamental(feat.Features):
             Number of rows written to the feature's SQL table.
 
         """
-        tickers = tickers or cls.get_candidate_ticker_set()
-        if tickers:
-            sql.fundam.drop(backend.engine, checkfirst=True)
-            sql.fundam.create(backend.engine)
+        engine = engine or backend.engine
+        tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
+        sql.fundam.drop(engine, checkfirst=True)
+        sql.fundam.create(engine)
 
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
+        for ticker in tqdm(
+            tickers,
             desc="Installing refined fundamental data",
             position=0,
             leave=True,
-        ) as pbar:
-            for ticker in tickers:
-                try:
-                    df = cls.from_other_refined(ticker)
-                    rowcount = len(df.index)
-                    if rowcount:
-                        cls.to_refined(ticker, df)
-                        total_rows += rowcount
-                        logger.debug(f"{rowcount} rows inserted for {ticker}")
-                    else:
-                        logger.debug(f"Skipping {ticker} due to missing data")
-                except Exception as e:
-                    logger.debug(f"Skipping {ticker}", exc_info=e)
-                pbar.update()
+        ):
+            try:
+                df = cls.from_other_refined(ticker, engine=engine)
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_refined(ticker, df, engine=engine)
+                    total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                else:
+                    logger.debug(f"Skipping {ticker} due to missing data")
+            except Exception as e:
+                logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
 
     @classmethod

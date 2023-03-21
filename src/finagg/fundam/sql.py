@@ -3,6 +3,7 @@
 from functools import cache
 
 import sqlalchemy as sa
+from sqlalchemy.engine import Engine
 
 from .. import backend, sec, yfinance
 
@@ -42,7 +43,7 @@ normalized_fundam = sa.Table(
 
 
 @cache
-def get_ticker_set(lb: int = 1) -> set[str]:
+def get_ticker_set(lb: int = 1, *, engine: None | Engine = None) -> set[str]:
     """Get all unique ticker symbols in the raw SQL tables that have at least
     ``lb`` rows.
 
@@ -55,13 +56,16 @@ def get_ticker_set(lb: int = 1) -> set[str]:
     Args:
         lb: Lower bound number of rows that a company must have for its ticker
             to be included in the set returned by this method.
+        engine: Feature store database engine. Defaults to the engine
+            at :data:`finagg.backend.engine`.
 
     Examples:
         >>> "AAPL" in finagg.fundam.sql.get_ticker_set()
         True
 
     """
-    with backend.engine.begin() as conn:
+    engine = engine or backend.engine
+    with engine.begin() as conn:
         tickers = (
             conn.execute(
                 sa.select(fundam.c.ticker)

@@ -376,7 +376,9 @@ class RefinedNormalizedQuarterly:
         return df
 
     @classmethod
-    def get_candidate_ticker_set(cls, lb: int = 1) -> set[str]:
+    def get_candidate_ticker_set(
+        cls, lb: int = 1, *, engine: None | Engine = None
+    ) -> set[str]:
         """Get all unique tickers in the quarterly SQL table that MAY BE
         ELIGIBLE to be in the feature's SQL table.
 
@@ -385,6 +387,8 @@ class RefinedNormalizedQuarterly:
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             All unique tickers that may be valid for creating
@@ -396,19 +400,18 @@ class RefinedNormalizedQuarterly:
             True
 
         """
-        return RefinedQuarterly.get_ticker_set(lb=lb)
+        return RefinedQuarterly.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
     @cache
-    def get_ticker_set(
-        cls,
-        lb: int = 1,
-    ) -> set[str]:
+    def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             All unique tickers that contain all the columns for creating
@@ -420,7 +423,8 @@ class RefinedNormalizedQuarterly:
             True
 
         """
-        with backend.engine.begin() as conn:
+        engine = engine or backend.engine
+        with engine.begin() as conn:
             tickers = (
                 conn.execute(
                     sa.select(sql.submissions.c.ticker)
@@ -450,6 +454,7 @@ class RefinedNormalizedQuarterly:
         ascending: bool = True,
         year: int = -1,
         quarter: int = -1,
+        engine: None | Engine = None,
     ) -> list[str]:
         """Get all tickers in the feature's SQL table sorted by a particular
         column.
@@ -462,6 +467,8 @@ class RefinedNormalizedQuarterly:
                 has data available.
             quarter: Quarter to select from. Defaults to the most recent quarter
                 that has data available.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Tickers sorted by a feature column for a particular year and quarter.
@@ -476,7 +483,8 @@ class RefinedNormalizedQuarterly:
             True
 
         """
-        with backend.engine.begin() as conn:
+        engine = engine or backend.engine
+        with engine.begin() as conn:
             if year == -1:
                 (max_year,) = conn.execute(
                     sa.select(sa.func.max(sql.normalized_quarterly.c.fy))
@@ -513,7 +521,9 @@ class RefinedNormalizedQuarterly:
         return list(tickers)
 
     @classmethod
-    def install(cls, tickers: None | set[str] = None) -> int:
+    def install(
+        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
+    ) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
 
@@ -521,36 +531,36 @@ class RefinedNormalizedQuarterly:
             tickers: Set of tickers to install features for. Defaults to all
                 the candidate tickers from
                 :meth:`RefinedNormalizedQuarterly.get_candidate_ticker_set`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        tickers = tickers or cls.get_candidate_ticker_set()
-        if tickers:
-            sql.normalized_quarterly.drop(backend.engine, checkfirst=True)
-            sql.normalized_quarterly.create(backend.engine)
+        tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
+        engine = engine or backend.engine
+        sql.normalized_quarterly.drop(engine, checkfirst=True)
+        sql.normalized_quarterly.create(engine)
 
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
+        for ticker in tqdm(
+            tickers,
             desc="Installing refined SEC industry-normalized quarterly data",
             position=0,
             leave=True,
-        ) as pbar:
-            for ticker in tickers:
-                try:
-                    df = cls.from_other_refined(ticker)
-                    rowcount = len(df.index)
-                    if rowcount:
-                        cls.to_refined(ticker, df)
-                        total_rows += rowcount
-                        logger.debug(f"{rowcount} rows inserted for {ticker}")
-                    else:
-                        logger.debug(f"Skipping {ticker} due to missing data")
-                except Exception as e:
-                    logger.debug(f"Skipping {ticker}", exc_info=e)
-                pbar.update()
+        ):
+            try:
+                df = cls.from_other_refined(ticker, engine=engine)
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_refined(ticker, df, engine=engine)
+                    total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                else:
+                    logger.debug(f"Skipping {ticker} due to missing data")
+            except Exception as e:
+                logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
 
     @classmethod
@@ -586,7 +596,7 @@ class RefinedNormalizedQuarterly:
                 f"Dataframe must have columns {RefinedQuarterly.columns} but got {df.columns}"
             )
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
-        df["cik"] = sql.get_cik(ticker)
+        df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
             conn.execute(sql.normalized_quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
@@ -875,8 +885,7 @@ class RefinedQuarterly(feat.Features):
     @classmethod
     @cache
     def get_candidate_ticker_set(
-        cls,
-        lb: int = 1,
+        cls, lb: int = 1, *, engine: None | Engine = None
     ) -> set[str]:
         """Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE
         to be in the feature's SQL table.
@@ -884,6 +893,8 @@ class RefinedQuarterly(feat.Features):
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             All unique tickers that may be valid for creating quarterly features
@@ -895,7 +906,8 @@ class RefinedQuarterly(feat.Features):
             True
 
         """
-        with backend.engine.begin() as conn:
+        engine = engine or backend.engine
+        with engine.begin() as conn:
             tickers = (
                 conn.execute(
                     sa.select(
@@ -925,15 +937,14 @@ class RefinedQuarterly(feat.Features):
 
     @classmethod
     @cache
-    def get_ticker_set(
-        cls,
-        lb: int = 1,
-    ) -> set[str]:
+    def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             All unique tickers that contain all the columns for creating
@@ -944,7 +955,8 @@ class RefinedQuarterly(feat.Features):
             True
 
         """
-        with backend.engine.begin() as conn:
+        engine = engine or backend.engine
+        with engine.begin() as conn:
             tickers = (
                 conn.execute(
                     sa.select(sql.submissions.c.ticker)
@@ -963,7 +975,9 @@ class RefinedQuarterly(feat.Features):
         return set(tickers)
 
     @classmethod
-    def install(cls, tickers: None | set[str] = None) -> int:
+    def install(
+        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
+    ) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
 
@@ -971,36 +985,36 @@ class RefinedQuarterly(feat.Features):
             tickers: Set of tickers to install features for. Defaults to all
                 the candidate tickers from
                 :meth:`RefinedQuarterly.get_candidate_ticker_set`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        tickers = tickers or cls.get_candidate_ticker_set()
-        if tickers:
-            sql.quarterly.drop(backend.engine, checkfirst=True)
-            sql.quarterly.create(backend.engine)
+        tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
+        engine = engine or backend.engine
+        sql.quarterly.drop(engine, checkfirst=True)
+        sql.quarterly.create(engine)
 
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
+        for ticker in tqdm(
+            tickers,
             desc="Installing refined SEC quarterly data",
             position=0,
             leave=True,
-        ) as pbar:
-            for ticker in tickers:
-                try:
-                    df = cls.from_raw(ticker)
-                    rowcount = len(df.index)
-                    if rowcount:
-                        cls.to_refined(ticker, df)
-                        total_rows += rowcount
-                        logger.debug(f"{rowcount} rows inserted for {ticker}")
-                    else:
-                        logger.debug(f"Skipping {ticker} due to missing data")
-                except Exception as e:
-                    logger.debug(f"Skipping {ticker}", exc_info=e)
-                pbar.update()
+        ):
+            try:
+                df = cls.from_raw(ticker, engine=engine)
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_refined(ticker, df, engine=engine)
+                    total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                else:
+                    logger.debug(f"Skipping {ticker} due to missing data")
+            except Exception as e:
+                logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
 
     @classmethod
@@ -1036,7 +1050,7 @@ class RefinedQuarterly(feat.Features):
                 f"Dataframe must have columns {cls.columns} but got {df.columns}"
             )
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
-        df["cik"] = sql.get_cik(ticker)
+        df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
             conn.execute(sql.quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
@@ -1053,8 +1067,7 @@ class RawSubmissions:
 
     @classmethod
     def install(
-        cls,
-        tickers: None | set[str] = None,
+        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
     ) -> int:
         """Drop the feature's table, create a new one, and insert data
         as-is from the SEC API.
@@ -1062,37 +1075,37 @@ class RawSubmissions:
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
         tickers = tickers or indices.api.get_ticker_set()
-        if tickers:
-            sql.submissions.drop(backend.engine, checkfirst=True)
-            sql.submissions.create(backend.engine)
+        engine = engine or backend.engine
+        sql.submissions.drop(engine, checkfirst=True)
+        sql.submissions.create(engine)
 
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
+        for ticker in tqdm(
+            tickers,
             desc="Installing raw SEC submissions data",
             position=0,
             leave=True,
-        ) as pbar:
-            for ticker in tickers:
-                try:
-                    metadata = api.submissions.get(ticker=ticker)["metadata"]
-                    df = pd.DataFrame(metadata, index=[0])
-                    rowcount = len(df.index)
-                    if rowcount:
-                        cls.to_raw(df, engine=backend.engine)
-                        total_rows += rowcount
-                        logger.debug(f"{rowcount} rows inserted for {ticker}")
-                    else:
-                        logger.debug(f"Skipping {ticker} due to missing submissions")
-                except Exception as e:
-                    logger.debug(f"Skipping {ticker}", exc_info=e)
-                pbar.update()
+        ):
+            try:
+                metadata = api.submissions.get(ticker=ticker)["metadata"]
+                df = pd.DataFrame(metadata, index=[0])
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_raw(df, engine=engine)
+                    total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                else:
+                    logger.debug(f"Skipping {ticker} due to missing submissions")
+            except Exception as e:
+                logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
 
     @classmethod
@@ -1168,8 +1181,7 @@ class RawTags:
 
     @classmethod
     def install(
-        cls,
-        tickers: None | set[str] = None,
+        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
     ) -> int:
         """Drop the feature's table, create a new one, and insert data
         as-is from the SEC API.
@@ -1177,48 +1189,46 @@ class RawTags:
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
         tickers = tickers or indices.api.get_ticker_set()
-        if tickers:
-            sql.tags.drop(backend.engine, checkfirst=True)
-            sql.tags.create(backend.engine)
+        engine = engine or backend.engine
+        sql.tags.drop(engine, checkfirst=True)
+        sql.tags.create(engine)
 
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
+        for ticker in tqdm(
+            tickers,
             desc="Installing raw SEC tags data",
             position=0,
             leave=True,
-        ) as pbar:
-            for ticker in tickers:
-                for concept in api.popular_concepts:
-                    tag = concept["tag"]
-                    taxonomy = concept["taxonomy"]
-                    units = concept["units"]
-                    try:
-                        df = api.company_concept.get(
-                            tag,
-                            ticker=ticker,
-                            taxonomy=taxonomy,
-                            units=units,
-                        )
-                        df = get_unique_filings(df, form="10-Q", units=units)
-                        rowcount = len(df.index)
-                        if rowcount:
-                            cls.to_raw(df, engine=backend.engine)
-                            total_rows += rowcount
-                            logger.debug(
-                                f"{rowcount} rows inserted for {ticker} tag {tag}"
-                            )
-                        else:
-                            logger.debug(f"Skipping {ticker} due to missing filings")
-                    except Exception as e:
-                        logger.debug(f"Skipping {ticker}", exc_info=e)
-                pbar.update()
+        ):
+            for concept in api.popular_concepts:
+                tag = concept["tag"]
+                taxonomy = concept["taxonomy"]
+                units = concept["units"]
+                try:
+                    df = api.company_concept.get(
+                        tag,
+                        ticker=ticker,
+                        taxonomy=taxonomy,
+                        units=units,
+                    )
+                    df = get_unique_filings(df, form="10-Q", units=units)
+                    rowcount = len(df.index)
+                    if rowcount:
+                        cls.to_raw(df, engine=engine)
+                        total_rows += rowcount
+                        logger.debug(f"{rowcount} rows inserted for {ticker} tag {tag}")
+                    else:
+                        logger.debug(f"Skipping {ticker} due to missing filings")
+                except Exception as e:
+                    logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
 
     @classmethod

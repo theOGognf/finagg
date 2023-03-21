@@ -9,11 +9,12 @@ import finagg
 @pytest.fixture
 def engine() -> Engine:
     yield from finagg.testing.sqlite_engine(
-        finagg.backend.database_path, table=finagg.sec.sql.quarterly
+        finagg.backend.database_path, metadata=finagg.sec.sql.metadata
     )
 
 
 def test_quarterly_to_from_refined(engine: Engine) -> None:
+    finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
     df1 = finagg.sec.feat.quarterly.from_api("AAPL")
     finagg.sec.feat.quarterly.to_refined("AAPL", df1, engine=engine)
     with pytest.raises(IntegrityError):

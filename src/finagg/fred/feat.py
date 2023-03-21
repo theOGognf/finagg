@@ -222,21 +222,26 @@ class RefinedNormalizedEconomic:
         return df
 
     @classmethod
-    def install(cls) -> int:
+    def install(cls, *, engine: None | Engine = None) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
+
+        Args:
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        sql.normalized_economic.drop(backend.engine, checkfirst=True)
-        sql.normalized_economic.create(backend.engine)
+        engine = engine or backend.engine
+        sql.normalized_economic.drop(engine, checkfirst=True)
+        sql.normalized_economic.create(engine)
 
-        df = cls.from_other_refined()
+        df = cls.from_other_refined(engine=engine)
         total_rows = len(df.index)
         if total_rows:
-            cls.to_refined(df)
+            cls.to_refined(df, engine=engine)
             total_rows += total_rows
         return total_rows
 
@@ -530,21 +535,26 @@ class RefinedEconomic(feat.Features):
         return df
 
     @classmethod
-    def install(cls) -> int:
+    def install(cls, *, engine: None | Engine = None) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from another raw SQL table.
+
+        Args:
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        sql.economic.drop(backend.engine, checkfirst=True)
-        sql.economic.create(backend.engine)
+        engine = engine or backend.engine
+        sql.economic.drop(engine, checkfirst=True)
+        sql.economic.create(engine)
 
-        df = cls.from_raw()
+        df = cls.from_raw(engine=engine)
         total_rows = len(df.index)
         if total_rows:
-            cls.to_refined(df)
+            cls.to_refined(df, engine=engine)
             total_rows += total_rows
         return total_rows
 
@@ -654,25 +664,33 @@ class RawSeries:
         return df.set_index(["date"]).sort_index()
 
     @classmethod
-    def install(cls) -> int:
+    def install(
+        cls, series_ids: None | set[str] = None, *, engine: None | Engine = None
+    ) -> int:
         """Drop the feature's table, create a new one, and insert data
         as-is from the FRED API.
+
+        Args:
+            series_ids: Set of series to install features for. Defaults to all
+                the series from :data:`finagg.fred.feat.economic.series_ids`.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
-        sql.series.drop(backend.engine, checkfirst=True)
-        sql.series.create(backend.engine)
+        series_ids = series_ids or set(economic.series_ids)
+        engine = engine or backend.engine
+        sql.series.drop(engine, checkfirst=True)
+        sql.series.create(engine)
 
         total_rows = 0
-        with tqdm(
-            total=len(economic.series_ids),
+        for series_id in tqdm(
+            series_ids,
             desc="Installing raw FRED economic series data",
             position=0,
             leave=True,
-        ) as pbar:
-            for series_id in economic.series_ids:
+        ):
+            try:
                 df = api.series.observations.get(
                     series_id,
                     realtime_start=0,
@@ -681,12 +699,13 @@ class RawSeries:
                 )
                 rowcount = len(df.index)
                 if rowcount:
-                    cls.to_raw(df, engine=backend.engine)
+                    cls.to_raw(df, engine=engine)
                     total_rows += rowcount
                     logger.debug(f"{rowcount} rows inserted for {series_id}")
                 else:
                     logger.debug(f"Skipping {series_id} due to missing data")
-                pbar.update()
+            except Exception as e:
+                logger.debug(f"Skipping {series_id}", exc_info=e)
         return total_rows
 
     @classmethod

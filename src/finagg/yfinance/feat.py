@@ -217,8 +217,7 @@ class RefinedDaily(feat.Features):
 
     @classmethod
     def get_candidate_ticker_set(
-        cls,
-        lb: int = 1,
+        cls, lb: int = 1, *, engine: None | Engine = None
     ) -> set[str]:
         """Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE
         to be in the feature's refined SQL table.
@@ -226,6 +225,8 @@ class RefinedDaily(feat.Features):
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             All unique tickers that may be valid for creating daily features
@@ -237,19 +238,18 @@ class RefinedDaily(feat.Features):
             True
 
         """
-        return sql.get_ticker_set(lb=lb)
+        return sql.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
     @cache
-    def get_ticker_set(
-        cls,
-        lb: int = 1,
-    ) -> set[str]:
+    def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             All unique tickers that contain all the columns for creating
@@ -260,7 +260,8 @@ class RefinedDaily(feat.Features):
             True
 
         """
-        with backend.engine.begin() as conn:
+        engine = engine or backend.engine
+        with engine.begin() as conn:
             tickers = (
                 conn.execute(
                     sa.select(sql.daily.c.ticker)
@@ -279,8 +280,7 @@ class RefinedDaily(feat.Features):
 
     @classmethod
     def install(
-        cls,
-        tickers: None | set[str] = None,
+        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
     ) -> int:
         """Drop the feature's table, create a new one, and insert data
         transformed from the raw SQL table.
@@ -288,36 +288,36 @@ class RefinedDaily(feat.Features):
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the feature's refined SQL table.
 
         """
         tickers = tickers or cls.get_candidate_ticker_set()
-        if tickers:
-            sql.daily.drop(backend.engine, checkfirst=True)
-            sql.daily.create(backend.engine)
+        engine = engine or backend.engine
+        sql.daily.drop(engine, checkfirst=True)
+        sql.daily.create(engine)
 
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
+        for ticker in tqdm(
+            tickers,
             desc="Installing refined Yahoo! Finance daily data",
             position=0,
             leave=True,
-        ) as pbar:
-            for ticker in tickers:
-                try:
-                    df = cls.from_raw(ticker)
-                    rowcount = len(df.index)
-                    if rowcount:
-                        cls.to_refined(ticker, df)
-                        total_rows += rowcount
-                        logger.debug(f"{rowcount} rows inserted for {ticker}")
-                    else:
-                        logger.debug(f"Skipping {ticker} due to missing data")
-                except Exception as e:
-                    logger.debug(f"Skipping {ticker}", exc_info=e)
-                pbar.update()
+        ):
+            try:
+                df = cls.from_raw(ticker, engine=engine)
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_refined(ticker, df, engine=engine)
+                    total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                else:
+                    logger.debug(f"Skipping {ticker} due to missing data")
+            except Exception as e:
+                logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
 
     @classmethod
@@ -373,6 +373,8 @@ class RawPrices:
     def install(
         cls,
         tickers: None | set[str] = None,
+        *,
+        engine: None | Engine = None,
     ) -> int:
         """Drop the feature's table, create a new one, and insert data
         as-is using Yahoo! Finance.
@@ -380,36 +382,36 @@ class RawPrices:
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
         tickers = tickers or indices.api.get_ticker_set()
-        if tickers:
-            sql.prices.drop(backend.engine, checkfirst=True)
-            sql.prices.create(backend.engine)
+        engine = engine or backend.engine
+        sql.prices.drop(engine, checkfirst=True)
+        sql.prices.create(engine)
 
         total_rows = 0
-        with tqdm(
-            total=len(tickers),
+        for ticker in tqdm(
+            tickers,
             desc="Installing raw Yahoo! Finance stock data",
             position=0,
             leave=True,
-        ) as pbar:
-            for ticker in tickers:
-                try:
-                    df = api.get(ticker, interval="1d", period="max")
-                    rowcount = len(df.index)
-                    if rowcount:
-                        cls.to_raw(df, engine=backend.engine)
-                        total_rows += rowcount
-                        logger.debug(f"{rowcount} rows inserted for {ticker}")
-                    else:
-                        logger.debug(f"Skipping {ticker} due to missing stock data")
-                except Exception as e:
-                    logger.debug(f"Skipping {ticker}", exc_info=e)
-                pbar.update()
+        ):
+            try:
+                df = api.get(ticker, interval="1d", period="max")
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_raw(df, engine=engine)
+                    total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                else:
+                    logger.debug(f"Skipping {ticker} due to missing stock data")
+            except Exception as e:
+                logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
 
     @classmethod

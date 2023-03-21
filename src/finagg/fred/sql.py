@@ -4,6 +4,7 @@
 from functools import cache
 
 import sqlalchemy as sa
+from sqlalchemy.engine import Engine
 
 from .. import backend
 
@@ -64,20 +65,23 @@ normalized_economic = sa.Table(
 
 
 @cache
-def get_id_set(lb: int = 1) -> set[str]:
+def get_id_set(lb: int = 1, *, engine: None | Engine = None) -> set[str]:
     """Get all unique economic series IDs in the raw SQL tables that have at least
     ``lb`` rows.
 
     Args:
         lb: Lower bound number of rows that a series must have for its ID
             to be included in the set returned by this method.
+        engine: Feature store database engine. Defaults to the engine
+            at :data:`finagg.backend.engine`.
 
     Examples:
         >>> "FEDFUNDS" in finagg.fred.sql.get_id_set()
         True
 
     """
-    with backend.engine.begin() as conn:
+    engine = engine or backend.engine
+    with engine.begin() as conn:
         series_ids = (
             conn.execute(
                 sa.select(series.c.series_id)

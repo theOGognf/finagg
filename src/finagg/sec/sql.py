@@ -4,6 +4,7 @@ from functools import cache
 from typing import Any, Literal
 
 import sqlalchemy as sa
+from sqlalchemy.engine import Engine
 
 from .. import backend
 
@@ -159,7 +160,7 @@ normalized_quarterly = sa.Table(
 )
 
 
-def get_cik(ticker: str, /) -> str:
+def get_cik(ticker: str, /, *, engine: None | Engine = None) -> str:
     """Use raw SQL data to find a company's SEC CIK from its ticker symbol.
 
     This is the preferred method for getting a company's SEC CIK if raw SQL
@@ -171,6 +172,8 @@ def get_cik(ticker: str, /) -> str:
 
     Args:
         ticker: A company's ticker symbol.
+        engine: Feature store database engine. Defaults to the engine
+            at :data:`finagg.backend.engine`.
 
     Returns:
         The company's corresponding SEC CIK.
@@ -182,7 +185,8 @@ def get_cik(ticker: str, /) -> str:
         True
 
     """
-    with backend.engine.begin() as conn:
+    engine = engine or backend.engine
+    with engine.begin() as conn:
         (cik,) = conn.execute(
             sa.select(submissions.c.cik).where(submissions.c.ticker == ticker)
         ).one()
@@ -190,7 +194,7 @@ def get_cik(ticker: str, /) -> str:
 
 
 def get_metadata(
-    *, cik: None | str = None, ticker: None | str = None
+    *, cik: None | str = None, ticker: None | str = None, engine: None | Engine = None
 ) -> dict[str, Any]:
     """Return a company's metadata (its SEC CIK, ticker, name, and industry
     code) from its SEC CIK or its ticker symbol.
@@ -205,6 +209,8 @@ def get_metadata(
     Args:
         cik: Company SEC CIK. Mutually exclusive with ``ticker``.
         ticker: Company ticker. Mutually exclusive with ``cik``.
+        engine: Feature store database engine. Defaults to the engine
+            at :data:`finagg.backend.engine`.
 
     Returns:
         A company's metadata as a dictionary.
@@ -214,13 +220,15 @@ def get_metadata(
         {'cik': '0000789019', 'ticker': 'MSFT', 'name': 'microsoft corp', 'sic': '7372'}
 
     """
+    engine = engine or backend.engine
+
     if bool(cik) == bool(ticker):
         raise ValueError("Must provide a `cik` or a `ticker`.")
 
     if ticker:
-        cik = str(get_cik(ticker))
+        cik = str(get_cik(ticker, engine=engine))
 
-    with backend.engine.begin() as conn:
+    with engine.begin() as conn:
         row = conn.execute(
             sa.select(
                 submissions.c.cik,
@@ -232,7 +240,7 @@ def get_metadata(
     return row._asdict()
 
 
-def get_ticker(cik: str, /) -> str:
+def get_ticker(cik: str, /, *, engine: None | Engine = None) -> str:
     """Use raw SQL data to find a company's ticker from its SEC CIK.
 
     This is the preferred method for getting a company's ticker if raw SQL
@@ -245,6 +253,8 @@ def get_ticker(cik: str, /) -> str:
 
     Args:
         cik: A company's SEC CIK.
+        engine: Feature store database engine. Defaults to the engine
+            at :data:`finagg.backend.engine`.
 
     Returns:
         The company's corresponding ticker symbol.
@@ -256,7 +266,8 @@ def get_ticker(cik: str, /) -> str:
         True
 
     """
-    with backend.engine.begin() as conn:
+    engine = engine or backend.engine
+    with engine.begin() as conn:
         (ticker,) = conn.execute(
             sa.select(submissions.c.ticker).where(submissions.c.cik == cik)
         ).one()
@@ -264,7 +275,11 @@ def get_ticker(cik: str, /) -> str:
 
 
 @cache
-def get_ticker_set(lb: int = 1) -> set[str]:
+def get_ticker_set(
+    lb: int = 1,
+    *,
+    engine: None | Engine = None,
+) -> set[str]:
     """Get all unique ticker symbols in the raw SQL tables that have at least
     ``lb`` rows.
 
@@ -277,13 +292,16 @@ def get_ticker_set(lb: int = 1) -> set[str]:
     Args:
         lb: Lower bound number of rows that a company must have for its ticker
             to be included in the set returned by this method.
+        engine: Feature store database engine. Defaults to the engine
+            at :data:`finagg.backend.engine`.
 
     Examples:
         >>> "AAPL" in finagg.sec.sql.get_ticker_set()
         True
 
     """
-    with backend.engine.begin() as conn:
+    engine = engine or backend.engine
+    with engine.begin() as conn:
         tickers = (
             conn.execute(
                 sa.select(submissions.c.ticker)
@@ -303,6 +321,7 @@ def get_tickers_in_industry(
     ticker: None | str = None,
     code: None | str = None,
     level: Literal[2, 3, 4] = 2,
+    engine: None | Engine = None,
 ) -> set[str]:
     """Get a set of tickers that all share the same industry using raw SQL data.
 
@@ -326,6 +345,9 @@ def get_tickers_in_industry(
                 - 3 = industry group (e.g., office furnitures)
                 - 4 = industry (e.g., wood office furniture)
 
+        engine: Feature store database engine. Defaults to the engine
+            at :data:`finagg.backend.engine`.
+
     Returns:
         A set of tickers that all share the same industry as denoted by
         another ticker (using the ``ticker`` arg) or an industry SIC code
@@ -336,7 +358,8 @@ def get_tickers_in_industry(
         True
 
     """
-    with backend.engine.begin() as conn:
+    engine = engine or backend.engine
+    with engine.begin() as conn:
         if ticker:
             (sic,) = conn.execute(
                 sa.select(submissions.c.sic).where(submissions.c.ticker == ticker)
