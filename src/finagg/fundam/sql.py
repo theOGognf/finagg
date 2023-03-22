@@ -1,11 +1,9 @@
 """SQLAlchemy interfaces for fundamental features."""
 
-from functools import cache
 
 import sqlalchemy as sa
-from sqlalchemy.engine import Engine
 
-from .. import backend, sec, yfinance
+from .. import sec, yfinance
 
 metadata = sa.MetaData()
 
@@ -40,39 +38,3 @@ normalized_fundam = sa.Table(
     sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
-
-
-@cache
-def get_ticker_set(lb: int = 1, *, engine: None | Engine = None) -> set[str]:
-    """Get all unique ticker symbols in the raw SQL tables that have at least
-    ``lb`` rows.
-
-    This method is convenient for accessing the tickers that have raw SQL data
-    associated with them so the data associated with those tickers can be
-    further refined. A common pattern is to use this method and other
-    ``get_ticker_set`` methods (such as those found in :mod:`finagg.fundam.feat`)
-    to determine which tickers are missing data from other tables or features.
-
-    Args:
-        lb: Lower bound number of rows that a company must have for its ticker
-            to be included in the set returned by this method.
-        engine: Feature store database engine. Defaults to the engine
-            at :data:`finagg.backend.engine`.
-
-    Examples:
-        >>> "AAPL" in finagg.fundam.sql.get_ticker_set()
-        True
-
-    """
-    engine = engine or backend.engine
-    with engine.begin() as conn:
-        tickers = (
-            conn.execute(
-                sa.select(fundam.c.ticker)
-                .group_by(fundam.c.ticker)
-                .having(sa.func.count(fundam.c.date) >= lb)
-            )
-            .scalars()
-            .all()
-        )
-    return set(tickers)

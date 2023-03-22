@@ -1,8 +1,6 @@
 """FRED SQLAlchemy interfaces."""
 
 
-from functools import cache
-
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 
@@ -64,7 +62,6 @@ normalized_economic = sa.Table(
 )
 
 
-@cache
 def get_id_set(lb: int = 1, *, engine: None | Engine = None) -> set[str]:
     """Get all unique economic series IDs in the raw SQL tables that have at least
     ``lb`` rows.

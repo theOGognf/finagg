@@ -1,7 +1,6 @@
 """Features from :mod:`yfinance` sources."""
 
 import logging
-from functools import cache
 
 import numpy as np
 import pandas as pd
@@ -241,7 +240,6 @@ class RefinedDaily(feat.Features):
         return sql.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
-    @cache
     def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 

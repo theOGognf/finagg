@@ -1,5 +1,4 @@
 """Yahoo! finance SQLAlchemy interfaces."""
-from functools import cache
 
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
@@ -36,7 +35,6 @@ daily = sa.Table(
 )
 
 
-@cache
 def get_ticker_set(lb: int = 1, *, engine: None | Engine = None) -> set[str]:
     """Get all unique ticker symbols in the raw SQL tables that have at least
     ``lb`` rows.

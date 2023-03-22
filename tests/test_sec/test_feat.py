@@ -13,6 +13,21 @@ def engine() -> Engine:
     )
 
 
+def test_quarterly_candidate_ticker_set(engine: Engine) -> None:
+    finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
+    finagg.sec.feat.tags.install({"AAPL"}, engine=engine)
+    assert "AAPL" in finagg.sec.sql.get_ticker_set(engine=engine)
+    assert "AAPL" in finagg.sec.feat.quarterly.get_candidate_ticker_set(engine=engine)
+
+
+def test_quarterly_ticker_set(engine: Engine) -> None:
+    finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
+    finagg.sec.feat.tags.install({"AAPL"}, engine=engine)
+    finagg.sec.feat.quarterly.install({"AAPL"}, engine=engine)
+    assert "AAPL" in finagg.sec.feat.quarterly.get_candidate_ticker_set(engine=engine)
+    assert "AAPL" in finagg.sec.feat.quarterly.get_ticker_set(engine=engine)
+
+
 def test_quarterly_to_from_refined(engine: Engine) -> None:
     finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
     df1 = finagg.sec.feat.quarterly.from_api("AAPL")

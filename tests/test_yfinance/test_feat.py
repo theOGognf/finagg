@@ -13,6 +13,19 @@ def engine() -> Engine:
     )
 
 
+def test_daily_candidate_ticker_set(engine: Engine) -> None:
+    finagg.yfinance.feat.prices.install({"AAPL"}, engine=engine)
+    assert "AAPL" in finagg.yfinance.sql.get_ticker_set(engine=engine)
+    assert "AAPL" in finagg.yfinance.feat.daily.get_candidate_ticker_set(engine=engine)
+
+
+def test_daily_ticker_set(engine: Engine) -> None:
+    finagg.yfinance.feat.prices.install({"AAPL"}, engine=engine)
+    finagg.yfinance.feat.daily.install({"AAPL"}, engine=engine)
+    assert "AAPL" in finagg.yfinance.feat.daily.get_candidate_ticker_set(engine=engine)
+    assert "AAPL" in finagg.yfinance.feat.daily.get_ticker_set(engine=engine)
+
+
 def test_daily_to_from_refined(engine: Engine) -> None:
     df1 = finagg.yfinance.feat.daily.from_api("AAPL")
     finagg.yfinance.feat.daily.to_refined("AAPL", df1, engine=engine)

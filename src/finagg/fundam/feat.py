@@ -2,7 +2,6 @@
 
 import logging
 from datetime import datetime, timedelta
-from functools import cache
 from typing import Literal
 
 import numpy as np
@@ -336,7 +335,6 @@ class RefinedNormalizedFundamental:
         return RefinedFundamental.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
-    @cache
     def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 
@@ -860,7 +858,6 @@ class RefinedFundamental(feat.Features):
         ) & yfinance.feat.RefinedDaily.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
-    @cache
     def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 

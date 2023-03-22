@@ -1,6 +1,5 @@
 """Indices SQLAlchemy interfaces."""
 
-from functools import cache
 
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
@@ -47,7 +46,6 @@ sp500 = sa.Table(
 )
 
 
-@cache
 def get_ticker_set(*, engine: None | Engine = None) -> set[str]:
     """Get all unique tickers in the raw SQL tables.
 

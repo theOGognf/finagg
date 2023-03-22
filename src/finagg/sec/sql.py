@@ -1,6 +1,5 @@
 """SEC SQLAlchemy interfaces."""
 
-from functools import cache
 from typing import Any, Literal
 
 import sqlalchemy as sa
@@ -274,7 +273,6 @@ def get_ticker(cik: str, /, *, engine: None | Engine = None) -> str:
     return str(ticker)
 
 
-@cache
 def get_ticker_set(
     lb: int = 1,
     *,
@@ -315,7 +313,6 @@ def get_ticker_set(
     return set(tickers)
 
 
-@cache
 def get_tickers_in_industry(
     *,
     ticker: None | str = None,
