@@ -34,42 +34,42 @@ def CamelCase(s: str, /) -> str:
     return "".join(word.title() for word in s.split("_"))
 
 
-def expand_tickers(tickers: str | list[str], /) -> set[str]:
-    """Expand the given list of tickers into a set of tickers, where each value
-    in the list of tickers could be:
+def expand_csv(values: str | list[str], /) -> set[str]:
+    """Expand the given list of strings into a set of strings, where each value
+    in the list of strings could be:
 
-        1. Comma-separated tickers
-        2. A path that points to a CSV file containing tickers
-        3. A regular ol' ticker
+        1. Comma-separated values
+        2. A path that points to a CSV file containing values
+        3. A regular ol' string
 
     Args:
-        tickers: List of strings denoting tickers, comma-separated tickers,
-            or CSV files containing tickers.
+        values: List of strings denoting comma-separated values,
+            or CSV files containing comma-separated values.
 
     Returns:
-        A set of all tickers found within the given list.
+        A set of all strings found within the given list.
 
     Examples:
-        >>> ts = finagg.utils.expand_tickers(["AAPL,MSFT"])
+        >>> ts = finagg.utils.expand_csv(["AAPL,MSFT"])
         >>> "AAPL" in ts
         True
 
     """
-    if isinstance(tickers, str):
-        tickers = [tickers]
+    if isinstance(values, str):
+        values = [values]
 
     out = set()
-    for ticker_csv in tickers:
-        ticker_list = ticker_csv.split(",")
-        for ticker in ticker_list:
-            ticker_path = Path(ticker)
-            if ticker_path.exists():
-                with open(ticker_path, "r") as f:
+    for vstring in values:
+        vlist = vstring.split(",")
+        for v in vlist:
+            csv_path = Path(v)
+            if csv_path.exists():
+                with open(csv_path, "r") as f:
                     reader = csv.reader(f)
                     for row in reader:
                         out.update(row)
             else:
-                out.add(ticker)
+                out.add(v)
     return out
 
 

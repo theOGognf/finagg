@@ -116,15 +116,15 @@ def install(
     elif raw:
         all_raw = set(raw)
 
-    tickers = utils.expand_tickers(ticker)
+    all_tickers = utils.expand_csv(ticker)
     if all_raw:
         match ticker_set:
             case "indices":
-                tickers |= indices.api.get_ticker_set()
+                all_tickers |= indices.api.get_ticker_set()
             case "sec":
-                tickers |= sec.api.get_ticker_set()
+                all_tickers |= sec.api.get_ticker_set()
 
-        if not tickers:
+        if not all_tickers:
             logger.info(
                 f"Skipping {__package__} installation because no tickers were "
                 "provided (by the `ticker` option or by the `ticker-set` option)"
@@ -132,7 +132,7 @@ def install(
             return total_rows
 
         if "prices" in all_raw:
-            total_rows += _feat.prices.install(tickers)
+            total_rows += _feat.prices.install(all_tickers)
 
     all_refined = set()
     if all_:
@@ -141,7 +141,7 @@ def install(
         all_refined = set(refined)
 
     if "daily" in all_refined:
-        total_rows += _feat.daily.install(tickers=tickers)
+        total_rows += _feat.daily.install(tickers=all_tickers)
 
     if all_ or all_refined or all_raw:
         if total_rows:

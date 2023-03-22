@@ -29,9 +29,14 @@ def entry_point() -> None:
 @click.option(
     "--raw",
     "-r",
-    is_flag=True,
-    default=False,
-    help="Whether to install raw FRED series data.",
+    type=click.Choice(["series"]),
+    multiple=True,
+    help=(
+        "Raw tables to install. `series` indicates raw FRED economic series "
+        "observations/measurements (e.g., consumer price index, gross domestic "
+        "product, etc.). At least `series` must be specified to enable "
+        "installing refined data using the `refined` flag."
+    ),
 )
 @click.option(
     "--refined",
@@ -53,6 +58,35 @@ def entry_point() -> None:
     help="Whether to install all defined tables (including all refined tables).",
 )
 @click.option(
+    "--series",
+    "-sid",
+    multiple=True,
+    help=(
+        "FRED economic series whose data is attempted to be downloaded and "
+        "inserted into the SQL tables. Multiple series can be specified by "
+        "providing multiple `series` options, by separating series with a "
+        "comma (e.g., `GDP,FEDFUNDS`), or by providing IDs in a CSV file by "
+        "specifying a file path (e.g., `fred_series.txt`). The CSV file "
+        "can be formatted such that there's one string per line or multiple "
+        "strings per line (delimited by a comma). The strings specified "
+        "by this option are combined with the strings specified by the "
+        "`series-set` option."
+    ),
+)
+@click.option(
+    "--series-set",
+    "-ss",
+    "series_set",
+    type=click.Choice(["economic"]),
+    default=None,
+    help=(
+        "Set of FRED economic series whose data is attempted to be downloaded "
+        "and inserted into the SQL tables. 'economic' indicates the recommended "
+        "and most popular series (e.g., consumer price index, gross domestic "
+        "product, etc.)."
+    ),
+)
+@click.option(
     "--verbose",
     "-v",
     is_flag=True,
@@ -60,13 +94,15 @@ def entry_point() -> None:
     help="Sets the log level to DEBUG to show installation errors for each series.",
 )
 def install(
-    raw: bool = False,
+    raw: list[Literal["series"]] = [],
     refined: list[Literal["economic", "economic.normalized"]] = [],
     all_: bool = False,
+    series: list[str] = [],
+    series_set: None | Literal["economic"] = None,
     verbose: bool = False,
 ) -> int:
     if verbose:
-        logger.setLevel(logging.DEBUG)
+        logging.getLogger(__package__).setLevel(logging.DEBUG)
 
     if "FRED_API_KEY" not in os.environ:
         api_key = input(
@@ -86,8 +122,27 @@ def install(
         logger.info("FRED API key found in the environment")
 
     total_rows = 0
-    if all_ or raw:
-        _feat.series.install()
+    all_raw = set()
+    if all_:
+        all_raw = {"series"}
+    elif raw:
+        all_raw = set(raw)
+
+    all_series = utils.expand_csv(series)
+    if all_raw:
+        match series_set:
+            case "economic":
+                all_series |= set(_feat.economic.series_ids)
+
+        if not all_series:
+            logger.info(
+                f"Skipping {__package__} installation because no series were "
+                "provided (by the `series` option or by the `series-set` option)"
+            )
+            return total_rows
+
+    if "series" in all_raw:
+        total_rows += _feat.series.install(all_series)
 
     all_refined = set()
     if all_:
@@ -101,7 +156,7 @@ def install(
     if "economic.normalized" in all_refined:
         total_rows += _feat.economic.normalized.install()
 
-    if all_ or all_refined or raw:
+    if all_ or all_refined or all_raw:
         if total_rows:
             logger.info(f"{total_rows} total rows inserted for {__package__}")
         else:

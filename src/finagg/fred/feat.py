@@ -239,11 +239,14 @@ class RefinedNormalizedEconomic:
         sql.normalized_economic.create(engine)
 
         df = cls.from_other_refined(engine=engine)
-        total_rows = len(df.index)
-        if total_rows:
+        rowcount = len(df.index)
+        if rowcount:
             cls.to_refined(df, engine=engine)
-            total_rows += total_rows
-        return total_rows
+            rowcount += rowcount
+            logger.debug(f"{rowcount} normalized economic feature rows inserted")
+        else:
+            logger.debug("Skipping normalized economic features due to missing data")
+        return rowcount
 
     @classmethod
     def to_refined(
@@ -552,11 +555,14 @@ class RefinedEconomic(feat.Features):
         sql.economic.create(engine)
 
         df = cls.from_raw(engine=engine)
-        total_rows = len(df.index)
-        if total_rows:
+        rowcount = len(df.index)
+        if rowcount:
             cls.to_refined(df, engine=engine)
-            total_rows += total_rows
-        return total_rows
+            rowcount += rowcount
+            logger.debug(f"{rowcount} economic feature rows inserted")
+        else:
+            logger.debug("Skipping economic features due to missing data")
+        return rowcount
 
     @classmethod
     def to_refined(
