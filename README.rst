@@ -22,6 +22,8 @@ Install **finagg** from GitHub directly.
 Optionally install the recommended datasets from 3rd party APIs into a local
 SQL database.
 
+.. code:: console
+
     finagg install --help
 
 The installation will point you where to get free API keys and write them to a
