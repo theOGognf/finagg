@@ -43,6 +43,35 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
     ),
 )
 @click.option(
+    "--series",
+    "-sid",
+    multiple=True,
+    help=(
+        "FRED economic series whose data is attempted to be downloaded and "
+        "inserted into the SQL tables. Multiple series can be specified by "
+        "providing multiple `series` options, by separating series with a "
+        "comma (e.g., `GDP,FEDFUNDS`), or by providing IDs in a CSV file by "
+        "specifying a file path (e.g., `fred_series.txt`). The CSV file "
+        "can be formatted such that there's one string per line or multiple "
+        "strings per line (delimited by a comma). The strings specified "
+        "by this option are combined with the strings specified by the "
+        "`series-set` option."
+    ),
+)
+@click.option(
+    "--series-set",
+    "-ss",
+    "series_set",
+    type=click.Choice(["economic"]),
+    default=None,
+    help=(
+        "Set of FRED economic series whose data is attempted to be downloaded "
+        "and inserted into the SQL tables. 'economic' indicates the recommended "
+        "and most popular series (e.g., consumer price index, gross domestic "
+        "product, etc.)."
+    ),
+)
+@click.option(
     "--stock-data",
     is_flag=True,
     help=(
@@ -97,6 +126,8 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
 def install(
     ctx: click.Context,
     skip: list[str] = [],
+    series: list[str] = [],
+    series_set: None | Literal["economic"] = None,
     stock_data: bool = False,
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
@@ -122,7 +153,13 @@ def install(
         ctx.invoke(bea._cli.install)
 
     if not stock_data and "fred" not in all_skips:
-        ctx.invoke(fred._cli.install, all_=True, verbose=verbose)
+        ctx.invoke(
+            fred._cli.install,
+            all_=True,
+            series=series,
+            series_set=series_set,
+            verbose=verbose,
+        )
 
     if not stock_data and "indices" not in all_skips:
         ctx.invoke(indices._cli.install, all_=True)
