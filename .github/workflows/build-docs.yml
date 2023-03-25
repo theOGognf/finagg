@@ -31,7 +31,7 @@ jobs:
       - name: Install tox
         run: pip install tox
       - name: Build docs
-        run: tox -e docs-single
+        run: tox -e docs
       - name: Update docs
         run: |
           git add -f docs/
