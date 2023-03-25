@@ -31,7 +31,7 @@ jobs:
       - name: Update docs
         run: |
           git fetch
-          git merge origin/main -m "Merge main" --allow-unrelated-histories
+          git merge -X theirs origin/main -m "Merge main" --allow-unrelated-histories
           git add -f doctrees/
           git add -f singlehtml/
           git commit -m "Update docs"
