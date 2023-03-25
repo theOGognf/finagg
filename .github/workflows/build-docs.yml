@@ -16,6 +16,10 @@ jobs:
         with:
           ref: gh-pages
           token: ${{ secrets.DOCS_BOT_PAT }}
+      - name: git config
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "theOGognf"
       - name: Merge main
         run: |
           git fetch
@@ -28,10 +32,6 @@ jobs:
         run: pip install tox
       - name: Build docs
         run: tox -e docs-single
-      - name: git config
-        run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "theOGognf"
       - name: Update docs
         run: |
           git add -f doctrees/
