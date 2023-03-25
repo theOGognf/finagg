@@ -29,10 +29,7 @@ jobs:
           git config --local user.name "Github Actions"
       - name: Update docs
         run: |
-          git fetch --unshallow
-          git checkout gh-pages
-          git pull
-          git merge main -m "Merge main"
+          git merge origin/main -m "Merge main"
           git add -f docs/
           git commit -m "Update docs"
           git push origin
