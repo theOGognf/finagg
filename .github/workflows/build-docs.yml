@@ -36,7 +36,7 @@ jobs:
         run: |
           rm -rf docs
           mv singlehtml docs
+          git add -f docs/
           git add -f doctrees/
-          git add -f singlehtml/
           git commit -m "Update docs"
           git push -f origin
