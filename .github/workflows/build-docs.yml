@@ -15,6 +15,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: gh-pages
+          token: ${{ secrets.DOCS_BOT_PAT }}
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -26,11 +27,11 @@ jobs:
       - name: git config
         run: |
           git config --local user.email "actions@github.com"
-          git config --local user.name "Github Actions"
+          git config --local user.name "theOGognf"
       - name: Update docs
         run: |
           git fetch
           git merge origin/main -m "Merge main"
           git add -f docs/
           git commit -m "Update docs"
-          git push origin
+          git push -f origin
