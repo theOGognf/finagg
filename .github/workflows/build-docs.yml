@@ -21,6 +21,7 @@ jobs:
           git config --local user.name "Github Actions"
       - name: Merge main
         run: |
+          git fetch --unshallow
           git checkout main
           git pull
           git merge --no-ff gh-pages -m "Merge main"
