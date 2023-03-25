@@ -1,0 +1,32 @@
+name: Build docs
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+      - name: Merge main
+        run: git merge -X theirs main
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install tox
+        run: pip install tox
+      - name: Build docs
+        run: tox -e docs
+      - name: Update docs
+        run:
+          git add -f docs/
+          git commit -m "Update docs"
+          git push origin
