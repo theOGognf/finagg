@@ -16,6 +16,10 @@ jobs:
         with:
           ref: gh-pages
           token: ${{ secrets.DOCS_BOT_PAT }}
+      - name: Merge main
+        run: |
+          git fetch
+          git merge -X theirs origin/main -m "Merge main" --allow-unrelated-histories
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -30,8 +34,6 @@ jobs:
           git config --local user.name "theOGognf"
       - name: Update docs
         run: |
-          git fetch
-          git merge -X theirs origin/main -m "Merge main" --allow-unrelated-histories
           git add -f doctrees/
           git add -f singlehtml/
           git commit -m "Update docs"
