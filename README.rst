@@ -6,6 +6,7 @@ financial APIs, tools for aggregating historical data from those APIs into SQL
 databases, and tools for transforming aggregated data into features useful for
 analysis and AI/ML.
 
+* Repository: https://github.com/theOGognf/finagg
 * Documentation: https://theogognf.github.io/finagg/
 
 Quick Start

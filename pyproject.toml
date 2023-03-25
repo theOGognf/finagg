@@ -148,19 +148,6 @@ deps =
 commands =
     sphinx-build --color -b {env:BUILD} -d "{env:BUILDDIR}/doctrees" "{env:DOCSDIR}" "{env:BUILDDIR}/{env:BUILD}" {posargs}
 
-[testenv:docs-single]
-description =
-    Invoke sphinx-build in singlehtml mode. Useful for publishing to GitHub
-    pages.
-setenv =
-    DOCSDIR = {toxinidir}/docs
-    BUILDDIR = {toxinidir}
-    BUILD = singlehtml
-deps =
-    -r {toxinidir}/docs/requirements.txt
-commands =
-    sphinx-build --color -b {env:BUILD} -d "{env:BUILDDIR}/doctrees" "{env:DOCSDIR}" "{env:BUILDDIR}/{env:BUILD}" {posargs}
-
 [testenv:publish]
 description =
     Publish the package you have been developing to a package index server.

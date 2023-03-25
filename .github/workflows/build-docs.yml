@@ -34,9 +34,6 @@ jobs:
         run: tox -e docs-single
       - name: Update docs
         run: |
-          rm -rf docs
-          mv singlehtml docs
           git add -f docs/
-          git add -f doctrees/
           git commit -m "Update docs"
           git push -f origin
