@@ -16,11 +16,11 @@ jobs:
         with:
           ref: gh-pages
       - name: git config
-        run:
+        run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "Github Actions"
       - name: Merge main
-        run:
+        run: |
           git checkout main
           git pull
           git merge --no-ff gh-pages -m "Merge main"
@@ -33,7 +33,7 @@ jobs:
       - name: Build docs
         run: tox -e docs
       - name: Update docs
-        run:
+        run: |
           git add -f docs/
           git commit -m "Update docs"
           git push origin
