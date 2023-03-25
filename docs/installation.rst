@@ -1,7 +1,13 @@
 Installation
 ============
 
-Install **finagg** from GitHub directly.
+Install with pip for the latest (stable) version.
+
+.. code:: console
+
+  pip install finagg
+
+Install from GitHub for the latest (unstable) version.
 
 .. code:: console
 
@@ -13,7 +19,7 @@ SQL database.
 
 .. code:: console
 
-    finagg install
+    finagg install --help
 
 The installation will point you where to get free API keys for each API that
 requires one and write those API keys to a local ``.env`` file for storage.

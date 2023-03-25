@@ -23,7 +23,7 @@ jobs:
       - name: Install tox
         run: pip install tox
       - name: Build docs
-        run: tox -e docs
+        run: tox -e docs-single
       - name: git config
         run: |
           git config --local user.email "actions@github.com"
@@ -32,6 +32,7 @@ jobs:
         run: |
           git fetch
           git merge origin/main -m "Merge main"
-          git add -f docs/
+          git add -f doctrees/
+          git add -f singlehtml/
           git commit -m "Update docs"
           git push -f origin

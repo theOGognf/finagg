@@ -46,7 +46,8 @@ requires-python = ">=3.10"
 finagg = "finagg.__main__:main"
 
 [project.urls]
-repository = "https://github.com/theOGognf/finagg"
+Repository = "https://github.com/theOGognf/finagg"
+Documentation = "https://theogognf.github.io/finagg/"
 
 [project.optional-dependencies]
 dev = [
@@ -135,12 +136,26 @@ setenv =
     DOCSDIR = {toxinidir}/docs
     BUILDDIR = {toxinidir}/docs/_build
     docs: BUILD = html
+    docs-single: BUILD = singlehtml
     doctests: BUILD = doctest
     linkcheck: BUILD = linkcheck
 passenv =
     BEA_API_KEY
     FRED_API_KEY
     SEC_API_USER_AGENT
+deps =
+    -r {toxinidir}/docs/requirements.txt
+commands =
+    sphinx-build --color -b {env:BUILD} -d "{env:BUILDDIR}/doctrees" "{env:DOCSDIR}" "{env:BUILDDIR}/{env:BUILD}" {posargs}
+
+[testenv:docs-single]
+description =
+    Invoke sphinx-build in singlehtml mode. Useful for publishing to GitHub
+    pages.
+setenv =
+    DOCSDIR = {toxinidir}/docs
+    BUILDDIR = {toxinidir}
+    BUILD = singlehtml
 deps =
     -r {toxinidir}/docs/requirements.txt
 commands =
