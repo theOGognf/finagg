@@ -92,8 +92,11 @@ changedir = {toxinidir}
 setenv =
     TOXINIDIR = {toxinidir}
 passenv =
+    BEA_API_KEY
+    FRED_API_KEY
     PIP_CACHE
     PIP_TRUSTED_HOST
+    SEC_API_USER_AGENT
 extras =
     dev
 commands =
@@ -134,6 +137,10 @@ setenv =
     docs: BUILD = html
     doctests: BUILD = doctest
     linkcheck: BUILD = linkcheck
+passenv =
+    BEA_API_KEY
+    FRED_API_KEY
+    SEC_API_USER_AGENT
 deps =
     -r {toxinidir}/docs/requirements.txt
 commands =

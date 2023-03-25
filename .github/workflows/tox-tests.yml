@@ -27,9 +27,3 @@ jobs:
         run: tox -e typecheck
       - name: Run lint
         run: tox -e lint
-      - name: Run doctests
-        env:
-          BEA_API_KEY: ${{ secrets.BEA_API_KEY }}
-          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-          SEC_API_USER_AGENT: ${{ secrets.SEC_API_USER_AGENT }}
-        run: tox -e doctests
