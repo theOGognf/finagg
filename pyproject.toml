@@ -82,7 +82,6 @@ version_scheme = "no-guess-dev"
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py310
 isolated_build = True
 
 [testenv:{test, typecheck}]
