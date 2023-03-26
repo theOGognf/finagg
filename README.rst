@@ -41,8 +41,13 @@ local ``.env`` file for storage.
 Basic Usage
 -----------
 
+These are just **finagg** usage samples. See the `documentation`_ for all the
+supported APIs and features.
+
 Explore the APIs directly
 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+*These methods require internet access and API keys/user agent declarations.*
 
 Get Bureau of Economic Analysis (BEA) data.
 
@@ -82,6 +87,10 @@ Get Securities and Exchange Commission (SEC) filings.
 Use installed raw data for exploring the most popular features
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+*These methods require internet access, API keys/user agent declarations, and
+downloading and installing raw data through the* ``finagg install`` *or*
+the ``finagg <api/subpackage> install`` *commands.*
+
 Get the most popular FRED features all in one dataframe.
 
 >>> finagg.fred.feat.economic.from_raw().head(5)
@@ -110,6 +119,9 @@ Get an aggregation of quarterly and daily features for a particular ticker.
 
 Use installed features for exploring refined aggregations of raw data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+*These methods require installing refined data through the* ``finagg install``
+*or* ``finagg <api/subpackage> install`` *commands.*
 
 Get a ticker's industry's averaged quarterly report features.
 
@@ -205,7 +217,7 @@ Related Projects
 
 * `FinRL`_ is a collection of financial reinforcement learning environments and tools.
 * `fredapi`_ is an implementation of the FRED API.
-* `OpenBBTerminal`_ an open-source version of the Bloomberg Terminal.
+* `OpenBBTerminal`_ is an open-source version of the Bloomberg Terminal.
 * `sec-edgar`_ is an implementation of a file-based SEC EDGAR parser.
 * `sec-edgar-api`_ is an implementation of the SEC EDGAR REST API.
 
@@ -241,6 +253,7 @@ degradation on Windows.
 .. _`BEA API`: https://apps.bea.gov/api/signup/
 .. _`BEA API key registration link`: https://apps.bea.gov/API/signup/
 .. _`BEA API site`: https://apps.bea.gov/API/signup/
+.. _`documentation`: https://theogognf.github.io/finagg/
 .. _`FinRL`: https://github.com/AI4Finance-Foundation/FinRL
 .. _`FRED API`: https://fred.stlouisfed.org/docs/api/fred/
 .. _`FRED API key registration link`: https://fredaccount.stlouisfed.org/login/secure/
