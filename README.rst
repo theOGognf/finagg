@@ -89,7 +89,7 @@ Use installed raw data for exploring the most popular features
 
 *These methods require internet access, API keys/user agent declarations, and
 downloading and installing raw data through the* ``finagg install`` *or*
-the ``finagg <api/subpackage> install`` *commands.*
+``finagg <api/subpackage> install`` *commands.*
 
 Get the most popular FRED features all in one dataframe.
 
