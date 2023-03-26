@@ -11,6 +11,7 @@ jobs:
     secrets: inherit
 
   publish:
+    needs: test
     runs-on: ubuntu-latest
     strategy:
       matrix:
