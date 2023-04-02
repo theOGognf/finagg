@@ -1,5 +1,9 @@
 """An implementation of the Bureau of Economic Analysis (BEA) API.
 
+The BEA API provides methods for retrieving a subset of economic
+statistical data as published by the BEA along with metadata that
+describes that economic statistical data.
+
 A BEA API key is required to use this API. You can register for
 a BEA API key at the `BEA API signup page`_. You can pass your
 BEA API key directly to the implemented API getters, or you

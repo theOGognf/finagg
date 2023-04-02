@@ -1,5 +1,9 @@
 """An implementation of the Federal Reserve Economic Data (FRED) API.
 
+The FRED API provides methods for retrieving, searching, and describing
+economic data from a variety of sources. The FRED API is one of the most
+popular APIs in the financial industry.
+
 A FRED API key is required to use this API. You can request a FRED API key
 at the `FRED API webpage`_. You can pass your FRED API key directly to the
 implemented API getters, or you can set the ``FRED_API_KEY`` environment

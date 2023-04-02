@@ -20,6 +20,11 @@ configuring API keys and user agents:
 * ``SEC_API_USER_AGENT`` is for the Securities and Exchange Commission's API. This
   should be of the format ``FIRST_NAME LAST_NAME E_MAIL``.
 
+The ``finagg install`` CLI will point you where to get free API keys for each
+of the APIs that require one and write those API keys to a local ``.env`` file
+for storage. See the :doc:`installation docs <installation>` and
+:doc:`CLI docs <cli>` for more installation CLI details.
+
 Data Locations
 --------------
 

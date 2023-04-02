@@ -13,9 +13,18 @@ analysis and AI/ML.
 
 **finagg** currently supports the following free APIs:
 
-* The Bureau of Economic Analysis `(BEA) API`_.
-* The Federal Reserve Economic Data `(FRED) API`_.
-* The Securities and Exchange Commission’s `(SEC) EDGAR API`_.
+* The Bureau of Economic Analysis `(BEA) API`_. The BEA API provides methods
+for retrieving a subset of economic statistical data as published by the BEA
+along with metadata that describes that economic statistical data.
+* The Federal Reserve Economic Data `(FRED) API`_. The FRED API provides
+methods for retrieving, searching, and describing economic data from a variety
+of sources. The FRED API is one of the most popular APIs in the finance
+industry.
+* The Securities and Exchange Commission’s `(SEC) EDGAR API`_. The SEC EDGAR
+API provides methods for retrieving XBRL data (e.g., earnings per share) from
+financial statements and SEC filing submission histories (e.g., 10-Q/10-K
+forms). The SEC EDGAR API is one of the few APIs that provides historical and
+current company financial data for free.
 
 Methods for aggregating data from these APIs are organized according to their
 API/subpackage and usage (i.e., ``finagg.<api/subpackage>.<usage>``). For
@@ -148,6 +157,7 @@ Getting tickers sorted according to industry-normalized SEC EDGAR features.
    Configuration <configuration>
    CLI <cli>
    API <api/modules>
+   Walkthroughs <walkthroughs>
    References <references>
    FAQ <faq>
 
