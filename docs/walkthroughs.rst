@@ -6,6 +6,12 @@ API subpackages vs feature subpackages, and a collection of workflows for
 aggregating data for a subset of companies, industries, and economic data
 series (depending on the subpackage being used).
 
+Although these walkthroughs will provide you with enough information to use
+**finagg** to aggregate data from the implemented APIs, it's recommended
+you still explore the respective official API documentations to get a good
+understanding of how each API is organized and what data is provided through
+each API.
+
 These walkthroughs assume your environment contains the necessary environment
 variables to enable using the respective APIs. See the
 :doc:`configuration docs <configuration>` for more info on configuring your
@@ -190,10 +196,145 @@ is equivalent to:
 
     finagg fred install -r series -ref economic -ss economic
 
-The installation CLIs just further simplify the process for downloading
-data by replacing one-off installation Python scripts.
-
 Using the SEC API Subpackages
 -----------------------------
 
-.. _`FRED API docs have good explanations and examples`: https://fred.stlouisfed.org/docs/api/fred/realtime_period.html
+Let's say we're interested in a specific company. The SEC EDGAR API is a good
+place to start accessing a company's financials. However, not all companies
+have all their financial data accessible through the SEC EDGAR API. The best
+way to start out and see what financials are available for a particular
+company is to look at a company's facts through
+:data:`finagg.sec.api.company_facts`.
+
+Let's assume we're interested in Microsoft. We can access all the financial
+publications associated with Microsoft by simply passing Microsoft's ticker,
+MSFT, to the company facts API implementation. We can look at the columns
+to get a good understanding of the API implementation and the returned
+dataframe:
+
+>>> df = finagg.sec.api.company_facts.get(ticker="MSFT")
+>>> df.columns.tolist()  # doctest: +ELLIPSIS
+['end', 'value', ..., 'fy', 'fp', 'form', 'filed', ..., 'tag', ..., 'units', ...]
+
+The main columns that most use cases care about are:
+
+* ``fy``, ``fp``, and ``filed``; these are the fiscal year, fiscal period
+  (i.e., quarter), and filing date, respectively for each row of financial data
+* ``form`` is the type of SEC form the row was submitted with (e.g., 10-Q,
+  10-K, etc.)
+* ``tag`` is the ID of the financial (e.g., ``"EarningsPerShareBasic"``)
+* ``value`` is the financial's actual value
+* ``units`` is the financial's unit (e.g., USD/shares)
+
+The company's financials can be further filtered from the company facts
+dataframe directly, or a specific financial can be accessed with the
+:data:`finagg.sec.api.company_concept` API implementation. For example,
+we can access all of Microsoft's earnings per share financial publications
+with the following:
+
+>>> df = finagg.sec.api.company_concept.get(
+...     "EarningsPerShareBasic",
+...     ticker="MSFT",
+...     units="USD/shares"
+... )
+>>> df.head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+        start         end  value                  accn    fy  fp  form       filed ...
+0  2007-07-01  2007-09-30   0.46  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...
+1  2007-10-01  2007-12-31   0.50  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...
+2  2008-01-01  2008-03-31   0.47  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...
+3  2007-07-01  2008-06-30   1.90  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...
+4  2008-04-01  2008-06-30   0.46  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...
+
+However, the SEC EDGAR company concept API implementation returns all the
+earnings per share publications for Microsft, including amendments. We may
+not necessarily care about amendments because we may be building strategies
+or models that use *current* data and not *future* data. Fortunately, **finagg**
+provides :meth:`finagg.sec.feat.get_unique_filings` to further select original
+financial publication data from specific forms:
+
+>>> finagg.sec.feat.get_unique_filings(df, form="10-Q").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+     fy  fp                    tag       start         end  value ...
+0  2010  Q1  EarningsPerShareBasic  2008-07-01  2008-09-30   0.48 ...
+1  2010  Q2  EarningsPerShareBasic  2008-07-01  2008-12-31   0.95 ...
+2  2010  Q3  EarningsPerShareBasic  2008-07-01  2009-03-31   1.29 ...
+3  2011  Q1  EarningsPerShareBasic  2009-07-01  2009-09-30   0.40 ...
+4  2011  Q2  EarningsPerShareBasic  2009-07-01  2009-12-31   1.15 ...
+
+Unfortunately, the SEC EDGAR API is still relatively new and a lot of the
+financial data publications are unaudited, so not all financials are available
+for all companies through the SEC EDGAR API. I.e., a workflow for retrieving
+Microsoft's financial data may not work for retrieving another company's
+financial data. It requires some trial-and-error to find a set of tags that
+are popular and available for the majority of companies. In addition, the
+workflow for exploring these tags and filtering forms can be cumbersome.
+
+Fortunately again, **finagg** exists for a reason besides implementing these
+useful APIs. **finagg** provides additional conveniences that makes these
+common workflows even easier.
+
+First, **finagg** provides :data:`finagg.sec.api.popular_concepts` for listing
+company concepts (combinations of financial data tags and other parameters)
+that're popular and widely available for companies. Second, it's extremely
+straightforward to filter and install widely popular and available quarterly
+financial data for a set of companies using the :mode:`finagg.sec.feat`
+subpackage and :data:`finagg.sec.feat.quarterly` member. The
+:data:`finagg.sec.feat.quarterly` member also goes a step further by somewhat
+normalizing the installed financial data (e.g., total asset value is converted
+to percent change of total asset value on a quarter-over-quarter basis), making
+the process for aggregating company financial data and comparing company
+financial data painless.
+
+We can give this streamlined process a try with Microsoft again, and we can
+verify Microsoft's financial data is successfully installed using the
+:meth:`finagg.sec.feat.quarterly.get_ticker_set` method.
+
+>>> finagg.sec.feat.quarterly.install({"MSFT"})
+>>> ticker_set = finagg.sec.feat.quarterly.get_ticker_set()
+>>> "MSFT" in ticker_set
+True
+
+We can then retrieve Microsoft's quarterly financial data using the
+:meth:`finagg.sec.feat.quarterly.from_refined` method.
+
+>>> finagg.sec.feat.quarterly.from_refined("MSFT").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                    AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+fy   fp filed                                                                   ...
+2010 Q2 2010-01-28                    0.0000           0.7841              0.95 ...
+     Q3 2010-04-22                    0.0000           0.7318              1.29 ...
+2011 Q1 2010-10-28                    0.1298           0.6345              0.40 ...
+     Q2 2011-01-27                    0.0000           0.5905              1.15 ...
+     Q3 2011-04-28                    0.0000           0.5720              1.61 ...
+
+On top of this simplification, :data:`finagg.sec.feat.quarterly` provides
+another method and convenience for normalizing quarterly financial data.
+:data:`finagg.sec.feat.quarterly.normalized` normalizes quarterly financial
+data using quarterly financial data from all the other companies within
+the target company's industry. For example, Lowe's' financial data would
+be used to normalize Home Depot's financial data such that all columns
+have zero mean and unit variance. :data:`finagg.sec.feat.quarterly.normalized`
+also has similar workflow to :data:`finagg.sec.feat.quarterly`.
+
+>>> finagg.sec.feat.quarterly.normalized.install({"MSFT"})
+>>> finagg.sec.feat.quarterly.normalized.from_refined("MSFT").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+                    AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
+fy   fp filed                                                                   ...
+2010 Q2 2010-01-28                 -0.577350        -0.442594          0.997144 ...
+     Q3 2010-04-22                 -0.500000        -0.635461          0.803027 ...
+2011 Q1 2010-10-28                  0.848715        -0.895750          1.076156 ...
+     Q2 2011-01-27                 -0.408248        -0.711371          0.993050 ...
+     Q3 2011-04-28                 -0.377964         0.328676          0.761100 ...
+
+Lastly, it's useful to mention that any download/installation step in the
+common download-then-retrieve workflow for financial data with **finagg**'s
+Python interface can probably be replicated using **finagg**'s CLI. For
+example, the following:
+
+>>> finagg.sec.feat.quarterly.install({"MSFT"})  # doctest: +SKIP
+
+is equivalent to:
+
+.. code:: console
+
+    finagg sec install -r tags -ref quarterly -t MSFT
+
+.. _`FRED API docs have good explanations and examples`: https://fred.stlouisfe ...

@@ -22,8 +22,9 @@ Related Projects
 
 * `FinRL`_ is a collection of financial reinforcement learning environments and tools.
 * `fredapi`_ is an implementation of the FRED API.
-* `OpenBBTerminal`_ an open-source version of the Bloomberg Terminal.
+* `OpenBBTerminal`_ is an open-source version of the Bloomberg Terminal.
 * `sec-edgar`_ is an implementation of a file-based SEC EDGAR parser.
+* `sec-edgar-api`_ is an implementation of the SEC EDGAR REST API.
 
 .. _`BEA API`: https://apps.bea.gov/api/signup/
 .. _`BEA API key registration link`: https://apps.bea.gov/API/signup/
@@ -37,5 +38,6 @@ Related Projects
 .. _`requests-cache`: https://requests-cache.readthedocs.io/en/stable/
 .. _`SEC API`: https://www.sec.gov/edgar/sec-api-documentation
 .. _`sec-edgar`: https://github.com/sec-edgar/sec-edgar
+.. _`sec-edgar-api`: https://github.com/jadchaar/sec-edgar-api
 .. _`SQLAlchemy`: https://www.sqlalchemy.org/
 .. _`yfinance`: https://github.com/ranaroussi/yfinance
