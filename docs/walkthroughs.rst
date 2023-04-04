@@ -103,10 +103,10 @@ series to use **finagg**'s installation methods.
 Installing a treasury yield economic data series is extremely straightforward
 with the :mod:`finagg.fred.feat` subpackage and :data:`finagg.fred.feat.series`
 member. We can also verify the series is installed correctly using the
-:meth:`finagg.fred.sql.get_id_set` method.
+:meth:`finagg.fred.feat.series.get_id_set` method.
 
 >>> finagg.fred.feat.series.install({"GS10"})
->>> id_set = finagg.fred.feat.sql.get_id_set()
+>>> id_set = finagg.fred.feat.series.get_id_set()
 >>> "GS10" in id_set
 True
 

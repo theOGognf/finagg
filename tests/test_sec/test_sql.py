@@ -31,7 +31,7 @@ def test_get_ticker(engine: Engine) -> None:
 def test_get_ticker_set(engine: Engine) -> None:
     finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
     finagg.sec.feat.tags.install({"AAPL"}, engine=engine)
-    assert "AAPL" in finagg.sec.sql.get_ticker_set(engine=engine)
+    assert "AAPL" in finagg.sec.feat.tags.get_ticker_set(engine=engine)
 
 
 def test_get_tickers_in_industry(engine: Engine) -> None:

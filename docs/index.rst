@@ -110,6 +110,17 @@ fy   fp filed                                                                   
 2011 Q1 2011-01-19                  0.320805         0.433596              3.74 ...
      Q2 2011-04-21                  0.000000         0.433596              7.12 ...
 
+Getting daily stock price and quarterly financial features.
+
+>>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+             price  open_pct_change ... PriceEarningsRatio
+date                                ...
+2010-01-26  6.2600           0.0170 ...             2.4646
+2010-01-27  6.3189           0.0044 ...             2.4878
+2010-01-28  6.0578          -0.0093 ...             2.3850
+2010-01-29  5.8381          -0.0188 ...             2.2985
+2010-02-01  5.9192          -0.0433 ...             2.3304
+
 Use installed features for exploring refined aggregations of raw data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

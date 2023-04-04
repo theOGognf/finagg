@@ -670,6 +670,35 @@ class RawSeries:
         return df.set_index(["date"]).sort_index()
 
     @classmethod
+    def get_id_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
+        """Get all unique economic series IDs in the raw SQL tables that have at least
+        ``lb`` rows.
+
+        Args:
+            lb: Lower bound number of rows that a series must have for its ID
+                to be included in the set returned by this method.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+
+        Examples:
+            >>> "FEDFUNDS" in finagg.fred.feat.series.get_id_set()
+            True
+
+        """
+        engine = engine or backend.engine
+        with engine.begin() as conn:
+            series_ids = (
+                conn.execute(
+                    sa.select(sql.series.c.series_id)
+                    .group_by(sql.series.c.series_id)
+                    .having(sa.func.count(sql.series.c.date) >= lb)
+                )
+                .scalars()
+                .all()
+            )
+        return set(series_ids)
+
+    @classmethod
     def install(
         cls, series_ids: None | set[str] = None, *, engine: None | Engine = None
     ) -> int:

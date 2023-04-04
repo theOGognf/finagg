@@ -237,7 +237,7 @@ class RefinedDaily(feat.Features):
             True
 
         """
-        return sql.get_ticker_set(lb=lb, engine=engine)
+        return RawPrices.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
     def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
@@ -368,51 +368,6 @@ class RawPrices:
     """
 
     @classmethod
-    def install(
-        cls,
-        tickers: None | set[str] = None,
-        *,
-        engine: None | Engine = None,
-    ) -> int:
-        """Drop the feature's table, create a new one, and insert data
-        as-is using Yahoo! Finance.
-
-        Args:
-            tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            Number of rows written to the feature's SQL table.
-
-        """
-        tickers = tickers or indices.api.get_ticker_set()
-        engine = engine or backend.engine
-        sql.prices.drop(engine, checkfirst=True)
-        sql.prices.create(engine)
-
-        total_rows = 0
-        for ticker in tqdm(
-            tickers,
-            desc="Installing raw Yahoo! Finance stock data",
-            position=0,
-            leave=True,
-        ):
-            try:
-                df = api.get(ticker, interval="1d", period="max")
-                rowcount = len(df.index)
-                if rowcount:
-                    cls.to_raw(df, engine=engine)
-                    total_rows += rowcount
-                    logger.debug(f"{rowcount} rows inserted for {ticker}")
-                else:
-                    logger.debug(f"Skipping {ticker} due to missing stock data")
-            except Exception as e:
-                logger.debug(f"Skipping {ticker}", exc_info=e)
-        return total_rows
-
-    @classmethod
     def from_raw(
         cls,
         ticker: str,
@@ -476,6 +431,86 @@ class RawPrices:
         if not len(df.index):
             raise NoResultFound(f"No rows found for {ticker}.")
         return df.set_index(["date"]).sort_index()
+
+    @classmethod
+    def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
+        """Get all unique ticker symbols in the raw SQL tables that have at least
+        ``lb`` rows.
+
+        This method is convenient for accessing the tickers that have raw SQL data
+        associated with them so the data associated with those tickers can be
+        further refined. A common pattern is to use this method and other
+        ``get_ticker_set`` methods (such as those found in :mod:`finagg.yfinance.feat`)
+        to determine which tickers are missing data from other tables or features.
+
+        Args:
+            lb: Lower bound number of rows that a company must have for its ticker
+                to be included in the set returned by this method.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+
+        Examples:
+            >>> "AAPL" in finagg.yfinance.feat.prices.get_ticker_set()
+            True
+
+        """
+        engine = engine or backend.engine
+        with engine.begin() as conn:
+            tickers = set(
+                conn.execute(
+                    sa.select(sql.prices.c.ticker)
+                    .group_by(sql.prices.c.ticker)
+                    .having(sa.func.count(sql.prices.c.date) >= lb)
+                )
+                .scalars()
+                .all()
+            )
+        return tickers
+
+    @classmethod
+    def install(
+        cls,
+        tickers: None | set[str] = None,
+        *,
+        engine: None | Engine = None,
+    ) -> int:
+        """Drop the feature's table, create a new one, and insert data
+        as-is using Yahoo! Finance.
+
+        Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
+        tickers = tickers or indices.api.get_ticker_set()
+        engine = engine or backend.engine
+        sql.prices.drop(engine, checkfirst=True)
+        sql.prices.create(engine)
+
+        total_rows = 0
+        for ticker in tqdm(
+            tickers,
+            desc="Installing raw Yahoo! Finance stock data",
+            position=0,
+            leave=True,
+        ):
+            try:
+                df = api.get(ticker, interval="1d", period="max")
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_raw(df, engine=engine)
+                    total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                else:
+                    logger.debug(f"Skipping {ticker} due to missing stock data")
+            except Exception as e:
+                logger.debug(f"Skipping {ticker}", exc_info=e)
+        return total_rows
 
     @classmethod
     def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:

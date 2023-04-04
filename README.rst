@@ -116,6 +116,13 @@ fy   fp filed                                                                   
 Get an aggregation of quarterly and daily features for a particular ticker.
 
 >>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)
+             price  open_pct_change ... PriceEarningsRatio
+date                                ...
+2010-01-26  6.2600           0.0170 ...             2.4646
+2010-01-27  6.3189           0.0044 ...             2.4878
+2010-01-28  6.0578          -0.0093 ...             2.3850
+2010-01-29  5.8381          -0.0188 ...             2.2985
+2010-02-01  5.9192          -0.0433 ...             2.3304
 
 Use installed features for exploring refined aggregations of raw data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
