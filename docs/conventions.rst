@@ -105,3 +105,18 @@ Dataframes are just too convenient to not use as the fundamental type within
 
 Helper methods for inspecting available data
 --------------------------------------------
+
+Most submodules and singletons contain helper methods for getting sets of
+IDs available through other methods. These methods are useful for verifying
+if data has been installed properly or for selecting a subset of data for
+further refinement. Examples of these methods include:
+
+* :meth:`finagg.fred.feat.series.get_id_set` returns installed economic data
+  series IDs
+* :meth:`finagg.sec.api.get_ticker_set` returns all the tickers that have
+  at least *some* data available through the SEC EDGAR API
+* :meth:`finagg.sec.feat.quarterly.get_ticker_set` returns all the tickers
+  that have quarterly features available
+
+Data normalization
+------------------
