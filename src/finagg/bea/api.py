@@ -555,7 +555,7 @@ def _get_parameter_values(
         "DatasetName": dataset,
         "ParameterName": param,
     }
-    results = _get(params, api_key=api_key)
+    results = _get(params, api_key=api_key)["ParamValue"]
     return pd.DataFrame(results)
 
 

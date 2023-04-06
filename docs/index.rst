@@ -164,14 +164,12 @@ Getting tickers sorted according to industry-normalized SEC EDGAR features.
    :maxdepth: 2
    :caption: Contents
 
-   Assumptions <assumptions>
+   Conventions <conventions>
+   Walkthroughs <walkthroughs>
    Installation <installation>
    Configuration <configuration>
    CLI <cli>
-   Design <design>
    API <api/modules>
-   Walkthroughs <walkthroughs>
-   Organization <organization>
    References <references>
    FAQ <faq>
 
