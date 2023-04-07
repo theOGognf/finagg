@@ -222,9 +222,15 @@ class RefinedNormalizedEconomic:
         return df
 
     @classmethod
-    def install(cls, *, engine: None | Engine = None) -> int:
-        """Drop the feature's table, create a new one, and insert data
-        transformed from another raw SQL table.
+    def install(
+        cls, *, engine: None | Engine = None, recreate_tables: bool = False
+    ) -> int:
+        """Install data economic data series by pulling data from the economic
+        feature SQL tables, transforming them into normalized features, and
+        then writing to the refined normalized economic SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
 
         Args:
             engine: Feature store database engine. Defaults to the engine
@@ -235,8 +241,11 @@ class RefinedNormalizedEconomic:
 
         """
         engine = engine or backend.engine
-        sql.normalized_economic.drop(engine, checkfirst=True)
-        sql.normalized_economic.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(
+            sql.normalized_economic.name
+        ):
+            sql.normalized_economic.drop(engine, checkfirst=True)
+            sql.normalized_economic.create(engine)
 
         df = cls.from_other_refined(engine=engine)
         rowcount = len(df.index)
@@ -538,21 +547,33 @@ class RefinedEconomic(feat.Features):
         return df
 
     @classmethod
-    def install(cls, *, engine: None | Engine = None) -> int:
-        """Drop the feature's table, create a new one, and insert data
-        transformed from another raw SQL table.
+    def install(
+        cls,
+        *,
+        engine: None | Engine = None,
+        recreate_tables: bool = False,
+    ) -> int:
+        """Install economic data by pulling data from the raw SQL tables,
+        transforming them into economic features, and then writing to the
+        refined economic data SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
 
         Args:
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
+            recreate_tables: Whether to drop and recreate tables, wiping all
+                previously installed data.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
         engine = engine or backend.engine
-        sql.economic.drop(engine, checkfirst=True)
-        sql.economic.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(sql.economic.name):
+            sql.economic.drop(engine, checkfirst=True)
+            sql.economic.create(engine)
 
         df = cls.from_raw(engine=engine)
         rowcount = len(df.index)
@@ -700,16 +721,25 @@ class RawSeries:
 
     @classmethod
     def install(
-        cls, series_ids: None | set[str] = None, *, engine: None | Engine = None
+        cls,
+        series_ids: None | set[str] = None,
+        *,
+        engine: None | Engine = None,
+        recreate_tables: bool = False,
     ) -> int:
-        """Drop the feature's table, create a new one, and insert data
-        as-is from the FRED API.
+        """Install data associated with by pulling data from the FRED API and
+        then writing the data to the raw series SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
 
         Args:
             series_ids: Set of series to install features for. Defaults to all
                 the series from :data:`finagg.fred.feat.economic.series_ids`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
+            recreate_tables: Whether to drop and recreate tables, wiping all
+                previously installed data.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -717,8 +747,9 @@ class RawSeries:
         """
         series_ids = series_ids or set(economic.series_ids)
         engine = engine or backend.engine
-        sql.series.drop(engine, checkfirst=True)
-        sql.series.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(sql.series.name):
+            sql.series.drop(engine, checkfirst=True)
+            sql.series.create(engine)
 
         total_rows = 0
         for series_id in tqdm(

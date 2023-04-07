@@ -310,7 +310,7 @@ class Exchanges(_API):
 
         """
         response = _get(cls.url, user_agent=user_agent)
-        content: dict[str, dict[str, str]] = response.json()
+        content: dict[str, list[str]] = response.json()
         df = pd.DataFrame(content["data"], columns=content["fields"])
         return df.rename(columns={"cik_str": "cik"})
 
