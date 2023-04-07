@@ -444,16 +444,26 @@ class RefinedNormalizedFundamental:
 
     @classmethod
     def install(
-        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
+        cls,
+        tickers: None | set[str] = None,
+        *,
+        engine: None | Engine = None,
+        recreate_tables: bool = False,
     ) -> int:
-        """Drop the feature's table, create a new one, and insert data
-        transformed from another raw SQL table.
+        """Install data associated with ``tickers`` by pulling data from the
+        refined SQL tables, transforming them into normalized features, and
+        then writing to the refined normalized fundamental SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.fundam.feat.fundam.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
+            recreate_tables: Whether to drop and recreate tables, wiping all
+                previously installed data.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -461,8 +471,11 @@ class RefinedNormalizedFundamental:
         """
         engine = engine or backend.engine
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
-        sql.normalized_fundam.drop(engine, checkfirst=True)
-        sql.normalized_fundam.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(
+            sql.normalized_fundam.name
+        ):
+            sql.normalized_fundam.drop(engine, checkfirst=True)
+            sql.normalized_fundam.create(engine)
 
         total_rows = 0
         for ticker in tqdm(
@@ -896,16 +909,26 @@ class RefinedFundamental(feat.Features):
 
     @classmethod
     def install(
-        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
+        cls,
+        tickers: None | set[str] = None,
+        *,
+        engine: None | Engine = None,
+        recreate_tables: bool = False,
     ) -> int:
-        """Drop the feature's table, create a new one, and insert data
-        transformed from another raw SQL table.
+        """Install data associated with ``tickers`` by pulling data from other
+        refined SQL tables, transforming them into fundamental features, and
+        then writing to the refined fundamental features SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.sec.feat.quarterly.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
+            recreate_tables: Whether to drop and recreate tables, wiping all
+                previously installed data.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -913,8 +936,9 @@ class RefinedFundamental(feat.Features):
         """
         engine = engine or backend.engine
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
-        sql.fundam.drop(engine, checkfirst=True)
-        sql.fundam.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(sql.fundam.name):
+            sql.fundam.drop(engine, checkfirst=True)
+            sql.fundam.create(engine)
 
         total_rows = 0
         for ticker in tqdm(

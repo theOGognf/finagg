@@ -123,7 +123,6 @@ class Related(_api.API):
             realtime_end=realtime_end,
             api_key=api_key,
         ).json()
-        print(data)
         data = data["categories"]
         return pd.DataFrame(data)
 

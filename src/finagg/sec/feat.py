@@ -520,10 +520,18 @@ class RefinedNormalizedQuarterly:
 
     @classmethod
     def install(
-        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
+        cls,
+        tickers: None | set[str] = None,
+        *,
+        engine: None | Engine = None,
+        recreate_tables: bool = False,
     ) -> int:
-        """Drop the feature's table, create a new one, and insert data
-        transformed from another raw SQL table.
+        """Install data associated with ``tickers`` by pulling data from the
+        quarterly SQL tables, transforming them into normalized features, and
+        then writing to the refined quarterly normalized SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
@@ -531,6 +539,8 @@ class RefinedNormalizedQuarterly:
                 :meth:`RefinedNormalizedQuarterly.get_candidate_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
+            recreate_tables: Whether to drop and recreate tables, wiping all
+                previously installed data.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -538,8 +548,11 @@ class RefinedNormalizedQuarterly:
         """
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
         engine = engine or backend.engine
-        sql.normalized_quarterly.drop(engine, checkfirst=True)
-        sql.normalized_quarterly.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(
+            sql.normalized_quarterly.name
+        ):
+            sql.normalized_quarterly.drop(engine, checkfirst=True)
+            sql.normalized_quarterly.create(engine)
 
         total_rows = 0
         for ticker in tqdm(
@@ -972,10 +985,18 @@ class RefinedQuarterly(feat.Features):
 
     @classmethod
     def install(
-        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
+        cls,
+        tickers: None | set[str] = None,
+        *,
+        engine: None | Engine = None,
+        recreate_tables: bool = False,
     ) -> int:
-        """Drop the feature's table, create a new one, and insert data
-        transformed from another raw SQL table.
+        """Install data associated with ``tickers`` by pulling data from the
+        raw SQL tables, transforming them into quarterly features, and then
+        writing to the refined quarterly SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
@@ -983,6 +1004,8 @@ class RefinedQuarterly(feat.Features):
                 :meth:`RefinedQuarterly.get_candidate_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
+            recreate_tables: Whether to drop and recreate tables, wiping all
+                previously installed data.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -990,8 +1013,9 @@ class RefinedQuarterly(feat.Features):
         """
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
         engine = engine or backend.engine
-        sql.quarterly.drop(engine, checkfirst=True)
-        sql.quarterly.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(sql.quarterly.name):
+            sql.quarterly.drop(engine, checkfirst=True)
+            sql.quarterly.create(engine)
 
         total_rows = 0
         for ticker in tqdm(
@@ -1063,16 +1087,25 @@ class RawSubmissions:
 
     @classmethod
     def install(
-        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
+        cls,
+        tickers: None | set[str] = None,
+        *,
+        engine: None | Engine = None,
+        recreate_tables: bool = False,
     ) -> int:
-        """Drop the feature's table, create a new one, and insert data
-        as-is from the SEC API.
+        """Install data associated with ``tickers`` by pulling data from the
+        API, and then writing the data to the raw submissions SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.indices.api.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
+            recreate_tables: Whether to drop and recreate tables, wiping all
+                previously installed data.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -1080,8 +1113,9 @@ class RawSubmissions:
         """
         tickers = tickers or indices.api.get_ticker_set()
         engine = engine or backend.engine
-        sql.submissions.drop(engine, checkfirst=True)
-        sql.submissions.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.drop(engine, checkfirst=True)
+            sql.submissions.create(engine)
 
         total_rows = 0
         for ticker in tqdm(
@@ -1320,16 +1354,25 @@ class RawTags:
 
     @classmethod
     def install(
-        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
+        cls,
+        tickers: None | set[str] = None,
+        *,
+        engine: None | Engine = None,
+        recreate_tables: bool = False,
     ) -> int:
-        """Drop the feature's table, create a new one, and insert data
-        as-is from the SEC API.
+        """Install data associated with ``tickers`` by pulling data from the
+        API, and then writing the data to the raw tags SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.indices.api.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
+            recreate_tables: Whether to drop and recreate tables, wiping all
+                previously installed data.
 
         Returns:
             Number of rows written to the feature's SQL table.
@@ -1337,8 +1380,9 @@ class RawTags:
         """
         tickers = tickers or indices.api.get_ticker_set()
         engine = engine or backend.engine
-        sql.tags.drop(engine, checkfirst=True)
-        sql.tags.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(sql.tags.name):
+            sql.tags.drop(engine, checkfirst=True)
+            sql.tags.create(engine)
 
         total_rows = 0
         for ticker in tqdm(

@@ -15,11 +15,14 @@ so we encourage you to do just that!
 Why aren't features being installed for a specific ticker or economic data series?
 ----------------------------------------------------------------------------------
 
-Not all tickers and economic data series contain sufficient data for feature
-normalization. Additionally, implemented APIs may be relatively new and simply
-may not provide data for a particular ticker or economic data series. For
-example, earnings per share may not be accessible for all companies through
-the SEC EDGAR API. The SEC EDGAR API may raise an HTTP error in some cases.
+Implemented APIs may be relatively new and simply may not provide data for a
+particular ticker or economic data series. For example, earnings per share may
+not be accessible for all companies through the SEC EDGAR API. In some cases,
+APIs may raise an HTTP error, causing installations to skip the ticker or
+series. Additionally, not all tickers and economic data series contain
+sufficient data for feature normalization. If a ticker or series only has one
+data point, that data point could be dropped when computing a feature (such as
+percent change), causing no data to be installed.
 
 What Python versions are supported?
 -----------------------------------
