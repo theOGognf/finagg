@@ -43,7 +43,9 @@ def entry_point() -> None:
 @click.option(
     "--refined",
     "-ref",
-    type=click.Choice(["quarterly", "quarterly.normalized"]),
+    type=click.Choice(
+        ["annual", "annual.normalized", "quarterly", "quarterly.normalized"]
+    ),
     multiple=True,
     help=(
         "Refined tables to install. This requires raw SEC data to be "
@@ -175,9 +177,24 @@ def install(
 
     all_refined = set()
     if all_:
-        all_refined = {"quarterly", "quarterly.normalized"}
+        all_refined = {
+            "annual",
+            "annual.normalized",
+            "quarterly",
+            "quarterly.normalized",
+        }
     elif refined:
         all_refined = set(refined)
+
+    if "annual" in all_refined:
+        total_rows += _feat.annual.install(
+            tickers=all_tickers, recreate_tables=recreate_tables
+        )
+
+    if "annual.normalized" in all_refined:
+        total_rows += _feat.annual.normalized.install(
+            tickers=all_tickers, recreate_tables=recreate_tables
+        )
 
     if "quarterly" in all_refined:
         total_rows += _feat.quarterly.install(
