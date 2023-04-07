@@ -272,6 +272,49 @@ class CompanyFacts(_API):
         )
 
 
+class Exchanges(_API):
+    """SEC-registered ticker info with exchange data.
+
+    This API implementation is very similar to :class:`Tickers`. It returns
+    all the same data in addition to the exchanges that each company is on.
+
+    The module variable :data:`finagg.sec.api.exchanges` is an instance of this
+    API implementation and is the most popular interface for querying this
+    API.
+
+    """
+
+    url = "https://www.sec.gov/files/company_tickers_exchange.json"
+
+    @classmethod
+    def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
+        """Get a dataframe containing all SEC-registered ticker
+        info.
+
+        Args:
+            user_agent: Self-declared SEC bot header. Defaults to the value
+                found in the ``SEC_API_USER_AGENT`` environment variable.
+
+        Returns:
+            A dataframe containing company names, their SEC CIKs, and their
+            ticker symbols.
+
+        Examples:
+            >>> finagg.sec.api.tickers.get().head(5)  # doctest: +NORMALIZE_WHITESPACE
+                   cik ticker                   title
+            0   320193   AAPL              Apple Inc.
+            1   789019   MSFT          MICROSOFT CORP
+            2  1652044  GOOGL           Alphabet Inc.
+            3  1018724   AMZN          AMAZON COM INC
+            4  1067983  BRK-B  BERKSHIRE HATHAWAY INC
+
+        """
+        response = _get(cls.url, user_agent=user_agent)
+        content: dict[str, dict[str, str]] = response.json()
+        df = pd.DataFrame(content["data"], columns=content["fields"])
+        return df.rename(columns={"cik_str": "cik"})
+
+
 class Frames(_API):
     """Get all company filings for one particular fact that most closely
     matches the requested calendrical period.
@@ -507,6 +550,12 @@ implementation.
 company_facts = CompanyFacts()
 """The most popular way for accessing the :class:`CompanyFacts` API
 implementation.
+
+:meta hide-value:
+"""
+
+exchanges = Exchanges()
+"""The most popular way for accessing the :class:`Exchanges` API implementation.
 
 :meta hide-value:
 """
