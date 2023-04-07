@@ -745,7 +745,7 @@ class RefinedQuarterly(feat.Features):
             df = api.company_concept.get(
                 tag, ticker=ticker, taxonomy=taxonomy, units=units
             )
-            df = get_unique_filings(df, units=units)
+            df = get_unique_filings(df, form="10-Q", units=units)
             df = df[(df["filed"] >= start) & (df["filed"] <= end)]
             dfs.append(df)
         df = pd.concat(dfs)
@@ -811,6 +811,7 @@ class RefinedQuarterly(feat.Features):
                         sql.tags.c.tag.in_(
                             [concept["tag"] for concept in cls.concepts]
                         ),
+                        sql.tags.c.form == "10-Q",
                         sql.tags.c.filed >= start,
                         sql.tags.c.filed <= end,
                     )
@@ -1244,6 +1245,7 @@ class RawTags:
         tag: str,
         /,
         *,
+        form: str = "10-Q",
         start: None | str = None,
         end: None | str = None,
         engine: None | Engine = None,
@@ -1256,6 +1258,11 @@ class RawTags:
         Args:
             ticker: Company ticker.
             tag: Company concept tag to retreive.
+            form: SEC filing form to retrieve rows for. Options include:
+
+                - "10-Q" = quarterly filings
+                - "10-K" = annual filings
+
             start: The start date of the observation period. Defaults to the
                 first recorded date.
             end: The end date of the observation period. Defaults to the
@@ -1301,6 +1308,7 @@ class RawTags:
                         & (sql.submissions.c.ticker == ticker),
                     )
                     .where(
+                        sql.tags.c.form == form,
                         sql.tags.c.tag == tag,
                         sql.tags.c.filed >= start,
                         sql.tags.c.filed <= end,
@@ -1402,14 +1410,19 @@ class RawTags:
                         taxonomy=taxonomy,
                         units=units,
                     )
-                    df = get_unique_filings(df, form="10-Q", units=units)
-                    rowcount = len(df.index)
-                    if rowcount:
-                        cls.to_raw(df, engine=engine)
-                        total_rows += rowcount
-                        logger.debug(f"{rowcount} rows inserted for {ticker} tag {tag}")
-                    else:
-                        logger.debug(f"Skipping {ticker} due to missing filings")
+                    for form in ("10-K", "10-Q"):
+                        df_unique = get_unique_filings(df, form=form, units=units)
+                        rowcount = len(df.index)
+                        if rowcount:
+                            cls.to_raw(df_unique, engine=engine)
+                            total_rows += rowcount
+                            logger.debug(
+                                f"{rowcount} rows inserted for {ticker} {tag} {form} filings"
+                            )
+                        else:
+                            logger.debug(
+                                f"Skipping {ticker} due to missing {tag} {form} filings"
+                            )
                 except Exception as e:
                     logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
