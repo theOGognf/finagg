@@ -1,5 +1,10 @@
 """An implementation of the Securities and Exchange Commission's (SEC) EDGAR API.
 
+The SEC EDGAR API provides methods for retrieving XBRL data (e.g., earnings
+per share) from financial statements and SEC filing submission histories
+(e.g., 10-Q/10-K forms). The SEC EDGAR API is one of the few APIs that
+provides historical and current company financial data for free.
+
 An SEC EDGAR API user agent declaration is required to use this API.
 The user agent should be of format ``FIRST_NAME LAST_NAME E_MAIL``. You
 can pass your user agent directly to the implemented API getters, or you
@@ -106,6 +111,12 @@ class CompanyConcept(_API):
     The module variable :data:`finagg.sec.api.company_concept` is an instance of
     this API implementation and is the most popular interface for querying this
     API.
+
+    .. seealso::
+        :data:`popular_concepts`: For a list of popular company concepts
+            that can be used with this method. The concepts described
+            within this member are the most widely available concepts for
+            SEC filers.
 
     """
 
@@ -268,6 +279,12 @@ class Frames(_API):
     The module variable :data:`finagg.sec.api.frames` is an instance of
     this API implementation and is the most popular interface for querying this
     API.
+
+    .. seealso::
+        :data:`popular_frames`: For a list of popular company frames
+            that can be used with this method. The frames described
+            within this member are the most widely available frames for
+            SEC filers.
 
     """
 
@@ -563,7 +580,8 @@ API implementation.
 popular_concepts: list[Concept] = [_frame_to_concept(frame) for frame in popular_frames]
 """Company concepts that have high availability and are relatively popular
 for fundamental analysis. Includes things like earnings per share, current
-assets, etc..
+assets, etc.. Concepts contain all the parameters required for usage with the
+:class:`CompanyConcept` API implementation.
 
 :meta hide-value:
 """

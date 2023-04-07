@@ -13,4 +13,4 @@ def engine() -> Engine:
 
 def test_get_ticker_set(engine: Engine) -> None:
     finagg.yfinance.feat.prices.install({"AAPL"}, engine=engine)
-    assert "AAPL" in finagg.yfinance.sql.get_ticker_set(engine=engine)
+    assert "AAPL" in finagg.yfinance.feat.prices.get_ticker_set(engine=engine)

@@ -1148,6 +1148,34 @@ class RawSubmissions:
         return df
 
     @classmethod
+    def get_ticker_set(
+        cls,
+        *,
+        engine: None | Engine = None,
+    ) -> set[str]:
+        """Get all unique ticker symbols in the raw SQL submissions table.
+
+        This method is convenient for accessing the tickers that have raw SQL data
+        associated with them so the data associated with those tickers can be
+        further refined. A common pattern is to use this method and other
+        ``get_ticker_set`` methods (such as those found in :mod:`finagg.sec.feat`)
+        to determine which tickers are missing data from other tables or features.
+
+        Args:
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+
+        Examples:
+            >>> "AAPL" in finagg.sec.feat.submissions.get_ticker_set()
+            True
+
+        """
+        engine = engine or backend.engine
+        with engine.begin() as conn:
+            tickers = conn.execute(sa.select(sql.submissions.c.ticker)).scalars().all()
+        return set(tickers)
+
+    @classmethod
     def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
         """Write the given dataframe to the raw feature table.
 
@@ -1174,58 +1202,6 @@ class RawTags:
     calling feature methods.
 
     """
-
-    @classmethod
-    def install(
-        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
-    ) -> int:
-        """Drop the feature's table, create a new one, and insert data
-        as-is from the SEC API.
-
-        Args:
-            tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            Number of rows written to the feature's SQL table.
-
-        """
-        tickers = tickers or indices.api.get_ticker_set()
-        engine = engine or backend.engine
-        sql.tags.drop(engine, checkfirst=True)
-        sql.tags.create(engine)
-
-        total_rows = 0
-        for ticker in tqdm(
-            tickers,
-            desc="Installing raw SEC tags data",
-            position=0,
-            leave=True,
-        ):
-            for concept in api.popular_concepts:
-                tag = concept["tag"]
-                taxonomy = concept["taxonomy"]
-                units = concept["units"]
-                try:
-                    df = api.company_concept.get(
-                        tag,
-                        ticker=ticker,
-                        taxonomy=taxonomy,
-                        units=units,
-                    )
-                    df = get_unique_filings(df, form="10-Q", units=units)
-                    rowcount = len(df.index)
-                    if rowcount:
-                        cls.to_raw(df, engine=engine)
-                        total_rows += rowcount
-                        logger.debug(f"{rowcount} rows inserted for {ticker} tag {tag}")
-                    else:
-                        logger.debug(f"Skipping {ticker} due to missing filings")
-                except Exception as e:
-                    logger.debug(f"Skipping {ticker}", exc_info=e)
-        return total_rows
 
     @classmethod
     def from_raw(
@@ -1300,6 +1276,99 @@ class RawTags:
         if not len(df.index):
             raise NoResultFound(f"No {tag} rows found for {ticker}.")
         return df.set_index(["fy", "fp", "filed"]).sort_index()
+
+    @classmethod
+    def get_ticker_set(
+        cls,
+        lb: int = 1,
+        *,
+        engine: None | Engine = None,
+    ) -> set[str]:
+        """Get all unique ticker symbols in the raw SQL tables that have at least
+        ``lb`` rows.
+
+        This method is convenient for accessing the tickers that have raw SQL data
+        associated with them so the data associated with those tickers can be
+        further refined. A common pattern is to use this method and other
+        ``get_ticker_set`` methods (such as those found in :mod:`finagg.sec.feat`)
+        to determine which tickers are missing data from other tables or features.
+
+        Args:
+            lb: Lower bound number of rows that a company must have for its ticker
+                to be included in the set returned by this method.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+
+        Examples:
+            >>> "AAPL" in finagg.sec.feat.tags.get_ticker_set()
+            True
+
+        """
+        engine = engine or backend.engine
+        with engine.begin() as conn:
+            tickers = (
+                conn.execute(
+                    sa.select(sql.submissions.c.ticker)
+                    .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
+                    .group_by(sql.tags.c.cik)
+                    .having(sa.func.count(sql.tags.c.filed) >= lb)
+                )
+                .scalars()
+                .all()
+            )
+        return set(tickers)
+
+    @classmethod
+    def install(
+        cls, tickers: None | set[str] = None, *, engine: None | Engine = None
+    ) -> int:
+        """Drop the feature's table, create a new one, and insert data
+        as-is from the SEC API.
+
+        Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
+        tickers = tickers or indices.api.get_ticker_set()
+        engine = engine or backend.engine
+        sql.tags.drop(engine, checkfirst=True)
+        sql.tags.create(engine)
+
+        total_rows = 0
+        for ticker in tqdm(
+            tickers,
+            desc="Installing raw SEC tags data",
+            position=0,
+            leave=True,
+        ):
+            for concept in api.popular_concepts:
+                tag = concept["tag"]
+                taxonomy = concept["taxonomy"]
+                units = concept["units"]
+                try:
+                    df = api.company_concept.get(
+                        tag,
+                        ticker=ticker,
+                        taxonomy=taxonomy,
+                        units=units,
+                    )
+                    df = get_unique_filings(df, form="10-Q", units=units)
+                    rowcount = len(df.index)
+                    if rowcount:
+                        cls.to_raw(df, engine=engine)
+                        total_rows += rowcount
+                        logger.debug(f"{rowcount} rows inserted for {ticker} tag {tag}")
+                    else:
+                        logger.debug(f"Skipping {ticker} due to missing filings")
+                except Exception as e:
+                    logger.debug(f"Skipping {ticker}", exc_info=e)
+        return total_rows
 
     @classmethod
     def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:

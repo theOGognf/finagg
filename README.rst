@@ -116,6 +116,13 @@ fy   fp filed                                                                   
 Get an aggregation of quarterly and daily features for a particular ticker.
 
 >>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)
+             price  open_pct_change ... PriceEarningsRatio
+date                                ...
+2010-01-26  6.2600           0.0170 ...             2.4646
+2010-01-27  6.3189           0.0044 ...             2.4878
+2010-01-28  6.0578          -0.0093 ...             2.3850
+2010-01-29  5.8381          -0.0188 ...             2.2985
+2010-02-01  5.9192          -0.0433 ...             2.3304
 
 Use installed features for exploring refined aggregations of raw data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -234,6 +241,15 @@ applications but has since focused its purpose to just aggregating financial
 data and features. That being said, all the implemented features are
 defined in such a way to make it very easy to develop financial AI/ML,
 so we encourage you to do just that!
+
+Why aren't features being installed for a specific ticker or economic data series?
+----------------------------------------------------------------------------------
+
+Not all tickers and economic data series contain sufficient data for feature
+normalization. Additionally, implemented APIs may be relatively new and simply
+may not provide data for a particular ticker or economic data series. For
+example, earnings per share may not be accessible for all companies through
+the SEC EDGAR API. In some cases, the SEC EDGAR API may raise an HTTP error.
 
 What Python versions are supported?
 -----------------------------------

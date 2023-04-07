@@ -6,11 +6,20 @@ Where should I start?
 
 Aggregate some data, create some analysis notebooks, or create some RL
 environments using the implemented data features and SQL tables. This
-project was originally created for making RL environments for financial
+project was originally created to make RL environments for financial
 applications but has since focused its purpose to just aggregating financial
 data and features. That being said, all the implemented features are
 defined in such a way to make it very easy to develop financial AI/ML,
 so we encourage you to do just that!
+
+Why aren't features being installed for a specific ticker or economic data series?
+----------------------------------------------------------------------------------
+
+Not all tickers and economic data series contain sufficient data for feature
+normalization. Additionally, implemented APIs may be relatively new and simply
+may not provide data for a particular ticker or economic data series. For
+example, earnings per share may not be accessible for all companies through
+the SEC EDGAR API. The SEC EDGAR API may raise an HTTP error in some cases.
 
 What Python versions are supported?
 -----------------------------------
