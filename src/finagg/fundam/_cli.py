@@ -43,9 +43,20 @@ def entry_point() -> None:
     default=False,
     help="Whether to install all defined tables (including all refined tables).",
 )
+@click.option(
+    "--recreate-tables",
+    "-r",
+    is_flag=True,
+    default=False,
+    help=(
+        "Whether to reset the tables associated with the install options by "
+        "dropping and recreating them."
+    ),
+)
 def install(
     refined: list[Literal["fundam", "fundam.normalized"]] = [],
     all_: bool = False,
+    recreate_tables: bool = False,
 ) -> int:
     if "SEC_API_USER_AGENT" not in os.environ:
         logger.warning(
@@ -62,10 +73,10 @@ def install(
         all_refined = set(refined)
 
     if "fundam" in all_refined:
-        total_rows += _feat.fundam.install()
+        total_rows += _feat.fundam.install(recreate_tables=recreate_tables)
 
     if "fundam.normalized" in all_refined:
-        total_rows += _feat.fundam.normalized.install()
+        total_rows += _feat.fundam.normalized.install(recreate_tables=recreate_tables)
 
     if all_ or all_refined:
         logger.info(f"{total_rows} total rows inserted for {__package__}")

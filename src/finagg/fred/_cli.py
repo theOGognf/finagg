@@ -87,6 +87,16 @@ def entry_point() -> None:
     ),
 )
 @click.option(
+    "--recreate-tables",
+    "-r",
+    is_flag=True,
+    default=False,
+    help=(
+        "Whether to reset the tables associated with the install options by "
+        "dropping and recreating them."
+    ),
+)
+@click.option(
     "--verbose",
     "-v",
     is_flag=True,
@@ -99,6 +109,7 @@ def install(
     all_: bool = False,
     series: list[str] = [],
     series_set: None | Literal["economic"] = None,
+    recreate_tables: bool = False,
     verbose: bool = False,
 ) -> int:
     if verbose:
@@ -142,7 +153,7 @@ def install(
             return total_rows
 
     if "series" in all_raw:
-        total_rows += _feat.series.install(all_series)
+        total_rows += _feat.series.install(all_series, recreate_tables=recreate_tables)
 
     all_refined = set()
     if all_:
@@ -151,10 +162,10 @@ def install(
         all_refined = set(refined)
 
     if "economic" in all_refined:
-        total_rows += _feat.economic.install()
+        total_rows += _feat.economic.install(recreate_tables=recreate_tables)
 
     if "economic.normalized" in all_refined:
-        total_rows += _feat.economic.normalized.install()
+        total_rows += _feat.economic.normalized.install(recreate_tables=recreate_tables)
 
     if all_ or all_refined or all_raw:
         if total_rows:

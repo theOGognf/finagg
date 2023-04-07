@@ -116,6 +116,16 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
     ),
 )
 @click.option(
+    "--recreate-tables",
+    "-r",
+    is_flag=True,
+    default=False,
+    help=(
+        "Whether to reset the tables associated with the install options by "
+        "dropping and recreating them."
+    ),
+)
+@click.option(
     "--verbose",
     "-v",
     is_flag=True,
@@ -131,6 +141,7 @@ def install(
     stock_data: bool = False,
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
+    recreate_tables: bool = False,
     verbose: bool = False,
 ) -> None:
     if "FINAGG_ROOT_PATH" not in os.environ:
@@ -158,6 +169,7 @@ def install(
             all_=True,
             series=series,
             series_set=series_set,
+            recreate_tables=recreate_tables,
             verbose=verbose,
         )
 
@@ -170,6 +182,7 @@ def install(
             all_=True,
             ticker=ticker,
             ticker_set=ticker_set,
+            recreate_tables=recreate_tables,
             verbose=verbose,
         )
 
@@ -179,11 +192,16 @@ def install(
             all_=True,
             ticker=ticker,
             ticker_set=ticker_set,
+            recreate_tables=recreate_tables,
             verbose=verbose,
         )
 
     if "fundam" not in all_skips:
-        ctx.invoke(fundam._cli.install, all_=True)
+        ctx.invoke(
+            fundam._cli.install,
+            all_=True,
+            recreate_tables=recreate_tables,
+        )
 
 
 def main() -> int:

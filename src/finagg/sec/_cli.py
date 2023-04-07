@@ -96,6 +96,16 @@ def entry_point() -> None:
     ),
 )
 @click.option(
+    "--recreate-tables",
+    "-r",
+    is_flag=True,
+    default=False,
+    help=(
+        "Whether to reset the tables associated with the install options by "
+        "dropping and recreating them."
+    ),
+)
+@click.option(
     "--verbose",
     "-v",
     is_flag=True,
@@ -108,6 +118,7 @@ def install(
     all_: bool = False,
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
+    recreate_tables: bool = False,
     verbose: bool = False,
 ) -> int:
     if verbose:
@@ -153,10 +164,14 @@ def install(
             return total_rows
 
         if "submissions" in all_raw:
-            total_rows += _feat.submissions.install(all_tickers)
+            total_rows += _feat.submissions.install(
+                all_tickers, recreate_tables=recreate_tables
+            )
 
         if "tags" in all_raw:
-            total_rows += _feat.tags.install(all_tickers)
+            total_rows += _feat.tags.install(
+                all_tickers, recreate_tables=recreate_tables
+            )
 
     all_refined = set()
     if all_:
@@ -165,10 +180,14 @@ def install(
         all_refined = set(refined)
 
     if "quarterly" in all_refined:
-        total_rows += _feat.quarterly.install(tickers=all_tickers)
+        total_rows += _feat.quarterly.install(
+            tickers=all_tickers, recreate_tables=recreate_tables
+        )
 
     if "quarterly.normalized" in all_refined:
-        total_rows += _feat.quarterly.normalized.install(tickers=all_tickers)
+        total_rows += _feat.quarterly.normalized.install(
+            tickers=all_tickers, recreate_tables=recreate_tables
+        )
 
     if all_ or all_refined or all_raw:
         if total_rows:
