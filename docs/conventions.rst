@@ -123,7 +123,7 @@ Data organization
 
 There are only a handful of conventions regarding data organization:
 
-* Data returned by API implementations that is used by features typically have
+* Data returned by API implementations that're used by features typically have
   their own SQL table definitions. This is convenient for querying API data
   offline and for customizing features without having to repeatedly get data
   from APIs.
