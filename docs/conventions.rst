@@ -2,7 +2,7 @@ Conventions
 ===========
 
 **finagg** has a number of conventions around package organization,
-data normalization, and data organization. Understanding these conventions
+data organization, and data normalization. Understanding these conventions
 makes **finagg** a bit more ergonomic. This page covers those conventions.
 
 Import conventions
@@ -118,5 +118,47 @@ further refinement. Examples of these methods include:
 * :meth:`finagg.sec.feat.quarterly.get_ticker_set` returns all the tickers
   that have quarterly features available
 
+Data organization
+-----------------
+
+There are only a handful of conventions regarding data organization:
+
+* Data returned by API implementations that is used by features typically have
+  their own SQL table definitions. This is convenient for querying API data
+  offline and for customizing features without having to repeatedly get data
+  from APIs.
+* Feature SQL tables are typically "melted" and do not have a SQL table column
+  per feature dataframe column. This makes it so features can be changed without
+  breaking the SQL table schemas.
+* Classes within ``feat`` submodules and SQL tables within ``sql`` submodules are
+  named similarly to indicate their relationship. As an example,
+  :data:`finagg.sec.sql.quarterly` corresponds to the SQL table definition for
+  :data:`finagg.sec.feat.quarterly`.
+* Unaltered data from APIs are typically referred to as "raw" data while
+  features are referred to as "refined" data. Refined data SQL tables typically
+  have foreign key constraints on raw data SQL tables such that refined rows
+  are deleted when raw rows are deleted with the same primary key.
+
 Data normalization
 ------------------
+
+Data returned by API implementations is not normalized or standardized
+beyond type casting and column renaming. However, data returned by feature
+implementations is normalized depending on the nature of the data. The general
+rules implemented for data normalization are as follows:
+
+* Data whose scale drifts over time or is not easily normalizable through
+  other means (e.g., gross domestic product, compony stock price, etc.) is
+  converted to percent changes. Since the percent change of the first sample
+  in a series cannot be computed and is NaN, it is dropped from the series.
+* Data gaps and/or NaNs are forward-filled with the previous non-NaN value.
+  If the series being forward-filled is a percent change series then gaps
+  and/or NaNs are replaced with zeros instead (indicating that no change
+  occurs).
+* Inf values are replaced with NaNs and forward-filled with the same logic
+  as the previous bullet.
+* Dataframe indices are always based on some time unit. When an index has
+  multiple levels (e.g., features returned by
+  :data:`finagg.sec.feat.quarterly`), the levels are ordered from least
+  granular to most granular (e.g., year -> quarter -> date). Indices
+  are always sorted.
