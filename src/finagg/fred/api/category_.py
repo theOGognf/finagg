@@ -507,10 +507,3 @@ class Category(_api.API):
         data = _api.get(cls.url, category_id=category_id, api_key=api_key).json()
         data = data["categories"]
         return pd.DataFrame(data)
-
-
-category = Category()
-"""The most popular way for accessing the :class:`Category`.
-
-:meta hide-value:
-"""

@@ -276,7 +276,7 @@ First, **finagg** provides :data:`finagg.sec.api.popular_concepts` for listing
 company concepts (combinations of financial data tags and other parameters)
 that're popular and widely available for companies. Second, it's extremely
 straightforward to filter and install widely popular and available quarterly
-financial data for a set of companies using the :mode:`finagg.sec.feat`
+financial data for a set of companies using the :mod:`finagg.sec.feat`
 subpackage and :data:`finagg.sec.feat.quarterly` member. The
 :data:`finagg.sec.feat.quarterly` member also goes a step further by somewhat
 normalizing the installed financial data (e.g., total asset value is converted

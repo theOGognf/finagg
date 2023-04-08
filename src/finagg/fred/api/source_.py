@@ -229,16 +229,3 @@ class Sources(_api.API):
         ).json()
         data = data["sources"]
         return pd.DataFrame(data)
-
-
-source = Source()
-"""The most popular way for accessing :class:`Source`.
-
-:meta hide-value:
-"""
-
-sources = Sources()
-"""The most popular way for accessing :class:`Sources`.
-
-:meta hide-value:
-"""

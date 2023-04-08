@@ -932,8 +932,23 @@ class Series(_api.API):
         return pd.DataFrame(data)
 
 
-series = Series()
-"""The most popular way for accessing :class:`Series`.
+popular_series = [
+    "CIVPART",  # Labor force participation rate
+    "CPIAUCNS",  # Consumer price index
+    "CSUSHPINSA",  # S&P/Case-Shiller national home price index
+    "FEDFUNDS",  # Federal funds interest rate
+    "GDP",  # Gross domestic product
+    "GDPC1",  # Real gross domestic product
+    "GS10",  # 10-Year treasury yield
+    "M2",  # Money stock measures (i.e., savings and related balances)
+    "MICH",  # University of Michigan: inflation expectation
+    "PSAVERT",  # Personal savings rate
+    "UMCSENT",  # University of Michigan: consumer sentiment
+    "UNRATE",  # Unemployment rate
+    "WALCL",  # US assets, total assets (less eliminations from consolidation)
+]
+"""Economic data series that are relatively popular for economic analysis.
+Includes things like gross domestic product, unemployment rate, etc..
 
 :meta hide-value:
 """

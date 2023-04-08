@@ -24,8 +24,55 @@ See the official `FRED API docs`_ for more info on the FRED API.
 
 """
 
-from .category_ import category
-from .release_ import release, releases
-from .series_ import series
-from .source_ import source, sources
-from .tags_ import related_tags, tags
+from .category_ import Category
+from .release_ import Release, Releases
+from .series_ import Series, popular_series
+from .source_ import Source, Sources
+from .tags_ import RelatedTags, Tags
+
+category = Category()
+"""The most popular way for accessing the :class:`Category`.
+
+:meta hide-value:
+"""
+
+releases = Releases()
+"""The most popular way for accessing :class:`Releases`.
+
+:meta hide-value:
+"""
+
+release = Release()
+"""The most popular way for accessing :class:`Release`.
+
+:meta hide-value:
+"""
+series = Series()
+"""The most popular way for accessing :class:`Series`.
+
+:meta hide-value:
+"""
+
+source = Source()
+"""The most popular way for accessing :class:`Source`.
+
+:meta hide-value:
+"""
+
+sources = Sources()
+"""The most popular way for accessing :class:`Sources`.
+
+:meta hide-value:
+"""
+
+tags = Tags()
+"""The most popular way for accessing :class:`Tags`.
+
+:meta hide-value:
+"""
+
+related_tags = RelatedTags()
+"""The most popular way for accessing :class:`RelatedTags`.
+
+:meta hide-value:
+"""

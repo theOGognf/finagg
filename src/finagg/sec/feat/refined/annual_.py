@@ -1,7 +1,6 @@
-"""Fundamental features aggregated from several sources."""
+"""Annual features from SEC sources."""
 
 import logging
-from datetime import datetime, timedelta
 from typing import Literal
 
 import numpy as np
@@ -11,8 +10,9 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from .. import backend, feat, sec, utils, yfinance
-from . import sql
+from .... import backend, feat, utils
+from ... import api, sql
+from .. import raw
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
@@ -20,10 +20,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class IndustryFundamental:
-    """Methods for gathering industry-averaged fundamental data.
+class IndustryAnnual:
+    """Methods for gathering industry-averaged annual data from SEC
+    features.
 
-    The class variable :data:`finagg.fundam.feat.fundam.industry` is an
+    The class variable :data:`finagg.sec.feat.annual.industry` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -31,8 +32,8 @@ class IndustryFundamental:
         You can aggregate this feature set using a ticker or an industry code
         directly.
 
-        >>> df1 = finagg.fundam.feat.fundam.industry.from_refined(ticker="MSFT").head(5)
-        >>> df2 = finagg.fundam.feat.fundam.industry.from_refined(code=73).head(5)
+        >>> df1 = finagg.sec.feat.annual.industry.from_refined(ticker="MSFT").head(5)
+        >>> df2 = finagg.sec.feat.annual.industry.from_refined(code=73).head(5)
         >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
 
     """
@@ -49,7 +50,7 @@ class IndustryFundamental:
         end: None | str = None,
         engine: None | Engine = None,
     ) -> pd.DataFrame:
-        """Get fundamental features from the feature store,
+        """Get annual features from the feature store,
         aggregated for an entire industry.
 
         The industry can be chosen according to a company or
@@ -78,8 +79,8 @@ class IndustryFundamental:
                 at :data:`finagg.backend.engine`.
 
         Returns:
-            Fundamental data dataframe with each feature as a
-            separate column. Sorted by date.
+            Annual data dataframe with each tag as a
+            separate column. Sorted by filing date.
 
         Raises:
             `ValueError`: If neither a ``ticker`` nor ``code`` are provided.
@@ -87,23 +88,9 @@ class IndustryFundamental:
                 in the refined SQL table.
 
         Examples:
-            >>> df = finagg.fundam.feat.fundam.industry.from_refined(ticker="AAPL").head(5)
+            >>> df = finagg.sec.feat.annual.industry.from_refined(ticker="AAPL").head(5)
             >>> df["avg"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-            name        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            date                                                                    ...
-            2009-10-23                       0.0           0.3305              2.48 ...
-            2009-10-26                       0.0           0.3305              2.48 ...
-            2009-10-27                       0.0           0.3305              2.48 ...
-            2009-10-28                       0.0           0.3305              2.48 ...
-            2009-10-29                       0.0           0.3305              2.48 ...
             >>> df["std"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-            name        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            date                                                                    ...
-            2009-10-23                       0.0              0.0               0.0 ...
-            2009-10-26                       0.0              0.0               0.0 ...
-            2009-10-27                       0.0              0.0               0.0 ...
-            2009-10-28                       0.0              0.0               0.0 ...
-            2009-10-29                       0.0              0.0               0.0 ...
 
         """
         start = start or "1776-07-04"
@@ -112,8 +99,8 @@ class IndustryFundamental:
         with engine.begin() as conn:
             if ticker:
                 (sic,) = conn.execute(
-                    sa.select(sec.sql.submissions.c.sic).where(
-                        sec.sql.submissions.c.ticker == ticker
+                    sa.select(sql.submissions.c.sic).where(
+                        sql.submissions.c.ticker == ticker
                     )
                 ).one()
                 code = str(sic)[:level]
@@ -125,50 +112,51 @@ class IndustryFundamental:
             df = pd.DataFrame(
                 conn.execute(
                     sa.select(
-                        sql.fundam.c.date,
-                        sql.fundam.c.name,
-                        sa.func.avg(sql.fundam.c.value).label("avg"),
-                        sa.func.std(sql.fundam.c.value).label("std"),
+                        sql.annual.c.fy,
+                        sa.func.max(sql.annual.c.filed).label("filed"),
+                        sql.annual.c.name,
+                        sa.func.avg(sql.annual.c.value).label("avg"),
+                        sa.func.std(sql.annual.c.value).label("std"),
                     )
                     .join(
-                        sec.sql.submissions,
-                        (sec.sql.submissions.c.ticker == sql.fundam.c.ticker)
-                        & (sec.sql.submissions.c.sic.startswith(code)),
+                        sql.submissions,
+                        (sql.submissions.c.cik == sql.annual.c.cik)
+                        & (sql.submissions.c.sic.startswith(code)),
                     )
                     .group_by(
-                        sql.fundam.c.date,
-                        sql.fundam.c.name,
+                        sql.annual.c.fy,
+                        sql.annual.c.name,
                     )
                     .where(
-                        sql.fundam.c.date >= start,
-                        sql.fundam.c.date <= end,
+                        sql.annual.c.filed >= start,
+                        sql.annual.c.filed <= end,
                     )
                 )
             )
         if not len(df.index):
-            raise NoResultFound(f"No industry fundamental rows found for {code}.")
+            raise NoResultFound(f"No industry annual rows found for industry {code}.")
         df = df.pivot(
-            index="date",
+            index=["fy", "filed"],
             columns="name",
             values=["avg", "std"],
         ).sort_index()
         return df
 
 
-class NormalizedFundamental:
-    """Fundamental features from quarterly and daily data, normalized
-    according to industry averages and standard deviations.
+class NormalizedAnnual:
+    """Annual features from SEC EDGAR data normalized according to industry
+    averages and standard deviations.
 
-    The class variable :data:`finagg.fundam.feat.fundam.normalized` is an
+    The class variable :data:`finagg.sec.feat.annual.normalized` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
     Examples:
         It doesn't matter which data source you use to gather features.
-        They all return equivalent dataframes.
+        They both return equivalent dataframes.
 
-        >>> df1 = finagg.fundam.feat.fundam.normalized.from_other_refined("AAPL").head(5)
-        >>> df2 = finagg.fundam.feat.fundam.from_refined("AAPL").head(5)
+        >>> df1 = finagg.sec.feat.annual.normalized.from_other_refined("AAPL").head(5)
+        >>> df2 = finagg.sec.feat.annual.normalized.from_refined("AAPL").head(5)
         >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
 
     """
@@ -204,32 +192,26 @@ class NormalizedFundamental:
                 at :data:`finagg.backend.engine`.
 
         Returns:
-            Relative fundamental data dataframe with each feature as a
+            Relative annual data dataframe with each tag as a
             separate column. Sorted by filing date.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.normalized.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-                        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            date                                                                    ...
-            2010-01-25                   -1.4142          -0.6309           -0.6506 ...
-            2010-01-26                    0.0000          -0.6309           -0.6506 ...
-            2010-01-27                    0.0000          -0.6309           -0.6506 ...
-            2010-01-28                    0.5774          -0.5223            0.2046 ...
-            2010-01-29                    0.0000          -0.5940            0.4365 ...
+            >>> finagg.sec.feat.annual.normalized.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
         """
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
-        company_df = Fundamental.from_refined(
+        company_df = Annual.from_refined(
             ticker, start=start, end=end, engine=engine
-        )
-        industry_df = IndustryFundamental.from_refined(
+        ).reset_index(["filed"])
+        filed = company_df["filed"]
+        industry_df = IndustryAnnual.from_refined(
             ticker=ticker, level=level, start=start, end=end, engine=engine
-        )
+        ).reset_index(["filed"])
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
-        company_df = company_df.sort_index()
-        pct_change_columns = Fundamental.pct_change_target_columns()
+        company_df["filed"] = filed
+        pct_change_columns = Annual.pct_change_target_columns()
         company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
             value=0.0
         )
@@ -237,8 +219,9 @@ class NormalizedFundamental:
             company_df.fillna(method="ffill")
             .dropna()
             .reset_index()
-            .drop_duplicates("date")
-            .set_index("date")
+            .drop_duplicates("filed")
+            .set_index(["fy", "filed"])
+            .sort_index()
         )
 
     @classmethod
@@ -267,22 +250,15 @@ class NormalizedFundamental:
                 at :data:`finagg.backend.engine`.
 
         Returns:
-            Fundamental data dataframe with each feature as a
-            separate column. Sorted by date.
+            Annual data dataframe with each tag as a
+            separate column. Sorted by filing date.
 
         Raises:
             `NoResultFound`: If there are no rows for ``ticker`` in the
                 refined SQL table.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.normalized.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-                        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            date                                                                    ...
-            2010-01-25                   -1.4142          -0.6309           -0.6506 ...
-            2010-01-26                    0.0000          -0.6309           -0.6506 ...
-            2010-01-27                    0.0000          -0.6309           -0.6506 ...
-            2010-01-28                    0.5774          -0.5223            0.2046 ...
-            2010-01-29                    0.0000          -0.5940            0.4365 ...
+            >>> finagg.sec.feat.annual.normalized.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
         """
         start = start or "1776-07-04"
@@ -291,30 +267,37 @@ class NormalizedFundamental:
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
-                    sql.normalized_fundam.select().where(
-                        sql.normalized_fundam.c.ticker == ticker,
-                        sql.normalized_fundam.c.date >= start,
-                        sql.normalized_fundam.c.date <= end,
+                    sql.normalized_annual.select()
+                    .join(
+                        sql.submissions,
+                        (sql.submissions.c.cik == sql.normalized_annual.c.cik)
+                        & (sql.submissions.c.ticker == ticker),
+                    )
+                    .where(
+                        sql.normalized_annual.c.filed >= start,
+                        sql.normalized_annual.c.filed <= end,
                     )
                 )
             )
         if not len(df.index):
             raise NoResultFound(
-                f"No industry-normalized fundamental rows found for {ticker}."
+                f"No industry-normalized annual rows found for {ticker}."
             )
-        df = df.pivot(index="date", columns="name", values="value").sort_index()
+        df = df.pivot(
+            index=["fy", "filed"], columns="name", values="value"
+        ).sort_index()
         df.columns = df.columns.rename(None)
-        df = df[Fundamental.columns]
+        df = df[Annual.columns]
         return df
 
     @classmethod
     def get_candidate_ticker_set(
         cls, lb: int = 1, *, engine: None | Engine = None
     ) -> set[str]:
-        """Get all unique tickers in the fundamental SQL table that MAY BE
+        """Get all unique tickers in the annual SQL table that MAY BE
         ELIGIBLE to be in the feature's SQL table.
 
-        This is just an alias for :meth:`finagg.fundam.feat.fundam.get_ticker_set`.
+        This is just an alias for :meth:`finagg.sec.feat.annual.get_ticker_set`.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
@@ -324,15 +307,15 @@ class NormalizedFundamental:
 
         Returns:
             All unique tickers that may be valid for creating
-            industry-normalized fundamental features that also have at least
+            industry-normalized annual features that also have at least
             ``lb`` rows for each tag used for constructing the features.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.annual.normalized.get_candidate_ticker_set()
             True
 
         """
-        return Fundamental.get_ticker_set(lb=lb, engine=engine)
+        return Annual.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
     def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
@@ -346,10 +329,11 @@ class NormalizedFundamental:
 
         Returns:
             All unique tickers that contain all the columns for creating
-            fundamental features that also have at least ``lb`` rows.
+            industry-normalized annual features that also have at least
+            ``lb`` rows.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.annual.normalized.get_ticker_set()
             True
 
         """
@@ -357,12 +341,16 @@ class NormalizedFundamental:
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
-                    sa.select(sql.normalized_fundam.c.ticker)
-                    .group_by(sql.normalized_fundam.c.ticker)
+                    sa.select(sql.submissions.c.ticker)
+                    .join(
+                        sql.normalized_annual,
+                        sql.normalized_annual.c.cik == sql.submissions.c.cik,
+                    )
+                    .group_by(sql.normalized_annual.c.cik)
                     .having(
                         *[
-                            sa.func.count(sql.normalized_fundam.c.name == col) >= lb
-                            for col in Fundamental.columns
+                            sa.func.count(sql.normalized_annual.c.name == col) >= lb
+                            for col in Annual.columns
                         ]
                     )
                 )
@@ -378,62 +366,53 @@ class NormalizedFundamental:
         /,
         *,
         ascending: bool = True,
-        date: int | str = 0,
+        year: int = -1,
         engine: None | Engine = None,
     ) -> list[str]:
         """Get all tickers in the feature's SQL table sorted by a particular
-        column for a date.
+        column.
 
         Args:
             column: Feature column to sort by.
             ascending: Whether to return results in ascending order according
                 to the values in ``column``.
-            date: Date to select from. Defaults to the most recent date with
-                available data. If a string, should be in "%Y-%m-%d" format.
-                If an integer, should be days before the current date (e.g,
-                ``-2`` indicates two days before today).
+            year: Year to select from. Defaults to the most recent year that
+                has data available.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
         Returns:
-            Tickers sorted by a feature column for a particular date.
-
-        Raises:
-            `ValueError`: If the integer date is positive.
+            Tickers sorted by a feature column for a particular year and quarter.
 
         Examples:
-            >>> ts = finagg.fundam.feat.fundam.normalized.get_tickers_sorted_by(
-            ...         "PriceEarningsRatio",
-            ...         date="2019-01-04"
+            >>> ts = finagg.sec.feat.annual.normalized.get_tickers_sorted_by(
+            ...         "EarningsPerShare",
+            ...         year=2020,
             ... )
-            >>> "AMD" == ts[0]
+            >>> "PCGU" == ts[0]
             True
 
         """
         engine = engine or backend.engine
         with engine.begin() as conn:
-            if isinstance(date, int):
-                if date > 0:
-                    raise ValueError("Date should be non-positive")
-
-                (max_date,) = conn.execute(
-                    sa.select(sa.func.max(sql.normalized_fundam.c.date))
+            if year == -1:
+                (max_year,) = conn.execute(
+                    sa.select(sa.func.max(sql.normalized_annual.c.fy))
                 ).one()
-                if date == 0:
-                    date = str(max_date)
-                else:
-                    date = (
-                        datetime.fromisoformat(str(max_date)) - timedelta(days=date)
-                    ).strftime("%Y-%m-%d")
+                year = int(max_year)
 
             tickers = (
                 conn.execute(
-                    sa.select(sql.normalized_fundam.c.ticker)
-                    .where(
-                        sql.normalized_fundam.c.name == column,
-                        sql.normalized_fundam.c.date == date,
+                    sa.select(sql.submissions.c.ticker)
+                    .join(
+                        sql.normalized_annual,
+                        sql.normalized_annual.c.cik == sql.submissions.c.cik,
                     )
-                    .order_by(sql.normalized_fundam.c.value)
+                    .where(
+                        sql.normalized_annual.c.name == column,
+                        sql.normalized_annual.c.fy == year,
+                    )
+                    .order_by(sql.normalized_annual.c.value)
                 )
                 .scalars()
                 .all()
@@ -451,15 +430,16 @@ class NormalizedFundamental:
         recreate_tables: bool = False,
     ) -> int:
         """Install data associated with ``tickers`` by pulling data from the
-        refined SQL tables, transforming them into normalized features, and
-        then writing to the refined normalized fundamental SQL table.
+        annual SQL tables, transforming them into normalized features, and
+        then writing to the refined annual normalized SQL table.
 
         Tables associated with this method are created if they don't already
         exist.
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.fundam.feat.fundam.get_ticker_set`.
+                the candidate tickers from
+                :meth:`NormalizedAnnual.get_candidate_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -469,18 +449,18 @@ class NormalizedFundamental:
             Number of rows written to the feature's SQL table.
 
         """
-        engine = engine or backend.engine
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
+        engine = engine or backend.engine
         if recreate_tables or not sa.inspect(engine).has_table(
-            sql.normalized_fundam.name
+            sql.normalized_annual.name
         ):
-            sql.normalized_fundam.drop(engine, checkfirst=True)
-            sql.normalized_fundam.create(engine)
+            sql.normalized_annual.drop(engine, checkfirst=True)
+            sql.normalized_annual.create(engine)
 
         total_rows = 0
         for ticker in tqdm(
             tickers,
-            desc="Installing refined industry-normalized fundamental data",
+            desc="Installing refined SEC industry-normalized annual data",
             position=0,
             leave=True,
         ):
@@ -524,22 +504,22 @@ class NormalizedFundamental:
 
         """
         engine = engine or backend.engine
-        df = df.reset_index("date")
-        if set(df.columns) < set(Fundamental.columns):
+        df = df.reset_index(["fy", "filed"])
+        if set(df.columns) < set(Annual.columns):
             raise ValueError(
-                f"Dataframe must have columns {Fundamental.columns} but got {df.columns}"
+                f"Dataframe must have columns {Annual.columns} but got {df.columns}"
             )
-        df = df.melt("date", var_name="name", value_name="value")
-        df["ticker"] = ticker
+        df = df.melt(["fy", "filed"], var_name="name", value_name="value")
+        df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
-            conn.execute(sql.normalized_fundam.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+            conn.execute(sql.normalized_annual.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 
-class Fundamental(feat.Features):
-    """Method for gathering fundamental data on a stock using several sources.
+class Annual(feat.Features):
+    """Methods for gathering annual features from SEC EDGAR data.
 
-    The module variable :data:`finagg.fundam.feat.fundam` is an instance of
+    The module variable :data:`finagg.sec.feat.annual` is an instance of
     this feature set implementation and is the most popular interface for
     calling feature methods.
 
@@ -547,94 +527,94 @@ class Fundamental(feat.Features):
         It doesn't matter which data source you use to gather features.
         They all return equivalent dataframes.
 
-        >>> df1 = finagg.fundam.feat.fundam.from_api("AAPL").head(5)
-        >>> df2 = finagg.fundam.feat.fundam.from_raw("AAPL").head(5)
-        >>> df3 = finagg.fundam.feat.fundam.from_refined("AAPL").head(5)
+        >>> df1 = finagg.sec.feat.annual.from_api("AAPL").head(5)
+        >>> df2 = finagg.sec.feat.annual.from_raw("AAPL").head(5)
+        >>> df3 = finagg.sec.feat.annual.from_refined("AAPL").head(5)
         >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
         >>> pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)
 
     """
 
     #: Columns within this feature set. Dataframes returned by this class's
-    #: methods will always contain these columns.
-    columns = (
-        yfinance.feat.daily.columns
-        + sec.feat.quarterly.columns
-        + ["PriceEarningsRatio"]
-    )
+    #: methods will always contain these columns. The refined data SQL table
+    #: corresponding to these features will also have rows that have these
+    #: names.
+    columns = [
+        "AssetsCurrent_pct_change",
+        "DebtEquityRatio",
+        "EarningsPerShare",
+        "InventoryNet_pct_change",
+        "LiabilitiesCurrent_pct_change",
+        "NetIncomeLoss_pct_change",
+        "OperatingIncomeLoss_pct_change",
+        "PriceBookRatio",
+        "QuickRatio",
+        "ReturnOnEquity",
+        "StockholdersEquity_pct_change",
+        "WorkingCapitalRatio",
+    ]
 
-    industry = IndustryFundamental()
-    """Fundamental features aggregated for an entire industry.
-    The most popular way for accessing the :class:`IndustryFundamental`
+    concepts = api.popular_concepts
+    """XBRL disclosure concepts to pull to construct the columns in this
     feature set.
 
     :meta hide-value:
     """
 
-    normalized = NormalizedFundamental()
-    """A company's fundamental features normalized by its industry.
-    The most popular way for accessing the :class:`NormalizedFundamental`
+    industry = IndustryAnnual()
+    """Annual features aggregated for an entire industry.
+    The most popular way for accessing the :class:`IndustryAnnual`
+    feature set.
+
+    :meta hide-value:
+    """
+
+    normalized = NormalizedAnnual()
+    """A company's annual features normalized by its industry.
+    The most popular way for accessing the :class:`NormalizedAnnual`
     feature set.
 
     :meta hide-value:
     """
 
     @classmethod
-    def _normalize(
-        cls,
-        quarterly: pd.DataFrame,
-        daily: pd.DataFrame,
-        /,
-    ) -> pd.DataFrame:
-        """Normalize the feature columns."""
-        quarterly = quarterly.reset_index()
-        quarterly_abs = quarterly.groupby(["filed"], as_index=False)[
-            [
-                col
-                for col in sec.feat.quarterly.columns
-                if not col.endswith("pct_change")
-            ]
-        ].last()
-        quarterly_pct_change_cols = sec.feat.quarterly.pct_change_target_columns()
-        quarterly[quarterly_pct_change_cols] += 1
-        quarterly_pct_change = quarterly.groupby(["filed"], as_index=False).agg(
-            {col: np.prod for col in quarterly_pct_change_cols}
+    def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
+        """Normalize annual features columns."""
+        df = df.set_index(["fy"]).sort_index().drop(columns="fp")
+        df["filed"] = df.groupby(["fy"])["filed"].max()
+        df = df.reset_index()
+        df = df.pivot(
+            index=["fy", "filed"],
+            columns="tag",
+            values="value",
+        ).astype(float)
+        df["EarningsPerShare"] = df["EarningsPerShareBasic"]
+        df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
+        df["PriceBookRatio"] = df["StockholdersEquity"] / (
+            df["AssetsCurrent"] - df["LiabilitiesCurrent"]
         )
-        quarterly = pd.merge(
-            quarterly_abs,
-            quarterly_pct_change,
-            how="inner",
-            left_on="filed",
-            right_on="filed",
-        )
-        quarterly[quarterly_pct_change_cols] -= 1
-        quarterly = quarterly.set_index("filed")
-        df = pd.merge(
-            quarterly, daily, how="outer", left_index=True, right_index=True
-        ).sort_index()
-        pct_change_cols = cls.pct_change_target_columns()
-        df[pct_change_cols] = df[pct_change_cols].fillna(value=0)
+        df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
+            "LiabilitiesCurrent"
+        ]
+        df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
+        df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
-        df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
-        df["PriceEarningsRatio"] = (
-            df["PriceEarningsRatio"]
-            .replace([-np.inf, np.inf], np.nan)
-            .fillna(method="ffill")
+        df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(
+            utils.safe_pct_change
         )
-        df.index.names = ["date"]
+        df.columns = df.columns.rename(None)
         df = df[cls.columns]
         return df.dropna()
 
     @classmethod
     def from_api(
-        cls,
-        ticker: str,
-        /,
-        *,
-        start: None | str = None,
-        end: None | str = None,
+        cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
-        """Get features directly from APIs.
+        """Get quarterly features directly from the SEC API.
+
+        Not all data series are published at the same rate or
+        time. Missing rows for less-frequent quarterly publications
+        are forward filled.
 
         Args:
             ticker: Company ticker.
@@ -644,84 +624,28 @@ class Fundamental(feat.Features):
                 last recorded date.
 
         Returns:
-            Combined quarterly and daily feature dataframe.
-            Sorted by date.
+            Annual data dataframe with each tag as a
+            separate column. Sorted by filing date.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.from_api("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
+            >>> finagg.sec.feat.annual.from_api("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        quarterly = sec.feat.quarterly.from_api(
-            ticker,
-            start=start,
-            end=end,
-        ).reset_index(["fy", "fp"], drop=True)
-        start = str(quarterly.index[0])
-        daily = yfinance.feat.daily.from_api(ticker, start=start, end=end)
-        return cls._normalize(quarterly, daily)
-
-    @classmethod
-    def from_other_refined(
-        cls,
-        ticker: str,
-        /,
-        *,
-        start: None | str = None,
-        end: None | str = None,
-        engine: None | Engine = None,
-    ) -> pd.DataFrame:
-        """Get features directly from other refined SQL tables.
-
-        Args:
-            ticker: Company ticker.
-            start: The start date of the observation period. Defaults to the
-                first recorded date.
-            end: The end date of the observation period. Defaults to the
-                last recorded date.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            Combined quarterly and daily feature dataframe.
-            Sorted by date.
-
-        Examples:
-            >>> finagg.fundam.feat.fundam.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
-
-        """
-        start = start or "1776-07-04"
-        end = end or utils.today
-        engine = engine or backend.engine
-        quarterly = sec.feat.quarterly.from_refined(
-            ticker,
-            start=start,
-            end=end,
-            engine=engine,
-        ).reset_index(["fy", "fp"], drop=True)
-        start = str(quarterly.index[0])
-        daily = yfinance.feat.daily.from_refined(
-            ticker,
-            start=start,
-            end=end,
-            engine=engine,
-        )
-        return cls._normalize(quarterly, daily)
+        dfs = []
+        for concept in cls.concepts:
+            tag = concept["tag"]
+            taxonomy = concept["taxonomy"]
+            units = concept["units"]
+            df = api.company_concept.get(
+                tag, ticker=ticker, taxonomy=taxonomy, units=units
+            )
+            df = raw.get_unique_filings(df, form="10-K", units=units)
+            df = df[(df["filed"] >= start) & (df["filed"] <= end)]
+            dfs.append(df)
+        df = pd.concat(dfs)
+        return cls._normalize(df)
 
     @classmethod
     def from_raw(
@@ -733,7 +657,11 @@ class Fundamental(feat.Features):
         end: None | str = None,
         engine: None | Engine = None,
     ) -> pd.DataFrame:
-        """Get features directly from other raw SQL tables.
+        """Get annual features from a local SEC SQL table.
+
+        Not all data series are published at the same rate or
+        time. Missing rows for less-frequent annual publications
+        are forward filled.
 
         Args:
             ticker: Company ticker.
@@ -745,37 +673,42 @@ class Fundamental(feat.Features):
                 at :data:`finagg.backend.engine`.
 
         Returns:
-            Combined quarterly and daily feature dataframe.
-            Sorted by date.
+            Annual data dataframe with each tag as a
+            separate column. Sorted by filing date.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` in the
+                raw SQL table.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
+            >>> finagg.sec.feat.annual.from_raw("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
         """
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
-        quarterly = sec.feat.quarterly.from_raw(
-            ticker,
-            start=start,
-            end=end,
-            engine=engine,
-        ).reset_index(["fy", "fp"], drop=True)
-        start = str(quarterly.index[0])
-        daily = yfinance.feat.daily.from_raw(
-            ticker,
-            start=start,
-            end=end,
-            engine=engine,
-        )
-        return cls._normalize(quarterly, daily)
+        with engine.begin() as conn:
+            df = pd.DataFrame(
+                conn.execute(
+                    sql.tags.select()
+                    .join(
+                        sql.submissions,
+                        (sql.submissions.c.cik == sql.tags.c.cik)
+                        & (sql.submissions.c.ticker == ticker),
+                    )
+                    .where(
+                        sql.tags.c.tag.in_(
+                            [concept["tag"] for concept in cls.concepts]
+                        ),
+                        sql.tags.c.form == "10-K",
+                        sql.tags.c.filed >= start,
+                        sql.tags.c.filed <= end,
+                    )
+                )
+            )
+        if not len(df.index):
+            raise NoResultFound(f"No annual rows found for {ticker}.")
+        return cls._normalize(df)
 
     @classmethod
     def from_refined(
@@ -787,10 +720,10 @@ class Fundamental(feat.Features):
         end: None | str = None,
         engine: None | Engine = None,
     ) -> pd.DataFrame:
-        """Get features from the feature-dedicated local SQL tables.
+        """Get features from the refined SQL table.
 
         This is the preferred method for accessing features for
-        offline analysis (assuming data in the local SQL tables
+        offline analysis (assuming data in the local SQL table
         is current).
 
         Args:
@@ -803,22 +736,15 @@ class Fundamental(feat.Features):
                 at :data:`finagg.backend.engine`.
 
         Returns:
-            Combined quarterly and daily feature dataframe.
-            Sorted by date.
+            Quarterly data dataframe with each tag as a
+            separate column. Sorted by filing date.
 
         Raises:
             `NoResultFound`: If there are no rows for ``ticker`` in the
                 refined SQL table.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
+            >>> finagg.sec.feat.annual.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
 
         """
         start = start or "1776-07-04"
@@ -827,16 +753,25 @@ class Fundamental(feat.Features):
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
-                    sql.fundam.select().where(
-                        sql.fundam.c.ticker == ticker,
-                        sql.fundam.c.date >= start,
-                        sql.fundam.c.date <= end,
+                    sql.annual.select()
+                    .join(
+                        sql.submissions,
+                        (sql.submissions.c.cik == sql.annual.c.cik)
+                        & (sql.submissions.c.ticker == ticker),
+                    )
+                    .where(
+                        sql.annual.c.filed >= start,
+                        sql.annual.c.filed <= end,
                     )
                 )
             )
         if not len(df.index):
-            raise NoResultFound(f"No fundamental rows found for {ticker}.")
-        df = df.pivot(index="date", values="value", columns="name").sort_index()
+            raise NoResultFound(f"No annual rows found for {ticker}.")
+        df = df.pivot(
+            index=["fy", "filed"],
+            columns="name",
+            values="value",
+        ).sort_index()
         df.columns = df.columns.rename(None)
         df = df[cls.columns]
         return df
@@ -855,18 +790,44 @@ class Fundamental(feat.Features):
                 at :data:`finagg.backend.engine`.
 
         Returns:
-            All unique tickers that may be valid for both quarterly and daily
-            features that also have at least ``lb`` rows used for constructing
-            the features.
+            All unique tickers that may be valid for creating annual features
+            that also have at least ``lb`` rows for each tag used for
+            constructing the features.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.annual.get_candidate_ticker_set()
             True
 
         """
-        return sec.feat.quarterly.get_ticker_set(
-            lb=lb, engine=engine
-        ) & yfinance.feat.daily.get_ticker_set(lb=lb, engine=engine)
+        engine = engine or backend.engine
+        with engine.begin() as conn:
+            tickers = (
+                conn.execute(
+                    sa.select(
+                        sql.submissions.c.ticker,
+                        *[
+                            sa.func.sum(
+                                sa.case(
+                                    {concept["tag"]: 1}, value=sql.tags.c.tag, else_=0
+                                )
+                            ).label(concept["tag"])
+                            for concept in cls.concepts
+                        ],
+                    )
+                    .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
+                    .where(sql.tags.c.form == "10-K")
+                    .group_by(sql.tags.c.cik)
+                    .having(
+                        *[
+                            sa.text(f"{concept['tag']} >= {lb}")
+                            for concept in cls.concepts
+                        ]
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        return set(tickers)
 
     @classmethod
     def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
@@ -880,10 +841,10 @@ class Fundamental(feat.Features):
 
         Returns:
             All unique tickers that contain all the columns for creating
-            fundamental features that also have at least ``lb`` rows.
+            annual features that also have at least ``lb`` rows.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.get_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.annual.get_ticker_set()
             True
 
         """
@@ -891,11 +852,12 @@ class Fundamental(feat.Features):
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
-                    sa.select(sql.fundam.c.ticker)
-                    .group_by(sql.fundam.c.ticker)
+                    sa.select(sql.submissions.c.ticker)
+                    .join(sql.annual, sql.annual.c.cik == sql.submissions.c.cik)
+                    .group_by(sql.annual.c.cik)
                     .having(
                         *[
-                            sa.func.count(sql.fundam.c.name == col) >= lb
+                            sa.func.count(sql.annual.c.name == col) >= lb
                             for col in cls.columns
                         ]
                     )
@@ -913,16 +875,17 @@ class Fundamental(feat.Features):
         engine: None | Engine = None,
         recreate_tables: bool = False,
     ) -> int:
-        """Install data associated with ``tickers`` by pulling data from other
-        refined SQL tables, transforming them into fundamental features, and
-        then writing to the refined fundamental features SQL table.
+        """Install data associated with ``tickers`` by pulling data from the
+        raw SQL tables, transforming them into annual features, and then
+        writing to the refined annual SQL table.
 
         Tables associated with this method are created if they don't already
         exist.
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.sec.feat.quarterly.get_ticker_set`.
+                the candidate tickers from
+                :meth:`Annual.get_candidate_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -932,21 +895,21 @@ class Fundamental(feat.Features):
             Number of rows written to the feature's SQL table.
 
         """
-        engine = engine or backend.engine
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
-        if recreate_tables or not sa.inspect(engine).has_table(sql.fundam.name):
-            sql.fundam.drop(engine, checkfirst=True)
-            sql.fundam.create(engine)
+        engine = engine or backend.engine
+        if recreate_tables or not sa.inspect(engine).has_table(sql.annual.name):
+            sql.annual.drop(engine, checkfirst=True)
+            sql.annual.create(engine)
 
         total_rows = 0
         for ticker in tqdm(
             tickers,
-            desc="Installing refined fundamental data",
+            desc="Installing refined SEC annual data",
             position=0,
             leave=True,
         ):
             try:
-                df = cls.from_other_refined(ticker, engine=engine)
+                df = cls.from_raw(ticker, engine=engine)
                 rowcount = len(df.index)
                 if rowcount:
                     cls.to_refined(ticker, df, engine=engine)
@@ -967,12 +930,12 @@ class Fundamental(feat.Features):
         *,
         engine: None | Engine = None,
     ) -> int:
-        """Write the dataframe to the feature store for ``ticker``.
+        """Write the given dataframe to the refined feature table
+        while using the ticker ``ticker``.
 
         Args:
             ticker: Company ticker.
-            df: Dataframe to store completely as rows in a local SQL
-                table.
+            df: Dataframe to store as rows in a local SQL table
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -985,20 +948,13 @@ class Fundamental(feat.Features):
 
         """
         engine = engine or backend.engine
-        df = df.reset_index("date")
+        df = df.reset_index(["fy", "filed"])
         if set(df.columns) < set(cls.columns):
             raise ValueError(
                 f"Dataframe must have columns {cls.columns} but got {df.columns}"
             )
-        df = df.melt("date", var_name="name", value_name="value")
-        df["ticker"] = ticker
+        df = df.melt(["fy", "filed"], var_name="name", value_name="value")
+        df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
-            conn.execute(sql.fundam.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+            conn.execute(sql.annual.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
-
-
-fundam = Fundamental()
-"""The most popular way for accessing :class:`Fundamental`.
-
-:meta hide-value:
-"""

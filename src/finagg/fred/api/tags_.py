@@ -297,16 +297,3 @@ class Tags(_api.API):
         ).json()
         data = data["tags"]
         return pd.DataFrame(data)
-
-
-tags = Tags()
-"""The most popular way for accessing :class:`Tags`.
-
-:meta hide-value:
-"""
-
-related_tags = RelatedTags()
-"""The most popular way for accessing :class:`RelatedTags`.
-
-:meta hide-value:
-"""

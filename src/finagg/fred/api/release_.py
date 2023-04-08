@@ -690,16 +690,3 @@ class Release(_api.API):
         ).json()
         data = data["releases"]
         return pd.DataFrame(data)
-
-
-releases = Releases()
-"""The most popular way for accessing :class:`Releases`.
-
-:meta hide-value:
-"""
-
-release = Release()
-"""The most popular way for accessing :class:`Release`.
-
-:meta hide-value:
-"""
