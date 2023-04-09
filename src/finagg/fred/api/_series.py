@@ -14,10 +14,10 @@ See the official FRED API docs for more info:
 
 import pandas as pd
 
-from . import api_
+from . import _api
 
 
-class Categories(api_.API):
+class Categories(_api.API):
     """Get the categories for an economic data series.
 
     The class variable :data:`finagg.fred.api.series.categories` is an
@@ -62,7 +62,7 @@ class Categories(api_.API):
             0   9  Consumer Price Indexes (CPI and PCE)      32455
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             series_id=series_id,
             realtime_start=realtime_start,
@@ -73,7 +73,7 @@ class Categories(api_.API):
         return pd.DataFrame(data)
 
 
-class Observations(api_.API):
+class Observations(_api.API):
     """Get the observations or data values for an economic data series.
 
     This is by far the most popular FRED API method. The class variable
@@ -198,7 +198,7 @@ class Observations(api_.API):
             4     1949-08-26   1953-02-26  1949-07-01  168.5  CPIAUCNS
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             series_id=series_id,
             realtime_start=realtime_start,
@@ -221,7 +221,7 @@ class Observations(api_.API):
         return df
 
 
-class Release(api_.API):
+class Release(_api.API):
     """Get the latest release for an economic data seris.
 
     The class variable :data:`finagg.fred.api.series.release` is an
@@ -261,7 +261,7 @@ class Release(api_.API):
             A dataframe containing data on a release for an economic data series.
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             series_id=series_id,
             realtime_start=realtime_start,
@@ -272,7 +272,7 @@ class Release(api_.API):
         return pd.DataFrame(data)
 
 
-class SearchRelatedTags(api_.API):
+class SearchRelatedTags(_api.API):
     """Search for series tags related to a series's tags.
 
     The class variable :data:`finagg.fred.api.series.search.related_tags` is an
@@ -357,7 +357,7 @@ class SearchRelatedTags(api_.API):
             4  public domain: citation requested       cc                     None  2018-12-17 23:33:13-06 ...
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             series_search_text=series_search_text,
             realtime_start=realtime_start,
@@ -376,7 +376,7 @@ class SearchRelatedTags(api_.API):
         return pd.DataFrame(data)
 
 
-class SearchTags(api_.API):
+class SearchTags(_api.API):
     """Get FRED series tags.
 
     The class variable :data:`finagg.fred.api.series.search.tags` is an
@@ -459,7 +459,7 @@ class SearchTags(api_.API):
             4  public domain: citation requested       cc                     None ...
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             series_search_text=series_search_text,
             realtime_start=realtime_start,
@@ -477,7 +477,7 @@ class SearchTags(api_.API):
         return pd.DataFrame(data)
 
 
-class Search(api_.API):
+class Search(_api.API):
     """Get economic data series that match search text.
 
     The class variable :data:`finagg.fred.api.series.search` is an
@@ -587,7 +587,7 @@ class Search(api_.API):
             4    CSUSHPISA     2023-03-16   2023-03-16    S&P/Case-Shiller U.S. National Home Price Index ...
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             search_text=search_text,
             search_type=search_type,
@@ -607,7 +607,7 @@ class Search(api_.API):
         return pd.DataFrame(data)
 
 
-class Tags(api_.API):
+class Tags(_api.API):
     """Get FRED tags for an economic data series.
 
     The class variable :data:`finagg.fred.api.series.tags` is an
@@ -669,7 +669,7 @@ class Tags(api_.API):
             4                            monthly     freq                           ...
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             series_id=series_id,
             realtime_start=realtime_start,
@@ -682,7 +682,7 @@ class Tags(api_.API):
         return pd.DataFrame(data)
 
 
-class Updates(api_.API):
+class Updates(_api.API):
     """Get data on when economic data series where updated on the FRED server.
 
     The class variable :data:`finagg.fred.api.series.updates` is an
@@ -742,7 +742,7 @@ class Updates(api_.API):
             data series.
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -757,7 +757,7 @@ class Updates(api_.API):
         return pd.DataFrame(data)
 
 
-class VintageDates(api_.API):
+class VintageDates(_api.API):
     """Get FRED series revision dates.
 
     The class variable :data:`finagg.fred.api.series.vintage_dates` is an
@@ -806,7 +806,7 @@ class VintageDates(api_.API):
             A dataframe containing dates on vintage release dates for a series.
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             series_id=series_id,
             realtime_start=realtime_start,
@@ -820,7 +820,7 @@ class VintageDates(api_.API):
         return pd.DataFrame(data)
 
 
-class Series(api_.API):
+class Series(_api.API):
     """Get an economic data series.
 
     The class variable :data:`finagg.fred.api.series` is an instance of this
@@ -921,7 +921,7 @@ class Series(api_.API):
             4  CPIAUCNS     1978-02-27   1988-02-25  Consumer Price Index for All Urban Consumers: ... ...
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             series_id=series_id,
             realtime_start=realtime_start,

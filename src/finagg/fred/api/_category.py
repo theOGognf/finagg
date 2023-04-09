@@ -8,15 +8,15 @@ See the official FRED API docs for more info:
 
 import pandas as pd
 
-from . import api_
+from . import _api
 
 
-class Children(api_.API):
+class Children(_api.API):
     """Get FRED child categories.
 
-    The class variable :data:`finagg.fred.api.category.children` is an instance
-    of this API implementation and is the most popular interface for calling
-    this API.
+    The class variable :attr:`~finagg.fred.api.category_.Category.children`
+    is an instance of this API implementation and is the most popular
+    interface for calling this API.
 
     """
 
@@ -63,7 +63,7 @@ class Children(api_.API):
             7  33060                            Academic Data          0
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -74,7 +74,7 @@ class Children(api_.API):
         return pd.DataFrame(data)
 
 
-class Related(api_.API):
+class Related(_api.API):
     """Get FRED related categories.
 
     The class variable :data:`finagg.fred.api.category.related` is an instance
@@ -116,7 +116,7 @@ class Related(api_.API):
             related to the given category.
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -127,7 +127,7 @@ class Related(api_.API):
         return pd.DataFrame(data)
 
 
-class Series(api_.API):
+class Series(_api.API):
     """Get FRED series within a category.
 
     The class variable :data:`finagg.fred.api.category.series` is an instance
@@ -208,7 +208,7 @@ class Series(api_.API):
             3   FFWSJLOW     2023-03-15   2023-03-15  Low Value of the Federal Funds Rate for the In... ...
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -227,7 +227,7 @@ class Series(api_.API):
         return pd.DataFrame(data)
 
 
-class Tags(api_.API):
+class Tags(_api.API):
     """Get FRED category's tags.
 
     The class variable :data:`finagg.fred.api.category.tags` is an instance
@@ -309,7 +309,7 @@ class Tags(api_.API):
             4          funds      gen  None  2020-05-11 13:13:02-05          28             8
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -327,7 +327,7 @@ class Tags(api_.API):
         return pd.DataFrame(data)
 
 
-class RelatedTags(api_.API):
+class RelatedTags(_api.API):
     """Get FRED category's related tags.
 
     The class variable :data:`finagg.fred.api.category.related_tags` is an
@@ -420,7 +420,7 @@ class RelatedTags(api_.API):
             13                                wsj      rls       Wall Street Journal ...
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -439,7 +439,7 @@ class RelatedTags(api_.API):
         return pd.DataFrame(data)
 
 
-class Category(api_.API):
+class Category(_api.API):
     """Collection of `fred/category` APIs.
 
     The class variable :data:`finagg.fred.api.category` is an
@@ -504,6 +504,6 @@ class Category(api_.API):
             0   0  Categories          0
 
         """
-        data = api_.get(cls.url, category_id=category_id, api_key=api_key).json()
+        data = _api.get(cls.url, category_id=category_id, api_key=api_key).json()
         data = data["categories"]
         return pd.DataFrame(data)

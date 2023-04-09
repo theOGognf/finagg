@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from .... import backend, feat, utils
 from ... import api, sql
-from .. import raw
+from .. import _raw
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
@@ -571,7 +571,7 @@ class Annual(feat.Features):
 
     normalized = NormalizedAnnual()
     """A company's annual features normalized by its industry.
-    The most popular way for accessing the :class:`NormalizedAnnual`
+    The most popular way for accessing the :class:`~finagg.sec.feat.NormalizedAnnual`
     feature set.
 
     :meta hide-value:
@@ -641,7 +641,7 @@ class Annual(feat.Features):
             df = api.company_concept.get(
                 tag, ticker=ticker, taxonomy=taxonomy, units=units
             )
-            df = raw.get_unique_filings(df, form="10-K", units=units)
+            df = _raw.get_unique_filings(df, form="10-K", units=units)
             df = df[(df["filed"] >= start) & (df["filed"] <= end)]
             dfs.append(df)
         df = pd.concat(dfs)

@@ -8,10 +8,10 @@ See the official FRED API docs for more info:
 
 import pandas as pd
 
-from . import api_
+from . import _api
 
 
-class Releases(api_.API):
+class Releases(_api.API):
     """Get all of a source's releases of economic data.
 
     The class variable :data:`finagg.fred.api.source.releases` is an instance
@@ -77,7 +77,7 @@ class Releases(api_.API):
             4  18     2023-03-15   2023-03-15                       H.15 Selected Interest Rates           True  http://www.federalreserve.gov/releases/h15/
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             source_id=source_id,
             realtime_start=realtime_start,
@@ -92,7 +92,7 @@ class Releases(api_.API):
         return pd.DataFrame(data)
 
 
-class Source(api_.API):
+class Source(_api.API):
     """Get a source of economic data.
 
     The module variable :data:`finagg.fred.api.source` is an instance
@@ -144,7 +144,7 @@ class Source(api_.API):
             0   1     2023-03-15   2023-03-15  Board of Governors of the Federal Reserve Syst...  http://www.federalreserve.gov/
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             source_id=source_id,
             realtime_start=realtime_start,
@@ -155,7 +155,7 @@ class Source(api_.API):
         return pd.DataFrame(data)
 
 
-class Sources(api_.API):
+class Sources(_api.API):
     """Get all FRED sources of economic data.
 
     The module variable :data:`finagg.fred.api.sources` is an instance
@@ -217,7 +217,7 @@ class Sources(api_.API):
             4  11     2023-03-15   2023-03-15                                Dow Jones & Company           http://www.dowjones.com
 
         """
-        data = api_.get(
+        data = _api.get(
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,

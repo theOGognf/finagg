@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from .... import backend, feat, utils
 from ... import api, sql
-from .. import raw
+from .. import _raw
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
@@ -693,7 +693,7 @@ class Quarterly(feat.Features):
             df = api.company_concept.get(
                 tag, ticker=ticker, taxonomy=taxonomy, units=units
             )
-            df = raw.get_unique_filings(df, form="10-Q", units=units)
+            df = _raw.get_unique_filings(df, form="10-Q", units=units)
             df = df[(df["filed"] >= start) & (df["filed"] <= end)]
             dfs.append(df)
         df = pd.concat(dfs)

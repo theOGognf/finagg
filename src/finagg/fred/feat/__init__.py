@@ -1,7 +1,7 @@
 """Features from FRED sources."""
 
-from .raw import Series
-from .refined import Economic
+from ._raw import Series
+from ._refined import Economic
 
 economic = Economic()
 """The most popular way for accessing

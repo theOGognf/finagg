@@ -24,14 +24,40 @@ See the official `FRED API docs`_ for more info on the FRED API.
 
 """
 
-from .category_ import Category
-from .release_ import Release, Releases
-from .series_ import Series, popular_series
-from .source_ import Source, Sources
-from .tags_ import RelatedTags, Tags
+from ._category import Category
+from ._release import Release, Releases
+from ._series import Series, popular_series
+from ._source import Source, Sources
+from ._tags import RelatedTags, Tags
+
+__all__ = [
+    "category",
+    "popular_series",
+    "related_tags",
+    "release",
+    "releases",
+    "series",
+    "source",
+    "sources",
+    "tags",
+    "Category",
+    "RelatedTags",
+    "Release",
+    "Releases",
+    "Series",
+    "Source",
+    "Sources",
+    "Tags",
+]
 
 category = Category()
 """The most popular way for accessing the :class:`~finagg.fred.api.category_.Category`.
+
+:meta hide-value:
+"""
+
+release = Release()
+"""The most popular way for accessing :class:`~finagg.fred.api.release_.Release`.
 
 :meta hide-value:
 """
@@ -42,11 +68,6 @@ releases = Releases()
 :meta hide-value:
 """
 
-release = Release()
-"""The most popular way for accessing :class:`~finagg.fred.api.release_.Release`.
-
-:meta hide-value:
-"""
 series = Series()
 """The most popular way for accessing :class:`~finagg.fred.api.series_.Series`.
 
