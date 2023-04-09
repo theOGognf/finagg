@@ -92,7 +92,7 @@ class SubmissionsResult(TypedDict):
     filings: pd.DataFrame
 
 
-class _API(ABC):
+class API(ABC):
     """Abstract SEC EDGAR API."""
 
     #: Request API URL.
@@ -104,7 +104,7 @@ class _API(ABC):
         """Main dataset API method."""
 
 
-class CompanyConcept(_API):
+class CompanyConcept(API):
     """Get all XBRL disclosures for a single company and concept (a taxonomy
     and tag) in a single dataframe.
 
@@ -196,7 +196,7 @@ class CompanyConcept(_API):
         return results.rename(columns={"entityName": "entity", "val": "value"})
 
 
-class CompanyFacts(_API):
+class CompanyFacts(API):
     """Get all XBRL disclosures for a single company.
 
     The module variable :data:`finagg.sec.api.company_facts` is an instance of
@@ -272,7 +272,7 @@ class CompanyFacts(_API):
         )
 
 
-class Exchanges(_API):
+class Exchanges(API):
     """SEC-registered ticker info with exchange data.
 
     This API implementation is very similar to :class:`Tickers`. It returns
@@ -315,7 +315,7 @@ class Exchanges(_API):
         return df.rename(columns={"cik_str": "cik"})
 
 
-class Frames(_API):
+class Frames(API):
     """Get all company filings for one particular fact that most closely
     matches the requested calendrical period.
 
@@ -414,7 +414,7 @@ class Frames(_API):
         )
 
 
-class Submissions(_API):
+class Submissions(API):
     """Get a company's metadata and all its recent SEC filings.
 
     Not all the metadata typically found with the submissions API is supported
@@ -488,7 +488,7 @@ class Submissions(_API):
         return {"metadata": metadata, "filings": df}
 
 
-class Tickers(_API):
+class Tickers(API):
     """SEC-registered ticker info.
 
     This is a broader method in comparison to :meth:`get_ticker_set`.

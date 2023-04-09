@@ -145,7 +145,7 @@ passenv =
 deps =
     -r {toxinidir}/docs/requirements.txt
 commands =
-    sphinx-build --color -b {env:BUILD} -d "{env:BUILDDIR}/doctrees" "{env:DOCSDIR}" "{env:BUILDDIR}/{env:BUILD}" {posargs}
+    sphinx-build -E -a --color -b {env:BUILD} -d "{env:BUILDDIR}/doctrees" "{env:DOCSDIR}" "{env:BUILDDIR}/{env:BUILD}" {posargs}
 
 [testenv:publish]
 description =

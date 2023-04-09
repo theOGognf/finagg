@@ -337,7 +337,7 @@ class Economic(feat.Features):
 
     normalized = NormalizedEconomic()
     """Economic features normalized over time.
-    The most popular way for accessing the :class:`RefinedNormalizedEconomic`
+    The most popular way for accessing the :class:`NormalizedEconomic`
     feature set.
 
     :meta hide-value:
@@ -345,7 +345,7 @@ class Economic(feat.Features):
 
     summary = TimeSummarizedEconomic()
     """Economic features aggregated over time.
-    The most popular way for accessing the :class:`RefinedTimeSummarizedEconomic`
+    The most popular way for accessing the :class:`TimeSummarizedEconomic`
     feature set.
 
     :meta hide-value:

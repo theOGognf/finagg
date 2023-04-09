@@ -60,7 +60,7 @@ session = requests_cache.CachedSession(
 _YEAR = int | str
 
 
-class _API(ABC):
+class API(ABC):
     """Interface for BEA Dataset APIs."""
 
     #: Request API URL.
@@ -84,7 +84,7 @@ class _API(ABC):
         return _get_parameter_values(cls.name, param, api_key=api_key)
 
 
-class FixedAssets(_API):
+class FixedAssets(API):
     """US fixed assets (assets for long-term use)."""
 
     name = "FixedAssets"
@@ -101,7 +101,8 @@ class FixedAssets(_API):
 
         Args:
             table_id: IDs associated with assets of concern.
-                Use :meth:`get_parameter_values` to see possible values.
+                Use :meth:`~finagg.bea.api.API.get_parameter_values` to see
+                possible values.
             year: Years to return.
 
         Returns:
@@ -157,7 +158,7 @@ class FixedAssets(_API):
         return pd.concat(results)
 
 
-class GDPByIndustry(_API):
+class GDPByIndustry(API):
     """GDP (a single summary statistic) for each industry.
 
     The module variable :data:`finagg.bea.api.gdp_by_industry` is an instance
@@ -204,15 +205,17 @@ class GDPByIndustry(_API):
         """Get GDP by industry.
 
         Args:
-            table_id: IDs associated with GDP value type. Use :meth:`get_parameter_values`
-                to see possible values. `"ALL"` indicates retrieve all GDP value
+            table_id: IDs associated with GDP value type. Use
+                :meth:`~finagg.bea.api.API.get_parameter_values` to see
+                possible values. `"ALL"` indicates retrieve all GDP value
                 measurement type tables.
             freq: Data frequency to return. `"Q"` for quarterly, `"A"` for
                 annually, and `"A,Q"` for both annually and quarterly.
             year: Years to return. `"ALL"` indicates retrieve data for all
                 available years.
-            industry: IDs associated with industries. Use :meth:`get_parameter_values`
-                to see possible values.
+            industry: IDs associated with industries. Use
+                :meth:`~finagg.bea.api.API.get_parameter_values` to see
+                possible values.
 
         Returns:
             Dataframe with GDP by industry, separated by year and/or quarter.
@@ -273,7 +276,7 @@ class GDPByIndustry(_API):
         )
 
 
-class InputOutput(_API):
+class InputOutput(API):
     """Specific input-output statistics for each industry.
 
     Data provided by this API is considered granular/low-level.
@@ -303,9 +306,9 @@ class InputOutput(_API):
 
         Args:
             table_id: IDs associated with input-output stats. Use
-                :meth:`get_parameter_values` to see possible values.
-                `"ALL"` indicates retrieve all tables for all types
-                of input-output statistics by industry.
+                :meth:`~finagg.bea.api.API.get_parameter_values` to see
+                possible values. `"ALL"` indicates retrieve all tables for
+                all types of input-output statistics by industry.
             year: Years to return. `"ALL"` indicates retrieve data for all
                 available years.
 
@@ -353,7 +356,7 @@ class InputOutput(_API):
         )
 
 
-class NIPA(_API):
+class NIPA(API):
     """National income and product accounts.
 
     Details high-level US economic details in several
@@ -376,7 +379,8 @@ class NIPA(_API):
 
         Args:
             table_id: IDs associated with metric of concern.
-                Use :meth:`get_parameter_values` to see possible values.
+                Use :meth:`~finagg.bea.api.API.get_parameter_values` to see
+                possible values.
             freq: Data frequency to return. `"Q"` for quarterly, `"A"` for annually.
             year: Years to return.
 

@@ -31,48 +31,48 @@ from .source_ import Source, Sources
 from .tags_ import RelatedTags, Tags
 
 category = Category()
-"""The most popular way for accessing the :class:`Category`.
+"""The most popular way for accessing the :class:`~finagg.fred.api.category_.Category`.
 
 :meta hide-value:
 """
 
 releases = Releases()
-"""The most popular way for accessing :class:`Releases`.
+"""The most popular way for accessing :class:`~finagg.fred.api.release_.Releases`.
 
 :meta hide-value:
 """
 
 release = Release()
-"""The most popular way for accessing :class:`Release`.
+"""The most popular way for accessing :class:`~finagg.fred.api.release_.Release`.
 
 :meta hide-value:
 """
 series = Series()
-"""The most popular way for accessing :class:`Series`.
+"""The most popular way for accessing :class:`~finagg.fred.api.series_.Series`.
 
 :meta hide-value:
 """
 
 source = Source()
-"""The most popular way for accessing :class:`Source`.
+"""The most popular way for accessing :class:`~finagg.fred.api.source_.Source`.
 
 :meta hide-value:
 """
 
 sources = Sources()
-"""The most popular way for accessing :class:`Sources`.
+"""The most popular way for accessing :class:`~finagg.fred.api.source_.Sources`.
 
 :meta hide-value:
 """
 
 tags = Tags()
-"""The most popular way for accessing :class:`Tags`.
+"""The most popular way for accessing :class:`~finagg.fred.api.tags_.Tags`.
 
 :meta hide-value:
 """
 
 related_tags = RelatedTags()
-"""The most popular way for accessing :class:`RelatedTags`.
+"""The most popular way for accessing :class:`~finagg.fred.api.tags_.RelatedTags`.
 
 :meta hide-value:
 """

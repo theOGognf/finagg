@@ -19,7 +19,7 @@ session = requests_cache.CachedSession(
 )
 
 
-class _API(ABC):
+class API(ABC):
     """Abstract indices API."""
 
     #: Request API URL.
@@ -37,7 +37,7 @@ class _API(ABC):
         return df["ticker"].tolist()
 
 
-class DJIA(_API):
+class DJIA(API):
     """Get data on all companies within the DJIA.
 
     The module variable :data:`finagg.indices.api.djia` is an instance of
@@ -87,7 +87,7 @@ class DJIA(_API):
         return df
 
 
-class Nasdaq100(_API):
+class Nasdaq100(API):
     """Get data on all companies within the Nasdaq 100.
 
     The module variable :data:`finagg.indices.api.nasdaq100` is an instance of
@@ -127,7 +127,7 @@ class Nasdaq100(_API):
         )
 
 
-class SP500(_API):
+class SP500(API):
     """Get data on all companies within the S&P 500.
 
     The module variable :data:`finagg.indices.api.sp500` is an instance of

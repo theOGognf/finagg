@@ -10,14 +10,12 @@ annual = Annual()
 :meta hide-value:
 """
 
-
 quarterly = Quarterly()
 """The most popular way for accessing
-:class:`~finagg.sec.feat.refined.annual_.Quarterly`.
+:class:`~finagg.sec.feat.refined.quarterly_.Quarterly`.
 
 :meta hide-value:
 """
-
 
 submissions = Submissions()
 """The most popular way for accessing :class:`~finagg.sec.feat.raw.Submissions`.

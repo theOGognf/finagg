@@ -8,10 +8,10 @@ See the official FRED API docs for more info:
 
 import pandas as pd
 
-from . import _api
+from . import api_
 
 
-class ReleasesDates(_api.API):
+class ReleasesDates(api_.API):
     """Get all release dates of FRED economic data.
 
     The class variable :data:`finagg.fred.api.releases.dates` is an instance
@@ -66,7 +66,7 @@ class ReleasesDates(_api.API):
             releases of economic data.
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -81,7 +81,7 @@ class ReleasesDates(_api.API):
         return pd.DataFrame(data)
 
 
-class Releases(_api.API):
+class Releases(api_.API):
     """Get all releases of economic data."""
 
     dates = ReleasesDates()
@@ -136,7 +136,7 @@ class Releases(_api.API):
             data.
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -150,7 +150,7 @@ class Releases(_api.API):
         return pd.DataFrame(data)
 
 
-class ReleaseDates(_api.API):
+class ReleaseDates(api_.API):
     """Get dates associated with an economic release.
 
     The class variable :data:`finagg.fred.api.release.dates` is an
@@ -200,7 +200,7 @@ class ReleaseDates(_api.API):
             A dataframe containing data for an economic data release's release dates.
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -215,7 +215,7 @@ class ReleaseDates(_api.API):
         return pd.DataFrame(data)
 
 
-class Series(_api.API):
+class Series(api_.API):
     """Get series associated with an economic release.
 
     The class variable :data:`finagg.fred.api.release.series` is an
@@ -293,7 +293,7 @@ class Series(_api.API):
             A dataframe containing series data for a release.
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -312,7 +312,7 @@ class Series(_api.API):
         return pd.DataFrame(data)
 
 
-class Sources(_api.API):
+class Sources(api_.API):
     """Get sources associated with an economic release.
 
     The class variable :data:`finagg.fred.api.release.sources` is an
@@ -352,7 +352,7 @@ class Sources(_api.API):
             A dataframe containing sources related to an economic release.
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -363,7 +363,7 @@ class Sources(_api.API):
         return pd.DataFrame(data)
 
 
-class Tags(_api.API):
+class Tags(api_.API):
     """Get tags for an economic release.
 
     The class variable :data:`finagg.fred.api.release.tags` is an
@@ -435,7 +435,7 @@ class Tags(_api.API):
             according to the given parameters.
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -453,7 +453,7 @@ class Tags(_api.API):
         return pd.DataFrame(data)
 
 
-class RelatedTags(_api.API):
+class RelatedTags(api_.API):
     """Get tags related to an economic release.
 
     The class variable :data:`finagg.fred.api.release.related_tags` is an
@@ -527,7 +527,7 @@ class RelatedTags(_api.API):
             release according to the given parameters.
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -546,7 +546,7 @@ class RelatedTags(_api.API):
         return pd.DataFrame(data)
 
 
-class Tables(_api.API):
+class Tables(api_.API):
     """Get tables associated with an economic release.
 
     The class variable :data:`finagg.fred.api.release.tables` is an instance of
@@ -588,7 +588,7 @@ class Tables(_api.API):
             A dataframe of release tables for a given economic release.
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             release_id=release_id,
             element_id=element_id,
@@ -600,7 +600,7 @@ class Tables(_api.API):
         return pd.DataFrame(data)
 
 
-class Release(_api.API):
+class Release(api_.API):
     """Get data on an economic release.
 
     The class variable :data:`finagg.fred.api.release` is an instance of this
@@ -681,7 +681,7 @@ class Release(_api.API):
             A dataframe containing high-level info on an economic release.
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,

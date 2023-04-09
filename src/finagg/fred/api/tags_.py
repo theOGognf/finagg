@@ -8,10 +8,10 @@ See the official FRED API docs for more info:
 
 import pandas as pd
 
-from . import _api
+from . import api_
 
 
-class RelatedTags(_api.API):
+class RelatedTags(api_.API):
     """Get FRED tags related to other FRED tags.
 
     The module variable :data:`related_tags` is an instance of this API
@@ -90,7 +90,7 @@ class RelatedTags(_api.API):
             4                                gdp      gen    Gross Domestic Product  2012-02-27 10:18:19-06          81         60040
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -108,7 +108,7 @@ class RelatedTags(_api.API):
         return pd.DataFrame(data)
 
 
-class Series(_api.API):
+class Series(api_.API):
     """Get FRED series related to FRED tags.
 
     The class variable :data:`finagg.fred.api.tags.series` is an instance
@@ -181,7 +181,7 @@ class Series(_api.API):
             4  A001RL1A225NBEA     2023-03-15   2023-03-15                       Real Gross National Product ...
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             tag_names=tag_names,
             exclude_tag_names=exclude_tag_names,
@@ -197,7 +197,7 @@ class Series(_api.API):
         return pd.DataFrame(data)
 
 
-class Tags(_api.API):
+class Tags(api_.API):
     """Get FRED tags.
 
     The module variable :data:`tags` is an instance of this API
@@ -282,7 +282,7 @@ class Tags(_api.API):
             4      frb stl      src                St. Louis Fed  2012-02-27 10:18:19-06          68         78442
 
         """
-        data = _api.get(
+        data = api_.get(
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
