@@ -314,7 +314,8 @@ class NormalizedFundamental:
         """Get all unique tickers in the fundamental SQL table that MAY BE
         ELIGIBLE to be in the feature's SQL table.
 
-        This is just an alias for :meth:`finagg.fundam.feat.fundam.get_ticker_set`.
+        This is just an alias for
+        :meth:`finagg.fundam.feat.Fundamental.get_ticker_set`.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
@@ -459,7 +460,7 @@ class NormalizedFundamental:
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.fundam.feat.fundam.get_ticker_set`.
+                the tickers from :meth:`finagg.fundam.feat.Fundamental.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -922,7 +923,7 @@ class Fundamental(feat.Features):
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.sec.feat.quarterly.get_ticker_set`.
+                the tickers from :meth:`finagg.sec.feat.Quarterly.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all

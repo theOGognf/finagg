@@ -21,7 +21,7 @@ class TimeSummarizedEconomic:
     """Methods for gathering time-averaged economic data from FRED
     features.
 
-    The class variable :data:`finagg.fred.feat.economic.summary` is an
+    The class variable :attr:`finagg.fred.feat.Economic.summary` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -100,7 +100,7 @@ class NormalizedEconomic:
     """Economic features from FRED data normalized according to historical
     averages.
 
-    The class variable :data:`finagg.fred.feat.economic.normalized` is an
+    The class variable :attr:`finagg.fred.feat.Economic.normalized` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -337,16 +337,16 @@ class Economic(feat.Features):
 
     normalized = NormalizedEconomic()
     """Economic features normalized over time.
-    The most popular way for accessing the :class:`NormalizedEconomic`
-    feature set.
+    The most popular way for accessing the
+    :class:`finagg.fred.feat.NormalizedEconomic` feature set.
 
     :meta hide-value:
     """
 
     summary = TimeSummarizedEconomic()
     """Economic features aggregated over time.
-    The most popular way for accessing the :class:`TimeSummarizedEconomic`
-    feature set.
+    The most popular way for accessing the
+    :class:`finagg.fred.feat.TimeSummarizedEconomic` feature set.
 
     :meta hide-value:
     """
