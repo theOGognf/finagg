@@ -999,7 +999,7 @@ class Fundamental(feat.Features):
 
 
 fundam = Fundamental()
-"""The most popular way for accessing :class:`Fundamental`.
+"""The most popular way for accessing :class:`finagg.fundam.feat.Fundamental`.
 
 :meta hide-value:
 """
