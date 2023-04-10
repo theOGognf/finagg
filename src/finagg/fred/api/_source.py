@@ -11,10 +11,10 @@ import pandas as pd
 from . import _api
 
 
-class Releases(_api.API):
+class SourceReleases(_api.API):
     """Get all of a source's releases of economic data.
 
-    The class variable :data:`finagg.fred.api.source.releases` is an instance
+    The class variable :attr:`finagg.fred.api.Source.releases` is an instance
     of this API implementation and is the most popular interface for calling
     this API.
 
@@ -101,9 +101,10 @@ class Source(_api.API):
 
     """
 
-    releases = Releases()
+    releases = SourceReleases()
     """"source/releases" FRED API. Get the releases for a source of economic
-    data. The most popular way for accessing the :class:`Releases` API.
+    data. The most popular way for accessing the
+    :class:`finagg.fred.api.SourceReleases` API.
 
     :meta hide-value:
     """

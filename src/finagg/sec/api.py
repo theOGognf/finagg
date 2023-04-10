@@ -101,7 +101,7 @@ class API(ABC):
     @classmethod
     @abstractmethod
     def get(cls, *args: Any, **kwargs: Any) -> pd.DataFrame | SubmissionsResult:
-        """Main dataset API method."""
+        """Main API getter method."""
 
 
 class CompanyConcept(API):
@@ -113,8 +113,8 @@ class CompanyConcept(API):
     API.
 
     .. seealso::
-        :data:`popular_concepts`: For a list of popular company concepts
-            that can be used with this method. The concepts described
+        :data:`finagg.sec.api.popular_concepts`: For a list of popular company
+            concepts that can be used with this method. The concepts described
             within this member are the most widely available concepts for
             SEC filers.
 

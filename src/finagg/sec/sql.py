@@ -8,6 +8,10 @@ from sqlalchemy.engine import Engine
 from .. import backend
 
 metadata = sa.MetaData()
+"""The metadata associated with all SQL tables defined in this module.
+
+:meta hide-value:
+"""
 
 submissions = sa.Table(
     "sec.raw.submissions",
@@ -34,6 +38,12 @@ submissions = sa.Table(
         doc="The company's last day of the fiscal year (MMDD).",
     ),
 )
+"""SQL table for storing raw data as managed by
+:data:`finagg.sec.feat.submissions` (an alias for
+:class:`finagg.sec.feat.Submissions`).
+
+:meta hide-value:
+"""
 
 tags = sa.Table(
     "sec.raw.tags",
@@ -112,6 +122,11 @@ tags = sa.Table(
     sa.Column("entity", sa.String, doc="Company name."),
     sa.Column("value", sa.Float, nullable=False, doc="Tag value with units `units`."),
 )
+"""SQL table for storing raw data as managed by :data:`finagg.sec.feat.tags`
+(an alias for :class:`finagg.sec.feat.Tags`).
+
+:meta hide-value:
+"""
 
 annual = sa.Table(
     "sec.refined.annual",
@@ -128,7 +143,11 @@ annual = sa.Table(
     sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
+"""SQL table for storing refined data as managed by :data:`finagg.sec.feat.annual`
+(an alias for :class:`finagg.sec.feat.Annual`).
 
+:meta hide-value:
+"""
 
 normalized_annual = sa.Table(
     "sec.refined.annual.normalized",
@@ -145,6 +164,12 @@ normalized_annual = sa.Table(
     sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
+"""SQL table for storing refined data as managed by
+:attr:`finagg.sec.feat.Annual.normalized` (an alias for
+:class:`finagg.sec.feat.NormalizedAnnual`).
+
+:meta hide-value:
+"""
 
 quarterly = sa.Table(
     "sec.refined.quarterly",
@@ -167,7 +192,12 @@ quarterly = sa.Table(
     ),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
+"""SQL table for storing refined data as managed by
+:data:`finagg.sec.feat.quarterly` (an alias for
+:class:`finagg.sec.feat.Quarterly`).
 
+:meta hide-value:
+"""
 
 normalized_quarterly = sa.Table(
     "sec.refined.quarterly.normalized",
@@ -190,6 +220,12 @@ normalized_quarterly = sa.Table(
     ),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
+"""SQL table for storing refined data as managed by
+:attr:`finagg.sec.feat.Quarterly.normalized` (an alias for
+:class:`finagg.sec.feat.NormalizedQuarterly`).
+
+:meta hide-value:
+"""
 
 
 def get_cik(ticker: str, /, *, engine: None | Engine = None) -> str:

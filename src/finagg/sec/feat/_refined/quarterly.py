@@ -24,7 +24,7 @@ class IndustryQuarterly:
     """Methods for gathering industry-averaged quarterly data from SEC
     features.
 
-    The class variable :data:`finagg.sec.feat.quarterly.industry` is an
+    The class variable :attr:`finagg.sec.feat.Quarterly.industry` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -165,7 +165,7 @@ class NormalizedQuarterly:
     """Quarterly features from SEC EDGAR data normalized according to industry
     averages and standard deviations.
 
-    The class variable :data:`finagg.sec.feat.quarterly.normalized` is an
+    The class variable :data:`finagg.sec.feat.Quarterly.normalized` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -329,7 +329,7 @@ class NormalizedQuarterly:
         """Get all unique tickers in the quarterly SQL table that MAY BE
         ELIGIBLE to be in the feature's SQL table.
 
-        This is just an alias for :meth:`finagg.sec.feat.quarterly.get_ticker_set`.
+        This is just an alias for :meth:`finagg.sec.feat.Quarterly.get_ticker_set`.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the

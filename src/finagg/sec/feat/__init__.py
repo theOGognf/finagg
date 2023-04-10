@@ -10,18 +10,30 @@ from ._refined import (
     Quarterly,
 )
 
-__all__ = ["Annual", "NormalizedAnnual", "Quarterly", "annual"]
+__all__ = [
+    "annual",
+    "quarterly",
+    "submissions",
+    "tags",
+    "get_unique_filings",
+    "Annual",
+    "IndustryAnnual",
+    "NormalizedAnnual",
+    "Quarterly",
+    "IndustryQuarterly",
+    "NormalizedQuarterly",
+    "Submissions",
+    "Tags",
+]
 
 annual = Annual()
-"""The most popular way for accessing
-:class:`finagg.sec.feat.Annual`.
+"""The most popular way for accessing :class:`finagg.sec.feat.Annual`.
 
 :meta hide-value:
 """
 
 quarterly = Quarterly()
-"""The most popular way for accessing
-:class:`~finagg.sec.feat.refined.quarterly_.Quarterly`.
+"""The most popular way for accessing :class:`finagg.sec.feat.Quarterly`.
 
 :meta hide-value:
 """

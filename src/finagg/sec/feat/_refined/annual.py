@@ -24,7 +24,7 @@ class IndustryAnnual:
     """Methods for gathering industry-averaged annual data from SEC
     features.
 
-    The class variable :data:`finagg.sec.feat.annual.industry` is an
+    The class variable :attr:`finagg.sec.feat.Annual.industry` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -147,7 +147,7 @@ class NormalizedAnnual:
     """Annual features from SEC EDGAR data normalized according to industry
     averages and standard deviations.
 
-    The class variable :data:`finagg.sec.feat.annual.normalized` is an
+    The class variable :attr:`finagg.sec.feat.Annual.normalized` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -297,7 +297,7 @@ class NormalizedAnnual:
         """Get all unique tickers in the annual SQL table that MAY BE
         ELIGIBLE to be in the feature's SQL table.
 
-        This is just an alias for :meth:`finagg.sec.feat.annual.get_ticker_set`.
+        This is just an alias for :meth:`finagg.sec.feat.Annual.get_ticker_set`.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
@@ -382,7 +382,7 @@ class NormalizedAnnual:
                 at :data:`finagg.backend.engine`.
 
         Returns:
-            Tickers sorted by a feature column for a particular year and quarter.
+            Tickers sorted by a feature column for a particular year.
 
         Examples:
             >>> ts = finagg.sec.feat.annual.normalized.get_tickers_sorted_by(
@@ -610,11 +610,7 @@ class Annual(feat.Features):
     def from_api(
         cls, ticker: str, /, *, start: None | str = None, end: None | str = None
     ) -> pd.DataFrame:
-        """Get quarterly features directly from the SEC API.
-
-        Not all data series are published at the same rate or
-        time. Missing rows for less-frequent quarterly publications
-        are forward filled.
+        """Get annual features directly from the SEC API.
 
         Args:
             ticker: Company ticker.
@@ -736,7 +732,7 @@ class Annual(feat.Features):
                 at :data:`finagg.backend.engine`.
 
         Returns:
-            Quarterly data dataframe with each tag as a
+            Annual data dataframe with each tag as a
             separate column. Sorted by filing date.
 
         Raises:

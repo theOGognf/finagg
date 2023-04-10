@@ -7,6 +7,10 @@ from sqlalchemy.engine import Engine
 from .. import backend
 
 metadata = sa.MetaData()
+"""The metadata associated with all SQL tables defined in this module.
+
+:meta hide-value:
+"""
 
 djia = sa.Table(
     "indices.raw.djia",
@@ -18,6 +22,12 @@ djia = sa.Table(
     sa.Column("added", sa.String, doc="Date the company was added to the DJIA."),
     sa.Column("weight", sa.Float, doc="Relative weight the company holds in the DJIA."),
 )
+"""SQL table for storing raw data as returned by
+:data:`finagg.indices.api.djia` (an alias for
+:class:`finagg.indices.api.DJIA`).
+
+:meta hide-value:
+"""
 
 nasdaq100 = sa.Table(
     "indices.raw.nasdaq100",
@@ -29,6 +39,12 @@ nasdaq100 = sa.Table(
         "sub_industry", sa.String, doc="The company's more specific industry class."
     ),
 )
+"""SQL table for storing raw data as returned by
+:data:`finagg.indices.api.nasdaq100` (an alias for
+:class:`finagg.indices.api.Nasdaq100`).
+
+:meta hide-value:
+"""
 
 sp500 = sa.Table(
     "indices.raw.sp500",
@@ -44,6 +60,12 @@ sp500 = sa.Table(
     sa.Column("cik", sa.String, doc="The company's unique SEC CIK."),
     sa.Column("founded", sa.String, doc="When the company was founded."),
 )
+"""SQL table for storing raw data as returned by
+:data:`finagg.indices.api.sp500` (an alias for
+:class:`finagg.indices.api.SP500`).
+
+:meta hide-value:
+"""
 
 
 def get_ticker_set(*, engine: None | Engine = None) -> set[str]:

@@ -11,10 +11,10 @@ import pandas as pd
 from . import _api
 
 
-class Children(_api.API):
+class CategoryChildren(_api.API):
     """Get FRED child categories.
 
-    The class variable :attr:`~finagg.fred.api.category_.Category.children`
+    The class variable :attr:`finagg.fred.api.Category.children`
     is an instance of this API implementation and is the most popular
     interface for calling this API.
 
@@ -74,10 +74,10 @@ class Children(_api.API):
         return pd.DataFrame(data)
 
 
-class Related(_api.API):
+class CategoryRelated(_api.API):
     """Get FRED related categories.
 
-    The class variable :data:`finagg.fred.api.category.related` is an instance
+    The class variable :attr:`finagg.fred.api.Category.related` is an instance
     of this API implementation and is the most popular interface for calling
     this API.
 
@@ -127,10 +127,10 @@ class Related(_api.API):
         return pd.DataFrame(data)
 
 
-class Series(_api.API):
+class CategorySeries(_api.API):
     """Get FRED series within a category.
 
-    The class variable :data:`finagg.fred.api.category.series` is an instance
+    The class variable :attr:`finagg.fred.api.Category.series` is an instance
     of this API implementation and is the most popular interface for calling
     this API.
 
@@ -227,10 +227,10 @@ class Series(_api.API):
         return pd.DataFrame(data)
 
 
-class Tags(_api.API):
+class CategoryTags(_api.API):
     """Get FRED category's tags.
 
-    The class variable :data:`finagg.fred.api.category.tags` is an instance
+    The class variable :attr:`finagg.fred.api.Category.tags` is an instance
     of this API implementation and is the most popular interface for calling
     this API.
 
@@ -327,10 +327,10 @@ class Tags(_api.API):
         return pd.DataFrame(data)
 
 
-class RelatedTags(_api.API):
+class CategoryRelatedTags(_api.API):
     """Get FRED category's related tags.
 
-    The class variable :data:`finagg.fred.api.category.related_tags` is an
+    The class variable :attr:`finagg.fred.api.Category.related_tags` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -440,7 +440,7 @@ class RelatedTags(_api.API):
 
 
 class Category(_api.API):
-    """Collection of `fred/category` APIs.
+    """Collection of "fred/category" APIs.
 
     The class variable :data:`finagg.fred.api.category` is an
     instance of this API implementation and is the most popular interface for
@@ -448,37 +448,42 @@ class Category(_api.API):
 
     """
 
-    children = Children()
+    children = CategoryChildren()
     """"category/children" FRED API. Get the children of a category.
-    The most popular way for accessing the :class:`Children` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.Children` API.
 
     :meta hide-value:
     """
 
-    related = Related()
+    related = CategoryRelated()
     """"category/related" FRED API. Get categories related to a category.
-    The most popular way for accessing the :class:`Related` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.CategoryRelated` API.
 
     :meta hide-value:
     """
 
-    related_tags = RelatedTags()
+    related_tags = CategoryRelatedTags()
     """"category/related_tags" FRED API. Get tags related to a category.
-    The most popular way for accessing the :class:`RelatedTags` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.CategoryRelatedTags` API.
 
     :meta hide-value:
     """
 
-    series = Series()
+    series = CategorySeries()
     """"category/series" FRED API. Get a category's series.
-    The most popular way for accessing the :class:`Series` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.CategorySeries` API.
 
     :meta hide-value:
     """
 
-    tags = Tags()
+    tags = CategoryTags()
     """"category/tags" FRED API. Get a category's tags.
-    The most popular way for accessing the :class:`Tags` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.CategoryTags` API.
 
     :meta hide-value:
     """

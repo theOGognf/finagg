@@ -3,6 +3,10 @@
 import sqlalchemy as sa
 
 metadata = sa.MetaData()
+"""The metadata associated with all SQL tables defined in this module.
+
+:meta hide-value:
+"""
 
 prices = sa.Table(
     "yfinance.raw.prices",

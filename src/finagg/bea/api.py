@@ -440,28 +440,29 @@ class NIPA(API):
 
 
 fixed_assets = FixedAssets()
-"""The most popular way for accessing the :class:`FixedAssets` API
-implementation.
+"""The most popular way for accessing the :class:`finagg.bea.api.FixedAssets`
+API implementation.
 
 :meta hide-value:
 """
 
 gdp_by_industry = GDPByIndustry()
-"""The most popular way for accessing the :class:`GDPByIndustry` API
-implementation.
+"""The most popular way for accessing the :class:`finagg.bea.api.GDPByIndustry`
+API implementation.
 
 :meta hide-value:
 """
 
 input_output = InputOutput()
-"""The most popular way for accessing the :class:`InputOutput` API
-implementation.
+"""The most popular way for accessing the :class:`finagg.bea.api.InputOutput`
+API implementation.
 
 :meta hide-value:
 """
 
 nipa = NIPA()
-"""The most popular way for accessing the :class:`NIPA` API implementation.
+"""The most popular way for accessing the :class:`finagg.bea.api.NIPA`
+API implementation.
 
 :meta hide-value:
 """

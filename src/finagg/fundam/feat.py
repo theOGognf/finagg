@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class IndustryFundamental:
     """Methods for gathering industry-averaged fundamental data.
 
-    The class variable :data:`finagg.fundam.feat.fundam.industry` is an
+    The class variable :attr:`finagg.fundam.feat.Fundamental.industry` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -159,7 +159,7 @@ class NormalizedFundamental:
     """Fundamental features from quarterly and daily data, normalized
     according to industry averages and standard deviations.
 
-    The class variable :data:`finagg.fundam.feat.fundam.normalized` is an
+    The class variable :attr:`finagg.fundam.feat.Fundamental.normalized` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
