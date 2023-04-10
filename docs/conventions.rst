@@ -8,6 +8,12 @@ makes **finagg** a bit more ergonomic. This page covers those conventions.
 Import conventions
 ------------------
 
+Following **finagg**'s import conventions guarantees updates to **finagg**
+won't break your code. Although definitions may shift around during or
+**finagg**'s organization may change slightly, your code won't be affected
+so long as you follow the import conventions. On top of this benefit,
+**finagg**'s import conventions just simplify **finagg**'s usage.
+
 **finagg** is designed to be imported once at the highest module:
 
 >>> import finagg
@@ -160,3 +166,34 @@ rules implemented for data normalization are as follows:
   :data:`finagg.sec.feat.quarterly`), the levels are ordered from least
   granular to most granular (e.g., year -> quarter -> date). Indices
   are always sorted.
+
+Feature method naming
+---------------------
+
+Features are aggregations or collections of raw and/or refined data that're
+ready for ingestion by another process. Features can be aggregated from
+APIs, local SQL tables, or combinations of both. Features generally can be
+aggregated by more than one method, and a method's name determines where the
+feature is aggregated from. The feature's aggregation source(s) implies
+properties associated with instantiating and maintaining the feature. For
+example, if a feature is aggregated directly from an API, then that implies
+the feature is likely not being stored locally, saving a bit of disk space.
+
+Feature aggregation methods are named according to where the features are
+being aggregated from to clarify the implications associated with the
+methods:
+* A ``from_api`` method implies the feature is aggregated directly from
+  API calls. It's best to reserve ``from_api`` for experimentation.
+* A ``from_raw`` method implies the feature is aggregated from local raw
+  SQL tables. No extra storage space is being used to store the completely
+  refined features; only already-stored raw data is being used to aggregate the
+  features.
+* A ``from_refined`` method implies the feature is aggregated from local
+  refined SQL tables. This is likely the fastest method for accessing
+  a feature, but at the cost of additional disk usage. Disk usage can be
+  significant and adds up quickly depending on the number of time series
+  being stored.
+* A ``from_other_refined`` method implies the feature is aggregated from
+  local refined SQL tables outside of the feature's subpackage. This is
+  likely preferrable over ``from_refined`` when it's available as it uses
+  significantly less storage with little loss in speed.
