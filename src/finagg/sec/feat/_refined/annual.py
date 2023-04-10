@@ -563,7 +563,7 @@ class Annual(feat.Features):
 
     industry = IndustryAnnual()
     """Annual features aggregated for an entire industry.
-    The most popular way for accessing the :class:`IndustryAnnual`
+    The most popular way for accessing the :class:`finagg.sec.feat.IndustryAnnual`
     feature set.
 
     :meta hide-value:
@@ -571,7 +571,7 @@ class Annual(feat.Features):
 
     normalized = NormalizedAnnual()
     """A company's annual features normalized by its industry.
-    The most popular way for accessing the :class:`~finagg.sec.feat.NormalizedAnnual`
+    The most popular way for accessing the :class:`finagg.sec.feat.NormalizedAnnual`
     feature set.
 
     :meta hide-value:

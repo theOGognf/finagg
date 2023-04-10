@@ -25,7 +25,7 @@ to various US treasuries. The FRED series search API is a good place to start.
 The FRED series search API allows us to search through economic data series
 that're provided by the FRED series observations API (the main API used for
 retrieving economic data). We can search for economic data series using search
-terms/words with :attr:`~finagg.fred.api.series_.Series.search` (the FRED series
+terms/words with :attr:`finagg.fred.api.Series.search` (the FRED series
 search API implementation):
 
 >>> finagg.fred.api.series.search.get(
@@ -53,7 +53,7 @@ key info for further exploring and aggregating the economic data series:
 Let's assume we're only interested in the economic data series corresponding
 to economic series ID ``"DGS10"`` under the ``id`` column. We can get the
 economic data series observations through the FRED series observations API
-(implemented by :attr:`~finagg.fred.api.series_.Series.observations`):
+(implemented by :attr:`finagg.fred.api.Series.observations`):
 
 >>> finagg.fred.api.series.observations.get(
 ...     "DGS10",
@@ -103,7 +103,7 @@ series to use **finagg**'s installation methods.
 Installing a treasury yield economic data series is extremely straightforward
 with the :mod:`finagg.fred.feat` subpackage and :data:`finagg.fred.feat.series`
 member. We can also verify the series is installed correctly using the
-:meth:`~finagg.fred.feat.raw.Series.get_id_set` method.
+:meth:`finagg.fred.feat.Series.get_id_set` method.
 
 >>> finagg.fred.feat.series.install({"GS10"})
 >>> id_set = finagg.fred.feat.series.get_id_set()
@@ -111,7 +111,7 @@ member. We can also verify the series is installed correctly using the
 True
 
 We can then retrieve the original, raw economic data series we installed using
-the :meth:`~finagg.fred.feat.raw.Series.from_raw` method.
+the :meth:`finagg.fred.feat.Series.from_raw` method.
 
 >>> finagg.fred.feat.series.from_raw("GS10").head(5)  # doctest: +NORMALIZE_WHITESPACE
             value
@@ -129,9 +129,9 @@ economic data series. That's where :data:`finagg.fred.feat.economic` comes
 in for the FRED API subpackage. :data:`finagg.fred.feat.economic` assumes
 a fixed set of popular economic series IDs that also support initial release
 observations for all its methods. For example, the
-:meth:`~finagg.fred.feat.refined.Economic.install` method doesn't allow
+:meth:`finagg.fred.feat.Economic.install` method doesn't allow
 specification of economic data series IDs.
-:meth:`~finagg.fred.feat.refined.Economic.install` will, by default, only
+:meth:`finagg.fred.feat.Economic.install` will, by default, only
 install a handful of economic data series.
 
 It's important to note that once an economic data series is supported by
@@ -161,7 +161,7 @@ Economic data series whose scales drift over time (e.g., gross domestic product)
 are converted to percent changes while economic data series whose scales are
 consistent over time (e.g., unemployment rate) are normalized to be zero mean
 and unit variance. The normalized economic data series can also have a similar
-workflow to the above using :attr:`~finagg.fred.feat.refined.Economic.normalized`.
+workflow to the above using :attr:`finagg.fred.feat.Economic.normalized`.
 
 >>> finagg.fred.feat.economic.normalized.install()
 >>> finagg.fred.economic.normalized.from_refined()["FEDFUNDS"].head(5)  # doctest: +NORMALIZE_WHITESPACE
@@ -250,7 +250,7 @@ However, the SEC EDGAR company concept API implementation returns all the
 earnings per share publications for Microsft, including amendments. We may
 not necessarily care about amendments because we may be building strategies
 or models that use *current* data and not *future* data. Fortunately, **finagg**
-provides :meth:`~finagg.sec.feat.raw.get_unique_filings` to further select
+provides :meth:`finagg.sec.feat.get_unique_filings` to further select
 original financial publication data from specific forms:
 
 >>> finagg.sec.feat.get_unique_filings(df, form="10-Q").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
@@ -287,7 +287,7 @@ financial data painless.
 
 We can give this streamlined process a try with Microsoft again, and we can
 verify Microsoft's financial data is successfully installed using the
-:meth:`~finagg.sec.feat.refined.quarterly_.Quarterly.get_ticker_set` method.
+:meth:`finagg.sec.feat.Quarterly.get_ticker_set` method.
 
 >>> finagg.sec.feat.quarterly.install({"MSFT"})
 >>> ticker_set = finagg.sec.feat.quarterly.get_ticker_set()
@@ -295,7 +295,7 @@ verify Microsoft's financial data is successfully installed using the
 True
 
 We can then retrieve Microsoft's quarterly financial data using the
-:meth:`~finagg.sec.feat.refined.quarterly_.Quarterly.from_refined` method.
+:meth:`finagg.sec.feat.Quarterly.from_refined` method.
 
 >>> finagg.sec.feat.quarterly.from_refined("MSFT").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
                     AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
@@ -308,12 +308,12 @@ fy   fp filed                                                                   
 
 On top of this simplification, :data:`finagg.sec.feat.quarterly` provides
 another method and convenience for normalizing quarterly financial data.
-:attr:`~finagg.sec.feat.refined.quarterly_.Quarterly.normalized` normalizes
+:attr:`finagg.sec.feat.Quarterly.normalized` normalizes
 quarterly financial data using quarterly financial data from all the other
 companies within the target company's industry. For example, Lowe's'
 financial data would be used to normalize Home Depot's financial data such
 that all columns have zero mean and unit variance.
-:attr:`~finagg.sec.feat.refined.quarterly_.Quarterly.normalized` also has
+:attr:`finagg.sec.feat.Quarterly.normalized` also has
 similar workflow to :data:`finagg.sec.feat.quarterly`.
 
 >>> finagg.sec.feat.quarterly.normalized.install({"MSFT"})

@@ -111,11 +111,11 @@ IDs available through other methods. These methods are useful for verifying
 if data has been installed properly or for selecting a subset of data for
 further refinement. Examples of these methods include:
 
-* :meth:`finagg.fred.feat.raw.Series.get_id_set` returns installed economic data
+* :meth:`finagg.fred.feat.Series.get_id_set` returns installed economic data
   series IDs
 * :meth:`finagg.sec.api.get_ticker_set` returns all the tickers that have
   at least *some* data available through the SEC EDGAR API
-* :meth:`finagg.sec.feat.refined.quarterly_.Quarterly.get_ticker_set` returns all the tickers
+* :meth:`finagg.sec.feat.Quarterly.get_ticker_set` returns all the tickers
   that have quarterly features available
 
 Data organization
