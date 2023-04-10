@@ -4,6 +4,10 @@
 import sqlalchemy as sa
 
 metadata = sa.MetaData()
+"""The metadata associated with all SQL tables defined in this module.
+
+:meta hide-value:
+"""
 
 series = sa.Table(
     "fred.raw.series",
@@ -31,6 +35,12 @@ series = sa.Table(
         doc="Economic series value for a particular date.",
     ),
 )
+"""SQL table for storing raw data as managed by
+:data:`finagg.fred.feat.series` (an alias for
+:class:`finagg.fred.feat.Series`).
+
+:meta hide-value:
+"""
 
 economic = sa.Table(
     "fred.refined.economic",
@@ -44,6 +54,11 @@ economic = sa.Table(
     sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
+"""SQL table for storing refined data as managed by :data:`finagg.fred.feat.economic`
+(an alias for :class:`finagg.fred.feat.Economic`).
+
+:meta hide-value:
+"""
 
 normalized_economic = sa.Table(
     "fred.refined.economic.normalized",
@@ -57,3 +72,9 @@ normalized_economic = sa.Table(
     sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
+"""SQL table for storing refined data as managed by
+:attr:`finagg.fred.feat.Economic.normalized` (an alias for
+:class:`finagg.fred.feat.NormalizedEconomic`).
+
+:meta hide-value:
+"""

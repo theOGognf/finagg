@@ -182,6 +182,7 @@ the feature is likely not being stored locally, saving a bit of disk space.
 Feature aggregation methods are named according to where the features are
 being aggregated from to clarify the implications associated with the
 methods:
+
 * A ``from_api`` method implies the feature is aggregated directly from
   API calls. It's best to reserve ``from_api`` for experimentation.
 * A ``from_raw`` method implies the feature is aggregated from local raw
