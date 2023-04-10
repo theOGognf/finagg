@@ -353,7 +353,7 @@ def get_tickers_in_industry(
 
     This method is convenient for finding tickers within the same
     industry so they can be compared. A related and common pattern is to use
-    :data:`finagg.sec.feat.quarterly.normalized` to get industry-normalized
+    :attr:`finagg.sec.feat.Quarterly.normalized` to get industry-normalized
     features for a particular company. Similar to other methods in this
     submodule, this will only return tickers that have raw SQL data associated
     with them.

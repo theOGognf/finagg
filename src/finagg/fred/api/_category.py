@@ -451,7 +451,7 @@ class Category(_api.API):
     children = CategoryChildren()
     """"category/children" FRED API. Get the children of a category.
     The most popular way for accessing the
-    :class:`finagg.fred.api.Children` API.
+    :class:`finagg.fred.api.CategoryChildren` API.
 
     :meta hide-value:
     """

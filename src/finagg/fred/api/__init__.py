@@ -24,7 +24,15 @@ See the official `FRED API docs`_ for more info on the FRED API.
 
 """
 
-from ._category import Category, CategoryChildren, CategoryRelatedTags
+from ._api import API
+from ._category import (
+    Category,
+    CategoryChildren,
+    CategoryRelated,
+    CategoryRelatedTags,
+    CategorySeries,
+    CategoryTags,
+)
 from ._release import (
     Release,
     ReleaseDates,
@@ -49,7 +57,7 @@ from ._series import (
     SeriesVintageDates,
     popular_series,
 )
-from ._source import Source, Sources
+from ._source import Source, SourceReleases, Sources
 from ._tags import RelatedTags, Tags
 
 __all__ = [
@@ -62,13 +70,35 @@ __all__ = [
     "source",
     "sources",
     "tags",
+    "API",
     "Category",
+    "CategoryChildren",
+    "CategoryRelated",
     "CategoryRelatedTags",
+    "CategorySeries",
+    "CategoryTags",
     "RelatedTags",
     "Release",
+    "ReleaseDates",
+    "ReleaseRelatedTags",
     "Releases",
+    "ReleasesDates",
+    "ReleaseSeries",
+    "ReleaseSources",
+    "ReleaseTables",
+    "ReleaseTags",
     "Series",
+    "SeriesCategories",
+    "SeriesObservations",
+    "SeriesRelease",
+    "SeriesSearch",
+    "SeriesSearchRelatedTags",
+    "SeriesSearchTags",
+    "SeriesTags",
+    "SeriesUpdates",
+    "SeriesVintageDates",
     "Source",
+    "SourceReleases",
     "Sources",
     "Tags",
 ]
