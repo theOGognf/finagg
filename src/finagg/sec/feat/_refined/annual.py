@@ -236,7 +236,7 @@ class NormalizedAnnual:
         company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
             value=0.0
         )
-        return (
+        df = (
             company_df.fillna(method="ffill")
             .dropna()
             .reset_index()
@@ -244,6 +244,8 @@ class NormalizedAnnual:
             .set_index(["fy", "filed"])
             .sort_index()
         )
+        df = df[Annual.columns]
+        return df
 
     @classmethod
     def from_refined(
