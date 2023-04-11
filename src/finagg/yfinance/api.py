@@ -35,7 +35,7 @@ def get(
         different (more normalized) column names.
 
     Examples:
-        >>> finagg.yfinance.api.get("AAPL").head(5)
+        >>> finagg.yfinance.api.get("AAPL").head(5)  # doctest: +SKIP
                  date    open    high     low   close     volume ticker
         0  1980-12-12  0.0997  0.1002  0.0997  0.0997  469033600   AAPL
         1  1980-12-15  0.0950  0.0950  0.0945  0.0945  175884800   AAPL

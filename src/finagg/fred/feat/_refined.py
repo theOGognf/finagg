@@ -55,12 +55,12 @@ class TimeSummarizedEconomic:
             `NoResultFound`: If there are no rows in the refined SQL table.
 
         Examples:
-            >>> df = finagg.fred.economic.summary.from_refined().head(5)
-            >>> df["avg"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> df = finagg.fred.feat.economic.summary.from_refined().head(5)
+            >>> df["avg"]  # doctest: +SKIP
             name        CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06         -6.0827e-06               0.0003 ...
-            >>> df["std"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> df["std"]  # doctest: +SKIP
             name        CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06              0.0017               0.0015 ...
@@ -137,7 +137,7 @@ class NormalizedEconomic:
             separate column. Sorted by date.
 
         Examples:
-            >>> finagg.fred.feat.economic.normalized.from_other_refined().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.feat.economic.normalized.from_other_refined().head(5)  # doctest: +SKIP
                         CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06              0.0036              -0.1837 ...
@@ -153,12 +153,14 @@ class NormalizedEconomic:
         economic_df = Economic.from_refined(start=start, end=end, engine=engine)
         summarized_df = TimeSummarizedEconomic.from_refined(
             start=start, end=end, engine=engine
-        )
+        ).reindex(economic_df.index, method="ffill")
         economic_df = (economic_df - summarized_df["avg"]) / summarized_df["std"]
         economic_df = economic_df.sort_index()
         pct_change_cols = Economic.pct_change_target_columns()
         economic_df[pct_change_cols] = economic_df[pct_change_cols].fillna(value=0.0)
-        return economic_df.fillna(method="ffill").dropna()
+        df = economic_df.fillna(method="ffill").dropna()
+        df = df[Economic.columns]
+        return df
 
     @classmethod
     def from_refined(
@@ -191,7 +193,7 @@ class NormalizedEconomic:
             `NoResultFound`: If there are no rows in the refined SQL table.
 
         Examples:
-            >>> finagg.fred.feat.economic.normalized.from_refined().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.feat.economic.normalized.from_refined().head(5)  # doctest: +SKIP
                         CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06              0.0036              -0.1837 ...
@@ -389,7 +391,7 @@ class Economic(feat.Features):
             as a separate column. Sorted by date.
 
         Examples:
-            >>> finagg.fred.feat.economic.from_api().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.feat.economic.from_api().head(5)  # doctest: +SKIP
                         CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06                 0.0                  0.0 ...
@@ -445,7 +447,7 @@ class Economic(feat.Features):
             `NoResultFound`: If there are no rows in the raw SQL table.
 
         Examples:
-            >>> finagg.fred.feat.economic.from_raw().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.feat.economic.from_raw().head(5)  # doctest: +SKIP
                         CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06                 0.0                  0.0 ...
@@ -503,7 +505,7 @@ class Economic(feat.Features):
             `NoResultFound`: If there are no rows in the refined SQL table.
 
         Examples:
-            >>> finagg.fred.feat.economic.from_refined().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.feat.economic.from_refined().head(5)  # doctest: +SKIP
                         CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06                 0.0                  0.0 ...

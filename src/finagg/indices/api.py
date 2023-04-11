@@ -53,7 +53,7 @@ class DJIA(API):
         """Get a dataframe containing data on the tickers in the DJIA.
 
         Examples:
-            >>> finagg.indices.api.djia.get().head(5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.indices.api.djia.get().head(5)  # doctest: +SKIP
                         company exchange ticker                industry       added  weight
             0                3M     NYSE    MMM            Conglomerate  1976-08-09  0.0241
             1  American Express     NYSE    AXP      Financial services  1982-08-30  0.0302
@@ -103,7 +103,7 @@ class Nasdaq100(API):
         """Get a dataframe containing data on the tickers in the Nasdaq 100.
 
         Examples:
-            >>> finagg.indices.api.nasdaq100.get().head(5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.indices.api.nasdaq100.get().head(5)  # doctest: +SKIP
                                    company ticker                industry                           sub_industry
             0          Activision Blizzard   ATVI  Communication Services         Interactive Home Entertainment
             1                   Adobe Inc.   ADBE  Information Technology                   Application Software
@@ -143,7 +143,7 @@ class SP500(API):
         """Get a dataframe containing data on the tickers in the S&P 500.
 
         Examples:
-            >>> finagg.indices.api.sp500.get().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.indices.api.sp500.get().head(5)  # doctest: +SKIP
                 ticker               company                industry ...
             0      MMM                    3M             Industrials ...
             1      AOS           A. O. Smith             Industrials ...

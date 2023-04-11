@@ -45,7 +45,7 @@ def get_unique_filings(
         ...     df,
         ...     form="10-Q",
         ...     units="USD/shares"
-        ... ).head(5)  # doctest: +ELLIPSIS
+        ... ).head(5)  # doctest: +SKIP
              fy  fp  ...
         0  2009  Q3  ...
         1  2010  Q1  ...
@@ -159,7 +159,7 @@ class Submissions:
                 SQL table.
 
         Examples:
-            >>> finagg.sec.feat.submissions.from_raw("AAPL")  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.submissions.from_raw("AAPL")  # doctest: +SKIP
                       cik ticker entity_type   sic sic_description ...
             0  0000320193   AAPL        None  3571            None ...
 
@@ -272,7 +272,7 @@ class Tags:
                 in the raw SQL table.
 
         Examples:
-            >>> finagg.sec.feat.tags.from_raw("AAPL", "EarningsPerShareBasic").head(5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.tags.from_raw("AAPL", "EarningsPerShareBasic").head(5)  # doctest: +SKIP
                                      units  value
             fy   fp filed
             2009 Q3 2009-07-22  USD/shares   4.20

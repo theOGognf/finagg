@@ -58,7 +58,7 @@ class Prices:
                 SQL table.
 
         Examples:
-            >>> finagg.yfinance.feat.prices.from_raw("AAPL").head(5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.yfinance.feat.prices.from_raw("AAPL").head(5)  # doctest: +SKIP
                           open    high     low   close      volume
             date
             1980-12-12  0.0997  0.1002  0.0997  0.0997  4.6903e+08

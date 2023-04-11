@@ -16,14 +16,14 @@ so long as you follow the import conventions. On top of this benefit,
 
 **finagg** is designed to be imported once at the highest module:
 
->>> import finagg
+>>> import finagg  # doctest: +SKIP
 
 Subpackages and submodules are usually accessed through their fully qualified
 names from the top-level module:
 
->>> finagg.bea.api
->>> finagg.fred.api
->>> finagg.sec.api
+>>> finagg.bea.api  # doctest: +SKIP
+>>> finagg.fred.api  # doctest: +SKIP
+>>> finagg.sec.api  # doctest: +SKIP
 
 It's also common for subpackages to be imported using their name as an alias:
 

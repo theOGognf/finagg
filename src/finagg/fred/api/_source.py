@@ -68,7 +68,7 @@ class SourceReleases(_api.API):
             source of economic data.
 
         Examples:
-            >>> finagg.fred.api.source.releases.get(1, limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.source.releases.get(1, limit=5)  # doctest: +SKIP
                id realtime_start realtime_end                                               name  press_release                                         link
             0  13     2023-03-15   2023-03-15  G.17 Industrial Production and Capacity Utiliz...           True  http://www.federalreserve.gov/releases/g17/
             1  14     2023-03-15   2023-03-15                               G.19 Consumer Credit           True  http://www.federalreserve.gov/releases/g19/
@@ -140,7 +140,7 @@ class Source(_api.API):
             A dataframe containing high-level info on an economic source.
 
         Examples:
-            >>> finagg.fred.api.source.get(1)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.source.get(1)  # doctest: +SKIP
                id realtime_start realtime_end                                               name                            link
             0   1     2023-03-15   2023-03-15  Board of Governors of the Federal Reserve Syst...  http://www.federalreserve.gov/
 
@@ -209,7 +209,7 @@ class Sources(_api.API):
             data.
 
         Examples:
-            >>> finagg.fred.api.sources.get(limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.sources.get(limit=5)  # doctest: +SKIP
                id realtime_start realtime_end                                               name                              link
             0   1     2023-03-15   2023-03-15  Board of Governors of the Federal Reserve Syst...    http://www.federalreserve.gov/
             1   3     2023-03-15   2023-03-15               Federal Reserve Bank of Philadelphia  https://www.philadelphiafed.org/

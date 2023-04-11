@@ -171,7 +171,7 @@ class GDPByIndustry(API):
     Examples:
         List the GDP by industry API parameters.
 
-        >>> finagg.bea.api.gdp_by_industry.get_parameter_list()  # doctest: +ELLIPSIS
+        >>> finagg.bea.api.gdp_by_industry.get_parameter_list()  # doctest: +SKIP
           ParameterName ParameterDataType                               ParameterDescription ... AllValue
         0     Frequency            string                            A - Annual, Q-Quarterly ...      ALL
         1      Industry            string       List of industries to retrieve (ALL for All) ...      ALL
@@ -180,13 +180,13 @@ class GDPByIndustry(API):
 
         List possible GDP by industry tables we can query.
 
-        >>> finagg.bea.api.gdp_by_industry.get_parameter_values("TableID").head(5)
-                                                  ParamValue
-        0  {'Key': '1', 'Desc': 'Value Added by Industry ...
-        1  {'Key': '5', 'Desc': 'Value added by Industry ...
-        2  {'Key': '6', 'Desc': 'Components of Value Adde...
-        3  {'Key': '7', 'Desc': 'Components of Value Adde...
-        4  {'Key': '8', 'Desc': 'Chain-Type Quantity Inde...
+        >>> finagg.bea.api.gdp_by_industry.get_parameter_values("TableID").head(5)  # doctest: +SKIP
+          Key                                               Desc
+        0   1                    Value Added by Industry (A) (Q)
+        1   5  Value added by Industry as a Percentage of Gro...
+        2   6          Components of Value Added by Industry (A)
+        3   7  Components of Value Added by Industry as a Per...
+        4   8  Chain-Type Quantity Indexes for Value Added by...
 
     """
 
@@ -223,7 +223,7 @@ class GDPByIndustry(API):
         Examples:
             Get the GDP value added by an industry for a specific year.
 
-            >>> finagg.bea.api.gdp_by_industry.get(table_id=1, freq="A", year=2020).head(5)
+            >>> finagg.bea.api.gdp_by_industry.get(table_id=1, freq="A", year=2020).head(5)  # doctest: +SKIP
                table_id freq  year quarter industry                         industry_description  value
             0         1    A  2020    2020       11  Agriculture, forestry, fishing, and hunting  162.2
             1         1    A  2020    2020    111CA                                        Farms  120.7

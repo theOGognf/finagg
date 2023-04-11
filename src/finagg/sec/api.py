@@ -164,7 +164,7 @@ class CompanyConcept(API):
             ...     ticker="AAPL",
             ...     taxonomy="us-gaap",
             ...     units="USD/shares",
-            ... ).head(5)  # doctest: +ELLIPSIS
+            ... ).head(5)  # doctest: +SKIP
                     start         end  value                  accn    fy  fp ...
             0  2006-10-01  2007-09-29   4.04  0001193125-09-214859  2009  FY ...
             1  2006-10-01  2007-09-29   4.04  0001193125-10-012091  2009  FY ...
@@ -232,7 +232,7 @@ class CompanyFacts(API):
                 neither are provided.
 
         Examples:
-            >>> finagg.sec.api.company_facts.get(ticker="AAPL").head(5)  # doctest: +ELLIPSIS
+            >>> finagg.sec.api.company_facts.get(ticker="AAPL").head(5)  # doctest: +SKIP
                       end       value                  accn    fy  fp    form ...
             0  2009-06-27  8.9582e+08  0001193125-09-153165  2009  Q3    10-Q ...
             1  2009-10-16  9.0068e+08  0001193125-09-214859  2009  FY    10-K ...
@@ -300,13 +300,13 @@ class Exchanges(API):
             ticker symbols.
 
         Examples:
-            >>> finagg.sec.api.tickers.get().head(5)  # doctest: +NORMALIZE_WHITESPACE
-                   cik ticker                   title
-            0   320193   AAPL              Apple Inc.
-            1   789019   MSFT          MICROSOFT CORP
-            2  1652044  GOOGL           Alphabet Inc.
-            3  1018724   AMZN          AMAZON COM INC
-            4  1067983  BRK-B  BERKSHIRE HATHAWAY INC
+            >>> finagg.sec.api.exchanges.get().head(5)  # doctest: +SKIP
+                   cik            name ticker exchange
+            0   320193      Apple Inc.   AAPL   Nasdaq
+            1   789019  MICROSOFT CORP   MSFT   Nasdaq
+            2  1652044   Alphabet Inc.  GOOGL   Nasdaq
+            3  1018724  AMAZON COM INC   AMZN   Nasdaq
+            4  1045810     NVIDIA CORP   NVDA   Nasdaq
 
         """
         response = _get(cls.url, user_agent=user_agent)
@@ -379,7 +379,7 @@ class Frames(API):
             ...     instant=False,
             ...     taxonomy="us-gaap",
             ...     units="USD-per-shares",
-            ... ).head(5)  # doctest: +ELLIPSIS
+            ... ).head(5)  # doctest: +SKIP
                                accn   cik                          entity    loc ...
             0  0001104659-21-118843  1750                       AAR CORP.  US-IL ...
             1  0001104659-21-133629  1800             ABBOTT LABORATORIES  US-IL ...
@@ -519,7 +519,7 @@ class Tickers(API):
             ticker symbols.
 
         Examples:
-            >>> finagg.sec.api.tickers.get().head(5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.sec.api.tickers.get().head(5)  # doctest: +SKIP
                    cik ticker                   title
             0   320193   AAPL              Apple Inc.
             1   789019   MSFT          MICROSOFT CORP

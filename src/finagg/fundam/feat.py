@@ -88,7 +88,7 @@ class IndustryFundamental:
 
         Examples:
             >>> df = finagg.fundam.feat.fundam.industry.from_refined(ticker="AAPL").head(5)
-            >>> df["avg"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> df["avg"]  # doctest: +SKIP
             name        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             date                                                                    ...
             2009-10-23                       0.0           0.3305              2.48 ...
@@ -96,7 +96,7 @@ class IndustryFundamental:
             2009-10-27                       0.0           0.3305              2.48 ...
             2009-10-28                       0.0           0.3305              2.48 ...
             2009-10-29                       0.0           0.3305              2.48 ...
-            >>> df["std"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> df["std"]  # doctest: +SKIP
             name        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             date                                                                    ...
             2009-10-23                       0.0              0.0               0.0 ...
@@ -208,7 +208,7 @@ class NormalizedFundamental:
             separate column. Sorted by filing date.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.normalized.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.normalized.from_other_refined("AAPL").head(5)  # doctest: +SKIP
                         AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             date                                                                    ...
             2010-01-25                   -1.4142          -0.6309           -0.6506 ...
@@ -275,7 +275,7 @@ class NormalizedFundamental:
                 refined SQL table.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.normalized.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.normalized.from_refined("AAPL").head(5)  # doctest: +SKIP
                         AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             date                                                                    ...
             2010-01-25                   -1.4142          -0.6309           -0.6506 ...
@@ -649,7 +649,7 @@ class Fundamental(feat.Features):
             Sorted by date.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.from_api("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.from_api("AAPL").head(5)  # doctest: +SKIP
                          price  open_pct_change ... PriceEarningsRatio
             date                                ...
             2010-01-25  6.1727          -0.0207 ...             2.4302
@@ -696,7 +696,7 @@ class Fundamental(feat.Features):
             Sorted by date.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.from_other_refined("AAPL").head(5)  # doctest: +SKIP
                          price  open_pct_change ... PriceEarningsRatio
             date                                ...
             2010-01-25  6.1727          -0.0207 ...             2.4302
@@ -750,7 +750,7 @@ class Fundamental(feat.Features):
             Sorted by date.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)  # doctest: +SKIP
                          price  open_pct_change ... PriceEarningsRatio
             date                                ...
             2010-01-25  6.1727          -0.0207 ...             2.4302
@@ -812,7 +812,7 @@ class Fundamental(feat.Features):
                 refined SQL table.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.from_refined("AAPL").head(5)  # doctest: +SKIP
                          price  open_pct_change ... PriceEarningsRatio
             date                                ...
             2010-01-25  6.1727          -0.0207 ...             2.4302

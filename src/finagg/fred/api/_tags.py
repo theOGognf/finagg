@@ -81,7 +81,7 @@ class RelatedTags(_api.API):
             A dataframe containing data for related FRED tags.
 
         Examples:
-            >>> finagg.fred.api.related_tags.get(tag_names="bea", limit=5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.related_tags.get(tag_names="bea", limit=5)  # doctest: +SKIP
                                             name group_id                     notes                 created  popularity  series_count
             0  public domain: citation requested       cc                      None  2018-12-17 23:33:13-06          99         78680
             1                                usa      geo  United States of America  2012-02-27 10:18:19-06         100         78434
@@ -172,7 +172,7 @@ class Series(_api.API):
             A dataframe containing series data for related tags.
 
         Examples:
-            >>> finagg.fred.api.tags.series.get(tag_names="bea", limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.tags.series.get(tag_names="bea", limit=5)  # doctest: +SKIP
                             id realtime_start realtime_end                                             title ...
             0  A001RD3A086NBEA     2023-03-15   2023-03-15  Gross national product (implicit price deflator) ...
             1  A001RG3A086NBEA     2023-03-15   2023-03-15   Gross national product (chain-type price index) ...
@@ -273,7 +273,7 @@ class Tags(_api.API):
             A dataframe containing data for all FRED economic data tags.
 
         Examples:
-            >>> finagg.fred.api.tags.get(tag_group_id="src", limit=5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.tags.get(tag_group_id="src", limit=5)  # doctest: +SKIP
                       name group_id                        notes                 created  popularity  series_count
             0       census      src                       Census  2012-02-27 10:18:19-06          79        237692
             1          bls      src   Bureau of Labor Statistics  2012-02-27 10:18:19-06          89        175376

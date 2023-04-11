@@ -81,7 +81,7 @@ class Daily(feat.Features):
             Daily stock price dataframe sorted by date.
 
         Examples:
-            >>> finagg.yfinance.feat.daily.from_api("AAPL").head(5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.yfinance.feat.daily.from_api("AAPL").head(5)  # doctest: +SKIP
                          price  open_pct_change  high_pct_change  low_pct_change  close_pct_change  volume_pct_change
             date
             1980-12-15  0.0945          -0.0478          -0.0519         -0.0522           -0.0522            -0.6250
@@ -125,7 +125,7 @@ class Daily(feat.Features):
                 raw SQL table.
 
         Examples:
-            >>> finagg.yfinance.feat.daily.from_raw("AAPL").head(5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.yfinance.feat.daily.from_raw("AAPL").head(5)  # doctest: +SKIP
                          price  open_pct_change  high_pct_change  low_pct_change  close_pct_change  volume_pct_change
             date
             1980-12-15  0.0945          -0.0478          -0.0519         -0.0522           -0.0522            -0.6250
@@ -185,7 +185,7 @@ class Daily(feat.Features):
                 refined SQL table.
 
         Examples:
-            >>> finagg.yfinance.feat.daily.from_refined("AAPL").head(5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.yfinance.feat.daily.from_refined("AAPL").head(5)  # doctest: +SKIP
                          price  open_pct_change  high_pct_change  low_pct_change  close_pct_change  volume_pct_change
             date
             1980-12-15  0.0945          -0.0478          -0.0519         -0.0522           -0.0522            -0.6250

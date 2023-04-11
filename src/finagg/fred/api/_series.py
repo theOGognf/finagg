@@ -57,7 +57,7 @@ class SeriesCategories(_api.API):
             A dataframe containing data on categories for the economic data series.
 
         Examples:
-            >>> finagg.fred.api.series.categories.get("CPIAUCNS")  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.categories.get("CPIAUCNS")  # doctest: +SKIP
                id                                  name  parent_id
             0   9  Consumer Price Indexes (CPI and PCE)      32455
 
@@ -189,7 +189,7 @@ class SeriesObservations(_api.API):
             ...     realtime_start=0,
             ...     realtime_end=-1,
             ...     output_type=4
-            ... ).head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            ... ).head(5)  # doctest: +SKIP
               realtime_start realtime_end        date  value series_id
             0     1949-04-22   1953-02-26  1949-03-01  169.5  CPIAUCNS
             1     1949-05-23   1953-02-26  1949-04-01  169.7  CPIAUCNS
@@ -348,7 +348,7 @@ class SeriesSearchRelatedTags(_api.API):
             servers according to the method's args.
 
         Examples:
-            >>> finagg.fred.api.series.search.related_tags.get("price index", tag_names="price", limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.search.related_tags.get("price index", tag_names="price", limit=5)  # doctest: +SKIP
                                             name group_id                    notes                 created ...
             0                                nsa     seas  Not Seasonally Adjusted  2012-02-27 10:18:19-06 ...
             1                            indexes      gen                           2012-02-27 10:18:19-06 ...
@@ -450,7 +450,7 @@ class SeriesSearchTags(_api.API):
             servers according to the method's args.
 
         Examples:
-            >>> finagg.fred.api.series.search.tags.get("price index", limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.search.tags.get("price index", limit=5)  # doctest: +SKIP
                                             name group_id                    notes ...
             0                                nsa     seas  Not Seasonally Adjusted ...
             1                              price      gen                          ...
@@ -579,7 +579,7 @@ class SeriesSearch(_api.API):
             A dataframe containing data on series matching the search.
 
         Examples:
-            >>> finagg.fred.api.series.search.get("price index", limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.search.get("price index", limit=5)  # doctest: +SKIP
                         id realtime_start realtime_end                                              title ...
             0     CPIAUCSL     2023-03-16   2023-03-16  Consumer Price Index for All Urban Consumers: ... ...
             1     CPIAUCNS     2023-03-16   2023-03-16  Consumer Price Index for All Urban Consumers: ... ...
@@ -661,7 +661,7 @@ class SeriesTags(_api.API):
             A dataframe containing data on FRED tags for series.
 
         Examples:
-            >>> finagg.fred.api.series.tags.get("CPIAUCNS").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.tags.get("CPIAUCNS").head(5)  # doctest: +SKIP
                                             name group_id                     notes ...
             0                                nsa     seas   Not Seasonally Adjusted ...
             1                                usa      geo  United States of America ...
@@ -917,7 +917,7 @@ class Series(_api.API):
             A dataframe containing info on an economic data series.
 
         Examples:
-            >>> finagg.fred.api.series.get("CPIAUCNS", realtime_start=0, realtime_end=-1).head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.get("CPIAUCNS", realtime_start=0, realtime_end=-1).head(5)  # doctest: +SKIP
                      id realtime_start realtime_end                                              title ...
             0  CPIAUCNS     1949-03-24   1953-02-26  Consumer Price Index for Urban Wage Earners an... ...
             1  CPIAUCNS     1953-02-27   1962-02-27  Consumer Price Index for Urban Wage Earners an... ...

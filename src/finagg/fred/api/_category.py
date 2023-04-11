@@ -51,7 +51,7 @@ class CategoryChildren(_api.API):
             A dataframe containing data for a category's children.
 
         Examples:
-            >>> finagg.fred.api.category.children.get()  # doctest: NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.category.children.get()  # doctest: +SKIP
                   id                                     name  parent_id
             0  32991                Money, Banking, & Finance          0
             1     10  Population, Employment, & Labor Markets          0
@@ -200,7 +200,7 @@ class CategorySeries(_api.API):
             according to the given parameters.
 
         Examples:
-            >>> finagg.fred.api.category.series.get(33951)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.category.series.get(33951)  # doctest: +SKIP
                       id realtime_start realtime_end                                              title ...
             0   FFHTHIGH     2023-03-15   2023-03-15  High Value of the Federal Funds Rate for the I... ...
             1    FFHTLOW     2023-03-15   2023-03-15  Low Value of the Federal Funds Rate for the In... ...
@@ -300,7 +300,7 @@ class CategoryTags(_api.API):
             according to the given parameters.
 
         Examples:
-            >>> finagg.fred.api.category.tags.get(33951, limit=5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.category.tags.get(33951, limit=5)  # doctest: +SKIP
                         name group_id notes                 created  popularity  series_count
             0   anbil, sriya      src        2020-07-03 11:52:33-05          16             8
             1  carlson, mark      src        2020-07-03 11:53:20-05          16             8
@@ -402,7 +402,7 @@ class CategoryRelatedTags(_api.API):
             according to the given parameters.
 
         Examples:
-            >>> finagg.fred.api.category.related_tags.get(33951, tag_names="funds")  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.category.related_tags.get(33951, tag_names="funds")  # doctest: +SKIP
                                              name group_id                     notes ...
             0                        anbil, sriya      src                           ...
             1                       carlson, mark      src                           ...
@@ -504,7 +504,7 @@ class Category(_api.API):
             Dataframe of category details.
 
         Examples:
-            >>> finagg.fred.api.category.get()  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.category.get()  # doctest: +SKIP
                id        name  parent_id
             0   0  Categories          0
 

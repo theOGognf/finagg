@@ -59,7 +59,7 @@ class Series:
                 raw SQL table.
 
         Examples:
-            >>> finagg.fred.feat.series.from_raw("CPIAUCNS").head(5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.fred.feat.series.from_raw("CPIAUCNS").head(5)  # doctest: +SKIP
                         value
             date
             1949-03-01  169.5

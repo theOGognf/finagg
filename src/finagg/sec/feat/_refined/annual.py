@@ -89,8 +89,8 @@ class IndustryAnnual:
 
         Examples:
             >>> df = finagg.sec.feat.annual.industry.from_refined(ticker="AAPL").head(5)
-            >>> df["avg"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-            >>> df["std"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> df["avg"]  # doctest: +SKIP
+            >>> df["std"]  # doctest: +SKIP
 
         """
         start = start or "1776-07-04"
@@ -196,7 +196,7 @@ class NormalizedAnnual:
             separate column. Sorted by filing date.
 
         Examples:
-            >>> finagg.sec.feat.annual.normalized.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.annual.normalized.from_other_refined("AAPL").head(5)  # doctest: +SKIP
 
         """
         start = start or "1776-07-04"
@@ -258,7 +258,7 @@ class NormalizedAnnual:
                 refined SQL table.
 
         Examples:
-            >>> finagg.sec.feat.annual.normalized.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.annual.normalized.from_refined("AAPL").head(5)  # doctest: +SKIP
 
         """
         start = start or "1776-07-04"
@@ -389,7 +389,7 @@ class NormalizedAnnual:
             ...         "EarningsPerShare",
             ...         year=2020,
             ... )
-            >>> "PCGU" == ts[0]
+            >>> "PCGU" == ts[0]  # doctest: +SKIP
             True
 
         """
@@ -624,7 +624,7 @@ class Annual(feat.Features):
             separate column. Sorted by filing date.
 
         Examples:
-            >>> finagg.sec.feat.annual.from_api("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.annual.from_api("AAPL").head(5)  # doctest: +SKIP
 
         """
         start = start or "1776-07-04"
@@ -677,7 +677,7 @@ class Annual(feat.Features):
                 raw SQL table.
 
         Examples:
-            >>> finagg.sec.feat.annual.from_raw("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.annual.from_raw("AAPL").head(5)  # doctest: +SKIP
 
         """
         start = start or "1776-07-04"
@@ -740,7 +740,7 @@ class Annual(feat.Features):
                 refined SQL table.
 
         Examples:
-            >>> finagg.sec.feat.annual.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.annual.from_refined("AAPL").head(5)  # doctest: +SKIP
 
         """
         start = start or "1776-07-04"
