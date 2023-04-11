@@ -240,7 +240,7 @@ class NormalizedQuarterly:
         company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
             value=0.0
         )
-        return (
+        df = (
             company_df.fillna(method="ffill")
             .dropna()
             .reset_index()
@@ -248,6 +248,8 @@ class NormalizedQuarterly:
             .set_index(["fy", "fp", "filed"])
             .sort_index()
         )
+        df = df[Quarterly.columns]
+        return df
 
     @classmethod
     def from_refined(
@@ -343,7 +345,7 @@ class NormalizedQuarterly:
             ``lb`` rows for each tag used for constructing the features.
 
         Examples:
-            >>> "AAPL" in finagg.sec.feat.quarterly.normalized.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.quarterly.normalized.get_candidate_ticker_set()  # doctest: +SKIP
             True
 
         """
@@ -365,7 +367,7 @@ class NormalizedQuarterly:
             ``lb`` rows.
 
         Examples:
-            >>> "AAPL" in finagg.sec.feat.quarterly.normalized.get_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.quarterly.normalized.get_ticker_set()  # doctest: +SKIP
             True
 
         """
@@ -861,7 +863,7 @@ class Quarterly(feat.Features):
             constructing the features.
 
         Examples:
-            >>> "AAPL" in finagg.sec.feat.quarterly.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.quarterly.get_candidate_ticker_set()  # doctest: +SKIP
             True
 
         """

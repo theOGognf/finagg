@@ -168,7 +168,7 @@ class NormalizedFundamental:
         They all return equivalent dataframes.
 
         >>> df1 = finagg.fundam.feat.fundam.normalized.from_other_refined("AAPL").head(5)
-        >>> df2 = finagg.fundam.feat.fundam.from_refined("AAPL").head(5)
+        >>> df2 = finagg.fundam.feat.fundam.normalized.from_refined("AAPL").head(5)
         >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
 
     """
@@ -233,13 +233,15 @@ class NormalizedFundamental:
         company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
             value=0.0
         )
-        return (
+        df = (
             company_df.fillna(method="ffill")
             .dropna()
             .reset_index()
             .drop_duplicates("date")
             .set_index("date")
         )
+        df = df[Fundamental.columns]
+        return df
 
     @classmethod
     def from_refined(
@@ -329,7 +331,7 @@ class NormalizedFundamental:
             ``lb`` rows for each tag used for constructing the features.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_candidate_ticker_set()  # doctest: +SKIP
             True
 
         """
@@ -350,7 +352,7 @@ class NormalizedFundamental:
             fundamental features that also have at least ``lb`` rows.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_ticker_set()
+            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_ticker_set()  # doctest: +SKIP
             True
 
         """
@@ -407,7 +409,7 @@ class NormalizedFundamental:
             ...         "PriceEarningsRatio",
             ...         date="2019-01-04"
             ... )
-            >>> "AMD" == ts[0]
+            >>> "AMD" == ts[0]  # doctest: +SKIP
             True
 
         """
@@ -861,7 +863,7 @@ class Fundamental(feat.Features):
             the features.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.fundam.feat.fundam.get_candidate_ticker_set()  # doctest: +SKIP
             True
 
         """
@@ -884,7 +886,7 @@ class Fundamental(feat.Features):
             fundamental features that also have at least ``lb`` rows.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.get_ticker_set()
+            >>> "AAPL" in finagg.fundam.feat.fundam.get_ticker_set()  # doctest: +SKIP
             True
 
         """

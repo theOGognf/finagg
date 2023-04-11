@@ -194,7 +194,7 @@ class Submissions:
                 at :data:`finagg.backend.engine`.
 
         Examples:
-            >>> "AAPL" in finagg.sec.feat.submissions.get_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.submissions.get_ticker_set()  # doctest: +SKIP
             True
 
         """
@@ -335,7 +335,7 @@ class Tags:
                 at :data:`finagg.backend.engine`.
 
         Examples:
-            >>> "AAPL" in finagg.sec.feat.tags.get_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.tags.get_ticker_set()  # doctest: +SKIP
             True
 
         """

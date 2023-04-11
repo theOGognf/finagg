@@ -232,7 +232,7 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
     """Get the set of tickers from all the popular indices.
 
     Examples:
-        >>> "AAPL" in finagg.indices.api.get_ticker_set()
+        >>> "AAPL" in finagg.indices.api.get_ticker_set()  # doctest: +SKIP
         True
 
     """

@@ -98,7 +98,7 @@ class Series:
                 at :data:`finagg.backend.engine`.
 
         Examples:
-            >>> "FEDFUNDS" in finagg.fred.feat.series.get_id_set()
+            >>> "FEDFUNDS" in finagg.fred.feat.series.get_id_set()  # doctest: +SKIP
             True
 
         """

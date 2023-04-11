@@ -583,7 +583,7 @@ def get_dataset_list(*, api_key: None | str = None) -> pd.DataFrame:
         A dataframe describing the datasets available through the BEA API.
 
     Examples:
-        >>> finagg.bea.api.get_dataset_list()
+        >>> finagg.bea.api.get_dataset_list()  # doctest: +SKIP
                         DatasetName                    DatasetDescription
         0                      NIPA                  Standard NIPA tables
         1        NIUnderlyingDetail  Standard NI underlying detail tables

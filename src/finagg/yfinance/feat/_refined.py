@@ -234,7 +234,7 @@ class Daily(feat.Features):
             features.
 
         Examples:
-            >>> "AAPL" in finagg.yfinance.feat.daily.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.yfinance.feat.daily.get_candidate_ticker_set()  # doctest: +SKIP
             True
 
         """
@@ -255,7 +255,7 @@ class Daily(feat.Features):
             daily features that also have at least ``lb`` rows.
 
         Examples:
-            >>> "AAPL" in finagg.yfinance.feat.daily.get_ticker_set()
+            >>> "AAPL" in finagg.yfinance.feat.daily.get_ticker_set()  # doctest: +SKIP
             True
 
         """

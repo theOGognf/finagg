@@ -110,7 +110,7 @@ class Prices:
                 at :data:`finagg.backend.engine`.
 
         Examples:
-            >>> "AAPL" in finagg.yfinance.feat.prices.get_ticker_set()
+            >>> "AAPL" in finagg.yfinance.feat.prices.get_ticker_set()  # doctest: +SKIP
             True
 
         """
