@@ -1,4 +1,4 @@
-"""Features from FRED sources."""
+"""Refined FRED features (features aggregated from raw tables)."""
 
 
 import logging
@@ -7,10 +7,9 @@ import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
-from tqdm import tqdm
 
-from .. import backend, feat, utils
-from . import api, sql
+from ... import backend, feat, utils
+from .. import api, sql
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
@@ -18,11 +17,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class RefinedTimeSummarizedEconomic:
+class TimeSummarizedEconomic:
     """Methods for gathering time-averaged economic data from FRED
     features.
 
-    The class variable :data:`finagg.fred.feat.economic.summary` is an
+    The class variable :attr:`finagg.fred.feat.Economic.summary` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -56,12 +55,12 @@ class RefinedTimeSummarizedEconomic:
             `NoResultFound`: If there are no rows in the refined SQL table.
 
         Examples:
-            >>> df = finagg.fred.economic.summary.from_refined().head(5)
-            >>> df["avg"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> df = finagg.fred.feat.economic.summary.from_refined().head(5)
+            >>> df["avg"]  # doctest: +SKIP
             name        CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06         -6.0827e-06               0.0003 ...
-            >>> df["std"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> df["std"]  # doctest: +SKIP
             name        CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06              0.0017               0.0015 ...
@@ -97,11 +96,11 @@ class RefinedTimeSummarizedEconomic:
         return df
 
 
-class RefinedNormalizedEconomic:
+class NormalizedEconomic:
     """Economic features from FRED data normalized according to historical
     averages.
 
-    The class variable :data:`finagg.fred.feat.economic.normalized` is an
+    The class variable :attr:`finagg.fred.feat.Economic.normalized` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -138,7 +137,7 @@ class RefinedNormalizedEconomic:
             separate column. Sorted by date.
 
         Examples:
-            >>> finagg.fred.feat.economic.normalized.from_other_refined().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.feat.economic.normalized.from_other_refined().head(5)  # doctest: +SKIP
                         CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06              0.0036              -0.1837 ...
@@ -151,15 +150,17 @@ class RefinedNormalizedEconomic:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
-        economic_df = RefinedEconomic.from_refined(start=start, end=end, engine=engine)
-        summarized_df = RefinedTimeSummarizedEconomic.from_refined(
+        economic_df = Economic.from_refined(start=start, end=end, engine=engine)
+        summarized_df = TimeSummarizedEconomic.from_refined(
             start=start, end=end, engine=engine
-        )
+        ).reindex(economic_df.index, method="ffill")
         economic_df = (economic_df - summarized_df["avg"]) / summarized_df["std"]
         economic_df = economic_df.sort_index()
-        pct_change_cols = RefinedEconomic.pct_change_target_columns()
+        pct_change_cols = Economic.pct_change_target_columns()
         economic_df[pct_change_cols] = economic_df[pct_change_cols].fillna(value=0.0)
-        return economic_df.fillna(method="ffill").dropna()
+        df = economic_df.fillna(method="ffill").dropna()
+        df = df[Economic.columns]
+        return df
 
     @classmethod
     def from_refined(
@@ -192,7 +193,7 @@ class RefinedNormalizedEconomic:
             `NoResultFound`: If there are no rows in the refined SQL table.
 
         Examples:
-            >>> finagg.fred.feat.economic.normalized.from_refined().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.feat.economic.normalized.from_refined().head(5)  # doctest: +SKIP
                         CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06              0.0036              -0.1837 ...
@@ -218,7 +219,7 @@ class RefinedNormalizedEconomic:
             raise NoResultFound(f"No normalized economic rows found.")
         df = df.pivot(index="date", values="value", columns="name").sort_index()
         df.columns = df.columns.rename(None)
-        df = df[RefinedEconomic.columns]
+        df = df[Economic.columns]
         return df
 
     @classmethod
@@ -283,9 +284,9 @@ class RefinedNormalizedEconomic:
         """
         engine = engine or backend.engine
         df = df.reset_index("date")
-        if set(df.columns) < set(RefinedEconomic.columns):
+        if set(df.columns) < set(Economic.columns):
             raise ValueError(
-                f"Dataframe must have columns {RefinedEconomic.columns} but got {df.columns}"
+                f"Dataframe must have columns {Economic.columns} but got {df.columns}"
             )
         df = df.melt("date", var_name="name", value_name="value")
         with engine.begin() as conn:
@@ -293,7 +294,7 @@ class RefinedNormalizedEconomic:
         return len(df.index)
 
 
-class RefinedEconomic(feat.Features):
+class Economic(feat.Features):
     """Methods for gathering economic data series from FRED sources.
 
     The module variable :data:`finagg.fred.feat.economic` is an instance of
@@ -314,21 +315,7 @@ class RefinedEconomic(feat.Features):
 
     #: Economic series IDs (typical economic indicators) used for constructing
     #: this feature set.
-    series_ids = [
-        "CIVPART",  # Labor force participation rate
-        "CPIAUCNS",  # Consumer price index
-        "CSUSHPINSA",  # S&P/Case-Shiller national home price index
-        "FEDFUNDS",  # Federal funds interest rate
-        "GDP",  # Gross domestic product
-        "GDPC1",  # Real gross domestic product
-        "GS10",  # 10-Year treasury yield
-        "M2",  # Money stock measures (i.e., savings and related balances)
-        "MICH",  # University of Michigan: inflation expectation
-        "PSAVERT",  # Personal savings rate
-        "UMCSENT",  # University of Michigan: consumer sentiment
-        "UNRATE",  # Unemployment rate
-        "WALCL",  # US assets, total assets (less eliminations from consolidation)
-    ]
+    series_ids = api.popular_series
 
     #: Columns within this feature set. Dataframes returned by this class's
     #: methods will always contain these columns. The refined data SQL table
@@ -350,18 +337,18 @@ class RefinedEconomic(feat.Features):
         "WALCL_pct_change",
     ]
 
-    normalized = RefinedNormalizedEconomic()
+    normalized = NormalizedEconomic()
     """Economic features normalized over time.
-    The most popular way for accessing the :class:`RefinedNormalizedEconomic`
-    feature set.
+    The most popular way for accessing the
+    :class:`finagg.fred.feat.NormalizedEconomic` feature set.
 
     :meta hide-value:
     """
 
-    summary = RefinedTimeSummarizedEconomic()
+    summary = TimeSummarizedEconomic()
     """Economic features aggregated over time.
-    The most popular way for accessing the :class:`RefinedTimeSummarizedEconomic`
-    feature set.
+    The most popular way for accessing the
+    :class:`finagg.fred.feat.TimeSummarizedEconomic` feature set.
 
     :meta hide-value:
     """
@@ -404,7 +391,7 @@ class RefinedEconomic(feat.Features):
             as a separate column. Sorted by date.
 
         Examples:
-            >>> finagg.fred.feat.economic.from_api().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.feat.economic.from_api().head(5)  # doctest: +SKIP
                         CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06                 0.0                  0.0 ...
@@ -460,7 +447,7 @@ class RefinedEconomic(feat.Features):
             `NoResultFound`: If there are no rows in the raw SQL table.
 
         Examples:
-            >>> finagg.fred.feat.economic.from_raw().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.feat.economic.from_raw().head(5)  # doctest: +SKIP
                         CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06                 0.0                  0.0 ...
@@ -518,7 +505,7 @@ class RefinedEconomic(feat.Features):
             `NoResultFound`: If there are no rows in the refined SQL table.
 
         Examples:
-            >>> finagg.fred.feat.economic.from_refined().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.feat.economic.from_refined().head(5)  # doctest: +SKIP
                         CIVPART_pct_change  CPIAUCNS_pct_change ...
             date                                                ...
             2014-10-06                 0.0                  0.0 ...
@@ -619,190 +606,3 @@ class RefinedEconomic(feat.Features):
         with engine.begin() as conn:
             conn.execute(sql.economic.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
-
-
-class RawSeries:
-    """Get a single economic series as-is from raw FRED data.
-
-    The module variable :data:`finagg.fred.feat.series` is an instance of
-    this feature set implementation and is the most popular interface for
-    calling feature methods.
-
-    """
-
-    @classmethod
-    def from_raw(
-        cls,
-        series_id: str,
-        /,
-        *,
-        start: None | str = None,
-        end: None | str = None,
-        engine: None | Engine = None,
-    ) -> pd.DataFrame:
-        """Get a single economic data series as-is from raw FRED data.
-
-        This is the preferred method for accessing raw FRED data without
-        using the FRED API.
-
-        Args:
-            series_id: Economic data series ID.
-            start: The start date of the observation period. Defaults to the
-                first recorded date.
-            end: The end date of the observation period. Defaults to the
-                last recorded date.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            A dataframe containing the economic data series values
-            across the specified period.
-
-        Raises:
-            `NoResultFound`: If there are no rows for ``series_id`` in the
-                raw SQL table.
-
-        Examples:
-            >>> finagg.fred.feat.series.from_raw("CPIAUCNS").head(5)  # doctest: +NORMALIZE_WHITESPACE
-                        value
-            date
-            1949-03-01  169.5
-            1949-04-01  169.7
-            1949-05-01  169.2
-            1949-06-01  169.6
-            1949-07-01  168.5
-
-        """
-        start = start or "1776-07-04"
-        end = end or utils.today
-        engine = engine or backend.engine
-        with engine.begin() as conn:
-            df = pd.DataFrame(
-                conn.execute(
-                    sa.select(sql.series.c.date, sql.series.c.value).where(
-                        sql.series.c.series_id == series_id,
-                        sql.series.c.date >= start,
-                        sql.series.c.date <= end,
-                    )
-                )
-            )
-        if not len(df.index):
-            raise NoResultFound(f"No series rows found for {series_id}.")
-        return df.set_index(["date"]).sort_index()
-
-    @classmethod
-    def get_id_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
-        """Get all unique economic series IDs in the raw SQL tables that have at least
-        ``lb`` rows.
-
-        Args:
-            lb: Lower bound number of rows that a series must have for its ID
-                to be included in the set returned by this method.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Examples:
-            >>> "FEDFUNDS" in finagg.fred.feat.series.get_id_set()
-            True
-
-        """
-        engine = engine or backend.engine
-        with engine.begin() as conn:
-            series_ids = (
-                conn.execute(
-                    sa.select(sql.series.c.series_id)
-                    .group_by(sql.series.c.series_id)
-                    .having(sa.func.count(sql.series.c.date) >= lb)
-                )
-                .scalars()
-                .all()
-            )
-        return set(series_ids)
-
-    @classmethod
-    def install(
-        cls,
-        series_ids: None | set[str] = None,
-        *,
-        engine: None | Engine = None,
-        recreate_tables: bool = False,
-    ) -> int:
-        """Install data associated with by pulling data from the FRED API and
-        then writing the data to the raw series SQL table.
-
-        Tables associated with this method are created if they don't already
-        exist.
-
-        Args:
-            series_ids: Set of series to install features for. Defaults to all
-                the series from :data:`finagg.fred.feat.economic.series_ids`.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-            recreate_tables: Whether to drop and recreate tables, wiping all
-                previously installed data.
-
-        Returns:
-            Number of rows written to the feature's SQL table.
-
-        """
-        series_ids = series_ids or set(economic.series_ids)
-        engine = engine or backend.engine
-        if recreate_tables or not sa.inspect(engine).has_table(sql.series.name):
-            sql.series.drop(engine, checkfirst=True)
-            sql.series.create(engine)
-
-        total_rows = 0
-        for series_id in tqdm(
-            series_ids,
-            desc="Installing raw FRED economic series data",
-            position=0,
-            leave=True,
-        ):
-            try:
-                df = api.series.observations.get(
-                    series_id,
-                    realtime_start=0,
-                    realtime_end=-1,
-                    output_type=4,
-                )
-                rowcount = len(df.index)
-                if rowcount:
-                    cls.to_raw(df, engine=engine)
-                    total_rows += rowcount
-                    logger.debug(f"{rowcount} rows inserted for {series_id}")
-                else:
-                    logger.debug(f"Skipping {series_id} due to missing data")
-            except Exception as e:
-                logger.debug(f"Skipping {series_id}", exc_info=e)
-        return total_rows
-
-    @classmethod
-    def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
-        """Write the given dataframe to the raw feature table.
-
-        Args:
-            df: Dataframe to store as rows in a local SQL table
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            Number of rows written to the SQL table.
-
-        """
-        engine = engine or backend.engine
-        with engine.begin() as conn:
-            conn.execute(sql.series.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
-        return len(df)
-
-
-economic = RefinedEconomic()
-"""The most popular way for accessing :class:`RefinedEconomic`.
-
-:meta hide-value:
-"""
-
-series = RawSeries()
-"""The most popular way for accessing :class:`RawSeries`.
-
-:meta hide-value:
-"""

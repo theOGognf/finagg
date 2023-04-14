@@ -8,6 +8,10 @@ from sqlalchemy.engine import Engine
 from .. import backend
 
 metadata = sa.MetaData()
+"""The metadata associated with all SQL tables defined in this module.
+
+:meta hide-value:
+"""
 
 submissions = sa.Table(
     "sec.raw.submissions",
@@ -34,6 +38,12 @@ submissions = sa.Table(
         doc="The company's last day of the fiscal year (MMDD).",
     ),
 )
+"""SQL table for storing raw data as managed by
+:data:`finagg.sec.feat.submissions` (an alias for
+:class:`finagg.sec.feat.Submissions`).
+
+:meta hide-value:
+"""
 
 tags = sa.Table(
     "sec.raw.tags",
@@ -112,6 +122,54 @@ tags = sa.Table(
     sa.Column("entity", sa.String, doc="Company name."),
     sa.Column("value", sa.Float, nullable=False, doc="Tag value with units `units`."),
 )
+"""SQL table for storing raw data as managed by :data:`finagg.sec.feat.tags`
+(an alias for :class:`finagg.sec.feat.Tags`).
+
+:meta hide-value:
+"""
+
+annual = sa.Table(
+    "sec.refined.annual",
+    metadata,
+    sa.Column(
+        "cik",
+        sa.String,
+        sa.ForeignKey(submissions.c.cik, ondelete="CASCADE"),
+        primary_key=True,
+        doc="Unique company ticker.",
+    ),
+    sa.Column("filed", sa.String, nullable=False, doc="Filing date."),
+    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
+    sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
+    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+)
+"""SQL table for storing refined data as managed by :data:`finagg.sec.feat.annual`
+(an alias for :class:`finagg.sec.feat.Annual`).
+
+:meta hide-value:
+"""
+
+normalized_annual = sa.Table(
+    "sec.refined.annual.normalized",
+    metadata,
+    sa.Column(
+        "cik",
+        sa.String,
+        sa.ForeignKey(submissions.c.cik, ondelete="CASCADE"),
+        primary_key=True,
+        doc="Unique company ticker.",
+    ),
+    sa.Column("filed", sa.String, nullable=False, doc="Filing date."),
+    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
+    sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
+    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+)
+"""SQL table for storing refined data as managed by
+:attr:`finagg.sec.feat.Annual.normalized` (an alias for
+:class:`finagg.sec.feat.NormalizedAnnual`).
+
+:meta hide-value:
+"""
 
 quarterly = sa.Table(
     "sec.refined.quarterly",
@@ -134,7 +192,12 @@ quarterly = sa.Table(
     ),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
+"""SQL table for storing refined data as managed by
+:data:`finagg.sec.feat.quarterly` (an alias for
+:class:`finagg.sec.feat.Quarterly`).
 
+:meta hide-value:
+"""
 
 normalized_quarterly = sa.Table(
     "sec.refined.quarterly.normalized",
@@ -157,6 +220,12 @@ normalized_quarterly = sa.Table(
     ),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
+"""SQL table for storing refined data as managed by
+:attr:`finagg.sec.feat.Quarterly.normalized` (an alias for
+:class:`finagg.sec.feat.NormalizedQuarterly`).
+
+:meta hide-value:
+"""
 
 
 def get_cik(ticker: str, /, *, engine: None | Engine = None) -> str:
@@ -284,7 +353,7 @@ def get_tickers_in_industry(
 
     This method is convenient for finding tickers within the same
     industry so they can be compared. A related and common pattern is to use
-    :data:`finagg.sec.feat.quarterly.normalized` to get industry-normalized
+    :attr:`finagg.sec.feat.Quarterly.normalized` to get industry-normalized
     features for a particular company. Similar to other methods in this
     submodule, this will only return tickers that have raw SQL data associated
     with them.

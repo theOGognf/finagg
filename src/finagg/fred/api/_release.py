@@ -14,7 +14,7 @@ from . import _api
 class ReleasesDates(_api.API):
     """Get all release dates of FRED economic data.
 
-    The class variable :data:`finagg.fred.api.releases.dates` is an instance
+    The class variable :attr:`finagg.fred.api.Releases.dates` is an instance
     of this API implementation and is the most popular interface for calling
     this API.
 
@@ -86,7 +86,8 @@ class Releases(_api.API):
 
     dates = ReleasesDates()
     """"releases/dates" FRED API. Get dates for releases of economic data.
-    The most popular way for accessing the :class:`ReleasesDates` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.ReleasesDates` API.
 
     :meta hide-value:
     """
@@ -153,7 +154,7 @@ class Releases(_api.API):
 class ReleaseDates(_api.API):
     """Get dates associated with an economic release.
 
-    The class variable :data:`finagg.fred.api.release.dates` is an
+    The class variable :attr:`finagg.fred.api.Release.dates` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -215,10 +216,10 @@ class ReleaseDates(_api.API):
         return pd.DataFrame(data)
 
 
-class Series(_api.API):
+class ReleaseSeries(_api.API):
     """Get series associated with an economic release.
 
-    The class variable :data:`finagg.fred.api.release.series` is an
+    The class variable :attr:`finagg.fred.api.Release.series` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -312,10 +313,10 @@ class Series(_api.API):
         return pd.DataFrame(data)
 
 
-class Sources(_api.API):
+class ReleaseSources(_api.API):
     """Get sources associated with an economic release.
 
-    The class variable :data:`finagg.fred.api.release.sources` is an
+    The class variable :attr:`finagg.fred.api.Release.sources` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -363,10 +364,10 @@ class Sources(_api.API):
         return pd.DataFrame(data)
 
 
-class Tags(_api.API):
+class ReleaseTags(_api.API):
     """Get tags for an economic release.
 
-    The class variable :data:`finagg.fred.api.release.tags` is an
+    The class variable :attr:`finagg.fred.api.Release.tags` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -453,10 +454,10 @@ class Tags(_api.API):
         return pd.DataFrame(data)
 
 
-class RelatedTags(_api.API):
+class ReleaseRelatedTags(_api.API):
     """Get tags related to an economic release.
 
-    The class variable :data:`finagg.fred.api.release.related_tags` is an
+    The class variable :attr:`finagg.fred.api.Release.related_tags` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -546,10 +547,10 @@ class RelatedTags(_api.API):
         return pd.DataFrame(data)
 
 
-class Tables(_api.API):
+class ReleaseTables(_api.API):
     """Get tables associated with an economic release.
 
-    The class variable :data:`finagg.fred.api.release.tables` is an instance of
+    The class variable :attr:`finagg.fred.api.Release.tables` is an instance of
     this API implementation and is the most popular interface for calling this
     API.
 
@@ -610,42 +611,48 @@ class Release(_api.API):
 
     dates = ReleaseDates()
     """"release/dates" FRED API. Get economic release dates.
-    The most popular way for accessing the :class:`ReleaseDates` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.ReleaseDates` API.
 
     :meta hide-value:
     """
 
-    related_tags = RelatedTags()
+    related_tags = ReleaseRelatedTags()
     """"release/related_tags" FRED API. Get tags related to an economic release.
-    The most popular way for accessing the :class:`RelatedTags` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.ReleaseRelatedTags` API.
 
     :meta hide-value:
     """
 
-    series = Series()
+    series = ReleaseSeries()
     """"release/series" FRED API. Get the series of an economic release.
-    The most popular way for accessing the :class:`Series` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.ReleaseSeries` API.
 
     :meta hide-value:
     """
 
-    sources = Sources()
+    sources = ReleaseSources()
     """"release/sources" FRED API. Get the sources for an economic release.
-    The most popular way for accessing the :class:`Sources` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.ReleaseSources` API.
 
     :meta hide-value:
     """
 
-    tables = Tables()
+    tables = ReleaseTables()
     """"release/tables" FRED API. Get the tables of an economic release.
-    The most popular way for accessing the :class:`Tables` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.ReleaseTables` API.
 
     :meta hide-value:
     """
 
-    tags = Tags()
+    tags = ReleaseTags()
     """"release/tags" FRED API. Get tags of an economic release.
-    The most popular way for accessing the :class:`Tags` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.ReleaseTags` API.
 
     :meta hide-value:
     """
@@ -690,16 +697,3 @@ class Release(_api.API):
         ).json()
         data = data["releases"]
         return pd.DataFrame(data)
-
-
-releases = Releases()
-"""The most popular way for accessing :class:`Releases`.
-
-:meta hide-value:
-"""
-
-release = Release()
-"""The most popular way for accessing :class:`Release`.
-
-:meta hide-value:
-"""

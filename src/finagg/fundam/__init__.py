@@ -1,3 +1,3 @@
-"""Top-level interface for fundamental resources."""
+"""Top-level fundamentals interface."""
 
 from . import _cli, feat, sql

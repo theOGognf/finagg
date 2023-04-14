@@ -80,6 +80,17 @@ extensions = [
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "build", "Thumbs.db", ".DS_Store"]
+nitpicky = True
+nitpick_ignore = [
+    ("py:class", "requests.models.Response"),
+    ("py:class", "requests.exceptions.RequestException"),
+    ("py:class", "sqlalchemy.sql.schema.MetaData"),
+    ("py:class", "sqlalchemy.sql.schema.Table"),
+    ("py:class", "sqlalchemy.engine.base.Engine"),
+    ("py:class", "_P"),
+    ("py:exc", "NoResultFound"),
+    ("py:obj", "finagg.ratelimit._P"),
+]
 
 # -- Autodoc options ---------------------------------------------------------
 
@@ -109,4 +120,5 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/" + python_version, None),
     "numpy": ("https://numpy.org/doc/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+    "sqlalchemy": ("https://docs.sqlalchemy.org/en/20/", None),
 }

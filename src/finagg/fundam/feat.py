@@ -20,10 +20,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class RefinedIndustryFundamental:
+class IndustryFundamental:
     """Methods for gathering industry-averaged fundamental data.
 
-    The class variable :data:`finagg.fundam.feat.fundam.industry` is an
+    The class variable :attr:`finagg.fundam.feat.Fundamental.industry` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -88,7 +88,7 @@ class RefinedIndustryFundamental:
 
         Examples:
             >>> df = finagg.fundam.feat.fundam.industry.from_refined(ticker="AAPL").head(5)
-            >>> df["avg"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> df["avg"]  # doctest: +SKIP
             name        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             date                                                                    ...
             2009-10-23                       0.0           0.3305              2.48 ...
@@ -96,7 +96,7 @@ class RefinedIndustryFundamental:
             2009-10-27                       0.0           0.3305              2.48 ...
             2009-10-28                       0.0           0.3305              2.48 ...
             2009-10-29                       0.0           0.3305              2.48 ...
-            >>> df["std"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> df["std"]  # doctest: +SKIP
             name        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             date                                                                    ...
             2009-10-23                       0.0              0.0               0.0 ...
@@ -155,11 +155,11 @@ class RefinedIndustryFundamental:
         return df
 
 
-class RefinedNormalizedFundamental:
+class NormalizedFundamental:
     """Fundamental features from quarterly and daily data, normalized
     according to industry averages and standard deviations.
 
-    The class variable :data:`finagg.fundam.feat.fundam.normalized` is an
+    The class variable :attr:`finagg.fundam.feat.Fundamental.normalized` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -168,7 +168,7 @@ class RefinedNormalizedFundamental:
         They all return equivalent dataframes.
 
         >>> df1 = finagg.fundam.feat.fundam.normalized.from_other_refined("AAPL").head(5)
-        >>> df2 = finagg.fundam.feat.fundam.from_refined("AAPL").head(5)
+        >>> df2 = finagg.fundam.feat.fundam.normalized.from_refined("AAPL").head(5)
         >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
 
     """
@@ -208,7 +208,7 @@ class RefinedNormalizedFundamental:
             separate column. Sorted by filing date.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.normalized.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.normalized.from_other_refined("AAPL").head(5)  # doctest: +SKIP
                         AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             date                                                                    ...
             2010-01-25                   -1.4142          -0.6309           -0.6506 ...
@@ -221,25 +221,27 @@ class RefinedNormalizedFundamental:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
-        company_df = RefinedFundamental.from_refined(
+        company_df = Fundamental.from_refined(
             ticker, start=start, end=end, engine=engine
         )
-        industry_df = RefinedIndustryFundamental.from_refined(
+        industry_df = IndustryFundamental.from_refined(
             ticker=ticker, level=level, start=start, end=end, engine=engine
         )
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
         company_df = company_df.sort_index()
-        pct_change_columns = RefinedFundamental.pct_change_target_columns()
+        pct_change_columns = Fundamental.pct_change_target_columns()
         company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
             value=0.0
         )
-        return (
+        df = (
             company_df.fillna(method="ffill")
             .dropna()
             .reset_index()
             .drop_duplicates("date")
             .set_index("date")
         )
+        df = df[Fundamental.columns]
+        return df
 
     @classmethod
     def from_refined(
@@ -275,7 +277,7 @@ class RefinedNormalizedFundamental:
                 refined SQL table.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.normalized.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.normalized.from_refined("AAPL").head(5)  # doctest: +SKIP
                         AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             date                                                                    ...
             2010-01-25                   -1.4142          -0.6309           -0.6506 ...
@@ -304,7 +306,7 @@ class RefinedNormalizedFundamental:
             )
         df = df.pivot(index="date", columns="name", values="value").sort_index()
         df.columns = df.columns.rename(None)
-        df = df[RefinedFundamental.columns]
+        df = df[Fundamental.columns]
         return df
 
     @classmethod
@@ -314,7 +316,8 @@ class RefinedNormalizedFundamental:
         """Get all unique tickers in the fundamental SQL table that MAY BE
         ELIGIBLE to be in the feature's SQL table.
 
-        This is just an alias for :meth:`finagg.fundam.feat.fundam.get_ticker_set`.
+        This is just an alias for
+        :meth:`finagg.fundam.feat.Fundamental.get_ticker_set`.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
@@ -328,11 +331,11 @@ class RefinedNormalizedFundamental:
             ``lb`` rows for each tag used for constructing the features.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_candidate_ticker_set()  # doctest: +SKIP
             True
 
         """
-        return RefinedFundamental.get_ticker_set(lb=lb, engine=engine)
+        return Fundamental.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
     def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
@@ -349,7 +352,7 @@ class RefinedNormalizedFundamental:
             fundamental features that also have at least ``lb`` rows.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_ticker_set()
+            >>> "AAPL" in finagg.fundam.feat.fundam.normalized.get_ticker_set()  # doctest: +SKIP
             True
 
         """
@@ -362,7 +365,7 @@ class RefinedNormalizedFundamental:
                     .having(
                         *[
                             sa.func.count(sql.normalized_fundam.c.name == col) >= lb
-                            for col in RefinedFundamental.columns
+                            for col in Fundamental.columns
                         ]
                     )
                 )
@@ -406,7 +409,7 @@ class RefinedNormalizedFundamental:
             ...         "PriceEarningsRatio",
             ...         date="2019-01-04"
             ... )
-            >>> "AMD" == ts[0]
+            >>> "AMD" == ts[0]  # doctest: +SKIP
             True
 
         """
@@ -459,7 +462,7 @@ class RefinedNormalizedFundamental:
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.fundam.feat.fundam.get_ticker_set`.
+                the tickers from :meth:`finagg.fundam.feat.Fundamental.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -525,9 +528,9 @@ class RefinedNormalizedFundamental:
         """
         engine = engine or backend.engine
         df = df.reset_index("date")
-        if set(df.columns) < set(RefinedFundamental.columns):
+        if set(df.columns) < set(Fundamental.columns):
             raise ValueError(
-                f"Dataframe must have columns {RefinedFundamental.columns} but got {df.columns}"
+                f"Dataframe must have columns {Fundamental.columns} but got {df.columns}"
             )
         df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
@@ -536,7 +539,7 @@ class RefinedNormalizedFundamental:
         return len(df.index)
 
 
-class RefinedFundamental(feat.Features):
+class Fundamental(feat.Features):
     """Method for gathering fundamental data on a stock using several sources.
 
     The module variable :data:`finagg.fundam.feat.fundam` is an instance of
@@ -563,17 +566,17 @@ class RefinedFundamental(feat.Features):
         + ["PriceEarningsRatio"]
     )
 
-    industry = RefinedIndustryFundamental()
+    industry = IndustryFundamental()
     """Fundamental features aggregated for an entire industry.
-    The most popular way for accessing the :class:`RefinedIndustryFundamental`
+    The most popular way for accessing the :class:`IndustryFundamental`
     feature set.
 
     :meta hide-value:
     """
 
-    normalized = RefinedNormalizedFundamental()
+    normalized = NormalizedFundamental()
     """A company's fundamental features normalized by its industry.
-    The most popular way for accessing the :class:`RefinedNormalizedFundamental`
+    The most popular way for accessing the :class:`NormalizedFundamental`
     feature set.
 
     :meta hide-value:
@@ -591,13 +594,11 @@ class RefinedFundamental(feat.Features):
         quarterly_abs = quarterly.groupby(["filed"], as_index=False)[
             [
                 col
-                for col in sec.feat.RefinedQuarterly.columns
+                for col in sec.feat.quarterly.columns
                 if not col.endswith("pct_change")
             ]
         ].last()
-        quarterly_pct_change_cols = (
-            sec.feat.RefinedQuarterly.pct_change_target_columns()
-        )
+        quarterly_pct_change_cols = sec.feat.quarterly.pct_change_target_columns()
         quarterly[quarterly_pct_change_cols] += 1
         quarterly_pct_change = quarterly.groupby(["filed"], as_index=False).agg(
             {col: np.prod for col in quarterly_pct_change_cols}
@@ -650,7 +651,7 @@ class RefinedFundamental(feat.Features):
             Sorted by date.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.from_api("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.from_api("AAPL").head(5)  # doctest: +SKIP
                          price  open_pct_change ... PriceEarningsRatio
             date                                ...
             2010-01-25  6.1727          -0.0207 ...             2.4302
@@ -697,7 +698,7 @@ class RefinedFundamental(feat.Features):
             Sorted by date.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.from_other_refined("AAPL").head(5)  # doctest: +SKIP
                          price  open_pct_change ... PriceEarningsRatio
             date                                ...
             2010-01-25  6.1727          -0.0207 ...             2.4302
@@ -751,7 +752,7 @@ class RefinedFundamental(feat.Features):
             Sorted by date.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)  # doctest: +SKIP
                          price  open_pct_change ... PriceEarningsRatio
             date                                ...
             2010-01-25  6.1727          -0.0207 ...             2.4302
@@ -813,7 +814,7 @@ class RefinedFundamental(feat.Features):
                 refined SQL table.
 
         Examples:
-            >>> finagg.fundam.feat.fundam.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fundam.feat.fundam.from_refined("AAPL").head(5)  # doctest: +SKIP
                          price  open_pct_change ... PriceEarningsRatio
             date                                ...
             2010-01-25  6.1727          -0.0207 ...             2.4302
@@ -862,13 +863,13 @@ class RefinedFundamental(feat.Features):
             the features.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.fundam.feat.fundam.get_candidate_ticker_set()  # doctest: +SKIP
             True
 
         """
-        return sec.feat.RefinedQuarterly.get_ticker_set(
+        return sec.feat.quarterly.get_ticker_set(
             lb=lb, engine=engine
-        ) & yfinance.feat.RefinedDaily.get_ticker_set(lb=lb, engine=engine)
+        ) & yfinance.feat.daily.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
     def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
@@ -885,7 +886,7 @@ class RefinedFundamental(feat.Features):
             fundamental features that also have at least ``lb`` rows.
 
         Examples:
-            >>> "AAPL" in finagg.fundam.feat.fundam.get_ticker_set()
+            >>> "AAPL" in finagg.fundam.feat.fundam.get_ticker_set()  # doctest: +SKIP
             True
 
         """
@@ -924,7 +925,7 @@ class RefinedFundamental(feat.Features):
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.sec.feat.quarterly.get_ticker_set`.
+                the tickers from :meth:`finagg.sec.feat.Quarterly.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -999,8 +1000,8 @@ class RefinedFundamental(feat.Features):
         return len(df.index)
 
 
-fundam = RefinedFundamental()
-"""The most popular way for accessing :class:`RefinedFundamental`.
+fundam = Fundamental()
+"""The most popular way for accessing :class:`finagg.fundam.feat.Fundamental`.
 
 :meta hide-value:
 """

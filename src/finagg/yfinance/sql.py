@@ -3,6 +3,10 @@
 import sqlalchemy as sa
 
 metadata = sa.MetaData()
+"""The metadata associated with all SQL tables defined in this module.
+
+:meta hide-value:
+"""
 
 prices = sa.Table(
     "yfinance.raw.prices",
@@ -15,6 +19,12 @@ prices = sa.Table(
     sa.Column("close", sa.Float, doc="Stock price at market close."),
     sa.Column("volume", sa.Float, doc="Units traded during trading hours."),
 )
+"""SQL table for storing raw data as managed by
+:data:`finagg.yfinance.feat.prices` (an alias for
+:class:`finagg.yfinance.feat.Prices`).
+
+:meta hide-value:
+"""
 
 daily = sa.Table(
     "yfinance.refined.daily",
@@ -30,3 +40,9 @@ daily = sa.Table(
     sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
+"""SQL table for storing refined data as managed by
+:data:`finagg.yfinance.feat.daily` (an alias for
+:class:`finagg.yfinance.feat.Daily`).
+
+:meta hide-value:
+"""

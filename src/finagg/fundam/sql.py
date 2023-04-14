@@ -6,6 +6,10 @@ import sqlalchemy as sa
 from .. import sec, yfinance
 
 metadata = sa.MetaData()
+"""The metadata associated with all SQL tables defined in this module.
+
+:meta hide-value:
+"""
 
 fundam = sa.Table(
     "fundam.refined.fundam",
@@ -22,7 +26,12 @@ fundam = sa.Table(
     sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
+"""SQL table for storing refined data as managed by
+:data:`finagg.fundam.feat.fundam` (an alias for
+:class:`finagg.fundam.feat.Fundamental`).
 
+:meta hide-value:
+"""
 
 normalized_fundam = sa.Table(
     "fundam.refined.fundam.normalized",
@@ -38,3 +47,9 @@ normalized_fundam = sa.Table(
     sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
 )
+"""SQL table for storing refined data as managed by
+:attr:`finagg.fundam.feat.Fundamental.normalized` (an alias for
+:class:`finagg.fundam.feat.NormalizedFundamental`).
+
+:meta hide-value:
+"""

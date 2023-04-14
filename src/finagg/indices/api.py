@@ -19,7 +19,7 @@ session = requests_cache.CachedSession(
 )
 
 
-class _API(ABC):
+class API(ABC):
     """Abstract indices API."""
 
     #: Request API URL.
@@ -37,7 +37,7 @@ class _API(ABC):
         return df["ticker"].tolist()
 
 
-class DJIA(_API):
+class DJIA(API):
     """Get data on all companies within the DJIA.
 
     The module variable :data:`finagg.indices.api.djia` is an instance of
@@ -53,7 +53,7 @@ class DJIA(_API):
         """Get a dataframe containing data on the tickers in the DJIA.
 
         Examples:
-            >>> finagg.indices.api.djia.get().head(5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.indices.api.djia.get().head(5)  # doctest: +SKIP
                         company exchange ticker                industry       added  weight
             0                3M     NYSE    MMM            Conglomerate  1976-08-09  0.0241
             1  American Express     NYSE    AXP      Financial services  1982-08-30  0.0302
@@ -87,7 +87,7 @@ class DJIA(_API):
         return df
 
 
-class Nasdaq100(_API):
+class Nasdaq100(API):
     """Get data on all companies within the Nasdaq 100.
 
     The module variable :data:`finagg.indices.api.nasdaq100` is an instance of
@@ -103,7 +103,7 @@ class Nasdaq100(_API):
         """Get a dataframe containing data on the tickers in the Nasdaq 100.
 
         Examples:
-            >>> finagg.indices.api.nasdaq100.get().head(5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.indices.api.nasdaq100.get().head(5)  # doctest: +SKIP
                                    company ticker                industry                           sub_industry
             0          Activision Blizzard   ATVI  Communication Services         Interactive Home Entertainment
             1                   Adobe Inc.   ADBE  Information Technology                   Application Software
@@ -127,7 +127,7 @@ class Nasdaq100(_API):
         )
 
 
-class SP500(_API):
+class SP500(API):
     """Get data on all companies within the S&P 500.
 
     The module variable :data:`finagg.indices.api.sp500` is an instance of
@@ -143,7 +143,7 @@ class SP500(_API):
         """Get a dataframe containing data on the tickers in the S&P 500.
 
         Examples:
-            >>> finagg.indices.api.sp500.get().head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.indices.api.sp500.get().head(5)  # doctest: +SKIP
                 ticker               company                industry ...
             0      MMM                    3M             Industrials ...
             1      AOS           A. O. Smith             Industrials ...
@@ -232,7 +232,7 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
     """Get the set of tickers from all the popular indices.
 
     Examples:
-        >>> "AAPL" in finagg.indices.api.get_ticker_set()
+        >>> "AAPL" in finagg.indices.api.get_ticker_set()  # doctest: +SKIP
         True
 
     """

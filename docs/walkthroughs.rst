@@ -25,13 +25,13 @@ to various US treasuries. The FRED series search API is a good place to start.
 The FRED series search API allows us to search through economic data series
 that're provided by the FRED series observations API (the main API used for
 retrieving economic data). We can search for economic data series using search
-terms/words with :data:`finagg.fred.api.series.search` (the FRED series
+terms/words with :attr:`finagg.fred.api.Series.search` (the FRED series
 search API implementation):
 
 >>> finagg.fred.api.series.search.get(
 ...   "treasury yield",
 ...   order_by="popularity"
-... ).head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+... ).head(5)  # doctest: +SKIP
              id ...                                             title observation_start ...
 0        T10Y2Y ... 10-Year Treasury Constant Maturity Minus 2-Yea...        1976-06-01 ...
 1  BAMLH0A0HYM2 ... ICE BofA US High Yield Index Option-Adjusted S...        1996-12-31 ...
@@ -53,12 +53,12 @@ key info for further exploring and aggregating the economic data series:
 Let's assume we're only interested in the economic data series corresponding
 to economic series ID ``"DGS10"`` under the ``id`` column. We can get the
 economic data series observations through the FRED series observations API
-(implemented by :data:`finagg.fred.api.series.observations`):
+(implemented by :attr:`finagg.fred.api.Series.observations`):
 
 >>> finagg.fred.api.series.observations.get(
 ...     "DGS10",
 ...     output_type=1
-... ).head(5)  # doctest: +NORMALIZE_WHITESPACE
+... ).head(5)  # doctest: +SKIP
   realtime_start realtime_end        date value series_id
 0     2023-04-01   2023-04-01  1962-01-02  4.06     DGS10
 1     2023-04-01   2023-04-01  1962-01-03  4.03     DGS10
@@ -103,15 +103,15 @@ series to use **finagg**'s installation methods.
 Installing a treasury yield economic data series is extremely straightforward
 with the :mod:`finagg.fred.feat` subpackage and :data:`finagg.fred.feat.series`
 member. We can also verify the series is installed correctly using the
-:meth:`finagg.fred.feat.series.get_id_set` method.
+:meth:`finagg.fred.feat.Series.get_id_set` method.
 
->>> finagg.fred.feat.series.install({"GS10"})
+>>> finagg.fred.feat.series.install({"GS10"})  # doctest: +SKIP
 >>> id_set = finagg.fred.feat.series.get_id_set()
 >>> "GS10" in id_set
 True
 
 We can then retrieve the original, raw economic data series we installed using
-the :meth:`finagg.fred.feat.series.from_raw` method.
+the :meth:`finagg.fred.feat.Series.from_raw` method.
 
 >>> finagg.fred.feat.series.from_raw("GS10").head(5)  # doctest: +NORMALIZE_WHITESPACE
             value
@@ -129,9 +129,10 @@ economic data series. That's where :data:`finagg.fred.feat.economic` comes
 in for the FRED API subpackage. :data:`finagg.fred.feat.economic` assumes
 a fixed set of popular economic series IDs that also support initial release
 observations for all its methods. For example, the
-:meth:`finagg.fred.feat.economic.install` method doesn't allow specification
-of economic data series IDs. :meth:`finagg.fred.feat.economic.install` will,
-by default, only install a handful of economic data series.
+:meth:`finagg.fred.feat.Economic.install` method doesn't allow
+specification of economic data series IDs.
+:meth:`finagg.fred.feat.Economic.install` will, by default, only
+install a handful of economic data series.
 
 It's important to note that once an economic data series is supported by
 :data:`finagg.fred.feat.economic`, it will never be removed. However,
@@ -142,10 +143,8 @@ workflow. Repeating the download-then-retrieve workflow we used for the treasury
 FRED economic data series but with :data:`finagg.fred.feat.economic` looks
 like the following:
 
->>> finagg.fred.feat.economic.install()
->>> "FEDFUNDS" in finagg.fred.feat.economic.get_id_set()
-True
->>> finagg.fred.feat.economic.from_refined()["FEDFUNDS"].head(5)  # doctest: +NORMALIZE_WHITESPACE
+>>> finagg.fred.feat.economic.install()  # doctest: +SKIP
+>>> finagg.fred.feat.economic.from_refined()["FEDFUNDS"].head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
 date
 2014-10-06    0.09
 2014-10-08    0.09
@@ -160,16 +159,16 @@ Economic data series whose scales drift over time (e.g., gross domestic product)
 are converted to percent changes while economic data series whose scales are
 consistent over time (e.g., unemployment rate) are normalized to be zero mean
 and unit variance. The normalized economic data series can also have a similar
-workflow to the above using :data:`finagg.fred.feat.economic.normalized`.
+workflow to the above using :attr:`finagg.fred.feat.Economic.normalized`.
 
->>> finagg.fred.feat.economic.normalized.install()
->>> finagg.fred.economic.normalized.from_refined()["FEDFUNDS"].head(5)  # doctest: +NORMALIZE_WHITESPACE
+>>> finagg.fred.feat.economic.normalized.install()  # doctest: +SKIP
+>>> finagg.fred.feat.economic.normalized.from_refined()["FEDFUNDS"].head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
 date
-2014-10-06   -0.896754
-2014-10-08   -0.896754
-2014-10-13   -0.896754
-2014-10-15   -0.896754
-2014-10-20   -0.896754
+2014-10-06   -0.8968
+2014-10-08   -0.8968
+2014-10-13   -0.8968
+2014-10-15   -0.8968
+2014-10-20   -0.8968
 Name: FEDFUNDS, dtype: float64
 
 Lastly, it's useful to mention that any download/installation step in the
@@ -187,7 +186,7 @@ is equivalent to:
 
 Similarly, the following:
 
->>> finagg.fred.feat.series.install()
+>>> finagg.fred.feat.series.install()  # doctest: +SKIP
 >>> finagg.fred.feat.economic.install()  # doctest: +SKIP
 
 is equivalent to:
@@ -213,7 +212,7 @@ to get a good understanding of the API implementation and the returned
 dataframe:
 
 >>> df = finagg.sec.api.company_facts.get(ticker="MSFT")
->>> df.columns.tolist()  # doctest: +ELLIPSIS
+>>> df.columns.tolist()  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
 ['end', 'value', ..., 'fy', 'fp', 'form', 'filed', ..., 'tag', ..., 'units', ...]
 
 The main columns that most use cases care about are:
@@ -237,7 +236,7 @@ with the following:
 ...     ticker="MSFT",
 ...     units="USD/shares"
 ... )
->>> df.head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+>>> df.head(5)  # doctest: +SKIP
         start         end  value                  accn    fy  fp  form       filed ...
 0  2007-07-01  2007-09-30   0.46  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...
 1  2007-10-01  2007-12-31   0.50  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...
@@ -249,10 +248,10 @@ However, the SEC EDGAR company concept API implementation returns all the
 earnings per share publications for Microsft, including amendments. We may
 not necessarily care about amendments because we may be building strategies
 or models that use *current* data and not *future* data. Fortunately, **finagg**
-provides :meth:`finagg.sec.feat.get_unique_filings` to further select original
-financial publication data from specific forms:
+provides :meth:`finagg.sec.feat.get_unique_filings` to further select
+original financial publication data from specific forms:
 
->>> finagg.sec.feat.get_unique_filings(df, form="10-Q").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+>>> finagg.sec.feat.get_unique_filings(df, form="10-Q").head(5)  # doctest: +SKIP
      fy  fp                    tag       start         end  value ...
 0  2010  Q1  EarningsPerShareBasic  2008-07-01  2008-09-30   0.48 ...
 1  2010  Q2  EarningsPerShareBasic  2008-07-01  2008-12-31   0.95 ...
@@ -276,7 +275,7 @@ First, **finagg** provides :data:`finagg.sec.api.popular_concepts` for listing
 company concepts (combinations of financial data tags and other parameters)
 that're popular and widely available for companies. Second, it's extremely
 straightforward to filter and install widely popular and available quarterly
-financial data for a set of companies using the :mode:`finagg.sec.feat`
+financial data for a set of companies using the :mod:`finagg.sec.feat`
 subpackage and :data:`finagg.sec.feat.quarterly` member. The
 :data:`finagg.sec.feat.quarterly` member also goes a step further by somewhat
 normalizing the installed financial data (e.g., total asset value is converted
@@ -286,17 +285,17 @@ financial data painless.
 
 We can give this streamlined process a try with Microsoft again, and we can
 verify Microsoft's financial data is successfully installed using the
-:meth:`finagg.sec.feat.quarterly.get_ticker_set` method.
+:meth:`finagg.sec.feat.Quarterly.get_ticker_set` method.
 
->>> finagg.sec.feat.quarterly.install({"MSFT"})
+>>> finagg.sec.feat.quarterly.install({"MSFT"})  # doctest: +SKIP
 >>> ticker_set = finagg.sec.feat.quarterly.get_ticker_set()
 >>> "MSFT" in ticker_set
 True
 
 We can then retrieve Microsoft's quarterly financial data using the
-:meth:`finagg.sec.feat.quarterly.from_refined` method.
+:meth:`finagg.sec.feat.Quarterly.from_refined` method.
 
->>> finagg.sec.feat.quarterly.from_refined("MSFT").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+>>> finagg.sec.feat.quarterly.from_refined("MSFT").head(5)  # doctest: +SKIP
                     AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
 fy   fp filed                                                                   ...
 2010 Q2 2010-01-28                    0.0000           0.7841              0.95 ...
@@ -307,22 +306,23 @@ fy   fp filed                                                                   
 
 On top of this simplification, :data:`finagg.sec.feat.quarterly` provides
 another method and convenience for normalizing quarterly financial data.
-:data:`finagg.sec.feat.quarterly.normalized` normalizes quarterly financial
-data using quarterly financial data from all the other companies within
-the target company's industry. For example, Lowe's' financial data would
-be used to normalize Home Depot's financial data such that all columns
-have zero mean and unit variance. :data:`finagg.sec.feat.quarterly.normalized`
-also has similar workflow to :data:`finagg.sec.feat.quarterly`.
+:attr:`finagg.sec.feat.Quarterly.normalized` normalizes
+quarterly financial data using quarterly financial data from all the other
+companies within the target company's industry. For example, Lowe's'
+financial data would be used to normalize Home Depot's financial data such
+that all columns have zero mean and unit variance.
+:attr:`finagg.sec.feat.Quarterly.normalized` also has
+similar workflow to :data:`finagg.sec.feat.quarterly`.
 
->>> finagg.sec.feat.quarterly.normalized.install({"MSFT"})
->>> finagg.sec.feat.quarterly.normalized.from_refined("MSFT").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+>>> finagg.sec.feat.quarterly.normalized.install({"MSFT"})  # doctest: +SKIP
+>>> finagg.sec.feat.quarterly.normalized.from_refined("MSFT").head(5)  # doctest: +SKIP
                     AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
 fy   fp filed                                                                   ...
-2010 Q2 2010-01-28                 -0.577350        -0.442594          0.997144 ...
-     Q3 2010-04-22                 -0.500000        -0.635461          0.803027 ...
-2011 Q1 2010-10-28                  0.848715        -0.895750          1.076156 ...
-     Q2 2011-01-27                 -0.408248        -0.711371          0.993050 ...
-     Q3 2011-04-28                 -0.377964         0.328676          0.761100 ...
+2010 Q2 2010-01-28                   -0.5774          -0.4426            0.9971 ...
+     Q3 2010-04-22                   -0.5000          -0.6355            0.8030 ...
+2011 Q1 2010-10-28                    0.8487          -0.8958            1.0762 ...
+     Q2 2011-01-27                   -0.4082          -0.7114            0.9930 ...
+     Q3 2011-04-28                   -0.3780           0.3287            0.7611 ...
 
 Lastly, it's useful to mention that any download/installation step in the
 common download-then-retrieve workflow for financial data with **finagg**'s

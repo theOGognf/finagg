@@ -24,8 +24,129 @@ See the official `FRED API docs`_ for more info on the FRED API.
 
 """
 
-from .category_ import category
-from .release_ import release, releases
-from .series_ import series
-from .source_ import source, sources
-from .tags_ import related_tags, tags
+from ._api import API
+from ._category import (
+    Category,
+    CategoryChildren,
+    CategoryRelated,
+    CategoryRelatedTags,
+    CategorySeries,
+    CategoryTags,
+)
+from ._release import (
+    Release,
+    ReleaseDates,
+    ReleaseRelatedTags,
+    Releases,
+    ReleasesDates,
+    ReleaseSeries,
+    ReleaseSources,
+    ReleaseTables,
+    ReleaseTags,
+)
+from ._series import (
+    Series,
+    SeriesCategories,
+    SeriesObservations,
+    SeriesRelease,
+    SeriesSearch,
+    SeriesSearchRelatedTags,
+    SeriesSearchTags,
+    SeriesTags,
+    SeriesUpdates,
+    SeriesVintageDates,
+    popular_series,
+)
+from ._source import Source, SourceReleases, Sources
+from ._tags import RelatedTags, Tags
+
+__all__ = [
+    "category",
+    "popular_series",
+    "related_tags",
+    "release",
+    "releases",
+    "series",
+    "source",
+    "sources",
+    "tags",
+    "API",
+    "Category",
+    "CategoryChildren",
+    "CategoryRelated",
+    "CategoryRelatedTags",
+    "CategorySeries",
+    "CategoryTags",
+    "RelatedTags",
+    "Release",
+    "ReleaseDates",
+    "ReleaseRelatedTags",
+    "Releases",
+    "ReleasesDates",
+    "ReleaseSeries",
+    "ReleaseSources",
+    "ReleaseTables",
+    "ReleaseTags",
+    "Series",
+    "SeriesCategories",
+    "SeriesObservations",
+    "SeriesRelease",
+    "SeriesSearch",
+    "SeriesSearchRelatedTags",
+    "SeriesSearchTags",
+    "SeriesTags",
+    "SeriesUpdates",
+    "SeriesVintageDates",
+    "Source",
+    "SourceReleases",
+    "Sources",
+    "Tags",
+]
+
+category = Category()
+"""The most popular way for accessing the :class:`finagg.fred.api.Category`.
+
+:meta hide-value:
+"""
+
+release = Release()
+"""The most popular way for accessing :class:`finagg.fred.api.Release`.
+
+:meta hide-value:
+"""
+
+releases = Releases()
+"""The most popular way for accessing :class:`finagg.fred.api.Releases`.
+
+:meta hide-value:
+"""
+
+series = Series()
+"""The most popular way for accessing :class:`finagg.fred.api.Series`.
+
+:meta hide-value:
+"""
+
+source = Source()
+"""The most popular way for accessing :class:`finagg.fred.api.Source`.
+
+:meta hide-value:
+"""
+
+sources = Sources()
+"""The most popular way for accessing :class:`finagg.fred.api.Sources`.
+
+:meta hide-value:
+"""
+
+tags = Tags()
+"""The most popular way for accessing :class:`finagg.fred.api.Tags`.
+
+:meta hide-value:
+"""
+
+related_tags = RelatedTags()
+"""The most popular way for accessing :class:`finagg.fred.api.RelatedTags`.
+
+:meta hide-value:
+"""

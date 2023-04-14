@@ -4,6 +4,10 @@
 from sqlalchemy import Column, Float, Integer, MetaData, String, Table
 
 metadata = MetaData()
+"""The metadata associated with all SQL tables defined in this module.
+
+:meta hide-value:
+"""
 
 fixed_assets = Table(
     "fixed_assets",
@@ -18,6 +22,12 @@ fixed_assets = Table(
     Column("e", Integer),
     Column("value", Float),
 )
+"""SQL table for storing raw data as returned by
+:data:`finagg.bea.api.fixed_assets` (an alias for
+:class:`finagg.bea.api.FixedAssets`).
+
+:meta hide-value:
+"""
 
 gdp_by_industry = Table(
     "gdp_by_industry",
@@ -30,6 +40,12 @@ gdp_by_industry = Table(
     Column("industry_description", String),
     Column("value", Float),
 )
+"""SQL table for storing raw data as returned by
+:data:`finagg.bea.api.gdp_by_industry` (an alias for
+:class:`finagg.bea.api.GDPByIndustry`).
+
+:meta hide-value:
+"""
 
 input_output = Table(
     "input_output",
@@ -44,6 +60,12 @@ input_output = Table(
     Column("col_type", String),
     Column("value", Float),
 )
+"""SQL table for storing raw data as returned by
+:data:`finagg.bea.api.input_output` (an alias for
+:class:`finagg.bea.api.InputOutput`).
+
+:meta hide-value:
+"""
 
 nipa = Table(
     "nipa",
@@ -59,3 +81,9 @@ nipa = Table(
     Column("e", Integer),
     Column("value", Float),
 )
+"""SQL table for storing raw data as returned by
+:data:`finagg.bea.api.nipa` (an alias for
+:class:`finagg.bea.api.NIPA`).
+
+:meta hide-value:
+"""

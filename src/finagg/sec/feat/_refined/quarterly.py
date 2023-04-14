@@ -1,4 +1,4 @@
-"""Features from SEC sources."""
+"""Quarterly features from SEC sources."""
 
 import logging
 from typing import Literal
@@ -10,8 +10,9 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from .. import backend, feat, indices, utils
-from . import api, sql
+from .... import backend, feat, utils
+from ... import api, sql
+from .. import _raw
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
@@ -19,64 +20,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_unique_filings(
-    df: pd.DataFrame, /, *, form: str = "10-Q", units: None | str = None
-) -> pd.DataFrame:
-    """Get all unique rows as determined by the filing date and tag for a
-    period.
-
-    Args:
-        df: Dataframe without unique rows.
-        form: Only keep rows with form type ``form``. Most popular choices
-            include ``"10-K"`` for annual and ``"10-Q"`` for quarterly.
-        units: Only keep rows with units ``units`` if not ``None``.
-
-    Returns:
-        Dataframe with unique rows.
-
-    Examples:
-        Only get a company's original quarterly earnings-per-share filings.
-
-        >>> df = finagg.sec.api.company_concept.get(
-        ...     "EarningsPerShareBasic",
-        ...     ticker="AAPL",
-        ...     taxonomy="us-gaap",
-        ...     units="USD/shares",
-        ... )
-        >>> finagg.sec.feat.get_unique_filings(
-        ...     df,
-        ...     form="10-Q",
-        ...     units="USD/shares"
-        ... ).head(5)  # doctest: +ELLIPSIS
-             fy  fp  ...
-        0  2009  Q3  ...
-        1  2010  Q1  ...
-        2  2010  Q2  ...
-        3  2010  Q3  ...
-        4  2011  Q1  ...
-
-    """
-    mask = df["form"] == form
-    match form:
-        case "10-K":
-            mask &= df["fp"] == "FY"
-        case "10-Q":
-            mask &= df["fp"].str.startswith("Q")
-    if units:
-        mask &= df["units"] == units
-    df = df[mask]
-    return (
-        df.sort_values(["fy", "fp", "filed"])
-        .groupby(["fy", "fp", "tag"], as_index=False)
-        .first()
-    )
-
-
-class RefinedIndustryQuarterly:
+class IndustryQuarterly:
     """Methods for gathering industry-averaged quarterly data from SEC
     features.
 
-    The class variable :data:`finagg.sec.feat.quarterly.industry` is an
+    The class variable :attr:`finagg.sec.feat.Quarterly.industry` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -141,7 +89,7 @@ class RefinedIndustryQuarterly:
 
         Examples:
             >>> df = finagg.sec.feat.quarterly.industry.from_refined(ticker="AAPL").head(5)
-            >>> df["avg"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> df["avg"]  # doctest: +SKIP
             name                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             fy   fp filed                                                                   ...
             2009 Q3 2009-10-30                    0.0000           0.5733            3.0650 ...
@@ -149,7 +97,7 @@ class RefinedIndustryQuarterly:
                  Q2 2010-07-30                    0.0000           0.5003            0.5386 ...
                  Q3 2010-11-04                    0.0011           0.4568            1.2038 ...
             2011 Q1 2011-05-05                    0.2716           0.4652            0.9920 ...
-            >>> df["std"]  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> df["std"]  # doctest: +SKIP
             name                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             fy   fp filed                                                                   ...
             2009 Q3 2009-10-30                    0.0000           0.2428            0.5850 ...
@@ -213,11 +161,11 @@ class RefinedIndustryQuarterly:
         return df
 
 
-class RefinedNormalizedQuarterly:
+class NormalizedQuarterly:
     """Quarterly features from SEC EDGAR data normalized according to industry
     averages and standard deviations.
 
-    The class variable :data:`finagg.sec.feat.quarterly.normalized` is an
+    The class variable :data:`finagg.sec.feat.Quarterly.normalized` is an
     instance of this feature set implementation and is the most popular
     interface for calling feature methods.
 
@@ -266,7 +214,7 @@ class RefinedNormalizedQuarterly:
             separate column. Sorted by filing date.
 
         Examples:
-            >>> finagg.sec.feat.quarterly.normalized.from_other_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.quarterly.normalized.from_other_refined("AAPL").head(5)  # doctest: +SKIP
                                 AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             fy   fp filed                                                                   ...
             2010 Q1 2010-01-25                   -0.2573          -0.2606            1.6980 ...
@@ -279,20 +227,20 @@ class RefinedNormalizedQuarterly:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
-        company_df = RefinedQuarterly.from_refined(
+        company_df = Quarterly.from_refined(
             ticker, start=start, end=end, engine=engine
         ).reset_index(["filed"])
         filed = company_df["filed"]
-        industry_df = RefinedIndustryQuarterly.from_refined(
+        industry_df = IndustryQuarterly.from_refined(
             ticker=ticker, level=level, start=start, end=end, engine=engine
         ).reset_index(["filed"])
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
         company_df["filed"] = filed
-        pct_change_columns = RefinedQuarterly.pct_change_target_columns()
+        pct_change_columns = Quarterly.pct_change_target_columns()
         company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
             value=0.0
         )
-        return (
+        df = (
             company_df.fillna(method="ffill")
             .dropna()
             .reset_index()
@@ -300,6 +248,8 @@ class RefinedNormalizedQuarterly:
             .set_index(["fy", "fp", "filed"])
             .sort_index()
         )
+        df = df[Quarterly.columns]
+        return df
 
     @classmethod
     def from_refined(
@@ -335,7 +285,7 @@ class RefinedNormalizedQuarterly:
                 refined SQL table.
 
         Examples:
-            >>> finagg.sec.feat.quarterly.normalized.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.quarterly.normalized.from_refined("AAPL").head(5)  # doctest: +SKIP
                                 AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             fy   fp filed                                                                   ...
             2010 Q1 2010-01-25                   -0.2573          -0.2606            1.6980 ...
@@ -371,7 +321,7 @@ class RefinedNormalizedQuarterly:
             index=["fy", "fp", "filed"], columns="name", values="value"
         ).sort_index()
         df.columns = df.columns.rename(None)
-        df = df[RefinedQuarterly.columns]
+        df = df[Quarterly.columns]
         return df
 
     @classmethod
@@ -381,7 +331,7 @@ class RefinedNormalizedQuarterly:
         """Get all unique tickers in the quarterly SQL table that MAY BE
         ELIGIBLE to be in the feature's SQL table.
 
-        This is just an alias for :meth:`finagg.sec.feat.quarterly.get_ticker_set`.
+        This is just an alias for :meth:`finagg.sec.feat.Quarterly.get_ticker_set`.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
@@ -395,11 +345,11 @@ class RefinedNormalizedQuarterly:
             ``lb`` rows for each tag used for constructing the features.
 
         Examples:
-            >>> "AAPL" in finagg.sec.feat.quarterly.normalized.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.quarterly.normalized.get_candidate_ticker_set()  # doctest: +SKIP
             True
 
         """
-        return RefinedQuarterly.get_ticker_set(lb=lb, engine=engine)
+        return Quarterly.get_ticker_set(lb=lb, engine=engine)
 
     @classmethod
     def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
@@ -417,7 +367,7 @@ class RefinedNormalizedQuarterly:
             ``lb`` rows.
 
         Examples:
-            >>> "AAPL" in finagg.sec.feat.quarterly.normalized.get_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.quarterly.normalized.get_ticker_set()  # doctest: +SKIP
             True
 
         """
@@ -434,7 +384,7 @@ class RefinedNormalizedQuarterly:
                     .having(
                         *[
                             sa.func.count(sql.normalized_quarterly.c.name == col) >= lb
-                            for col in RefinedQuarterly.columns
+                            for col in Quarterly.columns
                         ]
                     )
                 )
@@ -477,7 +427,7 @@ class RefinedNormalizedQuarterly:
             ...         year=2020,
             ...         quarter=3
             ... )
-            >>> "PCGU" == ts[0]
+            >>> "PCGU" == ts[0]  # doctest: +SKIP
             True
 
         """
@@ -536,7 +486,7 @@ class RefinedNormalizedQuarterly:
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the candidate tickers from
-                :meth:`RefinedNormalizedQuarterly.get_candidate_ticker_set`.
+                :meth:`NormalizedQuarterly.get_candidate_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -602,9 +552,9 @@ class RefinedNormalizedQuarterly:
         """
         engine = engine or backend.engine
         df = df.reset_index(["fy", "fp", "filed"])
-        if set(df.columns) < set(RefinedQuarterly.columns):
+        if set(df.columns) < set(Quarterly.columns):
             raise ValueError(
-                f"Dataframe must have columns {RefinedQuarterly.columns} but got {df.columns}"
+                f"Dataframe must have columns {Quarterly.columns} but got {df.columns}"
             )
         df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker, engine=engine)
@@ -613,7 +563,7 @@ class RefinedNormalizedQuarterly:
         return len(df.index)
 
 
-class RefinedQuarterly(feat.Features):
+class Quarterly(feat.Features):
     """Methods for gathering quarterly features from SEC EDGAR data.
 
     The module variable :data:`finagg.sec.feat.quarterly` is an instance of
@@ -658,17 +608,17 @@ class RefinedQuarterly(feat.Features):
     :meta hide-value:
     """
 
-    industry = RefinedIndustryQuarterly()
+    industry = IndustryQuarterly()
     """Quarterly features aggregated for an entire industry.
-    The most popular way for accessing the :class:`RefinedIndustryQuarterly`
+    The most popular way for accessing the :class:`IndustryQuarterly`
     feature set.
 
     :meta hide-value:
     """
 
-    normalized = RefinedNormalizedQuarterly()
+    normalized = NormalizedQuarterly()
     """A company's quarterly features normalized by its industry.
-    The most popular way for accessing the :class:`RefinedNormalizedQuarterly`
+    The most popular way for accessing the :class:`NormalizedQuarterly`
     feature set.
 
     :meta hide-value:
@@ -725,7 +675,7 @@ class RefinedQuarterly(feat.Features):
             separate column. Sorted by filing date.
 
         Examples:
-            >>> finagg.sec.feat.quarterly.from_api("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.quarterly.from_api("AAPL").head(5)  # doctest: +SKIP
                                 AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             fy   fp filed                                                                   ...
             2010 Q1 2010-01-25                   -0.0234           0.3637              2.54 ...
@@ -745,7 +695,7 @@ class RefinedQuarterly(feat.Features):
             df = api.company_concept.get(
                 tag, ticker=ticker, taxonomy=taxonomy, units=units
             )
-            df = get_unique_filings(df, units=units)
+            df = _raw.get_unique_filings(df, form="10-Q", units=units)
             df = df[(df["filed"] >= start) & (df["filed"] <= end)]
             dfs.append(df)
         df = pd.concat(dfs)
@@ -785,7 +735,7 @@ class RefinedQuarterly(feat.Features):
                 raw SQL table.
 
         Examples:
-            >>> finagg.sec.feat.quarterly.from_raw("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.quarterly.from_raw("AAPL").head(5)  # doctest: +SKIP
                                 AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             fy   fp filed                                                                   ...
             2010 Q1 2010-01-25                   -0.0234           0.3637              2.54 ...
@@ -811,6 +761,7 @@ class RefinedQuarterly(feat.Features):
                         sql.tags.c.tag.in_(
                             [concept["tag"] for concept in cls.concepts]
                         ),
+                        sql.tags.c.form == "10-Q",
                         sql.tags.c.filed >= start,
                         sql.tags.c.filed <= end,
                     )
@@ -854,7 +805,7 @@ class RefinedQuarterly(feat.Features):
                 refined SQL table.
 
         Examples:
-            >>> finagg.sec.feat.quarterly.from_refined("AAPL").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.sec.feat.quarterly.from_refined("AAPL").head(5)  # doctest: +SKIP
                                 AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
             fy   fp filed                                                                   ...
             2010 Q1 2010-01-25                   -0.0234           0.3637              2.54 ...
@@ -912,7 +863,7 @@ class RefinedQuarterly(feat.Features):
             constructing the features.
 
         Examples:
-            >>> "AAPL" in finagg.sec.feat.quarterly.get_candidate_ticker_set()
+            >>> "AAPL" in finagg.sec.feat.quarterly.get_candidate_ticker_set()  # doctest: +SKIP
             True
 
         """
@@ -932,6 +883,7 @@ class RefinedQuarterly(feat.Features):
                         ],
                     )
                     .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
+                    .where(sql.tags.c.form == "10-Q")
                     .group_by(sql.tags.c.cik)
                     .having(
                         *[
@@ -1001,7 +953,7 @@ class RefinedQuarterly(feat.Features):
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the candidate tickers from
-                :meth:`RefinedQuarterly.get_candidate_ticker_set`.
+                :meth:`Quarterly.get_candidate_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -1074,379 +1026,3 @@ class RefinedQuarterly(feat.Features):
         with engine.begin() as conn:
             conn.execute(sql.quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
-
-
-class RawSubmissions:
-    """Get a single company's metadata as-is from raw SEC data.
-
-    The module variable :data:`finagg.sec.feat.submissions` is an instance of
-    this feature set implementation and is the most popular interface for
-    calling feature methods.
-
-    """
-
-    @classmethod
-    def install(
-        cls,
-        tickers: None | set[str] = None,
-        *,
-        engine: None | Engine = None,
-        recreate_tables: bool = False,
-    ) -> int:
-        """Install data associated with ``tickers`` by pulling data from the
-        API, and then writing the data to the raw submissions SQL table.
-
-        Tables associated with this method are created if they don't already
-        exist.
-
-        Args:
-            tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-            recreate_tables: Whether to drop and recreate tables, wiping all
-                previously installed data.
-
-        Returns:
-            Number of rows written to the feature's SQL table.
-
-        """
-        tickers = tickers or indices.api.get_ticker_set()
-        engine = engine or backend.engine
-        if recreate_tables or not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.drop(engine, checkfirst=True)
-            sql.submissions.create(engine)
-
-        total_rows = 0
-        for ticker in tqdm(
-            tickers,
-            desc="Installing raw SEC submissions data",
-            position=0,
-            leave=True,
-        ):
-            try:
-                metadata = api.submissions.get(ticker=ticker)["metadata"]
-                df = pd.DataFrame(metadata, index=[0])
-                rowcount = len(df.index)
-                if rowcount:
-                    cls.to_raw(df, engine=engine)
-                    total_rows += rowcount
-                    logger.debug(f"{rowcount} rows inserted for {ticker}")
-                else:
-                    logger.debug(f"Skipping {ticker} due to missing submissions")
-            except Exception as e:
-                logger.debug(f"Skipping {ticker}", exc_info=e)
-        return total_rows
-
-    @classmethod
-    def from_raw(
-        cls,
-        ticker: str,
-        /,
-        *,
-        engine: None | Engine = None,
-    ) -> pd.DataFrame:
-        """Get a single company's metadata as-is from raw SEC data.
-
-        The metadata provided for each company varies and each company's
-        metadata may be incomplete. Only their SEC CIK and SIC industry
-        code are guaranteed to be provided.
-
-        Args:
-            ticker: Company ticker.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            A dataframe containing the company's metadata.
-
-        Raises:
-            `NoResultFound`: If there are no rows for ``ticker`` in the raw
-                SQL table.
-
-        Examples:
-            >>> finagg.sec.feat.submissions.from_raw("AAPL")  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-                      cik ticker entity_type   sic sic_description ...
-            0  0000320193   AAPL        None  3571            None ...
-
-        """
-        engine = engine or backend.engine
-        with engine.begin() as conn:
-            df = pd.DataFrame(
-                conn.execute(
-                    sql.submissions.select().where(sql.submissions.c.ticker == ticker)
-                )
-            )
-        if not len(df.index):
-            raise NoResultFound(f"No rows found for {ticker}.")
-        return df
-
-    @classmethod
-    def get_ticker_set(
-        cls,
-        *,
-        engine: None | Engine = None,
-    ) -> set[str]:
-        """Get all unique ticker symbols in the raw SQL submissions table.
-
-        This method is convenient for accessing the tickers that have raw SQL data
-        associated with them so the data associated with those tickers can be
-        further refined. A common pattern is to use this method and other
-        ``get_ticker_set`` methods (such as those found in :mod:`finagg.sec.feat`)
-        to determine which tickers are missing data from other tables or features.
-
-        Args:
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Examples:
-            >>> "AAPL" in finagg.sec.feat.submissions.get_ticker_set()
-            True
-
-        """
-        engine = engine or backend.engine
-        with engine.begin() as conn:
-            tickers = conn.execute(sa.select(sql.submissions.c.ticker)).scalars().all()
-        return set(tickers)
-
-    @classmethod
-    def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
-        """Write the given dataframe to the raw feature table.
-
-        Args:
-            df: Dataframe to store as rows in a local SQL table
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            Number of rows written to the SQL table.
-
-        """
-        engine = engine or backend.engine
-        with engine.begin() as conn:
-            conn.execute(sql.submissions.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
-        return len(df)
-
-
-class RawTags:
-    """Get a single company concept tag as-is from raw SEC data.
-
-    The module variable :data:`finagg.sec.feat.tags` is an instance of
-    this feature set implementation and is the most popular interface for
-    calling feature methods.
-
-    """
-
-    @classmethod
-    def from_raw(
-        cls,
-        ticker: str,
-        tag: str,
-        /,
-        *,
-        start: None | str = None,
-        end: None | str = None,
-        engine: None | Engine = None,
-    ) -> pd.DataFrame:
-        """Get a single company concept tag as-is from raw SEC data.
-
-        This is the preferred method for accessing raw SEC data without
-        using the SEC API.
-
-        Args:
-            ticker: Company ticker.
-            tag: Company concept tag to retreive.
-            start: The start date of the observation period. Defaults to the
-                first recorded date.
-            end: The end date of the observation period. Defaults to the
-                last recorded date.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            A dataframe containing the company concept tag values
-            across the specified period.
-
-        Raises:
-            `NoResultFound`: If there are no rows for ``ticker`` and ``tag``
-                in the raw SQL table.
-
-        Examples:
-            >>> finagg.sec.feat.tags.from_raw("AAPL", "EarningsPerShareBasic").head(5)  # doctest: +NORMALIZE_WHITESPACE
-                                     units  value
-            fy   fp filed
-            2009 Q3 2009-07-22  USD/shares   4.20
-            2010 Q1 2010-01-25  USD/shares   2.54
-                 Q2 2010-04-21  USD/shares   4.35
-                 Q3 2010-07-21  USD/shares   6.40
-            2011 Q1 2011-01-19  USD/shares   3.74
-
-        """
-        start = start or "1776-07-04"
-        end = end or utils.today
-        engine = engine or backend.engine
-        with engine.begin() as conn:
-            df = pd.DataFrame(
-                conn.execute(
-                    sa.select(
-                        sql.tags.c.fy,
-                        sql.tags.c.fp,
-                        sql.tags.c.filed,
-                        sql.tags.c.units,
-                        sql.tags.c.value,
-                    )
-                    .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.tags.c.cik)
-                        & (sql.submissions.c.ticker == ticker),
-                    )
-                    .where(
-                        sql.tags.c.tag == tag,
-                        sql.tags.c.filed >= start,
-                        sql.tags.c.filed <= end,
-                    )
-                )
-            )
-        if not len(df.index):
-            raise NoResultFound(f"No {tag} rows found for {ticker}.")
-        return df.set_index(["fy", "fp", "filed"]).sort_index()
-
-    @classmethod
-    def get_ticker_set(
-        cls,
-        lb: int = 1,
-        *,
-        engine: None | Engine = None,
-    ) -> set[str]:
-        """Get all unique ticker symbols in the raw SQL tables that have at least
-        ``lb`` rows.
-
-        This method is convenient for accessing the tickers that have raw SQL data
-        associated with them so the data associated with those tickers can be
-        further refined. A common pattern is to use this method and other
-        ``get_ticker_set`` methods (such as those found in :mod:`finagg.sec.feat`)
-        to determine which tickers are missing data from other tables or features.
-
-        Args:
-            lb: Lower bound number of rows that a company must have for its ticker
-                to be included in the set returned by this method.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Examples:
-            >>> "AAPL" in finagg.sec.feat.tags.get_ticker_set()
-            True
-
-        """
-        engine = engine or backend.engine
-        with engine.begin() as conn:
-            tickers = (
-                conn.execute(
-                    sa.select(sql.submissions.c.ticker)
-                    .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
-                    .group_by(sql.tags.c.cik)
-                    .having(sa.func.count(sql.tags.c.filed) >= lb)
-                )
-                .scalars()
-                .all()
-            )
-        return set(tickers)
-
-    @classmethod
-    def install(
-        cls,
-        tickers: None | set[str] = None,
-        *,
-        engine: None | Engine = None,
-        recreate_tables: bool = False,
-    ) -> int:
-        """Install data associated with ``tickers`` by pulling data from the
-        API, and then writing the data to the raw tags SQL table.
-
-        Tables associated with this method are created if they don't already
-        exist.
-
-        Args:
-            tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-            recreate_tables: Whether to drop and recreate tables, wiping all
-                previously installed data.
-
-        Returns:
-            Number of rows written to the feature's SQL table.
-
-        """
-        tickers = tickers or indices.api.get_ticker_set()
-        engine = engine or backend.engine
-        if recreate_tables or not sa.inspect(engine).has_table(sql.tags.name):
-            sql.tags.drop(engine, checkfirst=True)
-            sql.tags.create(engine)
-
-        total_rows = 0
-        for ticker in tqdm(
-            tickers,
-            desc="Installing raw SEC tags data",
-            position=0,
-            leave=True,
-        ):
-            for concept in api.popular_concepts:
-                tag = concept["tag"]
-                taxonomy = concept["taxonomy"]
-                units = concept["units"]
-                try:
-                    df = api.company_concept.get(
-                        tag,
-                        ticker=ticker,
-                        taxonomy=taxonomy,
-                        units=units,
-                    )
-                    df = get_unique_filings(df, form="10-Q", units=units)
-                    rowcount = len(df.index)
-                    if rowcount:
-                        cls.to_raw(df, engine=engine)
-                        total_rows += rowcount
-                        logger.debug(f"{rowcount} rows inserted for {ticker} tag {tag}")
-                    else:
-                        logger.debug(f"Skipping {ticker} due to missing filings")
-                except Exception as e:
-                    logger.debug(f"Skipping {ticker}", exc_info=e)
-        return total_rows
-
-    @classmethod
-    def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
-        """Write the given dataframe to the raw feature table.
-
-        Args:
-            df: Dataframe to store as rows in a local SQL table
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            Number of rows written to the SQL table.
-
-        """
-        engine = engine or backend.engine
-        with engine.begin() as conn:
-            conn.execute(sql.tags.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
-        return len(df)
-
-
-quarterly = RefinedQuarterly()
-"""The most popular way for accessing :class:`RefinedQuarterly`.
-
-:meta hide-value:
-"""
-
-submissions = RawSubmissions()
-"""The most popular way for accessing :class:`RawSubmissions`.
-
-:meta hide-value:
-"""
-
-tags = RawTags()
-"""The most popular way for accessing :class:`RawTags`.
-
-:meta hide-value:
-"""

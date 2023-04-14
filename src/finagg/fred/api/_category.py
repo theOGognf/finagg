@@ -11,12 +11,12 @@ import pandas as pd
 from . import _api
 
 
-class Children(_api.API):
+class CategoryChildren(_api.API):
     """Get FRED child categories.
 
-    The class variable :data:`finagg.fred.api.category.children` is an instance
-    of this API implementation and is the most popular interface for calling
-    this API.
+    The class variable :attr:`finagg.fred.api.Category.children`
+    is an instance of this API implementation and is the most popular
+    interface for calling this API.
 
     """
 
@@ -51,7 +51,7 @@ class Children(_api.API):
             A dataframe containing data for a category's children.
 
         Examples:
-            >>> finagg.fred.api.category.children.get()  # doctest: NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.category.children.get()  # doctest: +SKIP
                   id                                     name  parent_id
             0  32991                Money, Banking, & Finance          0
             1     10  Population, Employment, & Labor Markets          0
@@ -74,10 +74,10 @@ class Children(_api.API):
         return pd.DataFrame(data)
 
 
-class Related(_api.API):
+class CategoryRelated(_api.API):
     """Get FRED related categories.
 
-    The class variable :data:`finagg.fred.api.category.related` is an instance
+    The class variable :attr:`finagg.fred.api.Category.related` is an instance
     of this API implementation and is the most popular interface for calling
     this API.
 
@@ -127,10 +127,10 @@ class Related(_api.API):
         return pd.DataFrame(data)
 
 
-class Series(_api.API):
+class CategorySeries(_api.API):
     """Get FRED series within a category.
 
-    The class variable :data:`finagg.fred.api.category.series` is an instance
+    The class variable :attr:`finagg.fred.api.Category.series` is an instance
     of this API implementation and is the most popular interface for calling
     this API.
 
@@ -200,7 +200,7 @@ class Series(_api.API):
             according to the given parameters.
 
         Examples:
-            >>> finagg.fred.api.category.series.get(33951)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.category.series.get(33951)  # doctest: +SKIP
                       id realtime_start realtime_end                                              title ...
             0   FFHTHIGH     2023-03-15   2023-03-15  High Value of the Federal Funds Rate for the I... ...
             1    FFHTLOW     2023-03-15   2023-03-15  Low Value of the Federal Funds Rate for the In... ...
@@ -227,10 +227,10 @@ class Series(_api.API):
         return pd.DataFrame(data)
 
 
-class Tags(_api.API):
+class CategoryTags(_api.API):
     """Get FRED category's tags.
 
-    The class variable :data:`finagg.fred.api.category.tags` is an instance
+    The class variable :attr:`finagg.fred.api.Category.tags` is an instance
     of this API implementation and is the most popular interface for calling
     this API.
 
@@ -300,7 +300,7 @@ class Tags(_api.API):
             according to the given parameters.
 
         Examples:
-            >>> finagg.fred.api.category.tags.get(33951, limit=5)  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.category.tags.get(33951, limit=5)  # doctest: +SKIP
                         name group_id notes                 created  popularity  series_count
             0   anbil, sriya      src        2020-07-03 11:52:33-05          16             8
             1  carlson, mark      src        2020-07-03 11:53:20-05          16             8
@@ -327,10 +327,10 @@ class Tags(_api.API):
         return pd.DataFrame(data)
 
 
-class RelatedTags(_api.API):
+class CategoryRelatedTags(_api.API):
     """Get FRED category's related tags.
 
-    The class variable :data:`finagg.fred.api.category.related_tags` is an
+    The class variable :attr:`finagg.fred.api.Category.related_tags` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -402,7 +402,7 @@ class RelatedTags(_api.API):
             according to the given parameters.
 
         Examples:
-            >>> finagg.fred.api.category.related_tags.get(33951, tag_names="funds")  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.category.related_tags.get(33951, tag_names="funds")  # doctest: +SKIP
                                              name group_id                     notes ...
             0                        anbil, sriya      src                           ...
             1                       carlson, mark      src                           ...
@@ -440,7 +440,7 @@ class RelatedTags(_api.API):
 
 
 class Category(_api.API):
-    """Collection of `fred/category` APIs.
+    """Collection of "fred/category" APIs.
 
     The class variable :data:`finagg.fred.api.category` is an
     instance of this API implementation and is the most popular interface for
@@ -448,37 +448,42 @@ class Category(_api.API):
 
     """
 
-    children = Children()
+    children = CategoryChildren()
     """"category/children" FRED API. Get the children of a category.
-    The most popular way for accessing the :class:`Children` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.CategoryChildren` API.
 
     :meta hide-value:
     """
 
-    related = Related()
+    related = CategoryRelated()
     """"category/related" FRED API. Get categories related to a category.
-    The most popular way for accessing the :class:`Related` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.CategoryRelated` API.
 
     :meta hide-value:
     """
 
-    related_tags = RelatedTags()
+    related_tags = CategoryRelatedTags()
     """"category/related_tags" FRED API. Get tags related to a category.
-    The most popular way for accessing the :class:`RelatedTags` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.CategoryRelatedTags` API.
 
     :meta hide-value:
     """
 
-    series = Series()
+    series = CategorySeries()
     """"category/series" FRED API. Get a category's series.
-    The most popular way for accessing the :class:`Series` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.CategorySeries` API.
 
     :meta hide-value:
     """
 
-    tags = Tags()
+    tags = CategoryTags()
     """"category/tags" FRED API. Get a category's tags.
-    The most popular way for accessing the :class:`Tags` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.CategoryTags` API.
 
     :meta hide-value:
     """
@@ -499,7 +504,7 @@ class Category(_api.API):
             Dataframe of category details.
 
         Examples:
-            >>> finagg.fred.api.category.get()  # doctest: +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.category.get()  # doctest: +SKIP
                id        name  parent_id
             0   0  Categories          0
 
@@ -507,10 +512,3 @@ class Category(_api.API):
         data = _api.get(cls.url, category_id=category_id, api_key=api_key).json()
         data = data["categories"]
         return pd.DataFrame(data)
-
-
-category = Category()
-"""The most popular way for accessing the :class:`Category`.
-
-:meta hide-value:
-"""

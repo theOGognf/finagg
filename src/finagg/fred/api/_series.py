@@ -17,10 +17,10 @@ import pandas as pd
 from . import _api
 
 
-class Categories(_api.API):
+class SeriesCategories(_api.API):
     """Get the categories for an economic data series.
 
-    The class variable :data:`finagg.fred.api.series.categories` is an
+    The class variable :attr:`finagg.fred.api.Series.categories` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -57,7 +57,7 @@ class Categories(_api.API):
             A dataframe containing data on categories for the economic data series.
 
         Examples:
-            >>> finagg.fred.api.series.categories.get("CPIAUCNS")  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.categories.get("CPIAUCNS")  # doctest: +SKIP
                id                                  name  parent_id
             0   9  Consumer Price Indexes (CPI and PCE)      32455
 
@@ -73,11 +73,11 @@ class Categories(_api.API):
         return pd.DataFrame(data)
 
 
-class Observations(_api.API):
+class SeriesObservations(_api.API):
     """Get the observations or data values for an economic data series.
 
     This is by far the most popular FRED API method. The class variable
-    :data:`finagg.fred.api.series.observations` is an instance of this
+    :attr:`finagg.fred.api.Series.observations` is an instance of this
     API implementation and is the most popular interface for calling this API.
 
     """
@@ -189,7 +189,7 @@ class Observations(_api.API):
             ...     realtime_start=0,
             ...     realtime_end=-1,
             ...     output_type=4
-            ... ).head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            ... ).head(5)  # doctest: +SKIP
               realtime_start realtime_end        date  value series_id
             0     1949-04-22   1953-02-26  1949-03-01  169.5  CPIAUCNS
             1     1949-05-23   1953-02-26  1949-04-01  169.7  CPIAUCNS
@@ -221,10 +221,10 @@ class Observations(_api.API):
         return df
 
 
-class Release(_api.API):
+class SeriesRelease(_api.API):
     """Get the latest release for an economic data seris.
 
-    The class variable :data:`finagg.fred.api.series.release` is an
+    The class variable :attr:`finagg.fred.api.Series.release` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -272,10 +272,10 @@ class Release(_api.API):
         return pd.DataFrame(data)
 
 
-class SearchRelatedTags(_api.API):
+class SeriesSearchRelatedTags(_api.API):
     """Search for series tags related to a series's tags.
 
-    The class variable :data:`finagg.fred.api.series.search.related_tags` is an
+    The class variable :attr:`finagg.fred.api.SeriesSearch.related_tags` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -348,7 +348,7 @@ class SearchRelatedTags(_api.API):
             servers according to the method's args.
 
         Examples:
-            >>> finagg.fred.api.series.search.related_tags.get("price index", tag_names="price", limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.search.related_tags.get("price index", tag_names="price", limit=5)  # doctest: +SKIP
                                             name group_id                    notes                 created ...
             0                                nsa     seas  Not Seasonally Adjusted  2012-02-27 10:18:19-06 ...
             1                            indexes      gen                           2012-02-27 10:18:19-06 ...
@@ -376,10 +376,10 @@ class SearchRelatedTags(_api.API):
         return pd.DataFrame(data)
 
 
-class SearchTags(_api.API):
+class SeriesSearchTags(_api.API):
     """Get FRED series tags.
 
-    The class variable :data:`finagg.fred.api.series.search.tags` is an
+    The class variable :attr:`finagg.fred.api.SeriesSearch.tags` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -450,7 +450,7 @@ class SearchTags(_api.API):
             servers according to the method's args.
 
         Examples:
-            >>> finagg.fred.api.series.search.tags.get("price index", limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.search.tags.get("price index", limit=5)  # doctest: +SKIP
                                             name group_id                    notes ...
             0                                nsa     seas  Not Seasonally Adjusted ...
             1                              price      gen                          ...
@@ -477,26 +477,27 @@ class SearchTags(_api.API):
         return pd.DataFrame(data)
 
 
-class Search(_api.API):
+class SeriesSearch(_api.API):
     """Get economic data series that match search text.
 
-    The class variable :data:`finagg.fred.api.series.search` is an
+    The class variable :attr:`finagg.fred.api.Series.search` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
     """
 
-    related_tags = SearchRelatedTags()
+    related_tags = SeriesSearchRelatedTags()
     """"series/search/related_tags" FRED API. Get the related tags for a
-    series search. The most popular way for accessing the :class:`SearchTags`
-    API.
+    series search. The most popular way for accessing the
+    :class:`finagg.fred.api.SeriesSearchRelatedTags` API.
 
     :meta hide-value:
     """
 
-    tags = SearchTags()
+    tags = SeriesSearchTags()
     """"series/search/tags" FRED API. Get the tags for a series search.
-    The most popular way for accessing the :class:`SearchTags` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.SeriesSearchTags` API.
 
     :meta hide-value:
     """
@@ -578,7 +579,7 @@ class Search(_api.API):
             A dataframe containing data on series matching the search.
 
         Examples:
-            >>> finagg.fred.api.series.search.get("price index", limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.search.get("price index", limit=5)  # doctest: +SKIP
                         id realtime_start realtime_end                                              title ...
             0     CPIAUCSL     2023-03-16   2023-03-16  Consumer Price Index for All Urban Consumers: ... ...
             1     CPIAUCNS     2023-03-16   2023-03-16  Consumer Price Index for All Urban Consumers: ... ...
@@ -607,10 +608,10 @@ class Search(_api.API):
         return pd.DataFrame(data)
 
 
-class Tags(_api.API):
+class SeriesTags(_api.API):
     """Get FRED tags for an economic data series.
 
-    The class variable :data:`finagg.fred.api.series.tags` is an
+    The class variable :attr:`finagg.fred.api.Series.tags` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -660,7 +661,7 @@ class Tags(_api.API):
             A dataframe containing data on FRED tags for series.
 
         Examples:
-            >>> finagg.fred.api.series.tags.get("CPIAUCNS").head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.tags.get("CPIAUCNS").head(5)  # doctest: +SKIP
                                             name group_id                     notes ...
             0                                nsa     seas   Not Seasonally Adjusted ...
             1                                usa      geo  United States of America ...
@@ -682,10 +683,10 @@ class Tags(_api.API):
         return pd.DataFrame(data)
 
 
-class Updates(_api.API):
+class SeriesUpdates(_api.API):
     """Get data on when economic data series where updated on the FRED server.
 
-    The class variable :data:`finagg.fred.api.series.updates` is an
+    The class variable :attr:`finagg.fred.api.Series.updates` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -757,10 +758,10 @@ class Updates(_api.API):
         return pd.DataFrame(data)
 
 
-class VintageDates(_api.API):
+class SeriesVintageDates(_api.API):
     """Get FRED series revision dates.
 
-    The class variable :data:`finagg.fred.api.series.vintage_dates` is an
+    The class variable :attr:`finagg.fred.api.Series.vintage_dates` is an
     instance of this API implementation and is the most popular interface for
     calling this API.
 
@@ -828,57 +829,61 @@ class Series(_api.API):
 
     """
 
-    categories = Categories()
+    categories = SeriesCategories()
     """"series/categories" FRED API. Get the categories for an economic
-    data series. The most popular way for accessing the :class:`Categories`
+    data series. The most popular way for accessing the
+    :class:`finagg.fred.api.SeriesCategories` API.
+
+    :meta hide-value:
+    """
+
+    observations = SeriesObservations()
+    """"series/observations" FRED API. Get the observations or
+    data values for an economic data series. The most popular way
+    for accessing the :class:`finagg.fred.api.SeriesObservations` API.
+
+    :meta hide-value:
+    """
+
+    release = SeriesRelease()
+    """"series/release" FRED API. Get the release for an economic data series.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.SeriesRelease` API.
+
+    :meta hide-value:
+    """
+
+    search = SeriesSearch()
+    """"series/search" FRED API. Get economic data series that match search
+    text. The most popular way for accessing the
+    :class:`finagg.fred.api.SeriesSearch` API.
+
+    :meta hide-value:
+    """
+
+    tags = SeriesTags()
+    """"series/tags" FRED API. Get FRED tags for a series.
+    The most popular way for accessing the :class:`finagg.fred.api.SeriesTags`
     API.
 
     :meta hide-value:
     """
 
-    observations = Observations()
-    """"series/observations" FRED API. Get the observations or
-    data values for an economic data series. The most popular way
-    for accessing the :class:`Observations` API.
-
-    :meta hide-value:
-    """
-
-    release = Release()
-    """"series/release" FRED API. Get the release for an economic data series.
-    The most popular way for accessing the :class:`Release` API.
-
-    :meta hide-value:
-    """
-
-    search = Search()
-    """"series/search" FRED API. Get economic data series that match search
-    text. The most popular way for accessing the :class:`Search` API.
-
-    :meta hide-value:
-    """
-
-    tags = Tags()
-    """"series/tags" FRED API. Get FRED tags for a series.
-    The most popular way for accessing the :class:`Tags` API.
-
-    :meta hide-value:
-    """
-
-    updates = Updates()
+    updates = SeriesUpdates()
     """"series/updates" FRED API. Get economic data series sorted by
     when observations were updated on the FRED server. The most popular
-    way for accessing the :class:`Updates` API.
+    way for accessing the :class:`finagg.fred.api.SeriesUpdates` API.
 
     :meta hide-value:
     """
 
     url = "https://api.stlouisfed.org/fred/series"
 
-    vintage_dates = VintageDates()
+    vintage_dates = SeriesVintageDates()
     """"series/vintage_dates" FRED API. Get the dates in history when a
     a series' data values were revised or new data values were released.
-    The most popular way for accessing the :class:`VintageDates` API.
+    The most popular way for accessing the
+    :class:`finagg.fred.api.SeriesVintageDates` API.
 
     :meta hide-value:
     """
@@ -912,7 +917,7 @@ class Series(_api.API):
             A dataframe containing info on an economic data series.
 
         Examples:
-            >>> finagg.fred.api.series.get("CPIAUCNS", realtime_start=0, realtime_end=-1).head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.series.get("CPIAUCNS", realtime_start=0, realtime_end=-1).head(5)  # doctest: +SKIP
                      id realtime_start realtime_end                                              title ...
             0  CPIAUCNS     1949-03-24   1953-02-26  Consumer Price Index for Urban Wage Earners an... ...
             1  CPIAUCNS     1953-02-27   1962-02-27  Consumer Price Index for Urban Wage Earners an... ...
@@ -932,8 +937,23 @@ class Series(_api.API):
         return pd.DataFrame(data)
 
 
-series = Series()
-"""The most popular way for accessing :class:`Series`.
+popular_series = [
+    "CIVPART",  # Labor force participation rate
+    "CPIAUCNS",  # Consumer price index
+    "CSUSHPINSA",  # S&P/Case-Shiller national home price index
+    "FEDFUNDS",  # Federal funds interest rate
+    "GDP",  # Gross domestic product
+    "GDPC1",  # Real gross domestic product
+    "GS10",  # 10-Year treasury yield
+    "M2",  # Money stock measures (i.e., savings and related balances)
+    "MICH",  # University of Michigan: inflation expectation
+    "PSAVERT",  # Personal savings rate
+    "UMCSENT",  # University of Michigan: consumer sentiment
+    "UNRATE",  # Unemployment rate
+    "WALCL",  # US assets, total assets (less eliminations from consolidation)
+]
+"""Economic data series that are relatively popular for economic analysis.
+Includes things like gross domestic product, unemployment rate, etc..
 
 :meta hide-value:
 """

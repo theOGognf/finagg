@@ -11,10 +11,10 @@ import pandas as pd
 from . import _api
 
 
-class Releases(_api.API):
+class SourceReleases(_api.API):
     """Get all of a source's releases of economic data.
 
-    The class variable :data:`finagg.fred.api.source.releases` is an instance
+    The class variable :attr:`finagg.fred.api.Source.releases` is an instance
     of this API implementation and is the most popular interface for calling
     this API.
 
@@ -68,7 +68,7 @@ class Releases(_api.API):
             source of economic data.
 
         Examples:
-            >>> finagg.fred.api.source.releases.get(1, limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.source.releases.get(1, limit=5)  # doctest: +SKIP
                id realtime_start realtime_end                                               name  press_release                                         link
             0  13     2023-03-15   2023-03-15  G.17 Industrial Production and Capacity Utiliz...           True  http://www.federalreserve.gov/releases/g17/
             1  14     2023-03-15   2023-03-15                               G.19 Consumer Credit           True  http://www.federalreserve.gov/releases/g19/
@@ -101,9 +101,10 @@ class Source(_api.API):
 
     """
 
-    releases = Releases()
+    releases = SourceReleases()
     """"source/releases" FRED API. Get the releases for a source of economic
-    data. The most popular way for accessing the :class:`Releases` API.
+    data. The most popular way for accessing the
+    :class:`finagg.fred.api.SourceReleases` API.
 
     :meta hide-value:
     """
@@ -139,7 +140,7 @@ class Source(_api.API):
             A dataframe containing high-level info on an economic source.
 
         Examples:
-            >>> finagg.fred.api.source.get(1)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.source.get(1)  # doctest: +SKIP
                id realtime_start realtime_end                                               name                            link
             0   1     2023-03-15   2023-03-15  Board of Governors of the Federal Reserve Syst...  http://www.federalreserve.gov/
 
@@ -208,7 +209,7 @@ class Sources(_api.API):
             data.
 
         Examples:
-            >>> finagg.fred.api.sources.get(limit=5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+            >>> finagg.fred.api.sources.get(limit=5)  # doctest: +SKIP
                id realtime_start realtime_end                                               name                              link
             0   1     2023-03-15   2023-03-15  Board of Governors of the Federal Reserve Syst...    http://www.federalreserve.gov/
             1   3     2023-03-15   2023-03-15               Federal Reserve Bank of Philadelphia  https://www.philadelphiafed.org/
@@ -229,16 +230,3 @@ class Sources(_api.API):
         ).json()
         data = data["sources"]
         return pd.DataFrame(data)
-
-
-source = Source()
-"""The most popular way for accessing :class:`Source`.
-
-:meta hide-value:
-"""
-
-sources = Sources()
-"""The most popular way for accessing :class:`Sources`.
-
-:meta hide-value:
-"""

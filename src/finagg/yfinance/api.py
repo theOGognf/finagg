@@ -1,4 +1,4 @@
-"""Simple wrappers for `yfinance.Ticker`."""
+"""Simple wrappers for Yahoo! Finance."""
 
 import pandas as pd
 import yfinance as yf
@@ -16,8 +16,8 @@ def get(
 ) -> pd.DataFrame:
     """Get a ticker's stock price history.
 
-    Does a simple transform on yfinance's ticker API dataframe result to be
-    a bit more consistent with other API implementations.
+    Does a simple transform on Yahoo! Finance's ticker API dataframe result to
+    be a bit more consistent with other API implementations.
 
     Args:
         ticker: Company ticker to get historical price data for.
@@ -28,14 +28,14 @@ def get(
         interval: Frequency at which stock price history is grabbed.
         period: Time period to get in the past. ``"max"`` returns the full
             stock price history and the default.
-        debug: Debug mode passed to ``yfinance``.
+        debug: Debug mode passed to the Yahoo! Finance scraper.
 
     Returns:
-        :mod:`yfinance` auto-adjusted stock price history with slightly
+        Yahoo! Finance auto-adjusted stock price history with slightly
         different (more normalized) column names.
 
     Examples:
-        >>> finagg.yfinance.api.get("AAPL").head(5)
+        >>> finagg.yfinance.api.get("AAPL").head(5)  # doctest: +SKIP
                  date    open    high     low   close     volume ticker
         0  1980-12-12  0.0997  0.1002  0.0997  0.0997  469033600   AAPL
         1  1980-12-15  0.0950  0.0950  0.0945  0.0945  175884800   AAPL

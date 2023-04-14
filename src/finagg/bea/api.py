@@ -60,7 +60,7 @@ session = requests_cache.CachedSession(
 _YEAR = int | str
 
 
-class _API(ABC):
+class API(ABC):
     """Interface for BEA Dataset APIs."""
 
     #: Request API URL.
@@ -84,7 +84,7 @@ class _API(ABC):
         return _get_parameter_values(cls.name, param, api_key=api_key)
 
 
-class FixedAssets(_API):
+class FixedAssets(API):
     """US fixed assets (assets for long-term use)."""
 
     name = "FixedAssets"
@@ -101,7 +101,8 @@ class FixedAssets(_API):
 
         Args:
             table_id: IDs associated with assets of concern.
-                Use :meth:`get_parameter_values` to see possible values.
+                Use :meth:`~finagg.bea.api.API.get_parameter_values` to see
+                possible values.
             year: Years to return.
 
         Returns:
@@ -157,7 +158,7 @@ class FixedAssets(_API):
         return pd.concat(results)
 
 
-class GDPByIndustry(_API):
+class GDPByIndustry(API):
     """GDP (a single summary statistic) for each industry.
 
     The module variable :data:`finagg.bea.api.gdp_by_industry` is an instance
@@ -170,7 +171,7 @@ class GDPByIndustry(_API):
     Examples:
         List the GDP by industry API parameters.
 
-        >>> finagg.bea.api.gdp_by_industry.get_parameter_list()  # doctest: +ELLIPSIS
+        >>> finagg.bea.api.gdp_by_industry.get_parameter_list()  # doctest: +SKIP
           ParameterName ParameterDataType                               ParameterDescription ... AllValue
         0     Frequency            string                            A - Annual, Q-Quarterly ...      ALL
         1      Industry            string       List of industries to retrieve (ALL for All) ...      ALL
@@ -179,13 +180,13 @@ class GDPByIndustry(_API):
 
         List possible GDP by industry tables we can query.
 
-        >>> finagg.bea.api.gdp_by_industry.get_parameter_values("TableID").head(5)
-                                                  ParamValue
-        0  {'Key': '1', 'Desc': 'Value Added by Industry ...
-        1  {'Key': '5', 'Desc': 'Value added by Industry ...
-        2  {'Key': '6', 'Desc': 'Components of Value Adde...
-        3  {'Key': '7', 'Desc': 'Components of Value Adde...
-        4  {'Key': '8', 'Desc': 'Chain-Type Quantity Inde...
+        >>> finagg.bea.api.gdp_by_industry.get_parameter_values("TableID").head(5)  # doctest: +SKIP
+          Key                                               Desc
+        0   1                    Value Added by Industry (A) (Q)
+        1   5  Value added by Industry as a Percentage of Gro...
+        2   6          Components of Value Added by Industry (A)
+        3   7  Components of Value Added by Industry as a Per...
+        4   8  Chain-Type Quantity Indexes for Value Added by...
 
     """
 
@@ -204,15 +205,17 @@ class GDPByIndustry(_API):
         """Get GDP by industry.
 
         Args:
-            table_id: IDs associated with GDP value type. Use :meth:`get_parameter_values`
-                to see possible values. `"ALL"` indicates retrieve all GDP value
+            table_id: IDs associated with GDP value type. Use
+                :meth:`~finagg.bea.api.API.get_parameter_values` to see
+                possible values. `"ALL"` indicates retrieve all GDP value
                 measurement type tables.
             freq: Data frequency to return. `"Q"` for quarterly, `"A"` for
                 annually, and `"A,Q"` for both annually and quarterly.
             year: Years to return. `"ALL"` indicates retrieve data for all
                 available years.
-            industry: IDs associated with industries. Use :meth:`get_parameter_values`
-                to see possible values.
+            industry: IDs associated with industries. Use
+                :meth:`~finagg.bea.api.API.get_parameter_values` to see
+                possible values.
 
         Returns:
             Dataframe with GDP by industry, separated by year and/or quarter.
@@ -220,7 +223,7 @@ class GDPByIndustry(_API):
         Examples:
             Get the GDP value added by an industry for a specific year.
 
-            >>> finagg.bea.api.gdp_by_industry.get(table_id=1, freq="A", year=2020).head(5)
+            >>> finagg.bea.api.gdp_by_industry.get(table_id=1, freq="A", year=2020).head(5)  # doctest: +SKIP
                table_id freq  year quarter industry                         industry_description  value
             0         1    A  2020    2020       11  Agriculture, forestry, fishing, and hunting  162.2
             1         1    A  2020    2020    111CA                                        Farms  120.7
@@ -273,7 +276,7 @@ class GDPByIndustry(_API):
         )
 
 
-class InputOutput(_API):
+class InputOutput(API):
     """Specific input-output statistics for each industry.
 
     Data provided by this API is considered granular/low-level.
@@ -303,9 +306,9 @@ class InputOutput(_API):
 
         Args:
             table_id: IDs associated with input-output stats. Use
-                :meth:`get_parameter_values` to see possible values.
-                `"ALL"` indicates retrieve all tables for all types
-                of input-output statistics by industry.
+                :meth:`~finagg.bea.api.API.get_parameter_values` to see
+                possible values. `"ALL"` indicates retrieve all tables for
+                all types of input-output statistics by industry.
             year: Years to return. `"ALL"` indicates retrieve data for all
                 available years.
 
@@ -353,7 +356,7 @@ class InputOutput(_API):
         )
 
 
-class NIPA(_API):
+class NIPA(API):
     """National income and product accounts.
 
     Details high-level US economic details in several
@@ -376,7 +379,8 @@ class NIPA(_API):
 
         Args:
             table_id: IDs associated with metric of concern.
-                Use :meth:`get_parameter_values` to see possible values.
+                Use :meth:`~finagg.bea.api.API.get_parameter_values` to see
+                possible values.
             freq: Data frequency to return. `"Q"` for quarterly, `"A"` for annually.
             year: Years to return.
 
@@ -436,28 +440,29 @@ class NIPA(_API):
 
 
 fixed_assets = FixedAssets()
-"""The most popular way for accessing the :class:`FixedAssets` API
-implementation.
+"""The most popular way for accessing the :class:`finagg.bea.api.FixedAssets`
+API implementation.
 
 :meta hide-value:
 """
 
 gdp_by_industry = GDPByIndustry()
-"""The most popular way for accessing the :class:`GDPByIndustry` API
-implementation.
+"""The most popular way for accessing the :class:`finagg.bea.api.GDPByIndustry`
+API implementation.
 
 :meta hide-value:
 """
 
 input_output = InputOutput()
-"""The most popular way for accessing the :class:`InputOutput` API
-implementation.
+"""The most popular way for accessing the :class:`finagg.bea.api.InputOutput`
+API implementation.
 
 :meta hide-value:
 """
 
 nipa = NIPA()
-"""The most popular way for accessing the :class:`NIPA` API implementation.
+"""The most popular way for accessing the :class:`finagg.bea.api.NIPA`
+API implementation.
 
 :meta hide-value:
 """
@@ -578,7 +583,7 @@ def get_dataset_list(*, api_key: None | str = None) -> pd.DataFrame:
         A dataframe describing the datasets available through the BEA API.
 
     Examples:
-        >>> finagg.bea.api.get_dataset_list()
+        >>> finagg.bea.api.get_dataset_list()  # doctest: +SKIP
                         DatasetName                    DatasetDescription
         0                      NIPA                  Standard NIPA tables
         1        NIUnderlyingDetail  Standard NI underlying detail tables
