@@ -423,7 +423,7 @@ class NormalizedQuarterly:
 
         Examples:
             >>> ts = finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by(
-            ...         "EarningsPerShare",
+            ...         "EarningsPerShareBasic",
             ...         year=2020,
             ...         quarter=3
             ... )
@@ -635,7 +635,6 @@ class Quarterly(feat.Features):
             columns="tag",
             values="value",
         ).astype(float)
-        df["EarningsPerShare"] = df["EarningsPerShareBasic"]
         df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
         df["PriceBookRatio"] = df["StockholdersEquity"] / (
             df["AssetsCurrent"] - df["LiabilitiesCurrent"]

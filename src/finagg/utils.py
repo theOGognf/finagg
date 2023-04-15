@@ -9,6 +9,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import sqlalchemy as sa
 from dotenv import set_key
 
 
@@ -73,40 +74,117 @@ def expand_csv(values: str | list[str], /) -> set[str]:
     return out
 
 
-def join_with(s: str | list[str], /, delim: str) -> str:
-    """Join a sequence of strings with the delimiter ``delim``.
+def parse_func_call(s: str, /) -> None | tuple[str, list[str]]:
+    """Parse a function's name and its arguments' names from a string of format
+    ``func(arg0, arg1, ...)``.
+
+    Args:
+        s: Any string of format ``func(arg0, arg1, ...)``.
+
+    Returns:
+        A tuple containing the parsed function's name and its arguments' names.
+        Returns ``None`` if the string doesn't match the expected format.
 
     Examples:
-        >>> finagg.utils.join_with(["foo", "bar"], ",") == "foo,bar"
-        True
-        >>> finagg.utils.join_with("foo", ",") == "foo"
-        True
+        >>> finagg.utils.parse_func_call("LOG_CHANGE(high, open)")
+        ('LOG_CHANGE', ['high', 'open'])
 
     """
-    if isinstance(s, str):
-        s = [s]
-    return delim.join(s)
+    match = re.match(r"(\w+)\((.*)\)", s)
+    if not match:
+        return None
+    name, args = match.groups()
+    return name, args.replace(" ", "").split(",")
 
 
-def safe_pct_change(series: pd.Series, /) -> pd.Series:  # type: ignore
-    """Safely compute percent change on a column.
+def resolve_func_cols(
+    table: sa.Table, df: pd.DataFrame, /, *, drop: bool = False, inplace: bool = False
+) -> pd.DataFrame:
+    """Inspect ``table`` and apply functions to columns that exist in ``table``
+    and ``df`` according to columns named like ``FUNC(col0, col1, ...)``
+    within ``table`` such that new columns in ``df`` are the result of the
+    applied functions and have names matching the function call signatures.
+
+    Args:
+        table: SQLAchemy table that defines a superset of columns that
+            should exist in ``df``.
+        df: Dataframe that contains a subset of columns within ``table``
+            that will be updated with columns defined by ``table`` that
+            have names like ``FUNC(col0, col1, ...)``.
+        drop: Whether to drop all other columns on the returned dataframe
+            except for the columns created by this function.
+        inplace: Whether to perform operations in-place and use ``df``
+            as the output dataframe.
+
+    Returns:
+        A new dataframe with columns from ``df`` and columns according to
+        columns named within ``table`` like ``FUNC(col0, col1, ...)`` where
+        columns ``col0`` and ``col1`` exist in ``df``.
+
+    """
+    out = df if inplace else df.copy(deep=True)
+    primary_keys = {col.key for col in table.primary_key}
+    other_keys = {key for key in table.columns.keys()} - primary_keys
+    new_keys = set()
+    for key in other_keys:
+        if func_call := parse_func_call(key):
+            new_keys.add(key)
+            name, args = func_call
+            cols = map(out.get, args)
+            match name:
+                case "LOG_CHANGE":
+                    out[key] = safe_log_change(*cols)
+                case "PCT_CHANGE":
+                    out[key] = safe_pct_change(*cols)
+                case _:
+                    raise ValueError(f"{key} is not supported")
+    if drop:
+        out.drop(columns=other_keys - new_keys)
+    return out
+
+
+def safe_log_change(series: pd.Series, other: None | pd.Series = None) -> pd.Series:  # type: ignore[type-arg]
+    """Safely compute log change between two columns.
 
     Replaces ``Inf`` values with ``NaN`` and forward-fills.
     This function is meant to be used with ``pd.Series.apply``.
 
     Args:
         series: Series of values.
+        other: Reference series to compute change against. Defaults to
+            ``series`` shifted forward one index.
 
     Returns:
         A series representing percent changes of ``col``.
 
     """
-    return (
-        series.pct_change()
-        .replace([-np.inf, np.inf], np.nan)
-        .fillna(method="ffill")
-        .dropna()
-    )
+    if other is None:
+        other = series.shift(1)
+
+    out = series.apply(np.log) - other.apply(np.log)
+    return out.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
+
+
+def safe_pct_change(series: pd.Series, other: None | pd.Series = None) -> pd.Series:  # type: ignore[type-arg]
+    """Safely compute percent change between two columns.
+
+    Replaces ``Inf`` values with ``NaN`` and forward-fills.
+    This function is meant to be used with ``pd.Series.apply``.
+
+    Args:
+        series: Series of values.
+        other: Reference series to compute change against. Defaults to
+            ``series`` shifted forward one index.
+
+    Returns:
+        A series representing percent changes of ``col``.
+
+    """
+    if other is None:
+        other = series.shift(1)
+
+    out = (series - other) / other
+    return out.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
 
 
 def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:

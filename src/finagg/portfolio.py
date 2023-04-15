@@ -160,6 +160,26 @@ class Position:
         """
         return float((Decimal(cost) - self._average_cost_basis) * self._quantity)
 
+    def total_log_change(self, cost: float, /) -> float:
+        """Compute the total log change relative to the average
+        cost basis and the current value of the security.
+
+        Args:
+            cost: Current value of one share.
+
+        Returns:
+            Total log change in value. Negative indicates loss
+            in value, positive indicates gain in value.
+
+        Examples:
+            >>> from finagg.portfolio import Position
+            >>> pos = Position(100.0, 1)
+            >>> pos.total_log_change(50.0)
+            -0.051293294387550536
+
+        """
+        return float(Decimal(cost).ln() - self._average_cost_basis.ln())
+
     def total_percent_change(self, cost: float, /) -> float:
         """Compute the total percent change relative to the average
         cost basis and the current value of the security.
@@ -364,6 +384,30 @@ class Portfolio:
             if symbol in self.positions:
                 dollar_value_total += Decimal(cost) * self.positions[symbol]._quantity
         return float(dollar_value_total)
+
+    def total_log_change(self, costs: dict[str, float], /) -> float:
+        """Compute the total log change relative to the total
+        deposits made into the portfolio.
+
+        Args:
+            costs: Mapping of symbol to its current value of one share.
+
+        Returns:
+            Total log change in value. Negative indicates loss
+            in value, positive indicates gain in value.
+
+        Examples:
+            >>> from finagg.portfolio import Portfolio
+            >>> port = Portfolio(1000.0)
+            >>> port.buy("AAPL", 100.0, 1)
+            100.0
+            >>> port.total_log_change({"AAPL": 50.0})
+            -0.051293294387550536
+
+        """
+        return float(
+            Decimal(self.total_dollar_value(costs)).ln() - self._deposits_total.ln()
+        )
 
     def total_percent_change(self, costs: dict[str, float], /) -> float:
         """Compute the total percent change relative to the total

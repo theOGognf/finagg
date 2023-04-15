@@ -155,7 +155,7 @@ fy   fp filed                                                                   
 
 Get tickers sorted by an industry-averaged quarterly report feature.
 
->>> finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by("EarningsPerShare", year=2019)[:5]
+>>> finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by("EarningsPerShareBasic", year=2019)[:5]
 ['XRAY', 'TSLA', 'SYY', 'WHR', 'KMB']
 
 Get tickers sorted by an industry-averaged fundamental feature.

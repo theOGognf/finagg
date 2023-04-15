@@ -152,7 +152,7 @@ fy   fp filed                                                                   
 
 Getting tickers sorted according to industry-normalized SEC EDGAR features.
 
->>> finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by("EarningsPerShare", year=2019)[:5]  # doctest: +SKIP
+>>> finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by("EarningsPerShareBasic", year=2019)[:5]  # doctest: +SKIP
 ['XRAY', 'TSLA', 'SYY', 'WHR', 'KMB']
 >>> finagg.fundam.feat.fundam.normalized.get_tickers_sorted_by(
 ...   "PriceEarningsRatio",

@@ -416,7 +416,7 @@ class NormalizedAnnual:
 
         Examples:
             >>> ts = finagg.sec.feat.annual.normalized.get_tickers_sorted_by(
-            ...         "EarningsPerShare",
+            ...         "EarningsPerShareBasic",
             ...         year=2020,
             ... )
             >>> "PCGU" == ts[0]  # doctest: +SKIP
@@ -618,7 +618,6 @@ class Annual(feat.Features):
             columns="tag",
             values="value",
         ).astype(float)
-        df["EarningsPerShare"] = df["EarningsPerShareBasic"]
         df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
         df["PriceBookRatio"] = df["StockholdersEquity"] / (
             df["AssetsCurrent"] - df["LiabilitiesCurrent"]
