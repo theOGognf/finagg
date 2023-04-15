@@ -74,12 +74,27 @@ def expand_csv(values: str | list[str], /) -> set[str]:
     return out
 
 
-def parse_func_call(s: str, /) -> None | tuple[str, list[str]]:
-    """Parse a function's name and its arguments' names from a string of format
-    ``func(arg0, arg1, ...)``.
+def get_func_cols(table: sa.Table, /) -> list[str]:
+    """Return the column names in ``table`` that have the format
+    ``FUNC(arg0, arg1, ...)``.
 
     Args:
-        s: Any string of format ``func(arg0, arg1, ...)``.
+        table: SQLAlchemy table.
+
+    Returns:
+        List of functional-style column names in ``table``. Returns
+        an empty list if none are found.
+
+    """
+    return [key for key in table.columns.keys() if parse_func_call(key)]
+
+
+def parse_func_call(s: str, /) -> None | tuple[str, list[str]]:
+    """Parse a function's name and its arguments' names from a string of format
+    ``FUNC(arg0, arg1, ...)``.
+
+    Args:
+        s: Any string of format ``FUNC(arg0, arg1, ...)``.
 
     Returns:
         A tuple containing the parsed function's name and its arguments' names.
@@ -112,7 +127,7 @@ def resolve_func_cols(
             that will be updated with columns defined by ``table`` that
             have names like ``FUNC(col0, col1, ...)``.
         drop: Whether to drop all other columns on the returned dataframe
-            except for the columns created by this function.
+            except for the columns in ``table``.
         inplace: Whether to perform operations in-place and use ``df``
             as the output dataframe.
 
@@ -139,9 +154,9 @@ def resolve_func_cols(
                 case _:
                     raise ValueError(f"{key} is not supported")
     if inplace and drop:
-        out.drop(columns=set(out.columns) - func_keys, inplace=True)
+        out.drop(columns=set(out.columns) - set(other_keys), inplace=True)
     elif drop:
-        out = out.drop(columns=set(out.columns) - func_keys)
+        out = out.drop(columns=set(out.columns) - set(other_keys))
     return out
 
 

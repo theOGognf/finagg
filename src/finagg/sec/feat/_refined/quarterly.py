@@ -153,11 +153,7 @@ class IndustryQuarterly:
             raise NoResultFound(
                 f"No industry quarterly rows found for industry {code}."
             )
-        df = df.pivot(
-            index=["fy", "fp", "filed"],
-            columns="name",
-            values=["avg", "std"],
-        ).sort_index()
+        df = df.set_index(["fy", "fp", "filed"]).sort_index()
         return df
 
 
@@ -236,11 +232,10 @@ class NormalizedQuarterly:
         ).reset_index(["filed"])
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
         company_df["filed"] = filed
-        pct_change_columns = Quarterly.pct_change_target_columns()
-        company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
-            value=0.0
-        )
-        df = (
+        func_cols = utils.get_func_cols(sql.quarterly)
+        company_df[func_cols] = company_df[func_cols].fillna(value=0.0)
+        company_df = company_df.rename(lambda x: f"NORM({x})", axis=1)
+        company_df = (
             company_df.fillna(method="ffill")
             .dropna()
             .reset_index()
@@ -248,8 +243,7 @@ class NormalizedQuarterly:
             .set_index(["fy", "fp", "filed"])
             .sort_index()
         )
-        df = df[Quarterly.columns]
-        return df
+        return company_df
 
     @classmethod
     def from_refined(
@@ -317,11 +311,7 @@ class NormalizedQuarterly:
             raise NoResultFound(
                 f"No industry-normalized quarterly rows found for {ticker}."
             )
-        df = df.pivot(
-            index=["fy", "fp", "filed"], columns="name", values="value"
-        ).sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[Quarterly.columns]
+        df = df.set_index(["fy", "fp", "filed"]).sort_index()
         return df
 
     @classmethod
@@ -545,18 +535,9 @@ class NormalizedQuarterly:
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index(["fy", "fp", "filed"])
-        if set(df.columns) < set(Quarterly.columns):
-            raise ValueError(
-                f"Dataframe must have columns {Quarterly.columns} but got {df.columns}"
-            )
-        df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
             conn.execute(sql.normalized_quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
@@ -582,32 +563,6 @@ class Quarterly(feat.Features):
 
     """
 
-    #: Columns within this feature set. Dataframes returned by this class's
-    #: methods will always contain these columns. The refined data SQL table
-    #: corresponding to these features will also have rows that have these
-    #: names.
-    columns = [
-        "AssetsCurrent_pct_change",
-        "DebtEquityRatio",
-        "EarningsPerShare",
-        "InventoryNet_pct_change",
-        "LiabilitiesCurrent_pct_change",
-        "NetIncomeLoss_pct_change",
-        "OperatingIncomeLoss_pct_change",
-        "PriceBookRatio",
-        "QuickRatio",
-        "ReturnOnEquity",
-        "StockholdersEquity_pct_change",
-        "WorkingCapitalRatio",
-    ]
-
-    concepts = api.popular_concepts
-    """XBRL disclosure concepts to pull to construct the columns in this
-    feature set.
-
-    :meta hide-value:
-    """
-
     industry = IndustryQuarterly()
     """Quarterly features aggregated for an entire industry.
     The most popular way for accessing the :class:`IndustryQuarterly`
@@ -629,12 +584,7 @@ class Quarterly(feat.Features):
         """Normalize quarterly features columns."""
         df = df.set_index(["fy", "fp"]).sort_index()
         df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
-        df = df.reset_index()
-        df = df.pivot(
-            index=["fy", "fp", "filed"],
-            columns="tag",
-            values="value",
-        ).astype(float)
+        df = df.reset_index().set_index(["fy", "fp", "filed"])
         df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
         df["PriceBookRatio"] = df["StockholdersEquity"] / (
             df["AssetsCurrent"] - df["LiabilitiesCurrent"]
@@ -645,11 +595,7 @@ class Quarterly(feat.Features):
         df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
         df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
-        df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(
-            utils.safe_pct_change
-        )
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = utils.resolve_func_cols(sql.quarterly, df, drop=True, inplace=True)
         return df.dropna()
 
     @classmethod
@@ -687,7 +633,7 @@ class Quarterly(feat.Features):
         start = start or "1776-07-04"
         end = end or utils.today
         dfs = []
-        for concept in cls.concepts:
+        for concept in api.popular_concepts:
             tag = concept["tag"]
             taxonomy = concept["taxonomy"]
             units = concept["units"]
@@ -758,7 +704,7 @@ class Quarterly(feat.Features):
                     )
                     .where(
                         sql.tags.c.tag.in_(
-                            [concept["tag"] for concept in cls.concepts]
+                            [concept["tag"] for concept in api.popular_concepts]
                         ),
                         sql.tags.c.form == "10-Q",
                         sql.tags.c.filed >= start,
@@ -834,13 +780,7 @@ class Quarterly(feat.Features):
             )
         if not len(df.index):
             raise NoResultFound(f"No quarterly rows found for {ticker}.")
-        df = df.pivot(
-            index=["fy", "fp", "filed"],
-            columns="name",
-            values="value",
-        ).sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = df.set_index(["fy", "fp", "filed"]).sort_index()
         return df
 
     @classmethod
@@ -878,7 +818,7 @@ class Quarterly(feat.Features):
                                     {concept["tag"]: 1}, value=sql.tags.c.tag, else_=0
                                 )
                             ).label(concept["tag"])
-                            for concept in cls.concepts
+                            for concept in api.popular_concepts
                         ],
                     )
                     .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
@@ -887,7 +827,7 @@ class Quarterly(feat.Features):
                     .having(
                         *[
                             sa.text(f"{concept['tag']} >= {lb}")
-                            for concept in cls.concepts
+                            for concept in api.popular_concepts
                         ]
                     )
                 )
@@ -922,12 +862,7 @@ class Quarterly(feat.Features):
                     sa.select(sql.submissions.c.ticker)
                     .join(sql.quarterly, sql.quarterly.c.cik == sql.submissions.c.cik)
                     .group_by(sql.quarterly.c.cik)
-                    .having(
-                        *[
-                            sa.func.count(sql.quarterly.c.name == col) >= lb
-                            for col in cls.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.quarterly.c.filed) >= lb)
                 )
                 .scalars()
                 .all()
@@ -1009,18 +944,9 @@ class Quarterly(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index(["fy", "fp", "filed"])
-        if set(df.columns) < set(cls.columns):
-            raise ValueError(
-                f"Dataframe must have columns {cls.columns} but got {df.columns}"
-            )
-        df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
             conn.execute(sql.quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]

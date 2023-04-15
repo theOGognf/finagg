@@ -149,11 +149,7 @@ class IndustryAnnual:
             )
         if not len(df.index):
             raise NoResultFound(f"No industry annual rows found for industry {code}.")
-        df = df.pivot(
-            index=["fy", "filed"],
-            columns="name",
-            values=["avg", "std"],
-        ).sort_index()
+        df = df.set_index(["fy", "filed"]).sort_index()
         return df
 
 
@@ -232,10 +228,9 @@ class NormalizedAnnual:
         ).reset_index(["filed"])
         company_df = (company_df - industry_df["avg"]) / industry_df["std"]
         company_df["filed"] = filed
-        pct_change_columns = Annual.pct_change_target_columns()
-        company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
-            value=0.0
-        )
+        func_cols = utils.get_func_cols(sql.annual)
+        company_df[func_cols] = company_df[func_cols].fillna(value=0.0)
+        company_df = company_df.rename(lambda x: f"NORM({x})", axis=1)
         df = (
             company_df.fillna(method="ffill")
             .dropna()
@@ -244,7 +239,6 @@ class NormalizedAnnual:
             .set_index(["fy", "filed"])
             .sort_index()
         )
-        df = df[Annual.columns]
         return df
 
     @classmethod
@@ -313,11 +307,7 @@ class NormalizedAnnual:
             raise NoResultFound(
                 f"No industry-normalized annual rows found for {ticker}."
             )
-        df = df.pivot(
-            index=["fy", "filed"], columns="name", values="value"
-        ).sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[Annual.columns]
+        df = df.set_index(["fy", "filed"]).sort_index()
         return df
 
     @classmethod
@@ -419,7 +409,7 @@ class NormalizedAnnual:
             ...         "EarningsPerShareBasic",
             ...         year=2020,
             ... )
-            >>> "PCGU" == ts[0]  # doctest: +SKIP
+            >>> "AMD" == ts[0]  # doctest: +SKIP
             True
 
         """
@@ -528,18 +518,9 @@ class NormalizedAnnual:
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index(["fy", "filed"])
-        if set(df.columns) < set(Annual.columns):
-            raise ValueError(
-                f"Dataframe must have columns {Annual.columns} but got {df.columns}"
-            )
-        df = df.melt(["fy", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
             conn.execute(sql.normalized_annual.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
@@ -586,12 +567,7 @@ class Annual(feat.Features):
         """Normalize annual features columns."""
         df = df.set_index(["fy"]).sort_index().drop(columns="fp")
         df["filed"] = df.groupby(["fy"])["filed"].max()
-        df = df.reset_index()
-        df = df.pivot(
-            index=["fy", "filed"],
-            columns="tag",
-            values="value",
-        ).astype(float)
+        df = df.reset_index().set_index(["fy", "filed"]).sort_index()
         df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
         df["PriceBookRatio"] = df["StockholdersEquity"] / (
             df["AssetsCurrent"] - df["LiabilitiesCurrent"]
@@ -602,11 +578,7 @@ class Annual(feat.Features):
         df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
         df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
-        df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(
-            utils.safe_pct_change
-        )
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = utils.resolve_func_cols(sql.annual, df, drop=True, inplace=True)
         return df.dropna()
 
     @classmethod
@@ -962,18 +934,9 @@ class Annual(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index(["fy", "filed"])
-        if set(df.columns) < set(cls.columns):
-            raise ValueError(
-                f"Dataframe must have columns {cls.columns} but got {df.columns}"
-            )
-        df = df.melt(["fy", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
             conn.execute(sql.annual.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]

@@ -41,43 +41,64 @@ daily = sa.Table(
         "LOG_CHANGE(open)",
         sa.Float,
         nullable=False,
-        doc="Logarithmic change in stock price at market open between the row's date and the previous date.",
+        doc=(
+            "Logarithmic change in stock price at market open between the "
+            "row's date and the previous date."
+        ),
     ),
     sa.Column(
         "LOG_CHANGE(high)",
         sa.Float,
         nullable=False,
-        doc="Logarithmic change in stock price max during trading hours between the row's date and the previous date.",
+        doc=(
+            "Logarithmic change in stock price max during trading hours "
+            "between the row's date and the previous date."
+        ),
     ),
     sa.Column(
         "LOG_CHANGE(low)",
         sa.Float,
         nullable=False,
-        doc="Logarithmic change in stock price min during trading hours between the row's date and the previous date.",
+        doc=(
+            "Logarithmic change in stock price min during trading hours "
+            "between the row's date and the previous date."
+        ),
     ),
     sa.Column(
         "LOG_CHANGE(close)",
         sa.Float,
         nullable=False,
-        doc="Logarithmic change in stock price at market close between the row's date and the previous date.",
+        doc=(
+            "Logarithmic change in stock price at market close between "
+            "the row's date and the previous date."
+        ),
     ),
     sa.Column(
         "LOG_CHANGE(volume)",
         sa.Float,
         nullable=False,
-        doc="Logarithmic change in stock units traded between the row's date and the previous date.",
+        doc=(
+            "Logarithmic change in stock units traded between the row's "
+            "date and the previous date."
+        ),
     ),
     sa.Column(
         "LOG_CHANGE(high, open)",
         sa.Float,
         nullable=False,
-        doc="Logarithmic change between the stock price at market open and the stock price max during trading hours.",
+        doc=(
+            "Logarithmic change between the stock price at market open "
+            "and the stock price max during trading hours."
+        ),
     ),
     sa.Column(
         "LOG_CHANGE(low, open)",
         sa.Float,
         nullable=False,
-        doc="Logarithmic change between the stock price at market open and the stock price min during trading hours.",
+        doc=(
+            "Logarithmic change between the stock price at market open "
+            "and the stock price min during trading hours."
+        ),
     ),
 )
 """SQL table for storing refined data as managed by
