@@ -41,7 +41,7 @@ class Daily(feat.Features):
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize daily features columns."""
-        df = df.drop(columns=["ticker"]).set_index("date").astype(float).sort_index()
+        df = df.drop(columns=["ticker"]).set_index("date").sort_index()
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
         df = utils.resolve_func_cols(sql.daily, df, drop=True, inplace=True)
         return df.dropna()
@@ -192,7 +192,7 @@ class Daily(feat.Features):
             )
         if not len(df.index):
             raise NoResultFound(f"No daily rows found for {ticker}.")
-        return df.set_index("date").sort_index()
+        return df.drop(columns=["ticker"]).set_index("date").sort_index()
 
     @classmethod
     def get_candidate_ticker_set(
