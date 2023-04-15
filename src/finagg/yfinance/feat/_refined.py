@@ -38,30 +38,12 @@ class Daily(feat.Features):
 
     """
 
-    #: Columns within this feature set. Dataframes returned by this class's
-    #: methods will always contain these columns. The refined data SQL table
-    #: corresponding to these features will also have rows that have these
-    #: names.
-    columns = [
-        "price",
-        "open_pct_change",
-        "high_pct_change",
-        "low_pct_change",
-        "close_pct_change",
-        "volume_pct_change",
-    ]
-
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize daily features columns."""
         df = df.drop(columns=["ticker"]).set_index("date").astype(float).sort_index()
-        df["price"] = df["close"]
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
-        df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(
-            utils.safe_pct_change
-        )
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = utils.resolve_func_cols(sql.daily, df, drop=True, inplace=True)
         return df.dropna()
 
     @classmethod
@@ -210,10 +192,7 @@ class Daily(feat.Features):
             )
         if not len(df.index):
             raise NoResultFound(f"No daily rows found for {ticker}.")
-        df = df.pivot(index="date", columns="name", values="value").sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
-        return df
+        return df.set_index("date").sort_index()
 
     @classmethod
     def get_candidate_ticker_set(
@@ -265,12 +244,7 @@ class Daily(feat.Features):
                 conn.execute(
                     sa.select(sql.daily.c.ticker)
                     .group_by(sql.daily.c.ticker)
-                    .having(
-                        *[
-                            sa.func.count(sql.daily.c.name == col) >= lb
-                            for col in cls.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.daily.c.date) >= lb)
                 )
                 .scalars()
                 .all()
@@ -358,12 +332,13 @@ class Daily(feat.Features):
         """
         engine = engine or backend.engine
         df = df.reset_index("date")
-        if set(df.columns) < set(cls.columns):
-            raise ValueError(
-                f"Dataframe must have columns {cls.columns} but got {df.columns}"
-            )
-        df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
+        expected_columns = set(sql.daily.columns.keys())
+        actual_columns = set(df.columns)
+        if actual_columns < expected_columns:
+            raise ValueError(
+                f"Dataframe must have columns {expected_columns} but got {actual_columns}"
+            )
         with engine.begin() as conn:
             conn.execute(sql.daily.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)

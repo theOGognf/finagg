@@ -28,7 +28,6 @@ def entry_point() -> None:
 )
 @click.option(
     "--raw",
-    "-r",
     type=click.Choice(["series"]),
     multiple=True,
     help=(
@@ -40,7 +39,6 @@ def entry_point() -> None:
 )
 @click.option(
     "--refined",
-    "-ref",
     type=click.Choice(["economic", "economic.normalized"]),
     multiple=True,
     help=(

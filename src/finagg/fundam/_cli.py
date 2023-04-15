@@ -27,7 +27,6 @@ def entry_point() -> None:
 )
 @click.option(
     "--refined",
-    "-ref",
     type=click.Choice(["fundam", "fundam.normalized"]),
     multiple=True,
     help=(

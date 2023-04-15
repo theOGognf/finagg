@@ -124,11 +124,11 @@ def resolve_func_cols(
     """
     out = df if inplace else df.copy(deep=True)
     primary_keys = {col.key for col in table.primary_key}
-    other_keys = {key for key in table.columns.keys()} - primary_keys
-    new_keys = set()
+    other_keys = [key for key in table.columns.keys() if key not in primary_keys]
+    func_keys = set()
     for key in other_keys:
         if func_call := parse_func_call(key):
-            new_keys.add(key)
+            func_keys.add(key)
             name, args = func_call
             cols = map(out.get, args)
             match name:
@@ -138,8 +138,10 @@ def resolve_func_cols(
                     out[key] = safe_pct_change(*cols)
                 case _:
                     raise ValueError(f"{key} is not supported")
-    if drop:
-        out.drop(columns=other_keys - new_keys)
+    if inplace and drop:
+        out.drop(columns=set(out.columns) - func_keys, inplace=True)
+    elif drop:
+        out = out.drop(columns=set(out.columns) - func_keys)
     return out
 
 

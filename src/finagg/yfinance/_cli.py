@@ -27,7 +27,6 @@ def entry_point() -> None:
 )
 @click.option(
     "--raw",
-    "-r",
     type=click.Choice(["prices"]),
     multiple=True,
     help=(
@@ -38,7 +37,6 @@ def entry_point() -> None:
 )
 @click.option(
     "--refined",
-    "-ref",
     type=click.Choice(["daily"]),
     multiple=True,
     help=(
@@ -118,7 +116,7 @@ def install(
     verbose: bool = False,
 ) -> int:
     if verbose:
-        logger.setLevel(logging.DEBUG)
+        logging.getLogger(__package__).setLevel(logging.DEBUG)
 
     total_rows = 0
     all_raw = set()

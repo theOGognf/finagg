@@ -558,14 +558,6 @@ class Fundamental(feat.Features):
 
     """
 
-    #: Columns within this feature set. Dataframes returned by this class's
-    #: methods will always contain these columns.
-    columns = (
-        yfinance.feat.daily.columns
-        + sec.feat.quarterly.columns
-        + ["PriceEarningsRatio"]
-    )
-
     industry = IndustryFundamental()
     """Fundamental features aggregated for an entire industry.
     The most popular way for accessing the :class:`IndustryFundamental`
