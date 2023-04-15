@@ -565,32 +565,6 @@ class Annual(feat.Features):
 
     """
 
-    #: Columns within this feature set. Dataframes returned by this class's
-    #: methods will always contain these columns. The refined data SQL table
-    #: corresponding to these features will also have rows that have these
-    #: names.
-    columns = [
-        "AssetsCurrent_pct_change",
-        "DebtEquityRatio",
-        "EarningsPerShare",
-        "InventoryNet_pct_change",
-        "LiabilitiesCurrent_pct_change",
-        "NetIncomeLoss_pct_change",
-        "OperatingIncomeLoss_pct_change",
-        "PriceBookRatio",
-        "QuickRatio",
-        "ReturnOnEquity",
-        "StockholdersEquity_pct_change",
-        "WorkingCapitalRatio",
-    ]
-
-    concepts = api.popular_concepts
-    """XBRL disclosure concepts to pull to construct the columns in this
-    feature set.
-
-    :meta hide-value:
-    """
-
     industry = IndustryAnnual()
     """Annual features aggregated for an entire industry.
     The most popular way for accessing the :class:`finagg.sec.feat.IndustryAnnual`
@@ -666,7 +640,7 @@ class Annual(feat.Features):
         start = start or "1776-07-04"
         end = end or utils.today
         dfs = []
-        for concept in cls.concepts:
+        for concept in api.popular_concepts:
             tag = concept["tag"]
             taxonomy = concept["taxonomy"]
             units = concept["units"]
@@ -737,7 +711,7 @@ class Annual(feat.Features):
                     )
                     .where(
                         sql.tags.c.tag.in_(
-                            [concept["tag"] for concept in cls.concepts]
+                            [concept["tag"] for concept in api.popular_concepts]
                         ),
                         sql.tags.c.form == "10-K",
                         sql.tags.c.filed >= start,
@@ -857,7 +831,7 @@ class Annual(feat.Features):
                                     {concept["tag"]: 1}, value=sql.tags.c.tag, else_=0
                                 )
                             ).label(concept["tag"])
-                            for concept in cls.concepts
+                            for concept in api.popular_concepts
                         ],
                     )
                     .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
@@ -866,7 +840,7 @@ class Annual(feat.Features):
                     .having(
                         *[
                             sa.text(f"{concept['tag']} >= {lb}")
-                            for concept in cls.concepts
+                            for concept in api.popular_concepts
                         ]
                     )
                 )

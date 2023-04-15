@@ -325,20 +325,10 @@ class Daily(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index("date")
         df["ticker"] = ticker
-        expected_columns = set(sql.daily.columns.keys())
-        actual_columns = set(df.columns)
-        if actual_columns < expected_columns:
-            raise ValueError(
-                f"Dataframe must have columns {expected_columns} but got {actual_columns}"
-            )
         with engine.begin() as conn:
             conn.execute(sql.daily.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)

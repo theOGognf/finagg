@@ -139,9 +139,34 @@ annual = sa.Table(
         doc="Unique company ticker.",
     ),
     sa.Column("filed", sa.String, nullable=False, doc="Filing date."),
-    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
-    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column(
+        "LOG_CHANGE(AssetsCurrent)", sa.Float, nullable=False, doc="Feature value."
+    ),
+    sa.Column(
+        "LOG_CHANGE(InventoryNet)", sa.Float, nullable=False, doc="Feature value."
+    ),
+    sa.Column(
+        "LOG_CHANGE(LiabilitiesCurrent)", sa.Float, nullable=False, doc="Feature value."
+    ),
+    sa.Column(
+        "LOG_CHANGE(NetIncomeLoss)", sa.Float, nullable=False, doc="Feature value."
+    ),
+    sa.Column(
+        "LOG_CHANGE(OperationIncomeLoss)",
+        sa.Float,
+        nullable=False,
+        doc="Feature value.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(StockholdersEquity)", sa.Float, nullable=False, doc="Feature value."
+    ),
+    sa.Column("DebtEquityRatio", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column("EarningsPerShareBasic", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column("PriceBookRatio", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column("QuickRatio", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column("ReturnOnEquity", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column("WorkingCapitalRatio", sa.Float, nullable=False, doc="Feature value."),
 )
 """SQL table for storing refined data as managed by :data:`finagg.sec.feat.annual`
 (an alias for :class:`finagg.sec.feat.Annual`).
@@ -160,9 +185,50 @@ normalized_annual = sa.Table(
         doc="Unique company ticker.",
     ),
     sa.Column("filed", sa.String, nullable=False, doc="Filing date."),
-    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
-    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column(
+        "NORM(LOG_CHANGE(AssetsCurrent))",
+        sa.Float,
+        nullable=False,
+        doc="Feature value.",
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(InventoryNet))", sa.Float, nullable=False, doc="Feature value."
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(LiabilitiesCurrent))",
+        sa.Float,
+        nullable=False,
+        doc="Feature value.",
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(NetIncomeLoss))",
+        sa.Float,
+        nullable=False,
+        doc="Feature value.",
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(OperationIncomeLoss))",
+        sa.Float,
+        nullable=False,
+        doc="Feature value.",
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(StockholdersEquity))",
+        sa.Float,
+        nullable=False,
+        doc="Feature value.",
+    ),
+    sa.Column("NORM(DebtEquityRatio)", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column(
+        "NORM(EarningsPerShareBasic)", sa.Float, nullable=False, doc="Feature value."
+    ),
+    sa.Column("NORM(PriceBookRatio)", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column("NORM(QuickRatio)", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column("NORM(ReturnOnEquity)", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column(
+        "NORM(WorkingCapitalRatio)", sa.Float, nullable=False, doc="Feature value."
+    ),
 )
 """SQL table for storing refined data as managed by
 :attr:`finagg.sec.feat.Annual.normalized` (an alias for
