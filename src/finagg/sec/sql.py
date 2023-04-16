@@ -159,18 +159,6 @@ annual = sa.Table(
         doc="Logarithmic change in a company's liabilities between years.",
     ),
     sa.Column(
-        "LOG_CHANGE(NetIncomeLoss)",
-        sa.Float,
-        nullable=False,
-        doc="Logarithmic change in a company's net income/loss between years.",
-    ),
-    sa.Column(
-        "LOG_CHANGE(OperatingIncomeLoss)",
-        sa.Float,
-        nullable=False,
-        doc="Logarithmic change in a company's operating income/loss between years.",
-    ),
-    sa.Column(
         "LOG_CHANGE(StockholdersEquity)",
         sa.Float,
         nullable=False,
@@ -184,12 +172,6 @@ annual = sa.Table(
     ),
     sa.Column(
         "EarningsPerShareBasic", sa.Float, nullable=False, doc="Earnings per share."
-    ),
-    sa.Column(
-        "PriceBookRatio",
-        sa.Float,
-        nullable=False,
-        doc="Stockholder's equity over assets minus liabilities.",
     ),
     sa.Column(
         "QuickRatio",
@@ -253,24 +235,6 @@ normalized_annual = sa.Table(
         ),
     ),
     sa.Column(
-        "NORM(LOG_CHANGE(NetIncomeLoss))",
-        sa.Float,
-        nullable=False,
-        doc=(
-            "Logarithmic change in a company's net income/loss between "
-            "years normalized against the company's industry."
-        ),
-    ),
-    sa.Column(
-        "NORM(LOG_CHANGE(OperatingIncomeLoss))",
-        sa.Float,
-        nullable=False,
-        doc=(
-            "Logarithmic change in a company's operating income/loss between "
-            "years normalized against the company's industry."
-        ),
-    ),
-    sa.Column(
         "NORM(LOG_CHANGE(StockholdersEquity))",
         sa.Float,
         nullable=False,
@@ -290,15 +254,6 @@ normalized_annual = sa.Table(
         sa.Float,
         nullable=False,
         doc="Earnings per share normalized against the company's industry.",
-    ),
-    sa.Column(
-        "NORM(PriceBookRatio)",
-        sa.Float,
-        nullable=False,
-        doc=(
-            "Stockholder's equity over assets minus liabilities normalized "
-            "against the company's industry."
-        ),
     ),
     sa.Column(
         "NORM(QuickRatio)",
@@ -369,18 +324,6 @@ quarterly = sa.Table(
         doc="Logarithmic change in a company's liabilities between quarters.",
     ),
     sa.Column(
-        "LOG_CHANGE(NetIncomeLoss)",
-        sa.Float,
-        nullable=False,
-        doc="Logarithmic change in a company's net income/loss between quarters.",
-    ),
-    sa.Column(
-        "LOG_CHANGE(OperatingIncomeLoss)",
-        sa.Float,
-        nullable=False,
-        doc="Logarithmic change in a company's operating income/loss between quarters.",
-    ),
-    sa.Column(
         "LOG_CHANGE(StockholdersEquity)",
         sa.Float,
         nullable=False,
@@ -394,12 +337,6 @@ quarterly = sa.Table(
     ),
     sa.Column(
         "EarningsPerShareBasic", sa.Float, nullable=False, doc="Earnings per share."
-    ),
-    sa.Column(
-        "PriceBookRatio",
-        sa.Float,
-        nullable=False,
-        doc="Stockholder's equity over assets minus liabilities.",
     ),
     sa.Column(
         "QuickRatio",
@@ -470,30 +407,21 @@ normalized_quarterly = sa.Table(
         ),
     ),
     sa.Column(
-        "NORM(LOG_CHANGE(NetIncomeLoss))",
-        sa.Float,
-        nullable=False,
-        doc=(
-            "Logarithmic change in a company's net income/loss between "
-            "quarters normalized against the company's industry."
-        ),
-    ),
-    sa.Column(
-        "NORM(LOG_CHANGE(OperatingIncomeLoss))",
-        sa.Float,
-        nullable=False,
-        doc=(
-            "Logarithmic change in a company's operating income/loss between "
-            "quarters normalized against the company's industry."
-        ),
-    ),
-    sa.Column(
         "NORM(LOG_CHANGE(StockholdersEquity))",
         sa.Float,
         nullable=False,
         doc=(
             "Logarithmic change in a company's stockholder's equity between "
             "quarters normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(AssetCoverageRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Total assets minus short term liabilities over total liabilities "
+            "normalized against the company's industry."
         ),
     ),
     sa.Column(
@@ -509,16 +437,19 @@ normalized_quarterly = sa.Table(
         doc="Earnings per share normalized against the company's industry.",
     ),
     sa.Column(
-        "NORM(PriceBookRatio)",
-        sa.Float,
-        nullable=False,
-        doc="Stockholder's equity over assets minus liabilities normalized against the company's industry.",
-    ),
-    sa.Column(
         "NORM(QuickRatio)",
         sa.Float,
         nullable=False,
-        doc="Assets minus inventory over liabilities normalized against the company's industry.",
+        doc=(
+            "Current assets minus inventory over current liabilities normalized "
+            "against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(ReturnOnAssets)",
+        sa.Float,
+        nullable=False,
+        doc="Net income/loss over total assets normalized against the company's industry.",
     ),
     sa.Column(
         "NORM(ReturnOnEquity)",
@@ -530,7 +461,7 @@ normalized_quarterly = sa.Table(
         "NORM(WorkingCapitalRatio)",
         sa.Float,
         nullable=False,
-        doc="Assets over liabilities normalized against the company's industry.",
+        doc="Current assets over current liabilities normalized against the company's industry.",
     ),
 )
 """SQL table for storing refined data as managed by

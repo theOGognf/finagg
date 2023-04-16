@@ -591,13 +591,14 @@ class Quarterly:
             columns="tag",
             values="value",
         )
-        df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
-        df["PriceBookRatio"] = df["StockholdersEquity"] / (
-            df["AssetsCurrent"] - df["LiabilitiesCurrent"]
-        )
+        df["AssetCoverageRatio"] = (df["Assets"] - df["LiabilitiesCurrent"]) / df[
+            "Liabilities"
+        ]
+        df["DebtEquityRatio"] = df["Liabilities"] / df["StockholdersEquity"]
         df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
             "LiabilitiesCurrent"
         ]
+        df["ReturnOnAssets"] = df["NetIncomeLoss"] / df["Assets"]
         df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
         df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")

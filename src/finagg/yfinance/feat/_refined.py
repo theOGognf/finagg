@@ -9,7 +9,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from ... import backend, feat, utils
+from ... import backend, utils
 from .. import api, sql
 from . import _raw
 
@@ -19,7 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class Daily(feat.Features):
+class Daily:
     """Methods for gathering daily stock data features from Yahoo! finance.
 
     The module variable :data:`finagg.yfinance.feat.daily` is an instance of

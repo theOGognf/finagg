@@ -581,6 +581,12 @@ tickers = Tickers()
 
 popular_frames: list[Frame] = [
     {
+        "tag": "Assets",
+        "taxonomy": "us-gaap",
+        "units": "USD",
+        "instant": True,
+    },
+    {
         "tag": "AssetsCurrent",
         "taxonomy": "us-gaap",
         "units": "USD",
@@ -594,6 +600,12 @@ popular_frames: list[Frame] = [
     },
     {"tag": "InventoryNet", "taxonomy": "us-gaap", "units": "USD", "instant": True},
     {
+        "tag": "Liabilities",
+        "taxonomy": "us-gaap",
+        "units": "USD",
+        "instant": True,
+    },
+    {
         "tag": "LiabilitiesCurrent",
         "taxonomy": "us-gaap",
         "units": "USD",
@@ -604,12 +616,6 @@ popular_frames: list[Frame] = [
         "taxonomy": "us-gaap",
         "units": "USD",
         "instant": True,
-    },
-    {
-        "tag": "OperatingIncomeLoss",
-        "taxonomy": "us-gaap",
-        "units": "USD",
-        "instant": False,
     },
     {
         "tag": "StockholdersEquity",
