@@ -153,24 +153,6 @@ date
 2014-10-20    0.09
 Name: FEDFUNDS, dtype: float64
 
-On top of this simplification, :data:`finagg.fred.feat.economic` provides
-another method and convenience for normalizing the default economic data series.
-Economic data series whose scales drift over time (e.g., gross domestic product)
-are converted to percent changes while economic data series whose scales are
-consistent over time (e.g., unemployment rate) are normalized to be zero mean
-and unit variance. The normalized economic data series can also have a similar
-workflow to the above using :attr:`finagg.fred.feat.Economic.normalized`.
-
->>> finagg.fred.feat.economic.normalized.install()  # doctest: +SKIP
->>> finagg.fred.feat.economic.normalized.from_refined()["FEDFUNDS"].head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
-date
-2014-10-06   -0.8968
-2014-10-08   -0.8968
-2014-10-13   -0.8968
-2014-10-15   -0.8968
-2014-10-20   -0.8968
-Name: FEDFUNDS, dtype: float64
-
 Lastly, it's useful to mention that any download/installation step in the
 common download-then-retrieve workflow for raw or refined data
 with **finagg**'s Python interface can probably be replicated using
