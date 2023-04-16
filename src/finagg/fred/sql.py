@@ -51,30 +51,64 @@ economic = sa.Table(
         primary_key=True,
         doc="Economic data series release date.",
     ),
-    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
-    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column(
+        "CIVPART", sa.Float, nullable=False, doc="Labor force participation rate."
+    ),
+    sa.Column(
+        "LOG_CHANGE(CPIAUCNS)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in consumer price index between days.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(CSUSHPINSA)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in S&P/Case-Shiller national home price index between days.",
+    ),
+    sa.Column("FEDFUNDS", sa.Float, nullable=False, doc="Federal funds interest rate."),
+    sa.Column(
+        "LOG_CHANGE(GDP)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in gross domestic product between days.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(GDPC1)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in real gross domestic product between days.",
+    ),
+    sa.Column("GS10", sa.Float, nullable=False, doc="10-Year treasury yield."),
+    sa.Column(
+        "LOG_CHANGE(M2)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in money stock measures (i.e., savings and related balances) between days.",
+    ),
+    sa.Column(
+        "MICH",
+        sa.Float,
+        nullable=False,
+        doc="University of Michigan: inflation expectation.",
+    ),
+    sa.Column("PSAVERT", sa.Float, nullable=False, doc="Personal savings rate."),
+    sa.Column(
+        "UMCSENT",
+        sa.Float,
+        nullable=False,
+        doc="University of Michigan: consumer sentiment.",
+    ),
+    sa.Column("UNRATE", sa.Float, nullable=False, doc="Unemployment rate."),
+    sa.Column(
+        "LOG_CHANGE(WALCL)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in US assets, total assets (less eliminations from consolidation) between days.",
+    ),
 )
 """SQL table for storing refined data as managed by :data:`finagg.fred.feat.economic`
 (an alias for :class:`finagg.fred.feat.Economic`).
-
-:meta hide-value:
-"""
-
-normalized_economic = sa.Table(
-    "fred.refined.economic.normalized",
-    metadata,
-    sa.Column(
-        "date",
-        sa.String,
-        primary_key=True,
-        doc="Economic data series release date.",
-    ),
-    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
-    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
-)
-"""SQL table for storing refined data as managed by
-:attr:`finagg.fred.feat.Economic.normalized` (an alias for
-:class:`finagg.fred.feat.NormalizedEconomic`).
 
 :meta hide-value:
 """

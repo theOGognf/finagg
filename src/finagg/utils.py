@@ -112,6 +112,35 @@ def parse_func_call(s: str, /) -> None | tuple[str, list[str]]:
     return name, args.replace(" ", "").split(",")
 
 
+def resolve_col_order(
+    table: sa.Table, df: pd.DataFrame, /, *, extra_ignore: None | list[str] = None
+) -> pd.DataFrame:
+    """Reorder the columns in ``df`` to match the order of the columns in
+    ``table``.
+
+    Args:
+        table: SQLAlchemy table that defines the column order. Primary keys
+            are ignored from the column order as they're assumed to be used
+            as part of the index in ``df``.
+        df: Dataframe to reorder.
+        extra_ignore: Extra columns to ignore in the reordering. Sometimes
+            columns aren't used as primary keys but are used as part of the
+            index in the dataframe. Those columns should be provided in this
+            option.
+
+    Returns:
+        Dataframe with columns ordered according to the column order in
+        ``table``.
+
+    """
+    if extra_ignore is None:
+        extra_ignore = []
+    ignore_keys = {col.key for col in table.primary_key}
+    ignore_keys.update(extra_ignore)
+    column_order = [key for key in table.columns.keys() if key not in ignore_keys]
+    return df[column_order]
+
+
 def resolve_func_cols(
     table: sa.Table, df: pd.DataFrame, /, *, drop: bool = False, inplace: bool = False
 ) -> pd.DataFrame:
