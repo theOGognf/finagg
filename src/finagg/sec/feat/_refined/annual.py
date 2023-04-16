@@ -125,32 +125,31 @@ class IndustryAnnual:
 
             df = pd.DataFrame(
                 conn.execute(
-                    sa.select(
-                        sql.annual.c.fy,
-                        sa.func.max(sql.annual.c.filed).label("filed"),
-                        sql.annual.c.name,
-                        sa.func.avg(sql.annual.c.value).label("avg"),
-                        sa.func.std(sql.annual.c.value).label("std"),
-                    )
+                    sql.annual.select()
                     .join(
                         sql.submissions,
                         (sql.submissions.c.cik == sql.annual.c.cik)
                         & (sql.submissions.c.sic.startswith(code)),
                     )
-                    .group_by(
-                        sql.annual.c.fy,
-                        sql.annual.c.name,
-                    )
-                    .where(
-                        sql.annual.c.filed >= start,
-                        sql.annual.c.filed <= end,
-                    )
+                    .where(sql.annual.c.filed >= start, sql.annual.c.filed <= end)
                 )
             )
         if not len(df.index):
             raise NoResultFound(f"No industry annual rows found for industry {code}.")
-        df = df.set_index(["fy", "filed"]).sort_index()
-        return df
+        df = df.drop(columns=["cik"])
+        df = df.melt(["fy", "filed"], var_name="name", value_name="value").set_index(
+            ["fy"]
+        )
+        df["filed"] = df.groupby(["fy"])["filed"].max()
+        return (
+            df.reset_index()  # type: ignore[return-value]
+            .set_index(["fy", "filed"])
+            .groupby(["fy", "filed", "name"])
+            .agg([np.mean, np.std])
+            .reset_index()
+            .pivot(index=["fy", "filed"], columns="name")["value"]
+            .sort_index()
+        )
 
 
 class NormalizedAnnual:
@@ -226,12 +225,16 @@ class NormalizedAnnual:
         industry_df = IndustryAnnual.from_refined(
             ticker=ticker, level=level, start=start, end=end, engine=engine
         ).reset_index(["filed"])
-        company_df = (company_df - industry_df["avg"]) / industry_df["std"]
+        company_df = (company_df - industry_df["mean"]) / industry_df["std"]
         company_df["filed"] = filed
         func_cols = utils.get_func_cols(sql.annual)
         company_df[func_cols] = company_df[func_cols].fillna(value=0.0)
-        company_df = company_df.rename(lambda x: f"NORM({x})", axis=1)
-        df = (
+        company_df = (
+            company_df.reset_index()
+            .set_index(["fy", "filed"])
+            .rename(lambda x: f"NORM({x})", axis=1)
+        )
+        company_df = (
             company_df.fillna(method="ffill")
             .dropna()
             .reset_index()
@@ -239,7 +242,14 @@ class NormalizedAnnual:
             .set_index(["fy", "filed"])
             .sort_index()
         )
-        return df
+        primary_keys = {col.key for col in sql.normalized_annual.primary_key}
+        primary_keys.add("filed")
+        column_order = [
+            key
+            for key in sql.normalized_annual.columns.keys()
+            if key not in primary_keys
+        ]
+        return company_df[column_order]
 
     @classmethod
     def from_refined(
@@ -307,7 +317,7 @@ class NormalizedAnnual:
             raise NoResultFound(
                 f"No industry-normalized annual rows found for {ticker}."
             )
-        df = df.set_index(["fy", "filed"]).sort_index()
+        df = df.drop(columns=["cik"]).set_index(["fy", "filed"]).sort_index()
         return df
 
     @classmethod
@@ -367,12 +377,7 @@ class NormalizedAnnual:
                         sql.normalized_annual.c.cik == sql.submissions.c.cik,
                     )
                     .group_by(sql.normalized_annual.c.cik)
-                    .having(
-                        *[
-                            sa.func.count(sql.normalized_annual.c.name == col) >= lb
-                            for col in Annual.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.normalized_annual.c.filed) >= lb)
                 )
                 .scalars()
                 .all()
@@ -429,10 +434,9 @@ class NormalizedAnnual:
                         sql.normalized_annual.c.cik == sql.submissions.c.cik,
                     )
                     .where(
-                        sql.normalized_annual.c.name == column,
                         sql.normalized_annual.c.fy == year,
                     )
-                    .order_by(sql.normalized_annual.c.value)
+                    .order_by(sql.normalized_annual.c[column])
                 )
                 .scalars()
                 .all()
@@ -572,18 +576,15 @@ class Annual(feat.Features):
             columns="tag",
             values="value",
         )
-        df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
-        df["PriceBookRatio"] = df["StockholdersEquity"] / (
-            df["AssetsCurrent"] - df["LiabilitiesCurrent"]
-        )
-        df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
-            "LiabilitiesCurrent"
-        ]
-        df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
-        df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
+        df = utils.xbrl_financial_ratios(df)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
         df = utils.resolve_func_cols(sql.annual, df, drop=True, inplace=True)
-        return df.dropna()
+        primary_keys = {col.key for col in sql.annual.primary_key}
+        primary_keys.add("filed")
+        column_order = [
+            key for key in sql.annual.columns.keys() if key not in primary_keys
+        ]
+        return df[column_order].dropna()
 
     @classmethod
     def from_api(
@@ -763,13 +764,7 @@ class Annual(feat.Features):
             )
         if not len(df.index):
             raise NoResultFound(f"No annual rows found for {ticker}.")
-        df = df.pivot(
-            index=["fy", "filed"],
-            columns="name",
-            values="value",
-        ).sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = df.drop(columns=["cik"]).set_index(["fy", "filed"]).sort_index()
         return df
 
     @classmethod
@@ -851,12 +846,7 @@ class Annual(feat.Features):
                     sa.select(sql.submissions.c.ticker)
                     .join(sql.annual, sql.annual.c.cik == sql.submissions.c.cik)
                     .group_by(sql.annual.c.cik)
-                    .having(
-                        *[
-                            sa.func.count(sql.annual.c.name == col) >= lb
-                            for col in cls.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.annual.c.filed) >= lb)
                 )
                 .scalars()
                 .all()

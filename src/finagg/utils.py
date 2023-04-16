@@ -148,15 +148,15 @@ def resolve_func_cols(
             cols = map(out.get, args)
             match name:
                 case "LOG_CHANGE":
-                    out[key] = safe_log_change(*cols)
+                    out[key] = safe_log_change(*cols)  # type: ignore[arg-type]
                 case "PCT_CHANGE":
-                    out[key] = safe_pct_change(*cols)
+                    out[key] = safe_pct_change(*cols)  # type: ignore[arg-type]
                 case _:
                     raise ValueError(f"{key} is not supported")
     if inplace and drop:
-        out.drop(columns=set(out.columns) - set(other_keys), inplace=True)
+        out.drop(columns=list(set(out.columns) - set(other_keys)), inplace=True)
     elif drop:
-        out = out.drop(columns=set(out.columns) - set(other_keys))
+        out = out.drop(columns=list(set(out.columns) - set(other_keys)))
     return out
 
 
@@ -267,3 +267,28 @@ when getting data from APIs or SQL tables.
 
 :meta hide-value:
 """
+
+
+def xbrl_financial_ratios(df: pd.DataFrame, /) -> pd.DataFrame:
+    """Compute financial ratios in-place for a dataframe using XBRL financial
+    tags.
+
+    Args:
+        df: Dataframe with common XBRL financial tags (e.g., "Assets",
+            "Liabilities", etc.).
+
+    Returns:
+        ``df`` but with additional columns that're normalized financial ratios.
+
+    """
+    df["AssetCoverageRatio"] = (df["Assets"] - df["LiabilitiesCurrent"]) / df[
+        "Liabilities"
+    ]
+    df["DebtEquityRatio"] = df["Liabilities"] / df["StockholdersEquity"]
+    df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
+        "LiabilitiesCurrent"
+    ]
+    df["ReturnOnAssets"] = df["NetIncomeLoss"] / df["Assets"]
+    df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
+    df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
+    return df

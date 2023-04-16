@@ -144,7 +144,7 @@ class IndustryQuarterly:
         ).set_index(["fy", "fp"])
         df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
         return (
-            df.reset_index()
+            df.reset_index()  # type: ignore[return-value]
             .set_index(["fy", "fp", "filed"])
             .groupby(["fy", "fp", "filed", "name"])
             .agg([np.mean, np.std])
@@ -591,19 +591,15 @@ class Quarterly:
             columns="tag",
             values="value",
         )
-        df["AssetCoverageRatio"] = (df["Assets"] - df["LiabilitiesCurrent"]) / df[
-            "Liabilities"
-        ]
-        df["DebtEquityRatio"] = df["Liabilities"] / df["StockholdersEquity"]
-        df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
-            "LiabilitiesCurrent"
-        ]
-        df["ReturnOnAssets"] = df["NetIncomeLoss"] / df["Assets"]
-        df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
-        df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
+        df = utils.xbrl_financial_ratios(df)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
         df = utils.resolve_func_cols(sql.quarterly, df, drop=True, inplace=True)
-        return df.dropna()
+        primary_keys = {col.key for col in sql.quarterly.primary_key}
+        primary_keys.add("filed")
+        column_order = [
+            key for key in sql.quarterly.columns.keys() if key not in primary_keys
+        ]
+        return df[column_order].dropna()
 
     @classmethod
     def from_api(
