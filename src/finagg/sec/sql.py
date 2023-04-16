@@ -165,7 +165,7 @@ annual = sa.Table(
         doc="Logarithmic change in a company's net income/loss between years.",
     ),
     sa.Column(
-        "LOG_CHANGE(OperationIncomeLoss)",
+        "LOG_CHANGE(OperatingIncomeLoss)",
         sa.Float,
         nullable=False,
         doc="Logarithmic change in a company's operating income/loss between years.",
@@ -262,7 +262,7 @@ normalized_annual = sa.Table(
         ),
     ),
     sa.Column(
-        "NORM(LOG_CHANGE(OperationIncomeLoss))",
+        "NORM(LOG_CHANGE(OperatingIncomeLoss))",
         sa.Float,
         nullable=False,
         doc=(
@@ -375,7 +375,7 @@ quarterly = sa.Table(
         doc="Logarithmic change in a company's net income/loss between quarters.",
     ),
     sa.Column(
-        "LOG_CHANGE(OperationIncomeLoss)",
+        "LOG_CHANGE(OperatingIncomeLoss)",
         sa.Float,
         nullable=False,
         doc="Logarithmic change in a company's operating income/loss between quarters.",
@@ -479,7 +479,7 @@ normalized_quarterly = sa.Table(
         ),
     ),
     sa.Column(
-        "NORM(LOG_CHANGE(OperationIncomeLoss))",
+        "NORM(LOG_CHANGE(OperatingIncomeLoss))",
         sa.Float,
         nullable=False,
         doc=(

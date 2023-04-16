@@ -567,7 +567,11 @@ class Annual(feat.Features):
         """Normalize annual features columns."""
         df = df.set_index(["fy"]).sort_index().drop(columns="fp")
         df["filed"] = df.groupby(["fy"])["filed"].max()
-        df = df.reset_index().set_index(["fy", "filed"]).sort_index()
+        df = df.reset_index().pivot(
+            index=["fy", "filed"],
+            columns="tag",
+            values="value",
+        )
         df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
         df["PriceBookRatio"] = df["StockholdersEquity"] / (
             df["AssetsCurrent"] - df["LiabilitiesCurrent"]
