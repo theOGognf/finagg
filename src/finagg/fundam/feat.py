@@ -11,7 +11,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from .. import backend, feat, sec, utils, yfinance
+from .. import backend, sec, utils, yfinance
 from . import sql
 
 logging.basicConfig(
@@ -539,7 +539,7 @@ class NormalizedFundamental:
         return len(df.index)
 
 
-class Fundamental(feat.Features):
+class Fundamental:
     """Method for gathering fundamental data on a stock using several sources.
 
     The module variable :data:`finagg.fundam.feat.fundam` is an instance of
@@ -578,44 +578,16 @@ class Fundamental(feat.Features):
     def _normalize(
         cls,
         quarterly: pd.DataFrame,
-        daily: pd.DataFrame,
+        prices: pd.DataFrame,
         /,
     ) -> pd.DataFrame:
         """Normalize the feature columns."""
-        quarterly = quarterly.reset_index()
-        quarterly_abs = quarterly.groupby(["filed"], as_index=False)[
-            [
-                col
-                for col in sec.feat.quarterly.columns
-                if not col.endswith("pct_change")
-            ]
-        ].last()
-        quarterly_pct_change_cols = sec.feat.quarterly.pct_change_target_columns()
-        quarterly[quarterly_pct_change_cols] += 1
-        quarterly_pct_change = quarterly.groupby(["filed"], as_index=False).agg(
-            {col: np.prod for col in quarterly_pct_change_cols}
-        )
-        quarterly = pd.merge(
-            quarterly_abs,
-            quarterly_pct_change,
-            how="inner",
-            left_on="filed",
-            right_on="filed",
-        )
-        quarterly[quarterly_pct_change_cols] -= 1
-        quarterly = quarterly.set_index("filed")
         df = pd.merge(
-            quarterly, daily, how="outer", left_index=True, right_index=True
+            quarterly, prices, how="outer", left_index=True, right_index=True
         ).sort_index()
-        pct_change_cols = cls.pct_change_target_columns()
-        df[pct_change_cols] = df[pct_change_cols].fillna(value=0)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
-        df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
-        df["PriceEarningsRatio"] = (
-            df["PriceEarningsRatio"]
-            .replace([-np.inf, np.inf], np.nan)
-            .fillna(method="ffill")
-        )
+        df["PriceBookRatio"] = df["price"] / df["BookRatio"]
+        df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShareBasic"]
         df.index.names = ["date"]
         df = df[cls.columns]
         return df.dropna()
@@ -655,68 +627,37 @@ class Fundamental(feat.Features):
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        quarterly = sec.feat.quarterly.from_api(
+        filings = sec.api.company_concept.get_many_unique(
             ticker,
+            [
+                {
+                    "tag": "Assets",
+                    "taxonomy": "us-gaap",
+                    "units": "USD",
+                },
+                {
+                    "tag": "Liabilities",
+                    "taxonomy": "us-gaap",
+                    "units": "USD",
+                },
+                {
+                    "tag": "CommonStockSharesOutstanding",
+                    "taxonomy": "us-gaap",
+                    "units": "shares",
+                },
+                {
+                    "tag": "EarningsPerShareBasic",
+                    "taxonomy": "us-gaap",
+                    "units": "USD-per-shares",
+                },
+            ],
+            form="10-Q",
             start=start,
             end=end,
-        ).reset_index(["fy", "fp"], drop=True)
-        start = str(quarterly.index[0])
-        daily = yfinance.feat.daily.from_api(ticker, start=start, end=end)
-        return cls._normalize(quarterly, daily)
-
-    @classmethod
-    def from_other_refined(
-        cls,
-        ticker: str,
-        /,
-        *,
-        start: None | str = None,
-        end: None | str = None,
-        engine: None | Engine = None,
-    ) -> pd.DataFrame:
-        """Get features directly from other refined SQL tables.
-
-        Args:
-            ticker: Company ticker.
-            start: The start date of the observation period. Defaults to the
-                first recorded date.
-            end: The end date of the observation period. Defaults to the
-                last recorded date.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            Combined quarterly and daily feature dataframe.
-            Sorted by date.
-
-        Examples:
-            >>> finagg.fundam.feat.fundam.from_other_refined("AAPL").head(5)  # doctest: +SKIP
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
-
-        """
-        start = start or "1776-07-04"
-        end = end or utils.today
-        engine = engine or backend.engine
-        quarterly = sec.feat.quarterly.from_refined(
-            ticker,
-            start=start,
-            end=end,
-            engine=engine,
-        ).reset_index(["fy", "fp"], drop=True)
-        start = str(quarterly.index[0])
-        daily = yfinance.feat.daily.from_refined(
-            ticker,
-            start=start,
-            end=end,
-            engine=engine,
         )
-        return cls._normalize(quarterly, daily)
+        start = str(filings.index[0])
+        prices = yfinance.api.get(ticker, start=start, end=end)
+        return cls._normalize(filings, prices)
 
     @classmethod
     def from_raw(
@@ -764,13 +705,13 @@ class Fundamental(feat.Features):
             engine=engine,
         ).reset_index(["fy", "fp"], drop=True)
         start = str(quarterly.index[0])
-        daily = yfinance.feat.daily.from_raw(
+        prices = yfinance.feat.prices.from_raw(
             ticker,
             start=start,
             end=end,
             engine=engine,
         )
-        return cls._normalize(quarterly, daily)
+        return cls._normalize(quarterly, prices)
 
     @classmethod
     def from_refined(
@@ -831,9 +772,7 @@ class Fundamental(feat.Features):
             )
         if not len(df.index):
             raise NoResultFound(f"No fundamental rows found for {ticker}.")
-        df = df.pivot(index="date", values="value", columns="name").sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = df.drop(columns=["ticker"]).set_index("date").sort_index()
         return df
 
     @classmethod
@@ -888,12 +827,7 @@ class Fundamental(feat.Features):
                 conn.execute(
                     sa.select(sql.fundam.c.ticker)
                     .group_by(sql.fundam.c.ticker)
-                    .having(
-                        *[
-                            sa.func.count(sql.fundam.c.name == col) >= lb
-                            for col in cls.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.fundam.c.date) >= lb)
                 )
                 .scalars()
                 .all()
@@ -941,7 +875,7 @@ class Fundamental(feat.Features):
             leave=True,
         ):
             try:
-                df = cls.from_other_refined(ticker, engine=engine)
+                df = cls.from_raw(ticker, engine=engine)
                 rowcount = len(df.index)
                 if rowcount:
                     cls.to_refined(ticker, df, engine=engine)
@@ -974,18 +908,9 @@ class Fundamental(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index("date")
-        if set(df.columns) < set(cls.columns):
-            raise ValueError(
-                f"Dataframe must have columns {cls.columns} but got {df.columns}"
-            )
-        df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:
             conn.execute(sql.fundam.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]

@@ -17,59 +17,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_unique_filings(
-    df: pd.DataFrame, /, *, form: str = "10-Q", units: None | str = None
-) -> pd.DataFrame:
-    """Get all unique rows as determined by the filing date and tag for a
-    period.
-
-    Args:
-        df: Dataframe without unique rows.
-        form: Only keep rows with form type ``form``. Most popular choices
-            include ``"10-K"`` for annual and ``"10-Q"`` for quarterly.
-        units: Only keep rows with units ``units`` if not ``None``.
-
-    Returns:
-        Dataframe with unique rows.
-
-    Examples:
-        Only get a company's original quarterly earnings-per-share filings.
-
-        >>> df = finagg.sec.api.company_concept.get(
-        ...     "EarningsPerShareBasic",
-        ...     ticker="AAPL",
-        ...     taxonomy="us-gaap",
-        ...     units="USD/shares",
-        ... )
-        >>> finagg.sec.feat.get_unique_filings(
-        ...     df,
-        ...     form="10-Q",
-        ...     units="USD/shares"
-        ... ).head(5)  # doctest: +SKIP
-             fy  fp  ...
-        0  2009  Q3  ...
-        1  2010  Q1  ...
-        2  2010  Q2  ...
-        3  2010  Q3  ...
-        4  2011  Q1  ...
-
-    """
-    mask = df["form"] == form
-    match form:
-        case "10-K":
-            mask &= df["fp"] == "FY"
-        case "10-Q":
-            mask &= df["fp"].str.startswith("Q")
-    if units:
-        mask &= df["units"] == units
-    df = df[mask]
-    return (
-        df.sort_values(["fy", "fp", "filed"])
-        .groupby(["fy", "fp", "tag"], as_index=False)
-        .first()
-    )
-
-
 class Submissions:
     """Get a single company's metadata as-is from raw SEC data.
 
@@ -404,7 +351,7 @@ class Tags:
                         units=units,
                     )
                     for form in ("10-K", "10-Q"):
-                        df_unique = get_unique_filings(df, form=form, units=units)
+                        df_unique = api.get_unique_filings(df, form=form, units=units)
                         rowcount = len(df_unique.index)
                         if rowcount:
                             cls.to_raw(df_unique, engine=engine)
@@ -419,6 +366,20 @@ class Tags:
                 except Exception as e:
                     logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
+
+    @classmethod
+    def many_from_raw(
+        cls,
+        ticker: str,
+        tags: list[str],
+        /,
+        *,
+        form: str = "10-Q",
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
+    ) -> pd.DataFrame:
+        ...
 
     @classmethod
     def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:

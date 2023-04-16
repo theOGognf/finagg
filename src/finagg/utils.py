@@ -313,6 +313,9 @@ def xbrl_financial_ratios(df: pd.DataFrame, /) -> pd.DataFrame:
     df["AssetCoverageRatio"] = (df["Assets"] - df["LiabilitiesCurrent"]) / df[
         "Liabilities"
     ]
+    df["BookRatio"] = (df["Assets"] - df["Liabilities"]) / df[
+        "CommonStockSharesOutstanding"
+    ]
     df["DebtEquityRatio"] = df["Liabilities"] / df["StockholdersEquity"]
     df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
         "LiabilitiesCurrent"

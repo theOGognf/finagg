@@ -195,6 +195,51 @@ class CompanyConcept(API):
         results["cik"] = cik
         return results.rename(columns={"entityName": "entity", "val": "value"})
 
+    @classmethod
+    def get_many_unique(
+        cls,
+        concepts: list[Concept],
+        *,
+        cik: None | str = None,
+        ticker: None | str = None,
+        form: str = "10-Q",
+        start: None | str = None,
+        end: None | str = None,
+        user_agent: None | str = None,
+    ) -> pd.DataFrame:
+        start = start or "1776-07-04"
+        end = end or utils.today
+        dfs = []
+        for concept in concepts:
+            tag = concept["tag"]
+            taxonomy = concept["taxonomy"]
+            units = concept["units"]
+            df = cls.get(
+                tag,
+                cik=cik,
+                ticker=ticker,
+                taxonomy=taxonomy,
+                units=units,
+                user_agent=user_agent,
+            )
+            df = get_unique_filings(df, form=form, units=units)
+            df = df[(df["filed"] >= start) & (df["filed"] <= end)]
+            dfs.append(df)
+        df = pd.concat(dfs)
+        df = df.set_index(["fy", "fp"]).sort_index()
+        df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
+        df = (
+            df.reset_index()
+            .pivot(
+                index=["fy", "fp", "filed"],
+                columns="tag",
+                values="value",
+            )
+            .fillna(method="ffill")
+            .dropna()
+        )
+        return df
+
 
 class CompanyFacts(API):
     """Get all XBRL disclosures for a single company.
@@ -593,10 +638,16 @@ popular_frames: list[Frame] = [
         "instant": True,
     },
     {
+        "tag": "CommonStockSharesOutstanding",
+        "taxonomy": "us-gaap",
+        "units": "shares",
+        "instant": True,
+    },
+    {
         "tag": "EarningsPerShareBasic",
         "taxonomy": "us-gaap",
         "units": "USD-per-shares",
-        "instant": False,
+        "instant": True,
     },
     {"tag": "InventoryNet", "taxonomy": "us-gaap", "units": "USD", "instant": True},
     {
@@ -778,3 +829,56 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
                     continue
                 tickers.add(ticker)
     return tickers
+
+
+def get_unique_filings(
+    df: pd.DataFrame, /, *, form: str = "10-Q", units: None | str = None
+) -> pd.DataFrame:
+    """Get all unique rows as determined by the filing date and tag for a
+    period.
+
+    Args:
+        df: Dataframe without unique rows.
+        form: Only keep rows with form type ``form``. Most popular choices
+            include ``"10-K"`` for annual and ``"10-Q"`` for quarterly.
+        units: Only keep rows with units ``units`` if not ``None``.
+
+    Returns:
+        Dataframe with unique rows.
+
+    Examples:
+        Only get a company's original quarterly earnings-per-share filings.
+
+        >>> df = finagg.sec.api.company_concept.get(
+        ...     "EarningsPerShareBasic",
+        ...     ticker="AAPL",
+        ...     taxonomy="us-gaap",
+        ...     units="USD/shares",
+        ... )
+        >>> finagg.sec.api.get_unique_filings(
+        ...     df,
+        ...     form="10-Q",
+        ...     units="USD/shares"
+        ... ).head(5)  # doctest: +SKIP
+             fy  fp  ...
+        0  2009  Q3  ...
+        1  2010  Q1  ...
+        2  2010  Q2  ...
+        3  2010  Q3  ...
+        4  2011  Q1  ...
+
+    """
+    mask = df["form"] == form
+    match form:
+        case "10-K":
+            mask &= df["fp"] == "FY"
+        case "10-Q":
+            mask &= df["fp"].str.startswith("Q")
+    if units:
+        mask &= df["units"] == units
+    df = df[mask]
+    return (
+        df.sort_values(["fy", "fp", "filed"])
+        .groupby(["fy", "fp", "tag"], as_index=False)
+        .first()
+    )

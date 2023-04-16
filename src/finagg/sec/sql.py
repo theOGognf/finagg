@@ -153,6 +153,12 @@ annual = sa.Table(
         doc="Logarithmic change in a company's current assets between years.",
     ),
     sa.Column(
+        "LOG_CHANGE(CommonStockSharesOutstanding)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's stock shares outstanding between years.",
+    ),
+    sa.Column(
         "LOG_CHANGE(InventoryNet)",
         sa.Float,
         nullable=False,
@@ -181,6 +187,12 @@ annual = sa.Table(
         sa.Float,
         nullable=False,
         doc="Total assets minus short term liabilities over total liabilities.",
+    ),
+    sa.Column(
+        "BookRatio",
+        sa.Float,
+        nullable=False,
+        doc="Total assets minus total liabilities over outstanding shares.",
     ),
     sa.Column(
         "DebtEquityRatio",
@@ -253,6 +265,15 @@ normalized_annual = sa.Table(
         ),
     ),
     sa.Column(
+        "NORM(LOG_CHANGE(CommonStockSharesOutstanding))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's stock shares outstanding between years "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
         "NORM(LOG_CHANGE(InventoryNet))",
         sa.Float,
         nullable=False,
@@ -294,6 +315,15 @@ normalized_annual = sa.Table(
         nullable=False,
         doc=(
             "Total assets minus short term liabilities over total liabilities "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(BookRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Total assets minus total liabilities over outstanding shares "
             "normalized against the company's industry."
         ),
     ),
@@ -378,6 +408,12 @@ quarterly = sa.Table(
         doc="Logarithmic change in a company's current assets between quarters.",
     ),
     sa.Column(
+        "LOG_CHANGE(CommonStockSharesOutstanding)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's stock shares outstanding between quarters.",
+    ),
+    sa.Column(
         "LOG_CHANGE(InventoryNet)",
         sa.Float,
         nullable=False,
@@ -406,6 +442,12 @@ quarterly = sa.Table(
         sa.Float,
         nullable=False,
         doc="Total assets minus short term liabilities over total liabilities.",
+    ),
+    sa.Column(
+        "BookRatio",
+        sa.Float,
+        nullable=False,
+        doc="Total assets minus total liabilities over outstanding shares.",
     ),
     sa.Column(
         "DebtEquityRatio",
@@ -485,6 +527,15 @@ normalized_quarterly = sa.Table(
         ),
     ),
     sa.Column(
+        "NORM(LOG_CHANGE(CommonStockSharesOutstanding))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's stock shares outstanding between quarters "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
         "NORM(LOG_CHANGE(InventoryNet))",
         sa.Float,
         nullable=False,
@@ -526,6 +577,15 @@ normalized_quarterly = sa.Table(
         nullable=False,
         doc=(
             "Total assets minus short term liabilities over total liabilities "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(BookRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Total assets minus total liabilities over outstanding shares "
             "normalized against the company's industry."
         ),
     ),
