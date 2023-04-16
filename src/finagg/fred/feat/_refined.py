@@ -209,9 +209,7 @@ class Economic:
             )
         if not len(df.index):
             raise NoResultFound(f"No economic rows found.")
-        df = df.pivot(index="date", values="value", columns="name").sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = df.set_index("date").sort_index()
         return df
 
     @classmethod
