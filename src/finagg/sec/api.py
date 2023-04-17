@@ -749,6 +749,34 @@ def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
     return _tickers_to_cik[ticker.upper()]
 
 
+def get_financial_ratios(df: pd.DataFrame, /) -> pd.DataFrame:
+    """Compute financial ratios in-place for a dataframe using XBRL financial
+    tags.
+
+    Args:
+        df: Dataframe with common XBRL financial tags (e.g., "Assets",
+            "Liabilities", etc.).
+
+    Returns:
+        ``df`` but with additional columns that're normalized financial ratios.
+
+    """
+    df["AssetCoverageRatio"] = (df["Assets"] - df["LiabilitiesCurrent"]) / df[
+        "Liabilities"
+    ]
+    df["BookRatio"] = (df["Assets"] - df["Liabilities"]) / df[
+        "CommonStockSharesOutstanding"
+    ]
+    df["DebtEquityRatio"] = df["Liabilities"] / df["StockholdersEquity"]
+    df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
+        "LiabilitiesCurrent"
+    ]
+    df["ReturnOnAssets"] = df["NetIncomeLoss"] / df["Assets"]
+    df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
+    df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
+    return df
+
+
 def get_ticker(cik: str, /, *, user_agent: None | str = None) -> str:
     """Return a company's ticker from its SEC CIK.
 

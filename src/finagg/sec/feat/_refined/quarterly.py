@@ -12,7 +12,6 @@ from tqdm import tqdm
 
 from .... import backend, utils
 from ... import api, sql
-from .. import _raw
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
@@ -588,7 +587,7 @@ class Quarterly:
             columns="tag",
             values="value",
         )
-        df = utils.xbrl_financial_ratios(df)
+        df = api.get_financial_ratios(df)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
         df = utils.resolve_func_cols(sql.quarterly, df, drop=True, inplace=True)
         df.columns = df.columns.rename(None)
@@ -637,7 +636,7 @@ class Quarterly:
             df = api.company_concept.get(
                 tag, ticker=ticker, taxonomy=taxonomy, units=units
             )
-            df = _raw.get_unique_filings(df, form="10-Q", units=units)
+            df = api.get_unique_filings(df, form="10-Q", units=units)
             df = df[(df["filed"] >= start) & (df["filed"] <= end)]
             dfs.append(df)
         df = pd.concat(dfs)

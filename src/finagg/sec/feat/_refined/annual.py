@@ -573,7 +573,7 @@ class Annual:
             columns="tag",
             values="value",
         )
-        df = utils.xbrl_financial_ratios(df)
+        df = api.get_financial_ratios(df)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
         df = utils.resolve_func_cols(sql.annual, df, drop=True, inplace=True)
         df.columns = df.columns.rename(None)
