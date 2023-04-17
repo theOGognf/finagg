@@ -124,35 +124,27 @@ class IndustryFundamental:
 
             df = pd.DataFrame(
                 conn.execute(
-                    sa.select(
-                        sql.fundam.c.date,
-                        sql.fundam.c.name,
-                        sa.func.avg(sql.fundam.c.value).label("avg"),
-                        sa.func.std(sql.fundam.c.value).label("std"),
-                    )
+                    sql.fundam.select()
                     .join(
                         sec.sql.submissions,
                         (sec.sql.submissions.c.ticker == sql.fundam.c.ticker)
                         & (sec.sql.submissions.c.sic.startswith(code)),
                     )
-                    .group_by(
-                        sql.fundam.c.date,
-                        sql.fundam.c.name,
-                    )
-                    .where(
-                        sql.fundam.c.date >= start,
-                        sql.fundam.c.date <= end,
-                    )
+                    .where(sql.fundam.c.filed >= start, sql.fundam.c.filed <= end)
                 )
             )
         if not len(df.index):
             raise NoResultFound(f"No industry fundamental rows found for {code}.")
-        df = df.pivot(
-            index="date",
-            columns="name",
-            values=["avg", "std"],
-        ).sort_index()
-        return df
+        df = df.drop(columns=["cik"])
+        df = df.melt(["date"], var_name="name", value_name="value").set_index("date")
+        return (
+            df.groupby(["date", "name"])
+            .agg([np.mean, np.std])
+            .reset_index()
+            .pivot(index=["date"], columns="name")["value"]
+            .sort_index()
+            .dropna()
+        )
 
 
 class NormalizedFundamental:
@@ -223,25 +215,30 @@ class NormalizedFundamental:
         engine = engine or backend.engine
         company_df = Fundamental.from_refined(
             ticker, start=start, end=end, engine=engine
-        )
+        ).reset_index(["date"])
+        date = company_df["date"]
         industry_df = IndustryFundamental.from_refined(
             ticker=ticker, level=level, start=start, end=end, engine=engine
+        ).reset_index(["date"])
+        company_df = (company_df - industry_df["mean"]) / industry_df["std"]
+        company_df["date"] = date
+        company_df = (
+            company_df.reset_index()
+            .set_index("filed")
+            .rename(lambda x: f"NORM({x})", axis=1)
         )
-        company_df = (company_df - industry_df["avg"]) / industry_df["std"]
-        company_df = company_df.sort_index()
-        pct_change_columns = Fundamental.pct_change_target_columns()
-        company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
-            value=0.0
-        )
-        df = (
+        company_df = (
             company_df.fillna(method="ffill")
-            .dropna()
             .reset_index()
-            .drop_duplicates("date")
+            .dropna()
+            .drop_duplicates("filed")
             .set_index("date")
+            .sort_index()
         )
-        df = df[Fundamental.columns]
-        return df
+        company_df = utils.resolve_col_order(
+            sql.normalized_fundam, company_df, extra_ignore=["filed"]
+        )
+        return company_df
 
     @classmethod
     def from_refined(
