@@ -142,9 +142,9 @@ class CompanyConcept(API):
         and concept (a taxonomy and tag) in a single dataframe.
 
         Args:
-            tag: Valid tag within the given `taxonomy`.
-            cik: Company SEC CIK. Mutually exclusive with `ticker`.
-            ticker: Company ticker. Mutually exclusive with `cik`.
+            tag: Valid tag within the given ``taxonomy``.
+            cik: Company SEC CIK. Mutually exclusive with ``ticker``.
+            ticker: Company ticker. Mutually exclusive with ``cik``.
             taxonomy: Valid SEC EDGAR taxonomy.
                 See https://www.sec.gov/info/edgar/edgartaxonomies.shtml for taxonomies.
             units: Currency to view results in.
@@ -207,6 +207,42 @@ class CompanyConcept(API):
         end: None | str = None,
         user_agent: None | str = None,
     ) -> pd.DataFrame:
+        """Return unique XBRL disclosures for a single company and filing
+        form from a set of company concepts.
+
+        Tags are also joined and pivoted such that each tag has its own
+        column. Gaps in reporting periods are forward-filled.
+
+        Args:
+            concepts: Company concepts to retrieve.
+            cik: Company SEC CIK. Mutually exclusive with ``ticker``.
+            ticker: Company ticker. Mutually exclusive with ``cik``.
+            form: SEC filing form type to include. ``"10-Q"`` is for quarterly
+                filing forms and ``"10-K"`` is for annual filing forms.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            user_agent: Self-declared bot header. Defaults to the value
+                found in the ``SEC_API_USER_AGENT`` environment variable.
+
+        Returns:
+            Pivoted dataframe with a tag per column.
+
+        Examples:
+            >>> finagg.sec.api.company_concept.get_many_unique(
+            ...     finagg.sec.api.popular_concepts,
+            ...     ticker="AAPL",
+            ... ).head(5)  # doctest: +SKIP
+                                      Assets  AssetsCurrent  CommonStockSharesOutstanding ...
+            fy   fp filed                                                                 ...
+            2009 Q3 2009-07-22  3.957200e+10   3.231100e+10                   888325973.0 ...
+            2010 Q1 2010-01-25  4.750100e+10   3.155500e+10                   899805500.0 ...
+                 Q2 2010-04-21  4.750100e+10   3.155500e+10                   899805500.0 ...
+                 Q3 2010-07-21  4.750100e+10   3.155500e+10                   899805500.0 ...
+            2011 Q1 2011-01-19  7.518300e+10   4.167800e+10                   915970050.0 ...
+
+        """
         start = start or "1776-07-04"
         end = end or utils.today
         dfs = []
@@ -238,6 +274,7 @@ class CompanyConcept(API):
             .fillna(method="ffill")
             .dropna()
         )
+        df.columns = df.columns.rename(None)
         return df
 
 
