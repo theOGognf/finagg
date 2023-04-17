@@ -130,12 +130,12 @@ class IndustryFundamental:
                         (sec.sql.submissions.c.ticker == sql.fundam.c.ticker)
                         & (sec.sql.submissions.c.sic.startswith(code)),
                     )
-                    .where(sql.fundam.c.filed >= start, sql.fundam.c.filed <= end)
+                    .where(sql.fundam.c.date >= start, sql.fundam.c.date <= end)
                 )
             )
         if not len(df.index):
             raise NoResultFound(f"No industry fundamental rows found for {code}.")
-        df = df.drop(columns=["cik"])
+        df = df.drop(columns=["ticker"])
         df = df.melt(["date"], var_name="name", value_name="value").set_index("date")
         return (
             df.groupby(["date", "name"])
@@ -224,20 +224,18 @@ class NormalizedFundamental:
         company_df["date"] = date
         company_df = (
             company_df.reset_index()
-            .set_index("filed")
+            .set_index("date")
             .rename(lambda x: f"NORM({x})", axis=1)
         )
         company_df = (
             company_df.fillna(method="ffill")
             .reset_index()
             .dropna()
-            .drop_duplicates("filed")
+            .drop_duplicates("date")
             .set_index("date")
             .sort_index()
         )
-        company_df = utils.resolve_col_order(
-            sql.normalized_fundam, company_df, extra_ignore=["filed"]
-        )
+        company_df = utils.resolve_col_order(sql.normalized_fundam, company_df)
         return company_df
 
     @classmethod
@@ -357,12 +355,7 @@ class NormalizedFundamental:
                 conn.execute(
                     sa.select(sql.normalized_fundam.c.ticker)
                     .group_by(sql.normalized_fundam.c.ticker)
-                    .having(
-                        *[
-                            sa.func.count(sql.normalized_fundam.c.name == col) >= lb
-                            for col in Fundamental.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.normalized_fundam.c.date) >= lb)
                 )
                 .scalars()
                 .all()

@@ -52,11 +52,22 @@ def entry_point() -> None:
         "dropping and recreating them."
     ),
 )
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Sets the log level to DEBUG to show installation errors for each series.",
+)
 def install(
     refined: list[Literal["fundam", "fundam.normalized"]] = [],
     all_: bool = False,
     recreate_tables: bool = False,
+    verbose: bool = False,
 ) -> int:
+    if verbose:
+        logging.getLogger(__package__).setLevel(logging.DEBUG)
+
     if "SEC_API_USER_AGENT" not in os.environ:
         logger.warning(
             "No SEC API user agent found in the environment. "
