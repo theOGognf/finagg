@@ -12,7 +12,6 @@ from tqdm import tqdm
 
 from .... import backend, utils
 from ... import api, sql
-from .. import _raw
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
@@ -618,7 +617,7 @@ class Annual:
             df = api.company_concept.get(
                 tag, ticker=ticker, taxonomy=taxonomy, units=units
             )
-            df = _raw.get_unique_filings(df, form="10-K", units=units)
+            df = api.get_unique_filings(df, form="10-K", units=units)
             df = df[(df["filed"] >= start) & (df["filed"] <= end)]
             dfs.append(df)
         df = pd.concat(dfs)
