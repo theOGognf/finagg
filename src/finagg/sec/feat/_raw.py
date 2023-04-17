@@ -368,7 +368,7 @@ class Tags:
         return total_rows
 
     @classmethod
-    def many_from_raw(
+    def join_from_raw(
         cls,
         ticker: str,
         tags: list[str],
@@ -409,7 +409,7 @@ class Tags:
                 the tags in ``tags`` for ``ticker`` in the raw SQL table.
 
         Examples:
-            >>> finagg.sec.feat.tags.many_from_raw(
+            >>> finagg.sec.feat.tags.join_from_raw(
             ...     "AAPL",
             ...     ["Assets", "EarningsPerShareBasic"],
             ...     form="10-Q"
@@ -445,14 +445,7 @@ class Tags:
             )
         if not len(df.index):
             raise NoResultFound(f"No rows found for {ticker}.")
-        df = df.set_index(["fy", "fp"]).sort_index()
-        df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
-        df = df.reset_index().pivot(
-            index=["fy", "fp", "filed"],
-            columns="tag",
-            values="value",
-        )
-        df.columns = df.columns.rename(None)
+        df = api.join_filings(df, form=form)
         for tag in tags:
             if tag not in df.columns:
                 raise NoResultFound(f"No {tag} rows found for {ticker}.")

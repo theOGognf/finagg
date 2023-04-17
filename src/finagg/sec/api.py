@@ -196,7 +196,7 @@ class CompanyConcept(API):
         return results.rename(columns={"entityName": "entity", "val": "value"})
 
     @classmethod
-    def get_many_unique(
+    def get_and_join(
         cls,
         concepts: list[Concept],
         *,
@@ -230,7 +230,7 @@ class CompanyConcept(API):
             Pivoted dataframe with a tag per column.
 
         Examples:
-            >>> finagg.sec.api.company_concept.get_many_unique(
+            >>> finagg.sec.api.company_concept.get_and_join(
             ...     finagg.sec.api.popular_concepts,
             ...     ticker="AAPL",
             ... ).head(5)  # doctest: +SKIP
@@ -262,19 +262,7 @@ class CompanyConcept(API):
             df = df[(df["filed"] >= start) & (df["filed"] <= end)]
             dfs.append(df)
         df = pd.concat(dfs)
-        df = df.set_index(["fy", "fp"]).sort_index()
-        df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
-        df = (
-            df.reset_index()
-            .pivot(
-                index=["fy", "fp", "filed"],
-                columns="tag",
-                values="value",
-            )
-            .fillna(method="ffill")
-            .dropna()
-        )
-        df.columns = df.columns.rename(None)
+        df = join_filings(df, form=form)
         return df
 
 
@@ -947,3 +935,43 @@ def get_unique_filings(
         .groupby(["fy", "fp", "tag"], as_index=False)
         .first()
     )
+
+
+def join_filings(df: pd.DataFrame, /, *, form: str = "10-Q") -> pd.DataFrame:
+    """Helper for joining filings into a pivoted dataframe such that each
+    tag has its own column.
+
+    Tags are joined according to fiscal year and fiscal period. The newest
+    filing date is used when tags have different filing dates for the same
+    fiscal year and fiscal period. Tags are forward-filled to fill gaps
+    in filings.
+
+    Args:
+        df: "Melted" dataframe where each filing is a row.
+        form: Type of form to join. ``"10-K"`` sets the index to the fiscal
+            year and filing date whereas ``"10-Q"`` sets the index to the
+            fiscal year, fiscal period, and filing date.
+
+    Returns:
+        A pivoted dataframe where each column is a tag.
+
+    """
+    match form:
+        case "10-K":
+            df = df.drop(columns=["fp"]).set_index(["fy"]).sort_index()
+            df["filed"] = df.groupby(["fy"])["filed"].max()
+            df = df.reset_index().pivot(
+                index=["fy", "filed"],
+                columns="tag",
+                values="value",
+            )
+        case "10-Q":
+            df = df.set_index(["fy", "fp"]).sort_index()
+            df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
+            df = df.reset_index().pivot(
+                index=["fy", "fp", "filed"],
+                columns="tag",
+                values="value",
+            )
+    df.columns = df.columns.rename(None)
+    return df

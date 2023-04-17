@@ -601,10 +601,9 @@ class Annual:
             2014 2014-10-27            0.161871                   0.239927                                  1.902394 ...
 
         """
-        df = api.company_concept.get_many_unique(
+        df = api.company_concept.get_and_join(
             api.popular_concepts, ticker=ticker, form="10-K", start=start, end=end
         )
-        df = df.reset_index("fp")
         return cls._normalize(df)
 
     @classmethod
@@ -647,7 +646,7 @@ class Annual:
             2014 2014-10-27            0.161871                   0.239927                                  1.902394 ...
 
         """
-        df = _raw.Tags.many_from_raw(
+        df = _raw.Tags.join_from_raw(
             ticker,
             [concept["tag"] for concept in api.popular_concepts],
             form="10-K",

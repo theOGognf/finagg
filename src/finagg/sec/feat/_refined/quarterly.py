@@ -620,7 +620,7 @@ class Quarterly:
                  Q2 2011-04-21            0.000000                   0.000000                                  0.000000 ...
 
         """
-        df = api.company_concept.get_many_unique(
+        df = api.company_concept.get_and_join(
             api.popular_concepts, ticker=ticker, form="10-Q", start=start, end=end
         )
         return cls._normalize(df)
@@ -665,7 +665,7 @@ class Quarterly:
                  Q2 2011-04-21            0.000000                   0.000000                                  0.000000 ...
 
         """
-        df = _raw.Tags.many_from_raw(
+        df = _raw.Tags.join_from_raw(
             ticker,
             [concept["tag"] for concept in api.popular_concepts],
             form="10-Q",
