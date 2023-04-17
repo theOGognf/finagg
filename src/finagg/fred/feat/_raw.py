@@ -84,7 +84,7 @@ class Series:
             )
         if not len(df.index):
             raise NoResultFound(f"No series rows found for {series_id}.")
-        return df.set_index(["date"]).sort_index()
+        return df.set_index("date").sort_index()
 
     @classmethod
     def get_id_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:

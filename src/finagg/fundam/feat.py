@@ -304,9 +304,7 @@ class NormalizedFundamental:
             raise NoResultFound(
                 f"No industry-normalized fundamental rows found for {ticker}."
             )
-        df = df.pivot(index="date", columns="name", values="value").sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[Fundamental.columns]
+        df = df.drop(columns=["ticker"]).set_index("date").sort_index()
         return df
 
     @classmethod
@@ -433,10 +431,9 @@ class NormalizedFundamental:
                 conn.execute(
                     sa.select(sql.normalized_fundam.c.ticker)
                     .where(
-                        sql.normalized_fundam.c.name == column,
                         sql.normalized_fundam.c.date == date,
                     )
-                    .order_by(sql.normalized_fundam.c.value)
+                    .order_by(sql.normalized_fundam.c[column])
                 )
                 .scalars()
                 .all()
@@ -528,11 +525,6 @@ class NormalizedFundamental:
         """
         engine = engine or backend.engine
         df = df.reset_index("date")
-        if set(df.columns) < set(Fundamental.columns):
-            raise ValueError(
-                f"Dataframe must have columns {Fundamental.columns} but got {df.columns}"
-            )
-        df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:
             conn.execute(sql.normalized_fundam.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
@@ -582,14 +574,12 @@ class Fundamental:
         /,
     ) -> pd.DataFrame:
         """Normalize the feature columns."""
-        df = pd.merge(
-            quarterly, prices, how="outer", left_index=True, right_index=True
-        ).sort_index()
+        df = pd.merge(quarterly, prices, how="outer", left_index=True, right_index=True)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
-        df["PriceBookRatio"] = df["price"] / df["BookRatio"]
-        df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShareBasic"]
+        df["PriceBookRatio"] = df["open"] / df["BookRatio"]
+        df["PriceEarningsRatio"] = df["open"] / df["EarningsPerShareBasic"]
         df.index.names = ["date"]
-        df = df[cls.columns]
+        df = utils.resolve_col_order(sql.fundam, df)
         return df.dropna()
 
     @classmethod
@@ -616,48 +606,29 @@ class Fundamental:
 
         Examples:
             >>> finagg.fundam.feat.fundam.from_api("AAPL").head(5)  # doctest: +SKIP
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
+                        PriceBookRatio  PriceEarningsRatio
+            date
+            2010-01-25        0.175061            2.423509
+            2010-01-26        0.178035            2.464677
+            2010-01-27        0.178813            2.475447
+            2010-01-28        0.177153            2.452471
+            2010-01-29        0.173825            2.406396
 
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        filings = sec.api.company_concept.get_many_unique(
+        quarterly = sec.feat.quarterly.from_api(
             ticker,
-            [
-                {
-                    "tag": "Assets",
-                    "taxonomy": "us-gaap",
-                    "units": "USD",
-                },
-                {
-                    "tag": "Liabilities",
-                    "taxonomy": "us-gaap",
-                    "units": "USD",
-                },
-                {
-                    "tag": "CommonStockSharesOutstanding",
-                    "taxonomy": "us-gaap",
-                    "units": "shares",
-                },
-                {
-                    "tag": "EarningsPerShareBasic",
-                    "taxonomy": "us-gaap",
-                    "units": "USD-per-shares",
-                },
-            ],
-            form="10-Q",
             start=start,
             end=end,
-        )
-        start = str(filings.index[0])
-        prices = yfinance.api.get(ticker, start=start, end=end)
-        return cls._normalize(filings, prices)
+        ).reset_index(["fy", "fp"], drop=True)
+        start = str(quarterly.index[0])
+        prices = yfinance.api.get(
+            ticker,
+            start=start,
+            end=end,
+        ).set_index("date")
+        return cls._normalize(quarterly, prices)
 
     @classmethod
     def from_raw(
@@ -686,13 +657,13 @@ class Fundamental:
 
         Examples:
             >>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)  # doctest: +SKIP
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
+                        PriceBookRatio  PriceEarningsRatio
+            date
+            2010-01-25        0.175061            2.423509
+            2010-01-26        0.178035            2.464677
+            2010-01-27        0.178813            2.475447
+            2010-01-28        0.177153            2.452471
+            2010-01-29        0.173825            2.406396
 
         """
         start = start or "1776-07-04"
@@ -748,13 +719,13 @@ class Fundamental:
 
         Examples:
             >>> finagg.fundam.feat.fundam.from_refined("AAPL").head(5)  # doctest: +SKIP
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
+                        PriceBookRatio  PriceEarningsRatio
+            date
+            2010-01-25        0.175061            2.423509
+            2010-01-26        0.178035            2.464677
+            2010-01-27        0.178813            2.475447
+            2010-01-28        0.177153            2.452471
+            2010-01-29        0.173825            2.406396
 
         """
         start = start or "1776-07-04"

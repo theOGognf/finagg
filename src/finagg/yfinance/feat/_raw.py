@@ -83,7 +83,7 @@ class Prices:
             )
         if not len(df.index):
             raise NoResultFound(f"No rows found for {ticker}.")
-        return df.drop(columns=["ticker"]).set_index(["date"]).sort_index()
+        return df.drop(columns=["ticker"]).set_index("date").sort_index()
 
     @classmethod
     def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
