@@ -604,6 +604,7 @@ class Annual:
         df = api.company_concept.get_many_unique(
             api.popular_concepts, ticker=ticker, form="10-K", start=start, end=end
         )
+        df = df.reset_index("fp")
         return cls._normalize(df)
 
     @classmethod
