@@ -147,7 +147,7 @@ class RateLimit(ABC):
             to the rate limit OR a dictionary containing:
 
                 - "limit": a number indicating the request/response's
-                    contribution to the rate limit
+                  contribution to the rate limit
                 - "wait": time to wait before a new request can be made
 
         """

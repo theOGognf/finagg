@@ -534,7 +534,7 @@ class SeriesSearch(_api.API):
             search_type: Determines the type of search to perform. Options include:
 
                 - "full_text" = search series attributes, units, frequency,
-                    and tags by parsing words into stems.
+                  and tags by parsing words into stems.
                 - "series_id" = performs a substring search on series IDs.
 
             realtime_start: Start date for fetching results
