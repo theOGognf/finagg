@@ -672,7 +672,7 @@ popular_frames: list[Frame] = [
         "tag": "EarningsPerShareBasic",
         "taxonomy": "us-gaap",
         "units": "USD-per-shares",
-        "instant": True,
+        "instant": False,
     },
     {"tag": "InventoryNet", "taxonomy": "us-gaap", "units": "USD", "instant": True},
     {
