@@ -139,9 +139,94 @@ annual = sa.Table(
         doc="Unique company ticker.",
     ),
     sa.Column("filed", sa.String, nullable=False, doc="Filing date."),
-    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
-    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column(
+        "LOG_CHANGE(Assets)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's total assets between years.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(AssetsCurrent)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's current assets between years.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(CommonStockSharesOutstanding)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's stock shares outstanding between years.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(InventoryNet)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's inventory between years.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(Liabilities)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's total liabilities between years.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(LiabilitiesCurrent)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's current liabilities between years.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(StockholdersEquity)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's stockholder's equity between years.",
+    ),
+    sa.Column(
+        "AssetCoverageRatio",
+        sa.Float,
+        nullable=False,
+        doc="Total assets minus short term liabilities over total liabilities.",
+    ),
+    sa.Column(
+        "BookRatio",
+        sa.Float,
+        nullable=False,
+        doc="Total assets minus total liabilities over outstanding shares.",
+    ),
+    sa.Column(
+        "DebtEquityRatio",
+        sa.Float,
+        nullable=False,
+        doc="Total liabilities over stock holder's equity.",
+    ),
+    sa.Column(
+        "EarningsPerShareBasic", sa.Float, nullable=False, doc="Earnings per share."
+    ),
+    sa.Column(
+        "QuickRatio",
+        sa.Float,
+        nullable=False,
+        doc="Current assets minus inventory over current liabilities.",
+    ),
+    sa.Column(
+        "ReturnOnAssets",
+        sa.Float,
+        nullable=False,
+        doc="Net income/loss over total assets.",
+    ),
+    sa.Column(
+        "ReturnOnEquity",
+        sa.Float,
+        nullable=False,
+        doc="Net income/loss over stockholder's equity.",
+    ),
+    sa.Column(
+        "WorkingCapitalRatio",
+        sa.Float,
+        nullable=False,
+        doc="Current assets over current liabilities.",
+    ),
 )
 """SQL table for storing refined data as managed by :data:`finagg.sec.feat.annual`
 (an alias for :class:`finagg.sec.feat.Annual`).
@@ -160,9 +245,130 @@ normalized_annual = sa.Table(
         doc="Unique company ticker.",
     ),
     sa.Column("filed", sa.String, nullable=False, doc="Filing date."),
-    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
-    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column(
+        "NORM(LOG_CHANGE(Assets))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's total assets between years "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(AssetsCurrent))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's current assets between years "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(CommonStockSharesOutstanding))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's stock shares outstanding between years "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(InventoryNet))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's inventory between years "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(Liabilities))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's total liabilities between years "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(LiabilitiesCurrent))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's current liabilities between years "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(StockholdersEquity))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's stockholder's equity between "
+            "years normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(AssetCoverageRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Total assets minus short term liabilities over total liabilities "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(BookRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Total assets minus total liabilities over outstanding shares "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(DebtEquityRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Total liabilities over stock holder's equity normalized against "
+            "the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(EarningsPerShareBasic)",
+        sa.Float,
+        nullable=False,
+        doc="Earnings per share normalized against the company's industry.",
+    ),
+    sa.Column(
+        "NORM(QuickRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Current assets minus inventory over current liabilities normalized "
+            "against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(ReturnOnAssets)",
+        sa.Float,
+        nullable=False,
+        doc="Net income/loss over total assets normalized against the company's industry.",
+    ),
+    sa.Column(
+        "NORM(ReturnOnEquity)",
+        sa.Float,
+        nullable=False,
+        doc="Net income/loss over stockholder's equity normalized against the company's industry.",
+    ),
+    sa.Column(
+        "NORM(WorkingCapitalRatio)",
+        sa.Float,
+        nullable=False,
+        doc="Current assets over current liabilities normalized against the company's industry.",
+    ),
 )
 """SQL table for storing refined data as managed by
 :attr:`finagg.sec.feat.Annual.normalized` (an alias for
@@ -182,7 +388,6 @@ quarterly = sa.Table(
         doc="Unique company ticker.",
     ),
     sa.Column("filed", sa.String, nullable=False, doc="Filing date."),
-    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
     sa.Column(
         "fp",
@@ -190,7 +395,93 @@ quarterly = sa.Table(
         primary_key=True,
         doc="Fiscal period the value is for (e.g., Q1 or FY).",
     ),
-    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column(
+        "LOG_CHANGE(Assets)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's total assets between quarters.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(AssetsCurrent)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's current assets between quarters.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(CommonStockSharesOutstanding)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's stock shares outstanding between quarters.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(InventoryNet)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's inventory between quarters.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(Liabilities)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's total liabilities between quarters.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(LiabilitiesCurrent)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's current liabilities between quarters.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(StockholdersEquity)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in a company's stockholder's equity between quarters.",
+    ),
+    sa.Column(
+        "AssetCoverageRatio",
+        sa.Float,
+        nullable=False,
+        doc="Total assets minus short term liabilities over total liabilities.",
+    ),
+    sa.Column(
+        "BookRatio",
+        sa.Float,
+        nullable=False,
+        doc="Total assets minus total liabilities over outstanding shares.",
+    ),
+    sa.Column(
+        "DebtEquityRatio",
+        sa.Float,
+        nullable=False,
+        doc="Total liabilities over stock holder's equity.",
+    ),
+    sa.Column(
+        "EarningsPerShareBasic", sa.Float, nullable=False, doc="Earnings per share."
+    ),
+    sa.Column(
+        "QuickRatio",
+        sa.Float,
+        nullable=False,
+        doc="Current assets minus inventory over current liabilities.",
+    ),
+    sa.Column(
+        "ReturnOnAssets",
+        sa.Float,
+        nullable=False,
+        doc="Net income/loss over total assets.",
+    ),
+    sa.Column(
+        "ReturnOnEquity",
+        sa.Float,
+        nullable=False,
+        doc="Net income/loss over stockholder's equity.",
+    ),
+    sa.Column(
+        "WorkingCapitalRatio",
+        sa.Float,
+        nullable=False,
+        doc="Current assets over current liabilities.",
+    ),
 )
 """SQL table for storing refined data as managed by
 :data:`finagg.sec.feat.quarterly` (an alias for
@@ -210,7 +501,6 @@ normalized_quarterly = sa.Table(
         doc="Unique company ticker.",
     ),
     sa.Column("filed", sa.String, nullable=False, doc="Filing date."),
-    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
     sa.Column("fy", sa.Integer, primary_key=True, doc="Fiscal year the value is for."),
     sa.Column(
         "fp",
@@ -218,7 +508,129 @@ normalized_quarterly = sa.Table(
         primary_key=True,
         doc="Fiscal period the value is for (e.g., Q1 or FY).",
     ),
-    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column(
+        "NORM(LOG_CHANGE(Assets))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's total assets between quarters "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(AssetsCurrent))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's current assets between quarters "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(CommonStockSharesOutstanding))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's stock shares outstanding between quarters "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(InventoryNet))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's inventory between quarters "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(Liabilities))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's total liabilities between quarters "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(LiabilitiesCurrent))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's current liabilities between quarters "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(LOG_CHANGE(StockholdersEquity))",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Logarithmic change in a company's stockholder's equity between "
+            "quarters normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(AssetCoverageRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Total assets minus short term liabilities over total liabilities "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(BookRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Total assets minus total liabilities over outstanding shares "
+            "normalized against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(DebtEquityRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Total liabilities over stock holder's equity normalized against "
+            "the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(EarningsPerShareBasic)",
+        sa.Float,
+        nullable=False,
+        doc="Earnings per share normalized against the company's industry.",
+    ),
+    sa.Column(
+        "NORM(QuickRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Current assets minus inventory over current liabilities normalized "
+            "against the company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(ReturnOnAssets)",
+        sa.Float,
+        nullable=False,
+        doc="Net income/loss over total assets normalized against the company's industry.",
+    ),
+    sa.Column(
+        "NORM(ReturnOnEquity)",
+        sa.Float,
+        nullable=False,
+        doc="Net income/loss over stockholder's equity normalized against the company's industry.",
+    ),
+    sa.Column(
+        "NORM(WorkingCapitalRatio)",
+        sa.Float,
+        nullable=False,
+        doc="Current assets over current liabilities normalized against the company's industry.",
+    ),
 )
 """SQL table for storing refined data as managed by
 :attr:`finagg.sec.feat.Quarterly.normalized` (an alias for

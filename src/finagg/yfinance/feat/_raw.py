@@ -74,14 +74,7 @@ class Prices:
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
-                    sa.select(
-                        sql.prices.c.date,
-                        sql.prices.c.open,
-                        sql.prices.c.high,
-                        sql.prices.c.low,
-                        sql.prices.c.close,
-                        sql.prices.c.volume,
-                    ).where(
+                    sql.prices.select().where(
                         sql.prices.c.ticker == ticker,
                         sql.prices.c.date >= start,
                         sql.prices.c.date <= end,
@@ -90,7 +83,7 @@ class Prices:
             )
         if not len(df.index):
             raise NoResultFound(f"No rows found for {ticker}.")
-        return df.set_index(["date"]).sort_index()
+        return df.drop(columns=["ticker"]).set_index("date").sort_index()
 
     @classmethod
     def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:

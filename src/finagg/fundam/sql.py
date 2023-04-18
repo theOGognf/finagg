@@ -23,8 +23,18 @@ fundam = sa.Table(
         doc="Unique company ticker.",
     ),
     sa.Column("date", sa.String, primary_key=True, doc="Filing and stock price dates."),
-    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
-    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column(
+        "PriceBookRatio",
+        sa.Float,
+        nullable=False,
+        doc="Market share price over book share price.",
+    ),
+    sa.Column(
+        "PriceEarningsRatio",
+        sa.Float,
+        nullable=False,
+        doc="Market share price over earnings per share.",
+    ),
 )
 """SQL table for storing refined data as managed by
 :data:`finagg.fundam.feat.fundam` (an alias for
@@ -44,8 +54,24 @@ normalized_fundam = sa.Table(
         doc="Unique company ticker.",
     ),
     sa.Column("date", sa.String, primary_key=True, doc="Filing and stock price dates."),
-    sa.Column("name", sa.String, primary_key=True, doc="Feature name."),
-    sa.Column("value", sa.Float, nullable=False, doc="Feature value."),
+    sa.Column(
+        "NORM(PriceBookRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Market share price over book share price normalized against the "
+            "company's industry."
+        ),
+    ),
+    sa.Column(
+        "NORM(PriceEarningsRatio)",
+        sa.Float,
+        nullable=False,
+        doc=(
+            "Market share price over earnings per share normalized against the "
+            "company's industry."
+        ),
+    ),
 )
 """SQL table for storing refined data as managed by
 :attr:`finagg.fundam.feat.Fundamental.normalized` (an alias for

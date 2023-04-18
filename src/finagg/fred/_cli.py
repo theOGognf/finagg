@@ -7,6 +7,7 @@ from typing import Literal
 import click
 
 from .. import utils
+from . import api as _api
 from . import feat as _feat
 
 logging.basicConfig(
@@ -28,7 +29,6 @@ def entry_point() -> None:
 )
 @click.option(
     "--raw",
-    "-r",
     type=click.Choice(["series"]),
     multiple=True,
     help=(
@@ -40,8 +40,7 @@ def entry_point() -> None:
 )
 @click.option(
     "--refined",
-    "-ref",
-    type=click.Choice(["economic", "economic.normalized"]),
+    type=click.Choice(["economic"]),
     multiple=True,
     help=(
         "Refined tables to install. This requires raw data to be "
@@ -105,7 +104,7 @@ def entry_point() -> None:
 )
 def install(
     raw: list[Literal["series"]] = [],
-    refined: list[Literal["economic", "economic.normalized"]] = [],
+    refined: list[Literal["economic"]] = [],
     all_: bool = False,
     series: list[str] = [],
     series_set: None | Literal["economic"] = None,
@@ -143,7 +142,7 @@ def install(
     if all_raw:
         match series_set:
             case "economic":
-                all_series |= set(_feat.economic.series_ids)
+                all_series |= set(_api.popular_series)
 
         if not all_series:
             logger.info(
@@ -157,15 +156,12 @@ def install(
 
     all_refined = set()
     if all_:
-        all_refined = {"economic", "economic.normalized"}
+        all_refined = {"economic"}
     elif refined:
         all_refined = set(refined)
 
     if "economic" in all_refined:
         total_rows += _feat.economic.install(recreate_tables=recreate_tables)
-
-    if "economic.normalized" in all_refined:
-        total_rows += _feat.economic.normalized.install(recreate_tables=recreate_tables)
 
     if all_ or all_refined or all_raw:
         if total_rows:

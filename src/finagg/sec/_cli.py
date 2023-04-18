@@ -29,7 +29,6 @@ def entry_point() -> None:
 )
 @click.option(
     "--raw",
-    "-r",
     type=click.Choice(["submissions", "tags"]),
     multiple=True,
     help=(
@@ -42,7 +41,6 @@ def entry_point() -> None:
 )
 @click.option(
     "--refined",
-    "-ref",
     type=click.Choice(
         ["annual", "annual.normalized", "quarterly", "quarterly.normalized"]
     ),

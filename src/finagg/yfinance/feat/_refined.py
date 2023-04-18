@@ -9,7 +9,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from ... import backend, feat, utils
+from ... import backend, utils
 from .. import api, sql
 from . import _raw
 
@@ -19,7 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class Daily(feat.Features):
+class Daily:
     """Methods for gathering daily stock data features from Yahoo! finance.
 
     The module variable :data:`finagg.yfinance.feat.daily` is an instance of
@@ -38,30 +38,12 @@ class Daily(feat.Features):
 
     """
 
-    #: Columns within this feature set. Dataframes returned by this class's
-    #: methods will always contain these columns. The refined data SQL table
-    #: corresponding to these features will also have rows that have these
-    #: names.
-    columns = [
-        "price",
-        "open_pct_change",
-        "high_pct_change",
-        "low_pct_change",
-        "close_pct_change",
-        "volume_pct_change",
-    ]
-
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize daily features columns."""
-        df = df.drop(columns=["ticker"]).set_index("date").astype(float).sort_index()
-        df["price"] = df["close"]
+        df = df.drop(columns=["ticker"]).set_index("date").sort_index()
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
-        df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(
-            utils.safe_pct_change
-        )
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = utils.resolve_func_cols(sql.daily, df, drop=True, inplace=True)
         return df.dropna()
 
     @classmethod
@@ -82,13 +64,13 @@ class Daily(feat.Features):
 
         Examples:
             >>> finagg.yfinance.feat.daily.from_api("AAPL").head(5)  # doctest: +SKIP
-                         price  open_pct_change  high_pct_change  low_pct_change  close_pct_change  volume_pct_change
-            date
-            1980-12-15  0.0945          -0.0478          -0.0519         -0.0522           -0.0522            -0.6250
-            1980-12-16  0.0876          -0.0731          -0.0731         -0.0734           -0.0734            -0.3989
-            1980-12-17  0.0897           0.0197           0.0246          0.0248            0.0248            -0.1824
-            1980-12-18  0.0924           0.0290           0.0289          0.0290            0.0290            -0.1503
-            1980-12-19  0.0980           0.0610           0.0607          0.0610            0.0610            -0.3379
+                        LOG_CHANGE(open)  LOG_CHANGE(high)  LOG_CHANGE(low)  LOG_CHANGE(close) ...
+            date                                                                               ...
+            1980-12-15         -0.049005         -0.053343        -0.053581          -0.053581 ...
+            1980-12-16         -0.075870         -0.075870        -0.076231          -0.076231 ...
+            1980-12-17          0.019512          0.024331         0.024450           0.024450 ...
+            1980-12-18          0.028580          0.028445         0.028580           0.028580 ...
+            1980-12-19          0.059239          0.058970         0.059239           0.059239 ...
 
         """
         start = start or "1776-07-04"
@@ -126,13 +108,13 @@ class Daily(feat.Features):
 
         Examples:
             >>> finagg.yfinance.feat.daily.from_raw("AAPL").head(5)  # doctest: +SKIP
-                         price  open_pct_change  high_pct_change  low_pct_change  close_pct_change  volume_pct_change
-            date
-            1980-12-15  0.0945          -0.0478          -0.0519         -0.0522           -0.0522            -0.6250
-            1980-12-16  0.0876          -0.0731          -0.0731         -0.0734           -0.0734            -0.3989
-            1980-12-17  0.0897           0.0197           0.0246          0.0248            0.0248            -0.1824
-            1980-12-18  0.0924           0.0290           0.0289          0.0290            0.0290            -0.1503
-            1980-12-19  0.0980           0.0610           0.0607          0.0610            0.0610            -0.3379
+                        LOG_CHANGE(open)  LOG_CHANGE(high)  LOG_CHANGE(low)  LOG_CHANGE(close) ...
+            date                                                                               ...
+            1980-12-15         -0.049005         -0.053343        -0.053581          -0.053581 ...
+            1980-12-16         -0.075870         -0.075870        -0.076231          -0.076231 ...
+            1980-12-17          0.019512          0.024331         0.024450           0.024450 ...
+            1980-12-18          0.028580          0.028445         0.028580           0.028580 ...
+            1980-12-19          0.059239          0.058970         0.059239           0.059239 ...
 
         """
         start = start or "1776-07-04"
@@ -186,13 +168,13 @@ class Daily(feat.Features):
 
         Examples:
             >>> finagg.yfinance.feat.daily.from_refined("AAPL").head(5)  # doctest: +SKIP
-                         price  open_pct_change  high_pct_change  low_pct_change  close_pct_change  volume_pct_change
-            date
-            1980-12-15  0.0945          -0.0478          -0.0519         -0.0522           -0.0522            -0.6250
-            1980-12-16  0.0876          -0.0731          -0.0731         -0.0734           -0.0734            -0.3989
-            1980-12-17  0.0897           0.0197           0.0246          0.0248            0.0248            -0.1824
-            1980-12-18  0.0924           0.0290           0.0289          0.0290            0.0290            -0.1503
-            1980-12-19  0.0980           0.0610           0.0607          0.0610            0.0610            -0.3379
+                        LOG_CHANGE(open)  LOG_CHANGE(high)  LOG_CHANGE(low)  LOG_CHANGE(close) ...
+            date                                                                               ...
+            1980-12-15         -0.049005         -0.053343        -0.053581          -0.053581 ...
+            1980-12-16         -0.075870         -0.075870        -0.076231          -0.076231 ...
+            1980-12-17          0.019512          0.024331         0.024450           0.024450 ...
+            1980-12-18          0.028580          0.028445         0.028580           0.028580 ...
+            1980-12-19          0.059239          0.058970         0.059239           0.059239 ...
 
         """
         start = start or "1776-07-04"
@@ -210,10 +192,7 @@ class Daily(feat.Features):
             )
         if not len(df.index):
             raise NoResultFound(f"No daily rows found for {ticker}.")
-        df = df.pivot(index="date", columns="name", values="value").sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
-        return df
+        return df.drop(columns=["ticker"]).set_index("date").sort_index()
 
     @classmethod
     def get_candidate_ticker_set(
@@ -265,12 +244,7 @@ class Daily(feat.Features):
                 conn.execute(
                     sa.select(sql.daily.c.ticker)
                     .group_by(sql.daily.c.ticker)
-                    .having(
-                        *[
-                            sa.func.count(sql.daily.c.name == col) >= lb
-                            for col in cls.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.daily.c.date) >= lb)
                 )
                 .scalars()
                 .all()
@@ -351,18 +325,9 @@ class Daily(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index("date")
-        if set(df.columns) < set(cls.columns):
-            raise ValueError(
-                f"Dataframe must have columns {cls.columns} but got {df.columns}"
-            )
-        df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:
             conn.execute(sql.daily.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]

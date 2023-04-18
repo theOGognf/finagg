@@ -1,6 +1,6 @@
 """Features from SEC sources."""
 
-from ._raw import Submissions, Tags, get_unique_filings
+from ._raw import Submissions, Tags
 from ._refined import (
     Annual,
     IndustryAnnual,
@@ -15,7 +15,6 @@ __all__ = [
     "quarterly",
     "submissions",
     "tags",
-    "get_unique_filings",
     "Annual",
     "IndustryAnnual",
     "NormalizedAnnual",

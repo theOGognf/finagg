@@ -10,7 +10,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from .... import backend, feat, utils
+from .... import backend, utils
 from ... import api, sql
 from .. import _raw
 
@@ -89,22 +89,22 @@ class IndustryAnnual:
 
         Examples:
             >>> df = finagg.sec.feat.annual.industry.from_refined(ticker="AAPL").head(5)
-            >>> df["avg"]  # doctest: +SKIP
-            name                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   fp filed                                                                   ...
-            2009 Q3 2009-10-30                    0.0000           0.5733            3.0650 ...
-            2010 Q1 2010-04-29                   -0.0122           0.4025            0.8650 ...
-                 Q2 2010-07-30                    0.0000           0.5003            0.5386 ...
-                 Q3 2010-11-04                    0.0011           0.4568            1.2038 ...
-            2011 Q1 2011-05-05                    0.2716           0.4652            0.9920 ...
+            >>> df["mean"]  # doctest: +SKIP
+            name             AssetCoverageRatio  DebtEquityRatio  EarningsPerShareBasic ...
+            fy   filed                                                                  ...
+            2010 2011-02-24            1.577924         1.112079               3.630000 ...
+            2011 2012-02-24            1.998633         0.886148               1.851429 ...
+            2012 2013-02-26            1.997748         1.413677               3.750833 ...
+            2013 2014-03-03            2.232804         1.176639               4.475000 ...
+            2014 2015-03-17            2.019007         1.080055               2.742143 ...
             >>> df["std"]  # doctest: +SKIP
-            name                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   fp filed                                                                   ...
-            2009 Q3 2009-10-30                    0.0000           0.2428            0.5850 ...
-            2010 Q1 2010-04-29                    0.0434           0.1490            0.9865 ...
-                 Q2 2010-07-30                    0.0000           0.2575            2.5274 ...
-                 Q3 2010-11-04                    0.0030           0.2672            2.6892 ...
-            2011 Q1 2011-05-05                    0.1827           0.2859            0.9541 ...
+            name             AssetCoverageRatio  DebtEquityRatio  EarningsPerShareBasic ...
+            fy   filed                                                                  ...
+            2010 2011-02-24            0.320778         0.149843               3.436292 ...
+            2011 2012-02-24            1.371792         0.331815               3.837792 ...
+            2012 2013-02-26            1.480323         1.085814               3.975254 ...
+            2013 2014-03-03            1.787131         0.575039               7.236695 ...
+            2014 2015-03-17            1.303284         0.458704               3.015323 ...
 
         """
         start = start or "1776-07-04"
@@ -125,36 +125,32 @@ class IndustryAnnual:
 
             df = pd.DataFrame(
                 conn.execute(
-                    sa.select(
-                        sql.annual.c.fy,
-                        sa.func.max(sql.annual.c.filed).label("filed"),
-                        sql.annual.c.name,
-                        sa.func.avg(sql.annual.c.value).label("avg"),
-                        sa.func.std(sql.annual.c.value).label("std"),
-                    )
+                    sql.annual.select()
                     .join(
                         sql.submissions,
                         (sql.submissions.c.cik == sql.annual.c.cik)
                         & (sql.submissions.c.sic.startswith(code)),
                     )
-                    .group_by(
-                        sql.annual.c.fy,
-                        sql.annual.c.name,
-                    )
-                    .where(
-                        sql.annual.c.filed >= start,
-                        sql.annual.c.filed <= end,
-                    )
+                    .where(sql.annual.c.filed >= start, sql.annual.c.filed <= end)
                 )
             )
         if not len(df.index):
             raise NoResultFound(f"No industry annual rows found for industry {code}.")
-        df = df.pivot(
-            index=["fy", "filed"],
-            columns="name",
-            values=["avg", "std"],
-        ).sort_index()
-        return df
+        df = df.drop(columns=["cik"])
+        df = df.melt(["fy", "filed"], var_name="name", value_name="value").set_index(
+            ["fy"]
+        )
+        df["filed"] = df.groupby(["fy"])["filed"].max()
+        return (
+            df.reset_index()  # type: ignore[return-value]
+            .set_index(["fy", "filed"])
+            .groupby(["fy", "filed", "name"])
+            .agg([np.mean, np.std])
+            .reset_index()
+            .pivot(index=["fy", "filed"], columns="name")["value"]
+            .sort_index()
+            .dropna()
+        )
 
 
 class NormalizedAnnual:
@@ -211,13 +207,13 @@ class NormalizedAnnual:
 
         Examples:
             >>> finagg.sec.feat.annual.normalized.from_other_refined("AAPL").head(5)  # doctest: +SKIP
-                             AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   filed                                                                   ...
-            2010 2010-10-27                   -0.2577           1.2901            1.4081 ...
-            2011 2011-10-26                    0.2974           1.1840            2.3350 ...
-            2012 2012-10-31                   -0.5119           0.3451            3.5359 ...
-            2013 2013-10-30                    0.2969           0.2812            3.8478 ...
-            2014 2014-10-27                    1.6257           0.0326            1.1770 ...
+                             NORM(LOG_CHANGE(Assets))  NORM(LOG_CHANGE(AssetsCurrent))  NORM(LOG_CHANGE(CommonStockSharesOutstanding)) ...
+            fy   filed                                                                                                                 ...
+            2010 2010-10-27                 -0.707107                         0.707107                                        0.707107 ...
+            2011 2011-10-26                  0.549435                         0.485644                                        0.574215 ...
+            2012 2012-10-31                  2.160612                        -0.609935                                        0.802452 ...
+            2013 2013-10-30                  0.756833                         0.336215                                       -0.148804 ...
+            2014 2014-10-27                  0.244212                         1.384738                                        2.836717 ...
 
         """
         start = start or "1776-07-04"
@@ -230,13 +226,16 @@ class NormalizedAnnual:
         industry_df = IndustryAnnual.from_refined(
             ticker=ticker, level=level, start=start, end=end, engine=engine
         ).reset_index(["filed"])
-        company_df = (company_df - industry_df["avg"]) / industry_df["std"]
+        company_df = (company_df - industry_df["mean"]) / industry_df["std"]
         company_df["filed"] = filed
-        pct_change_columns = Annual.pct_change_target_columns()
-        company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
-            value=0.0
+        func_cols = utils.get_func_cols(sql.annual)
+        company_df[func_cols] = company_df[func_cols].fillna(value=0.0)
+        company_df = (
+            company_df.reset_index()
+            .set_index(["fy", "filed"])
+            .rename(lambda x: f"NORM({x})", axis=1)
         )
-        df = (
+        company_df = (
             company_df.fillna(method="ffill")
             .dropna()
             .reset_index()
@@ -244,8 +243,10 @@ class NormalizedAnnual:
             .set_index(["fy", "filed"])
             .sort_index()
         )
-        df = df[Annual.columns]
-        return df
+        company_df = utils.resolve_col_order(
+            sql.normalized_annual, company_df, extra_ignore=["filed"]
+        )
+        return company_df
 
     @classmethod
     def from_refined(
@@ -282,13 +283,13 @@ class NormalizedAnnual:
 
         Examples:
             >>> finagg.sec.feat.annual.normalized.from_refined("AAPL").head(5)  # doctest: +SKIP
-                             AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   filed                                                                   ...
-            2010 2010-10-27                   -0.2577           1.2901            1.4081 ...
-            2011 2011-10-26                    0.2974           1.1840            2.3350 ...
-            2012 2012-10-31                   -0.5119           0.3451            3.5359 ...
-            2013 2013-10-30                    0.2969           0.2812            3.8478 ...
-            2014 2014-10-27                    1.6257           0.0326            1.1770 ...
+                             NORM(LOG_CHANGE(Assets))  NORM(LOG_CHANGE(AssetsCurrent))  NORM(LOG_CHANGE(CommonStockSharesOutstanding)) ...
+            fy   filed                                                                                                                 ...
+            2010 2010-10-27                 -0.707107                         0.707107                                        0.707107 ...
+            2011 2011-10-26                  0.549435                         0.485644                                        0.574215 ...
+            2012 2012-10-31                  2.160612                        -0.609935                                        0.802452 ...
+            2013 2013-10-30                  0.756833                         0.336215                                       -0.148804 ...
+            2014 2014-10-27                  0.244212                         1.384738                                        2.836717 ...
 
         """
         start = start or "1776-07-04"
@@ -313,11 +314,7 @@ class NormalizedAnnual:
             raise NoResultFound(
                 f"No industry-normalized annual rows found for {ticker}."
             )
-        df = df.pivot(
-            index=["fy", "filed"], columns="name", values="value"
-        ).sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[Annual.columns]
+        df = df.drop(columns=["cik"]).set_index(["fy", "filed"]).sort_index()
         return df
 
     @classmethod
@@ -377,12 +374,7 @@ class NormalizedAnnual:
                         sql.normalized_annual.c.cik == sql.submissions.c.cik,
                     )
                     .group_by(sql.normalized_annual.c.cik)
-                    .having(
-                        *[
-                            sa.func.count(sql.normalized_annual.c.name == col) >= lb
-                            for col in Annual.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.normalized_annual.c.filed) >= lb)
                 )
                 .scalars()
                 .all()
@@ -416,10 +408,10 @@ class NormalizedAnnual:
 
         Examples:
             >>> ts = finagg.sec.feat.annual.normalized.get_tickers_sorted_by(
-            ...         "EarningsPerShare",
+            ...         "EarningsPerShareBasic",
             ...         year=2020,
             ... )
-            >>> "PCGU" == ts[0]  # doctest: +SKIP
+            >>> "AMD" == ts[0]  # doctest: +SKIP
             True
 
         """
@@ -439,10 +431,9 @@ class NormalizedAnnual:
                         sql.normalized_annual.c.cik == sql.submissions.c.cik,
                     )
                     .where(
-                        sql.normalized_annual.c.name == column,
                         sql.normalized_annual.c.fy == year,
                     )
-                    .order_by(sql.normalized_annual.c.value)
+                    .order_by(sql.normalized_annual.c[column])
                 )
                 .scalars()
                 .all()
@@ -528,25 +519,16 @@ class NormalizedAnnual:
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index(["fy", "filed"])
-        if set(df.columns) < set(Annual.columns):
-            raise ValueError(
-                f"Dataframe must have columns {Annual.columns} but got {df.columns}"
-            )
-        df = df.melt(["fy", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
             conn.execute(sql.normalized_annual.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 
-class Annual(feat.Features):
+class Annual:
     """Methods for gathering annual features from SEC EDGAR data.
 
     The module variable :data:`finagg.sec.feat.annual` is an instance of
@@ -563,32 +545,6 @@ class Annual(feat.Features):
         >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
         >>> pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)
 
-    """
-
-    #: Columns within this feature set. Dataframes returned by this class's
-    #: methods will always contain these columns. The refined data SQL table
-    #: corresponding to these features will also have rows that have these
-    #: names.
-    columns = [
-        "AssetsCurrent_pct_change",
-        "DebtEquityRatio",
-        "EarningsPerShare",
-        "InventoryNet_pct_change",
-        "LiabilitiesCurrent_pct_change",
-        "NetIncomeLoss_pct_change",
-        "OperatingIncomeLoss_pct_change",
-        "PriceBookRatio",
-        "QuickRatio",
-        "ReturnOnEquity",
-        "StockholdersEquity_pct_change",
-        "WorkingCapitalRatio",
-    ]
-
-    concepts = api.popular_concepts
-    """XBRL disclosure concepts to pull to construct the columns in this
-    feature set.
-
-    :meta hide-value:
     """
 
     industry = IndustryAnnual()
@@ -610,30 +566,11 @@ class Annual(feat.Features):
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize annual features columns."""
-        df = df.set_index(["fy"]).sort_index().drop(columns="fp")
-        df["filed"] = df.groupby(["fy"])["filed"].max()
-        df = df.reset_index()
-        df = df.pivot(
-            index=["fy", "filed"],
-            columns="tag",
-            values="value",
-        ).astype(float)
-        df["EarningsPerShare"] = df["EarningsPerShareBasic"]
-        df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
-        df["PriceBookRatio"] = df["StockholdersEquity"] / (
-            df["AssetsCurrent"] - df["LiabilitiesCurrent"]
-        )
-        df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
-            "LiabilitiesCurrent"
-        ]
-        df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
-        df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
+        df = api.get_financial_ratios(df)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
-        df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(
-            utils.safe_pct_change
-        )
+        df = utils.resolve_func_cols(sql.annual, df, drop=True, inplace=True)
         df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = utils.resolve_col_order(sql.annual, df, extra_ignore=["filed"])
         return df.dropna()
 
     @classmethod
@@ -655,29 +592,18 @@ class Annual(feat.Features):
 
         Examples:
             >>> finagg.sec.feat.annual.from_api("AAPL").head(5)  # doctest: +SKIP
-                             AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   filed                                                                   ...
-            2010 2010-10-27                   -0.0234           0.7918              6.94 ...
-            2011 2011-10-26                    0.3208           0.9294              9.22 ...
-            2012 2012-10-31                    0.0794           0.8840             15.41 ...
-            2013 2013-10-30                    0.2815           0.8065             28.05 ...
-            2014 2014-10-27                    0.2712           0.5698              6.38 ...
+                             LOG_CHANGE(Assets)  LOG_CHANGE(AssetsCurrent)  LOG_CHANGE(CommonStockSharesOutstanding) ...
+            fy   filed                                                                                               ...
+            2010 2010-10-27           -0.089864                  -0.023676                                  0.012840 ...
+            2011 2011-10-26            0.272493                   0.278241                                  0.017805 ...
+            2012 2012-10-31            0.896033                   0.076422                                  0.014423 ...
+            2013 2013-10-30            0.414064                   0.248046                                  0.010630 ...
+            2014 2014-10-27            0.161871                   0.239927                                  1.902394 ...
 
         """
-        start = start or "1776-07-04"
-        end = end or utils.today
-        dfs = []
-        for concept in cls.concepts:
-            tag = concept["tag"]
-            taxonomy = concept["taxonomy"]
-            units = concept["units"]
-            df = api.company_concept.get(
-                tag, ticker=ticker, taxonomy=taxonomy, units=units
-            )
-            df = _raw.get_unique_filings(df, form="10-K", units=units)
-            df = df[(df["filed"] >= start) & (df["filed"] <= end)]
-            dfs.append(df)
-        df = pd.concat(dfs)
+        df = api.company_concept.join_get(
+            api.popular_concepts, ticker=ticker, form="10-K", start=start, end=end
+        )
         return cls._normalize(df)
 
     @classmethod
@@ -709,45 +635,25 @@ class Annual(feat.Features):
             Annual data dataframe with each tag as a
             separate column. Sorted by filing date.
 
-        Raises:
-            `NoResultFound`: If there are no rows for ``ticker`` in the
-                raw SQL table.
-
         Examples:
             >>> finagg.sec.feat.annual.from_raw("AAPL").head(5)  # doctest: +SKIP
-                             AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   filed                                                                   ...
-            2010 2010-10-27                   -0.0234           0.7918              6.94 ...
-            2011 2011-10-26                    0.3208           0.9294              9.22 ...
-            2012 2012-10-31                    0.0794           0.8840             15.41 ...
-            2013 2013-10-30                    0.2815           0.8065             28.05 ...
-            2014 2014-10-27                    0.2712           0.5698              6.38 ...
+                             LOG_CHANGE(Assets)  LOG_CHANGE(AssetsCurrent)  LOG_CHANGE(CommonStockSharesOutstanding) ...
+            fy   filed                                                                                               ...
+            2010 2010-10-27           -0.089864                  -0.023676                                  0.012840 ...
+            2011 2011-10-26            0.272493                   0.278241                                  0.017805 ...
+            2012 2012-10-31            0.896033                   0.076422                                  0.014423 ...
+            2013 2013-10-30            0.414064                   0.248046                                  0.010630 ...
+            2014 2014-10-27            0.161871                   0.239927                                  1.902394 ...
 
         """
-        start = start or "1776-07-04"
-        end = end or utils.today
-        engine = engine or backend.engine
-        with engine.begin() as conn:
-            df = pd.DataFrame(
-                conn.execute(
-                    sql.tags.select()
-                    .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.tags.c.cik)
-                        & (sql.submissions.c.ticker == ticker),
-                    )
-                    .where(
-                        sql.tags.c.tag.in_(
-                            [concept["tag"] for concept in cls.concepts]
-                        ),
-                        sql.tags.c.form == "10-K",
-                        sql.tags.c.filed >= start,
-                        sql.tags.c.filed <= end,
-                    )
-                )
-            )
-        if not len(df.index):
-            raise NoResultFound(f"No annual rows found for {ticker}.")
+        df = _raw.Tags.join_from_raw(
+            ticker,
+            [concept["tag"] for concept in api.popular_concepts],
+            form="10-K",
+            start=start,
+            end=end,
+            engine=engine,
+        )
         return cls._normalize(df)
 
     @classmethod
@@ -785,13 +691,13 @@ class Annual(feat.Features):
 
         Examples:
             >>> finagg.sec.feat.annual.from_refined("AAPL").head(5)  # doctest: +SKIP
-                             AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   filed                                                                   ...
-            2010 2010-10-27                   -0.0234           0.7918              6.94 ...
-            2011 2011-10-26                    0.3208           0.9294              9.22 ...
-            2012 2012-10-31                    0.0794           0.8840             15.41 ...
-            2013 2013-10-30                    0.2815           0.8065             28.05 ...
-            2014 2014-10-27                    0.2712           0.5698              6.38 ...
+                             LOG_CHANGE(Assets)  LOG_CHANGE(AssetsCurrent)  LOG_CHANGE(CommonStockSharesOutstanding) ...
+            fy   filed                                                                                               ...
+            2010 2010-10-27           -0.089864                  -0.023676                                  0.012840 ...
+            2011 2011-10-26            0.272493                   0.278241                                  0.017805 ...
+            2012 2012-10-31            0.896033                   0.076422                                  0.014423 ...
+            2013 2013-10-30            0.414064                   0.248046                                  0.010630 ...
+            2014 2014-10-27            0.161871                   0.239927                                  1.902394 ...
 
         """
         start = start or "1776-07-04"
@@ -814,13 +720,7 @@ class Annual(feat.Features):
             )
         if not len(df.index):
             raise NoResultFound(f"No annual rows found for {ticker}.")
-        df = df.pivot(
-            index=["fy", "filed"],
-            columns="name",
-            values="value",
-        ).sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = df.drop(columns=["cik"]).set_index(["fy", "filed"]).sort_index()
         return df
 
     @classmethod
@@ -858,7 +758,7 @@ class Annual(feat.Features):
                                     {concept["tag"]: 1}, value=sql.tags.c.tag, else_=0
                                 )
                             ).label(concept["tag"])
-                            for concept in cls.concepts
+                            for concept in api.popular_concepts
                         ],
                     )
                     .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
@@ -867,7 +767,7 @@ class Annual(feat.Features):
                     .having(
                         *[
                             sa.text(f"{concept['tag']} >= {lb}")
-                            for concept in cls.concepts
+                            for concept in api.popular_concepts
                         ]
                     )
                 )
@@ -902,12 +802,7 @@ class Annual(feat.Features):
                     sa.select(sql.submissions.c.ticker)
                     .join(sql.annual, sql.annual.c.cik == sql.submissions.c.cik)
                     .group_by(sql.annual.c.cik)
-                    .having(
-                        *[
-                            sa.func.count(sql.annual.c.name == col) >= lb
-                            for col in cls.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.annual.c.filed) >= lb)
                 )
                 .scalars()
                 .all()
@@ -989,18 +884,9 @@ class Annual(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index(["fy", "filed"])
-        if set(df.columns) < set(cls.columns):
-            raise ValueError(
-                f"Dataframe must have columns {cls.columns} but got {df.columns}"
-            )
-        df = df.melt(["fy", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
             conn.execute(sql.annual.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]

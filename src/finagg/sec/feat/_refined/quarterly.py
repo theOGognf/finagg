@@ -10,7 +10,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from .... import backend, feat, utils
+from .... import backend, utils
 from ... import api, sql
 from .. import _raw
 
@@ -89,22 +89,22 @@ class IndustryQuarterly:
 
         Examples:
             >>> df = finagg.sec.feat.quarterly.industry.from_refined(ticker="AAPL").head(5)
-            >>> df["avg"]  # doctest: +SKIP
-            name                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   fp filed                                                                   ...
-            2009 Q3 2009-10-30                    0.0000           0.5733            3.0650 ...
-            2010 Q1 2010-04-29                   -0.0122           0.4025            0.8650 ...
-                 Q2 2010-07-30                    0.0000           0.5003            0.5386 ...
-                 Q3 2010-11-04                    0.0011           0.4568            1.2038 ...
-            2011 Q1 2011-05-05                    0.2716           0.4652            0.9920 ...
+            >>> df["mean"]  # doctest: +SKIP
+            name                AssetCoverageRatio  DebtEquityRatio  EarningsPerShareBasic ...
+            fy   fp filed                                                                  ...
+            2010 Q1 2010-04-29            1.718796         0.956111               0.865000 ...
+                 Q2 2010-07-30            1.753165         0.874013               0.380000 ...
+                 Q3 2010-11-04            1.830832         0.842663               1.062857 ...
+            2011 Q1 2011-05-05            2.164743         0.757230               1.022500 ...
+                 Q2 2011-08-08            2.222168         0.718292               2.016667 ...
             >>> df["std"]  # doctest: +SKIP
-            name                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   fp filed                                                                   ...
-            2009 Q3 2009-10-30                    0.0000           0.2428            0.5850 ...
-            2010 Q1 2010-04-29                    0.0434           0.1490            0.9865 ...
-                 Q2 2010-07-30                    0.0000           0.2575            2.5274 ...
-                 Q3 2010-11-04                    0.0030           0.2672            2.6892 ...
-            2011 Q1 2011-05-05                    0.1827           0.2859            0.9541 ...
+            name                AssetCoverageRatio  DebtEquityRatio  EarningsPerShareBasic ...
+            fy   fp filed                                                                  ...
+            2010 Q1 2010-04-29            0.394667         0.327296               1.139079 ...
+                 Q2 2010-07-30            0.310804         0.285554               2.954901 ...
+                 Q3 2010-11-04            0.351052         0.273552               3.075227 ...
+            2011 Q1 2011-05-05            1.166501         0.311317               1.137287 ...
+                 Q2 2011-08-08            1.104677         0.313766               2.075428 ...
 
         """
         start = start or "1776-07-04"
@@ -125,40 +125,34 @@ class IndustryQuarterly:
 
             df = pd.DataFrame(
                 conn.execute(
-                    sa.select(
-                        sql.quarterly.c.fy,
-                        sql.quarterly.c.fp,
-                        sa.func.max(sql.quarterly.c.filed).label("filed"),
-                        sql.quarterly.c.name,
-                        sa.func.avg(sql.quarterly.c.value).label("avg"),
-                        sa.func.std(sql.quarterly.c.value).label("std"),
-                    )
+                    sql.quarterly.select()
                     .join(
                         sql.submissions,
                         (sql.submissions.c.cik == sql.quarterly.c.cik)
                         & (sql.submissions.c.sic.startswith(code)),
                     )
-                    .group_by(
-                        sql.quarterly.c.fy,
-                        sql.quarterly.c.fp,
-                        sql.quarterly.c.name,
-                    )
-                    .where(
-                        sql.quarterly.c.filed >= start,
-                        sql.quarterly.c.filed <= end,
-                    )
+                    .where(sql.quarterly.c.filed >= start, sql.quarterly.c.filed <= end)
                 )
             )
         if not len(df.index):
             raise NoResultFound(
                 f"No industry quarterly rows found for industry {code}."
             )
-        df = df.pivot(
-            index=["fy", "fp", "filed"],
-            columns="name",
-            values=["avg", "std"],
-        ).sort_index()
-        return df
+        df = df.drop(columns=["cik"])
+        df = df.melt(
+            ["fy", "fp", "filed"], var_name="name", value_name="value"
+        ).set_index(["fy", "fp"])
+        df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
+        return (
+            df.reset_index()  # type: ignore[return-value]
+            .set_index(["fy", "fp", "filed"])
+            .groupby(["fy", "fp", "filed", "name"])
+            .agg([np.mean, np.std])
+            .reset_index()
+            .pivot(index=["fy", "fp", "filed"], columns="name")["value"]
+            .sort_index()
+            .dropna()
+        )
 
 
 class NormalizedQuarterly:
@@ -215,13 +209,13 @@ class NormalizedQuarterly:
 
         Examples:
             >>> finagg.sec.feat.quarterly.normalized.from_other_refined("AAPL").head(5)  # doctest: +SKIP
-                                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   fp filed                                                                   ...
-            2010 Q1 2010-01-25                   -0.2573          -0.2606            1.6980 ...
-                 Q2 2010-04-21                    0.0000          -0.5309            1.5081 ...
-                 Q3 2010-07-21                   -0.3780          -0.3485            1.9323 ...
-            2011 Q1 2011-01-19                    0.2693          -0.1107            2.8801 ...
-                 Q2 2011-04-21                    0.0000          -0.0655            2.8997 ...
+                                NORM(LOG_CHANGE(Assets))  NORM(LOG_CHANGE(AssetsCurrent))  NORM(LOG_CHANGE(CommonStockSharesOutstanding)) ...
+            fy   fp filed                                                                                                                 ...
+            2010 Q2 2010-04-21                  0.000000                         0.000000                                        0.000000 ...
+                 Q3 2010-07-21                  0.000000                         0.000000                                        0.000000 ...
+            2011 Q1 2011-01-19                  0.978816                         0.074032                                        0.407282 ...
+                 Q2 2011-04-21                  0.000000                         0.000000                                        0.000000 ...
+                 Q3 2011-07-20                 -0.353553                        -0.353553                                        0.051602 ...
 
         """
         start = start or "1776-07-04"
@@ -234,22 +228,27 @@ class NormalizedQuarterly:
         industry_df = IndustryQuarterly.from_refined(
             ticker=ticker, level=level, start=start, end=end, engine=engine
         ).reset_index(["filed"])
-        company_df = (company_df - industry_df["avg"]) / industry_df["std"]
+        company_df = (company_df - industry_df["mean"]) / industry_df["std"]
         company_df["filed"] = filed
-        pct_change_columns = Quarterly.pct_change_target_columns()
-        company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
-            value=0.0
+        func_cols = utils.get_func_cols(sql.quarterly)
+        company_df[func_cols] = company_df[func_cols].fillna(value=0.0)
+        company_df = (
+            company_df.reset_index()
+            .set_index(["fy", "fp", "filed"])
+            .rename(lambda x: f"NORM({x})", axis=1)
         )
-        df = (
+        company_df = (
             company_df.fillna(method="ffill")
-            .dropna()
             .reset_index()
+            .dropna()
             .drop_duplicates("filed")
             .set_index(["fy", "fp", "filed"])
             .sort_index()
         )
-        df = df[Quarterly.columns]
-        return df
+        company_df = utils.resolve_col_order(
+            sql.normalized_quarterly, company_df, extra_ignore=["filed"]
+        )
+        return company_df
 
     @classmethod
     def from_refined(
@@ -286,13 +285,13 @@ class NormalizedQuarterly:
 
         Examples:
             >>> finagg.sec.feat.quarterly.normalized.from_refined("AAPL").head(5)  # doctest: +SKIP
-                                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   fp filed                                                                   ...
-            2010 Q1 2010-01-25                   -0.2573          -0.2606            1.6980 ...
-                 Q2 2010-04-21                    0.0000          -0.5309            1.5081 ...
-                 Q3 2010-07-21                   -0.3780          -0.3485            1.9323 ...
-            2011 Q1 2011-01-19                    0.2693          -0.1107            2.8801 ...
-                 Q2 2011-04-21                    0.0000          -0.0655            2.8997 ...
+                                NORM(LOG_CHANGE(Assets))  NORM(LOG_CHANGE(AssetsCurrent))  NORM(LOG_CHANGE(CommonStockSharesOutstanding)) ...
+            fy   fp filed                                                                                                                 ...
+            2010 Q2 2010-04-21                  0.000000                         0.000000                                        0.000000 ...
+                 Q3 2010-07-21                  0.000000                         0.000000                                        0.000000 ...
+            2011 Q1 2011-01-19                  0.978816                         0.074032                                        0.407282 ...
+                 Q2 2011-04-21                  0.000000                         0.000000                                        0.000000 ...
+                 Q3 2011-07-20                 -0.353553                        -0.353553                                        0.051602 ...
 
         """
         start = start or "1776-07-04"
@@ -317,11 +316,7 @@ class NormalizedQuarterly:
             raise NoResultFound(
                 f"No industry-normalized quarterly rows found for {ticker}."
             )
-        df = df.pivot(
-            index=["fy", "fp", "filed"], columns="name", values="value"
-        ).sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[Quarterly.columns]
+        df = df.drop(columns=["cik"]).set_index(["fy", "fp", "filed"]).sort_index()
         return df
 
     @classmethod
@@ -381,12 +376,7 @@ class NormalizedQuarterly:
                         sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
                     )
                     .group_by(sql.normalized_quarterly.c.cik)
-                    .having(
-                        *[
-                            sa.func.count(sql.normalized_quarterly.c.name == col) >= lb
-                            for col in Quarterly.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.normalized_quarterly.c.filed) >= lb)
                 )
                 .scalars()
                 .all()
@@ -423,11 +413,11 @@ class NormalizedQuarterly:
 
         Examples:
             >>> ts = finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by(
-            ...         "EarningsPerShare",
+            ...         "EarningsPerShareBasic",
             ...         year=2020,
             ...         quarter=3
             ... )
-            >>> "PCGU" == ts[0]  # doctest: +SKIP
+            >>> "AMD" == ts[0]  # doctest: +SKIP
             True
 
         """
@@ -455,11 +445,10 @@ class NormalizedQuarterly:
                         sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
                     )
                     .where(
-                        sql.normalized_quarterly.c.name == column,
                         sql.normalized_quarterly.c.fy == year,
                         sql.normalized_quarterly.c.fp == fp,
                     )
-                    .order_by(sql.normalized_quarterly.c.value)
+                    .order_by(sql.normalized_quarterly.c[column])
                 )
                 .scalars()
                 .all()
@@ -545,25 +534,16 @@ class NormalizedQuarterly:
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index(["fy", "fp", "filed"])
-        if set(df.columns) < set(Quarterly.columns):
-            raise ValueError(
-                f"Dataframe must have columns {Quarterly.columns} but got {df.columns}"
-            )
-        df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
             conn.execute(sql.normalized_quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 
-class Quarterly(feat.Features):
+class Quarterly:
     """Methods for gathering quarterly features from SEC EDGAR data.
 
     The module variable :data:`finagg.sec.feat.quarterly` is an instance of
@@ -580,32 +560,6 @@ class Quarterly(feat.Features):
         >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
         >>> pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)
 
-    """
-
-    #: Columns within this feature set. Dataframes returned by this class's
-    #: methods will always contain these columns. The refined data SQL table
-    #: corresponding to these features will also have rows that have these
-    #: names.
-    columns = [
-        "AssetsCurrent_pct_change",
-        "DebtEquityRatio",
-        "EarningsPerShare",
-        "InventoryNet_pct_change",
-        "LiabilitiesCurrent_pct_change",
-        "NetIncomeLoss_pct_change",
-        "OperatingIncomeLoss_pct_change",
-        "PriceBookRatio",
-        "QuickRatio",
-        "ReturnOnEquity",
-        "StockholdersEquity_pct_change",
-        "WorkingCapitalRatio",
-    ]
-
-    concepts = api.popular_concepts
-    """XBRL disclosure concepts to pull to construct the columns in this
-    feature set.
-
-    :meta hide-value:
     """
 
     industry = IndustryQuarterly()
@@ -627,30 +581,11 @@ class Quarterly(feat.Features):
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize quarterly features columns."""
-        df = df.set_index(["fy", "fp"]).sort_index()
-        df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
-        df = df.reset_index()
-        df = df.pivot(
-            index=["fy", "fp", "filed"],
-            columns="tag",
-            values="value",
-        ).astype(float)
-        df["EarningsPerShare"] = df["EarningsPerShareBasic"]
-        df["DebtEquityRatio"] = df["LiabilitiesCurrent"] / df["StockholdersEquity"]
-        df["PriceBookRatio"] = df["StockholdersEquity"] / (
-            df["AssetsCurrent"] - df["LiabilitiesCurrent"]
-        )
-        df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
-            "LiabilitiesCurrent"
-        ]
-        df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
-        df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
+        df = api.get_financial_ratios(df)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
-        df[cls.pct_change_target_columns()] = df[cls.pct_change_source_columns()].apply(
-            utils.safe_pct_change
-        )
+        df = utils.resolve_func_cols(sql.quarterly, df, drop=True, inplace=True)
         df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = utils.resolve_col_order(sql.quarterly, df, extra_ignore=["filed"])
         return df.dropna()
 
     @classmethod
@@ -676,29 +611,18 @@ class Quarterly(feat.Features):
 
         Examples:
             >>> finagg.sec.feat.quarterly.from_api("AAPL").head(5)  # doctest: +SKIP
-                                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   fp filed                                                                   ...
-            2010 Q1 2010-01-25                   -0.0234           0.3637              2.54 ...
-                 Q2 2010-04-21                    0.0000           0.3637              4.35 ...
-                 Q3 2010-07-21                    0.0000           0.3637              6.40 ...
-            2011 Q1 2011-01-19                    0.3208           0.4336              3.74 ...
-                 Q2 2011-04-21                    0.0000           0.4336              7.12 ...
+                                LOG_CHANGE(Assets)  LOG_CHANGE(AssetsCurrent)  LOG_CHANGE(CommonStockSharesOutstanding) ...
+            fy   fp filed                                                                                               ...
+            2010 Q1 2010-01-25            0.182629                  -0.023676                                  0.012840 ...
+                 Q2 2010-04-21            0.000000                   0.000000                                  0.000000 ...
+                 Q3 2010-07-21            0.000000                   0.000000                                  0.000000 ...
+            2011 Q1 2011-01-19            0.459174                   0.278241                                  0.017805 ...
+                 Q2 2011-04-21            0.000000                   0.000000                                  0.000000 ...
 
         """
-        start = start or "1776-07-04"
-        end = end or utils.today
-        dfs = []
-        for concept in cls.concepts:
-            tag = concept["tag"]
-            taxonomy = concept["taxonomy"]
-            units = concept["units"]
-            df = api.company_concept.get(
-                tag, ticker=ticker, taxonomy=taxonomy, units=units
-            )
-            df = _raw.get_unique_filings(df, form="10-Q", units=units)
-            df = df[(df["filed"] >= start) & (df["filed"] <= end)]
-            dfs.append(df)
-        df = pd.concat(dfs)
+        df = api.company_concept.join_get(
+            api.popular_concepts, ticker=ticker, form="10-Q", start=start, end=end
+        )
         return cls._normalize(df)
 
     @classmethod
@@ -730,45 +654,25 @@ class Quarterly(feat.Features):
             Quarterly data dataframe with each tag as a
             separate column. Sorted by filing date.
 
-        Raises:
-            `NoResultFound`: If there are no rows for ``ticker`` in the
-                raw SQL table.
-
         Examples:
             >>> finagg.sec.feat.quarterly.from_raw("AAPL").head(5)  # doctest: +SKIP
-                                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   fp filed                                                                   ...
-            2010 Q1 2010-01-25                   -0.0234           0.3637              2.54 ...
-                 Q2 2010-04-21                    0.0000           0.3637              4.35 ...
-                 Q3 2010-07-21                    0.0000           0.3637              6.40 ...
-            2011 Q1 2011-01-19                    0.3208           0.4336              3.74 ...
-                 Q2 2011-04-21                    0.0000           0.4336              7.12 ...
+                                LOG_CHANGE(Assets)  LOG_CHANGE(AssetsCurrent)  LOG_CHANGE(CommonStockSharesOutstanding) ...
+            fy   fp filed                                                                                               ...
+            2010 Q1 2010-01-25            0.182629                  -0.023676                                  0.012840 ...
+                 Q2 2010-04-21            0.000000                   0.000000                                  0.000000 ...
+                 Q3 2010-07-21            0.000000                   0.000000                                  0.000000 ...
+            2011 Q1 2011-01-19            0.459174                   0.278241                                  0.017805 ...
+                 Q2 2011-04-21            0.000000                   0.000000                                  0.000000 ...
 
         """
-        start = start or "1776-07-04"
-        end = end or utils.today
-        engine = engine or backend.engine
-        with engine.begin() as conn:
-            df = pd.DataFrame(
-                conn.execute(
-                    sql.tags.select()
-                    .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.tags.c.cik)
-                        & (sql.submissions.c.ticker == ticker),
-                    )
-                    .where(
-                        sql.tags.c.tag.in_(
-                            [concept["tag"] for concept in cls.concepts]
-                        ),
-                        sql.tags.c.form == "10-Q",
-                        sql.tags.c.filed >= start,
-                        sql.tags.c.filed <= end,
-                    )
-                )
-            )
-        if not len(df.index):
-            raise NoResultFound(f"No quarterly rows found for {ticker}.")
+        df = _raw.Tags.join_from_raw(
+            ticker,
+            [concept["tag"] for concept in api.popular_concepts],
+            form="10-Q",
+            start=start,
+            end=end,
+            engine=engine,
+        )
         return cls._normalize(df)
 
     @classmethod
@@ -806,13 +710,13 @@ class Quarterly(feat.Features):
 
         Examples:
             >>> finagg.sec.feat.quarterly.from_refined("AAPL").head(5)  # doctest: +SKIP
-                                AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            fy   fp filed                                                                   ...
-            2010 Q1 2010-01-25                   -0.0234           0.3637              2.54 ...
-                 Q2 2010-04-21                    0.0000           0.3637              4.35 ...
-                 Q3 2010-07-21                    0.0000           0.3637              6.40 ...
-            2011 Q1 2011-01-19                    0.3208           0.4336              3.74 ...
-                 Q2 2011-04-21                    0.0000           0.4336              7.12 ...
+                                LOG_CHANGE(Assets)  LOG_CHANGE(AssetsCurrent)  LOG_CHANGE(CommonStockSharesOutstanding) ...
+            fy   fp filed                                                                                               ...
+            2010 Q1 2010-01-25            0.182629                  -0.023676                                  0.012840 ...
+                 Q2 2010-04-21            0.000000                   0.000000                                  0.000000 ...
+                 Q3 2010-07-21            0.000000                   0.000000                                  0.000000 ...
+            2011 Q1 2011-01-19            0.459174                   0.278241                                  0.017805 ...
+                 Q2 2011-04-21            0.000000                   0.000000                                  0.000000 ...
 
         """
         start = start or "1776-07-04"
@@ -835,13 +739,7 @@ class Quarterly(feat.Features):
             )
         if not len(df.index):
             raise NoResultFound(f"No quarterly rows found for {ticker}.")
-        df = df.pivot(
-            index=["fy", "fp", "filed"],
-            columns="name",
-            values="value",
-        ).sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = df.drop(columns=["cik"]).set_index(["fy", "fp", "filed"]).sort_index()
         return df
 
     @classmethod
@@ -879,7 +777,7 @@ class Quarterly(feat.Features):
                                     {concept["tag"]: 1}, value=sql.tags.c.tag, else_=0
                                 )
                             ).label(concept["tag"])
-                            for concept in cls.concepts
+                            for concept in api.popular_concepts
                         ],
                     )
                     .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
@@ -888,7 +786,7 @@ class Quarterly(feat.Features):
                     .having(
                         *[
                             sa.text(f"{concept['tag']} >= {lb}")
-                            for concept in cls.concepts
+                            for concept in api.popular_concepts
                         ]
                     )
                 )
@@ -923,12 +821,7 @@ class Quarterly(feat.Features):
                     sa.select(sql.submissions.c.ticker)
                     .join(sql.quarterly, sql.quarterly.c.cik == sql.submissions.c.cik)
                     .group_by(sql.quarterly.c.cik)
-                    .having(
-                        *[
-                            sa.func.count(sql.quarterly.c.name == col) >= lb
-                            for col in cls.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.quarterly.c.filed) >= lb)
                 )
                 .scalars()
                 .all()
@@ -1010,18 +903,9 @@ class Quarterly(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index(["fy", "fp", "filed"])
-        if set(df.columns) < set(cls.columns):
-            raise ValueError(
-                f"Dataframe must have columns {cls.columns} but got {df.columns}"
-            )
-        df = df.melt(["fy", "fp", "filed"], var_name="name", value_name="value")
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
             conn.execute(sql.quarterly.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]

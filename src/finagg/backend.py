@@ -12,10 +12,7 @@ Environment variables assigned in the ``.env`` file are loaded on the
 
 import os
 import pathlib
-import sqlite3
-from urllib.parse import urlparse
 
-import numpy as np
 from sqlalchemy import create_engine
 
 root_path = pathlib.Path(os.environ.get("FINAGG_ROOT_PATH", pathlib.Path.cwd()))
@@ -54,35 +51,7 @@ This defaults to ``f"sqlite:///{finagg.backend.database_path}"``.
 :meta hide-value:
 """
 
-
-class _NumPyStdAggregate:
-
-    values: list[float]
-
-    def __init__(self) -> None:
-        self.values = []
-
-    def step(self, value: float) -> None:
-        self.values.append(value)
-
-    def finalize(self) -> float:
-        return float(np.std(self.values))
-
-
-def _creator() -> sqlite3.Connection:
-    """Custom connection creator for enabling Write-Ahead Logging (WAL) and adding
-    aggregate functions.
-
-    Adding aggregate functions is inspired by https://stackoverflow.com/a/997467.
-
-    """
-    conn = sqlite3.connect(urlparse(database_url).path)
-    conn.create_aggregate("std", 1, _NumPyStdAggregate)  # type: ignore[arg-type]
-    conn.execute("PRAGMA journal_mode=WAL;")
-    return conn
-
-
-engine = create_engine(database_url, creator=_creator)
+engine = create_engine(database_url)
 """The default SQLAlchemy engine for the backend database. All feature and SQL
 submodules use this engine and the database URL as configured by
 :data:`database_url` for reading and writing to and from the database by default.

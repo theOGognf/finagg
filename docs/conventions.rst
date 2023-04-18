@@ -153,10 +153,10 @@ rules implemented for data normalization are as follows:
 
 * Data whose scale drifts over time or is not easily normalizable through
   other means (e.g., gross domestic product, compony stock price, etc.) is
-  converted to percent changes. Since the percent change of the first sample
+  converted to log changes. Since the log change of the first sample
   in a series cannot be computed and is NaN, it is dropped from the series.
 * Data gaps and/or NaNs are forward-filled with the previous non-NaN value.
-  If the series being forward-filled is a percent change series then gaps
+  If the series being forward-filled is a log change series then gaps
   and/or NaNs are replaced with zeros instead (indicating that no change
   occurs).
 * Inf values are replaced with NaNs and forward-filled with the same logic

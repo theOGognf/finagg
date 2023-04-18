@@ -142,9 +142,9 @@ class CompanyConcept(API):
         and concept (a taxonomy and tag) in a single dataframe.
 
         Args:
-            tag: Valid tag within the given `taxonomy`.
-            cik: Company SEC CIK. Mutually exclusive with `ticker`.
-            ticker: Company ticker. Mutually exclusive with `cik`.
+            tag: Valid tag within the given ``taxonomy``.
+            cik: Company SEC CIK. Mutually exclusive with ``ticker``.
+            ticker: Company ticker. Mutually exclusive with ``cik``.
             taxonomy: Valid SEC EDGAR taxonomy.
                 See https://www.sec.gov/info/edgar/edgartaxonomies.shtml for taxonomies.
             units: Currency to view results in.
@@ -194,6 +194,76 @@ class CompanyConcept(API):
             results[k] = v
         results["cik"] = cik
         return results.rename(columns={"entityName": "entity", "val": "value"})
+
+    @classmethod
+    def join_get(
+        cls,
+        concepts: list[Concept],
+        *,
+        cik: None | str = None,
+        ticker: None | str = None,
+        form: str = "10-Q",
+        start: None | str = None,
+        end: None | str = None,
+        user_agent: None | str = None,
+    ) -> pd.DataFrame:
+        """Return unique XBRL disclosures for a single company and filing
+        form from a set of company concepts.
+
+        Tags are also joined and pivoted such that each tag has its own
+        column. Gaps in reporting periods are forward-filled.
+
+        Args:
+            concepts: Company concepts to retrieve.
+            cik: Company SEC CIK. Mutually exclusive with ``ticker``.
+            ticker: Company ticker. Mutually exclusive with ``cik``.
+            form: SEC filing form type to include. ``"10-Q"`` is for quarterly
+                filing forms and ``"10-K"`` is for annual filing forms.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            user_agent: Self-declared bot header. Defaults to the value
+                found in the ``SEC_API_USER_AGENT`` environment variable.
+
+        Returns:
+            Pivoted dataframe with a tag per column.
+
+        Examples:
+            >>> finagg.sec.api.company_concept.join_get(
+            ...     finagg.sec.api.popular_concepts,
+            ...     ticker="AAPL",
+            ... ).head(5)  # doctest: +SKIP
+                                      Assets  AssetsCurrent  CommonStockSharesOutstanding ...
+            fy   fp filed                                                                 ...
+            2009 Q3 2009-07-22  3.957200e+10   3.231100e+10                   888325973.0 ...
+            2010 Q1 2010-01-25  4.750100e+10   3.155500e+10                   899805500.0 ...
+                 Q2 2010-04-21  4.750100e+10   3.155500e+10                   899805500.0 ...
+                 Q3 2010-07-21  4.750100e+10   3.155500e+10                   899805500.0 ...
+            2011 Q1 2011-01-19  7.518300e+10   4.167800e+10                   915970050.0 ...
+
+        """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        dfs = []
+        for concept in concepts:
+            tag = concept["tag"]
+            taxonomy = concept["taxonomy"]
+            units = concept["units"]
+            df = cls.get(
+                tag,
+                cik=cik,
+                ticker=ticker,
+                taxonomy=taxonomy,
+                units=units,
+                user_agent=user_agent,
+            )
+            df = get_unique_filings(df, form=form, units=units)
+            df = df[(df["filed"] >= start) & (df["filed"] <= end)]
+            dfs.append(df)
+        df = pd.concat(dfs)
+        df = join_filings(df, form=form)
+        return df
 
 
 class CompanyFacts(API):
@@ -581,9 +651,21 @@ tickers = Tickers()
 
 popular_frames: list[Frame] = [
     {
+        "tag": "Assets",
+        "taxonomy": "us-gaap",
+        "units": "USD",
+        "instant": True,
+    },
+    {
         "tag": "AssetsCurrent",
         "taxonomy": "us-gaap",
         "units": "USD",
+        "instant": True,
+    },
+    {
+        "tag": "CommonStockSharesOutstanding",
+        "taxonomy": "us-gaap",
+        "units": "shares",
         "instant": True,
     },
     {
@@ -593,6 +675,12 @@ popular_frames: list[Frame] = [
         "instant": False,
     },
     {"tag": "InventoryNet", "taxonomy": "us-gaap", "units": "USD", "instant": True},
+    {
+        "tag": "Liabilities",
+        "taxonomy": "us-gaap",
+        "units": "USD",
+        "instant": True,
+    },
     {
         "tag": "LiabilitiesCurrent",
         "taxonomy": "us-gaap",
@@ -604,12 +692,6 @@ popular_frames: list[Frame] = [
         "taxonomy": "us-gaap",
         "units": "USD",
         "instant": True,
-    },
-    {
-        "tag": "OperatingIncomeLoss",
-        "taxonomy": "us-gaap",
-        "units": "USD",
-        "instant": False,
     },
     {
         "tag": "StockholdersEquity",
@@ -692,6 +774,34 @@ def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
     return _tickers_to_cik[ticker.upper()]
 
 
+def get_financial_ratios(df: pd.DataFrame, /) -> pd.DataFrame:
+    """Compute financial ratios in-place for a dataframe using XBRL financial
+    tags.
+
+    Args:
+        df: Dataframe with common XBRL financial tags (e.g., "Assets",
+            "Liabilities", etc.).
+
+    Returns:
+        ``df`` but with additional columns that're normalized financial ratios.
+
+    """
+    df["AssetCoverageRatio"] = (df["Assets"] - df["LiabilitiesCurrent"]) / df[
+        "Liabilities"
+    ]
+    df["BookRatio"] = (df["Assets"] - df["Liabilities"]) / df[
+        "CommonStockSharesOutstanding"
+    ]
+    df["DebtEquityRatio"] = df["Liabilities"] / df["StockholdersEquity"]
+    df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
+        "LiabilitiesCurrent"
+    ]
+    df["ReturnOnAssets"] = df["NetIncomeLoss"] / df["Assets"]
+    df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
+    df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
+    return df
+
+
 def get_ticker(cik: str, /, *, user_agent: None | str = None) -> str:
     """Return a company's ticker from its SEC CIK.
 
@@ -772,3 +882,112 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
                     continue
                 tickers.add(ticker)
     return tickers
+
+
+def get_unique_filings(
+    df: pd.DataFrame, /, *, form: str = "10-Q", units: None | str = None
+) -> pd.DataFrame:
+    """Get all unique rows as determined by the filing date and tag for a
+    period.
+
+    Args:
+        df: Dataframe without unique rows.
+        form: Only keep rows with form type ``form``. Most popular choices
+            include ``"10-K"`` for annual and ``"10-Q"`` for quarterly.
+        units: Only keep rows with units ``units`` if not ``None``.
+
+    Returns:
+        Dataframe with unique rows.
+
+    Examples:
+        Only get a company's original quarterly earnings-per-share filings.
+
+        >>> df = finagg.sec.api.company_concept.get(
+        ...     "EarningsPerShareBasic",
+        ...     ticker="AAPL",
+        ...     taxonomy="us-gaap",
+        ...     units="USD/shares",
+        ... )
+        >>> finagg.sec.api.get_unique_filings(
+        ...     df,
+        ...     form="10-Q",
+        ...     units="USD/shares"
+        ... ).head(5)  # doctest: +SKIP
+             fy  fp  ...
+        0  2009  Q3  ...
+        1  2010  Q1  ...
+        2  2010  Q2  ...
+        3  2010  Q3  ...
+        4  2011  Q1  ...
+
+    """
+    mask = df["form"] == form
+    match form:
+        case "10-K":
+            mask &= df["fp"] == "FY"
+        case "10-Q":
+            mask &= df["fp"].str.startswith("Q")
+    if units:
+        mask &= df["units"] == units
+    df = df[mask]
+    return (
+        df.sort_values(["fy", "fp", "filed"])
+        .groupby(["fy", "fp", "tag"], as_index=False)
+        .first()
+    )
+
+
+def join_filings(df: pd.DataFrame, /, *, form: str = "10-Q") -> pd.DataFrame:
+    """Helper for joining filings into a pivoted dataframe such that each
+    tag has its own column.
+
+    Tags are joined according to fiscal year and fiscal period. The newest
+    filing date is used when tags have different filing dates for the same
+    fiscal year and fiscal period. Tags are forward-filled to fill gaps
+    in filings.
+
+    Args:
+        df: "Melted" dataframe where each filing is a row.
+        form: Type of form to join. ``"10-K"`` sets the index to the fiscal
+            year and filing date whereas ``"10-Q"`` sets the index to the
+            fiscal year, fiscal period, and filing date.
+
+    Returns:
+        A pivoted dataframe where each column is a tag.
+
+    Examples:
+        Get all XBRL filings from a company, unintelligently select the first
+        unique filings for each XBRL tag, and then join all filings into
+        a pivoted table.
+
+        >>> df = finagg.sec.api.company_facts.get(ticker="AAPL")
+        >>> df = finagg.sec.api.get_unique_filings(df, form="10-K")
+        >>> finagg.sec.api.join_filings(df, form="10-K")  # doctest: +SKIP
+                         AccountsPayableCurrent  AccountsReceivableNetCurrent ...
+        fy   filed                                                            ...
+        2009 2009-10-27            5.520000e+09                  2.422000e+09 ...
+        2010 2010-10-27            5.601000e+09                  3.361000e+09 ...
+        2011 2011-10-26            1.201500e+10                  5.510000e+09 ...
+        2012 2012-10-31            1.463200e+10                  5.369000e+09 ...
+        2013 2013-10-30            2.117500e+10                  1.093000e+10 ...
+
+    """
+    match form:
+        case "10-K":
+            df = df.drop(columns=["fp"]).set_index(["fy"]).sort_index()
+            df["filed"] = df.groupby(["fy"])["filed"].max()
+            df = df.reset_index().pivot(
+                index=["fy", "filed"],
+                columns="tag",
+                values="value",
+            )
+        case "10-Q":
+            df = df.set_index(["fy", "fp"]).sort_index()
+            df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
+            df = df.reset_index().pivot(
+                index=["fy", "fp", "filed"],
+                columns="tag",
+                values="value",
+            )
+    df.columns = df.columns.rename(None)
+    return df

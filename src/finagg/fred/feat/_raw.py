@@ -84,7 +84,7 @@ class Series:
             )
         if not len(df.index):
             raise NoResultFound(f"No series rows found for {series_id}.")
-        return df.set_index(["date"]).sort_index()
+        return df.set_index("date").sort_index()
 
     @classmethod
     def get_id_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
@@ -131,7 +131,7 @@ class Series:
 
         Args:
             series_ids: Set of series to install features for. Defaults to all
-                the series from :attr:`finagg.fred.feat.Economic.series_ids`.
+                the series from :attr:`finagg.fred.feat.Series.get_id_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all

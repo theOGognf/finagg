@@ -11,7 +11,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from .. import backend, feat, sec, utils, yfinance
+from .. import backend, sec, utils, yfinance
 from . import sql
 
 logging.basicConfig(
@@ -88,22 +88,22 @@ class IndustryFundamental:
 
         Examples:
             >>> df = finagg.fundam.feat.fundam.industry.from_refined(ticker="AAPL").head(5)
-            >>> df["avg"]  # doctest: +SKIP
-            name        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            date                                                                    ...
-            2009-10-23                       0.0           0.3305              2.48 ...
-            2009-10-26                       0.0           0.3305              2.48 ...
-            2009-10-27                       0.0           0.3305              2.48 ...
-            2009-10-28                       0.0           0.3305              2.48 ...
-            2009-10-29                       0.0           0.3305              2.48 ...
+            >>> df["mean"]  # doctest: +SKIP
+            name        PriceBookRatio  PriceEarningsRatio
+            date
+            2010-01-29        1.213018           17.020706
+            2010-02-01        1.166246           16.364503
+            2010-02-02        1.213047           17.021558
+            2010-02-03        1.222630           17.156233
+            2010-02-04        1.213401           17.026466
             >>> df["std"]  # doctest: +SKIP
-            name        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            date                                                                    ...
-            2009-10-23                       0.0              0.0               0.0 ...
-            2009-10-26                       0.0              0.0               0.0 ...
-            2009-10-27                       0.0              0.0               0.0 ...
-            2009-10-28                       0.0              0.0               0.0 ...
-            2009-10-29                       0.0              0.0               0.0 ...
+            name        PriceBookRatio  PriceEarningsRatio
+            date
+            2010-01-29        1.469641           20.667755
+            2010-02-01        1.414144           19.887156
+            2010-02-02        1.476001           20.756459
+            2010-02-03        1.490459           20.959443
+            2010-02-04        1.475500           20.749523
 
         """
         start = start or "1776-07-04"
@@ -124,35 +124,27 @@ class IndustryFundamental:
 
             df = pd.DataFrame(
                 conn.execute(
-                    sa.select(
-                        sql.fundam.c.date,
-                        sql.fundam.c.name,
-                        sa.func.avg(sql.fundam.c.value).label("avg"),
-                        sa.func.std(sql.fundam.c.value).label("std"),
-                    )
+                    sql.fundam.select()
                     .join(
                         sec.sql.submissions,
                         (sec.sql.submissions.c.ticker == sql.fundam.c.ticker)
                         & (sec.sql.submissions.c.sic.startswith(code)),
                     )
-                    .group_by(
-                        sql.fundam.c.date,
-                        sql.fundam.c.name,
-                    )
-                    .where(
-                        sql.fundam.c.date >= start,
-                        sql.fundam.c.date <= end,
-                    )
+                    .where(sql.fundam.c.date >= start, sql.fundam.c.date <= end)
                 )
             )
         if not len(df.index):
             raise NoResultFound(f"No industry fundamental rows found for {code}.")
-        df = df.pivot(
-            index="date",
-            columns="name",
-            values=["avg", "std"],
-        ).sort_index()
-        return df
+        df = df.drop(columns=["ticker"])
+        df = df.melt(["date"], var_name="name", value_name="value").set_index("date")
+        return (
+            df.groupby(["date", "name"])
+            .agg([np.mean, np.std])
+            .reset_index()
+            .pivot(index=["date"], columns="name")["value"]
+            .sort_index()
+            .dropna()
+        )
 
 
 class NormalizedFundamental:
@@ -209,13 +201,13 @@ class NormalizedFundamental:
 
         Examples:
             >>> finagg.fundam.feat.fundam.normalized.from_other_refined("AAPL").head(5)  # doctest: +SKIP
-                        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            date                                                                    ...
-            2010-01-25                   -1.4142          -0.6309           -0.6506 ...
-            2010-01-26                    0.0000          -0.6309           -0.6506 ...
-            2010-01-27                    0.0000          -0.6309           -0.6506 ...
-            2010-01-28                    0.5774          -0.5223            0.2046 ...
-            2010-01-29                    0.0000          -0.5940            0.4365 ...
+                        NORM(PriceBookRatio)  NORM(PriceEarningsRatio)
+            date
+            2010-01-25             -0.706266                 -0.706279
+            2010-01-26             -0.698805                 -0.698935
+            2010-01-27             -0.700699                 -0.700799
+            2010-01-28             -0.701446                 -0.701534
+            2010-01-29             -0.704558                 -0.704598
 
         """
         start = start or "1776-07-04"
@@ -223,25 +215,28 @@ class NormalizedFundamental:
         engine = engine or backend.engine
         company_df = Fundamental.from_refined(
             ticker, start=start, end=end, engine=engine
-        )
+        ).reset_index(["date"])
+        date = company_df["date"]
         industry_df = IndustryFundamental.from_refined(
             ticker=ticker, level=level, start=start, end=end, engine=engine
+        ).reset_index(["date"])
+        company_df = (company_df - industry_df["mean"]) / industry_df["std"]
+        company_df["date"] = date
+        company_df = (
+            company_df.reset_index()
+            .set_index("date")
+            .rename(lambda x: f"NORM({x})", axis=1)
         )
-        company_df = (company_df - industry_df["avg"]) / industry_df["std"]
-        company_df = company_df.sort_index()
-        pct_change_columns = Fundamental.pct_change_target_columns()
-        company_df[pct_change_columns] = company_df[pct_change_columns].fillna(
-            value=0.0
-        )
-        df = (
+        company_df = (
             company_df.fillna(method="ffill")
-            .dropna()
             .reset_index()
+            .dropna()
             .drop_duplicates("date")
             .set_index("date")
+            .sort_index()
         )
-        df = df[Fundamental.columns]
-        return df
+        company_df = utils.resolve_col_order(sql.normalized_fundam, company_df)
+        return company_df
 
     @classmethod
     def from_refined(
@@ -278,13 +273,13 @@ class NormalizedFundamental:
 
         Examples:
             >>> finagg.fundam.feat.fundam.normalized.from_refined("AAPL").head(5)  # doctest: +SKIP
-                        AssetsCurrent_pct_change  DebtEquityRatio  EarningsPerShare ...
-            date                                                                    ...
-            2010-01-25                   -1.4142          -0.6309           -0.6506 ...
-            2010-01-26                    0.0000          -0.6309           -0.6506 ...
-            2010-01-27                    0.0000          -0.6309           -0.6506 ...
-            2010-01-28                    0.5774          -0.5223            0.2046 ...
-            2010-01-29                    0.0000          -0.5940            0.4365 ...
+                        NORM(PriceBookRatio)  NORM(PriceEarningsRatio)
+            date
+            2010-01-25             -0.706266                 -0.706279
+            2010-01-26             -0.698805                 -0.698935
+            2010-01-27             -0.700699                 -0.700799
+            2010-01-28             -0.701446                 -0.701534
+            2010-01-29             -0.704558                 -0.704598
 
         """
         start = start or "1776-07-04"
@@ -304,9 +299,7 @@ class NormalizedFundamental:
             raise NoResultFound(
                 f"No industry-normalized fundamental rows found for {ticker}."
             )
-        df = df.pivot(index="date", columns="name", values="value").sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[Fundamental.columns]
+        df = df.drop(columns=["ticker"]).set_index("date").sort_index()
         return df
 
     @classmethod
@@ -362,12 +355,7 @@ class NormalizedFundamental:
                 conn.execute(
                     sa.select(sql.normalized_fundam.c.ticker)
                     .group_by(sql.normalized_fundam.c.ticker)
-                    .having(
-                        *[
-                            sa.func.count(sql.normalized_fundam.c.name == col) >= lb
-                            for col in Fundamental.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.normalized_fundam.c.date) >= lb)
                 )
                 .scalars()
                 .all()
@@ -433,10 +421,9 @@ class NormalizedFundamental:
                 conn.execute(
                     sa.select(sql.normalized_fundam.c.ticker)
                     .where(
-                        sql.normalized_fundam.c.name == column,
                         sql.normalized_fundam.c.date == date,
                     )
-                    .order_by(sql.normalized_fundam.c.value)
+                    .order_by(sql.normalized_fundam.c[column])
                 )
                 .scalars()
                 .all()
@@ -528,18 +515,13 @@ class NormalizedFundamental:
         """
         engine = engine or backend.engine
         df = df.reset_index("date")
-        if set(df.columns) < set(Fundamental.columns):
-            raise ValueError(
-                f"Dataframe must have columns {Fundamental.columns} but got {df.columns}"
-            )
-        df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:
             conn.execute(sql.normalized_fundam.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
 
 
-class Fundamental(feat.Features):
+class Fundamental:
     """Method for gathering fundamental data on a stock using several sources.
 
     The module variable :data:`finagg.fundam.feat.fundam` is an instance of
@@ -557,14 +539,6 @@ class Fundamental(feat.Features):
         >>> pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)
 
     """
-
-    #: Columns within this feature set. Dataframes returned by this class's
-    #: methods will always contain these columns.
-    columns = (
-        yfinance.feat.daily.columns
-        + sec.feat.quarterly.columns
-        + ["PriceEarningsRatio"]
-    )
 
     industry = IndustryFundamental()
     """Fundamental features aggregated for an entire industry.
@@ -586,46 +560,16 @@ class Fundamental(feat.Features):
     def _normalize(
         cls,
         quarterly: pd.DataFrame,
-        daily: pd.DataFrame,
+        prices: pd.DataFrame,
         /,
     ) -> pd.DataFrame:
         """Normalize the feature columns."""
-        quarterly = quarterly.reset_index()
-        quarterly_abs = quarterly.groupby(["filed"], as_index=False)[
-            [
-                col
-                for col in sec.feat.quarterly.columns
-                if not col.endswith("pct_change")
-            ]
-        ].last()
-        quarterly_pct_change_cols = sec.feat.quarterly.pct_change_target_columns()
-        quarterly[quarterly_pct_change_cols] += 1
-        quarterly_pct_change = quarterly.groupby(["filed"], as_index=False).agg(
-            {col: np.prod for col in quarterly_pct_change_cols}
-        )
-        quarterly = pd.merge(
-            quarterly_abs,
-            quarterly_pct_change,
-            how="inner",
-            left_on="filed",
-            right_on="filed",
-        )
-        quarterly[quarterly_pct_change_cols] -= 1
-        quarterly = quarterly.set_index("filed")
-        df = pd.merge(
-            quarterly, daily, how="outer", left_index=True, right_index=True
-        ).sort_index()
-        pct_change_cols = cls.pct_change_target_columns()
-        df[pct_change_cols] = df[pct_change_cols].fillna(value=0)
+        df = pd.merge(quarterly, prices, how="outer", left_index=True, right_index=True)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
-        df["PriceEarningsRatio"] = df["price"] / df["EarningsPerShare"]
-        df["PriceEarningsRatio"] = (
-            df["PriceEarningsRatio"]
-            .replace([-np.inf, np.inf], np.nan)
-            .fillna(method="ffill")
-        )
+        df["PriceBookRatio"] = df["open"] / df["BookRatio"]
+        df["PriceEarningsRatio"] = df["open"] / df["EarningsPerShareBasic"]
         df.index.names = ["date"]
-        df = df[cls.columns]
+        df = utils.resolve_col_order(sql.fundam, df)
         return df.dropna()
 
     @classmethod
@@ -652,13 +596,13 @@ class Fundamental(feat.Features):
 
         Examples:
             >>> finagg.fundam.feat.fundam.from_api("AAPL").head(5)  # doctest: +SKIP
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
+                        PriceBookRatio  PriceEarningsRatio
+            date
+            2010-01-25        0.175061            2.423509
+            2010-01-26        0.178035            2.464677
+            2010-01-27        0.178813            2.475447
+            2010-01-28        0.177153            2.452471
+            2010-01-29        0.173825            2.406396
 
         """
         start = start or "1776-07-04"
@@ -669,62 +613,12 @@ class Fundamental(feat.Features):
             end=end,
         ).reset_index(["fy", "fp"], drop=True)
         start = str(quarterly.index[0])
-        daily = yfinance.feat.daily.from_api(ticker, start=start, end=end)
-        return cls._normalize(quarterly, daily)
-
-    @classmethod
-    def from_other_refined(
-        cls,
-        ticker: str,
-        /,
-        *,
-        start: None | str = None,
-        end: None | str = None,
-        engine: None | Engine = None,
-    ) -> pd.DataFrame:
-        """Get features directly from other refined SQL tables.
-
-        Args:
-            ticker: Company ticker.
-            start: The start date of the observation period. Defaults to the
-                first recorded date.
-            end: The end date of the observation period. Defaults to the
-                last recorded date.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            Combined quarterly and daily feature dataframe.
-            Sorted by date.
-
-        Examples:
-            >>> finagg.fundam.feat.fundam.from_other_refined("AAPL").head(5)  # doctest: +SKIP
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
-
-        """
-        start = start or "1776-07-04"
-        end = end or utils.today
-        engine = engine or backend.engine
-        quarterly = sec.feat.quarterly.from_refined(
+        prices = yfinance.api.get(
             ticker,
             start=start,
             end=end,
-            engine=engine,
-        ).reset_index(["fy", "fp"], drop=True)
-        start = str(quarterly.index[0])
-        daily = yfinance.feat.daily.from_refined(
-            ticker,
-            start=start,
-            end=end,
-            engine=engine,
-        )
-        return cls._normalize(quarterly, daily)
+        ).set_index("date")
+        return cls._normalize(quarterly, prices)
 
     @classmethod
     def from_raw(
@@ -753,13 +647,13 @@ class Fundamental(feat.Features):
 
         Examples:
             >>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)  # doctest: +SKIP
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
+                        PriceBookRatio  PriceEarningsRatio
+            date
+            2010-01-25        0.175061            2.423509
+            2010-01-26        0.178035            2.464677
+            2010-01-27        0.178813            2.475447
+            2010-01-28        0.177153            2.452471
+            2010-01-29        0.173825            2.406396
 
         """
         start = start or "1776-07-04"
@@ -772,13 +666,13 @@ class Fundamental(feat.Features):
             engine=engine,
         ).reset_index(["fy", "fp"], drop=True)
         start = str(quarterly.index[0])
-        daily = yfinance.feat.daily.from_raw(
+        prices = yfinance.feat.prices.from_raw(
             ticker,
             start=start,
             end=end,
             engine=engine,
         )
-        return cls._normalize(quarterly, daily)
+        return cls._normalize(quarterly, prices)
 
     @classmethod
     def from_refined(
@@ -815,13 +709,13 @@ class Fundamental(feat.Features):
 
         Examples:
             >>> finagg.fundam.feat.fundam.from_refined("AAPL").head(5)  # doctest: +SKIP
-                         price  open_pct_change ... PriceEarningsRatio
-            date                                ...
-            2010-01-25  6.1727          -0.0207 ...             2.4302
-            2010-01-26  6.2600           0.0170 ...             2.4646
-            2010-01-27  6.3189           0.0044 ...             2.4878
-            2010-01-28  6.0578          -0.0093 ...             2.3850
-            2010-01-29  5.8381          -0.0188 ...             2.2984
+                        PriceBookRatio  PriceEarningsRatio
+            date
+            2010-01-25        0.175061            2.423509
+            2010-01-26        0.178035            2.464677
+            2010-01-27        0.178813            2.475447
+            2010-01-28        0.177153            2.452471
+            2010-01-29        0.173825            2.406396
 
         """
         start = start or "1776-07-04"
@@ -839,9 +733,7 @@ class Fundamental(feat.Features):
             )
         if not len(df.index):
             raise NoResultFound(f"No fundamental rows found for {ticker}.")
-        df = df.pivot(index="date", values="value", columns="name").sort_index()
-        df.columns = df.columns.rename(None)
-        df = df[cls.columns]
+        df = df.drop(columns=["ticker"]).set_index("date").sort_index()
         return df
 
     @classmethod
@@ -896,12 +788,7 @@ class Fundamental(feat.Features):
                 conn.execute(
                     sa.select(sql.fundam.c.ticker)
                     .group_by(sql.fundam.c.ticker)
-                    .having(
-                        *[
-                            sa.func.count(sql.fundam.c.name == col) >= lb
-                            for col in cls.columns
-                        ]
-                    )
+                    .having(sa.func.count(sql.fundam.c.date) >= lb)
                 )
                 .scalars()
                 .all()
@@ -949,7 +836,7 @@ class Fundamental(feat.Features):
             leave=True,
         ):
             try:
-                df = cls.from_other_refined(ticker, engine=engine)
+                df = cls.from_raw(ticker, engine=engine)
                 rowcount = len(df.index)
                 if rowcount:
                     cls.to_refined(ticker, df, engine=engine)
@@ -982,18 +869,9 @@ class Fundamental(feat.Features):
         Returns:
             Number of rows written to the SQL table.
 
-        Raises:
-            `ValueError`: If the given dataframe's columns do not match this
-                feature's columns.
-
         """
         engine = engine or backend.engine
         df = df.reset_index("date")
-        if set(df.columns) < set(cls.columns):
-            raise ValueError(
-                f"Dataframe must have columns {cls.columns} but got {df.columns}"
-            )
-        df = df.melt("date", var_name="name", value_name="value")
         df["ticker"] = ticker
         with engine.begin() as conn:
             conn.execute(sql.fundam.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
