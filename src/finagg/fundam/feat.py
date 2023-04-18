@@ -138,7 +138,7 @@ class IndustryFundamental:
         df = df.drop(columns=["ticker"])
         df = df.melt(["date"], var_name="name", value_name="value").set_index("date")
         return (
-            df.groupby(["date", "name"])
+            df.groupby(["date", "name"])  # type: ignore[return-value]
             .agg([np.mean, np.std])
             .reset_index()
             .pivot(index=["date"], columns="name")["value"]
