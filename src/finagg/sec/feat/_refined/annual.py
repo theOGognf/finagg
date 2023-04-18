@@ -601,7 +601,7 @@ class Annual:
             2014 2014-10-27            0.161871                   0.239927                                  1.902394 ...
 
         """
-        df = api.company_concept.get_and_join(
+        df = api.company_concept.join_get(
             api.popular_concepts, ticker=ticker, form="10-K", start=start, end=end
         )
         return cls._normalize(df)

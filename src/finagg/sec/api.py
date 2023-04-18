@@ -196,7 +196,7 @@ class CompanyConcept(API):
         return results.rename(columns={"entityName": "entity", "val": "value"})
 
     @classmethod
-    def get_and_join(
+    def join_get(
         cls,
         concepts: list[Concept],
         *,
@@ -230,7 +230,7 @@ class CompanyConcept(API):
             Pivoted dataframe with a tag per column.
 
         Examples:
-            >>> finagg.sec.api.company_concept.get_and_join(
+            >>> finagg.sec.api.company_concept.join_get(
             ...     finagg.sec.api.popular_concepts,
             ...     ticker="AAPL",
             ... ).head(5)  # doctest: +SKIP
@@ -954,6 +954,22 @@ def join_filings(df: pd.DataFrame, /, *, form: str = "10-Q") -> pd.DataFrame:
 
     Returns:
         A pivoted dataframe where each column is a tag.
+
+    Examples:
+        Get all XBRL filings from a company, unintelligently select the first
+        unique filings for each XBRL tag, and then join all filings into
+        a pivoted table.
+
+        >>> df = finagg.sec.api.company_facts.get(ticker="AAPL")
+        >>> df = finagg.sec.api.get_unique_filings(df, form="10-K")
+        >>> finagg.sec.api.join_filings(df, form="10-K")  # doctest: +SKIP
+                         AccountsPayableCurrent  AccountsReceivableNetCurrent ...
+        fy   filed                                                            ...
+        2009 2009-10-27            5.520000e+09                  2.422000e+09 ...
+        2010 2010-10-27            5.601000e+09                  3.361000e+09 ...
+        2011 2011-10-26            1.201500e+10                  5.510000e+09 ...
+        2012 2012-10-31            1.463200e+10                  5.369000e+09 ...
+        2013 2013-10-30            2.117500e+10                  1.093000e+10 ...
 
     """
     match form:

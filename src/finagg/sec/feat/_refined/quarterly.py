@@ -620,7 +620,7 @@ class Quarterly:
                  Q2 2011-04-21            0.000000                   0.000000                                  0.000000 ...
 
         """
-        df = api.company_concept.get_and_join(
+        df = api.company_concept.join_get(
             api.popular_concepts, ticker=ticker, form="10-Q", start=start, end=end
         )
         return cls._normalize(df)
