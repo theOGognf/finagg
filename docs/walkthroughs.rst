@@ -175,7 +175,7 @@ is equivalent to:
 
 .. code:: console
 
-    finagg fred install -r series -ref economic -ss economic
+    finagg fred install --raw series --refined economic -ss economic
 
 Using the SEC API Subpackages
 -----------------------------
@@ -317,6 +317,6 @@ is equivalent to:
 
 .. code:: console
 
-    finagg sec install -r tags -ref quarterly -t MSFT
+    finagg sec install --raw submissions --raw tags --refined quarterly -t MSFT
 
 .. _`FRED API docs have good explanations and examples`: https://fred.stlouisfe ...

@@ -44,12 +44,12 @@ Explore the APIs directly
 Getting data from the BEA API.
 
 >>> finagg.bea.api.gdp_by_industry.get(year=[2019]).head(5)  # doctest: +SKIP
-   table_id freq  year quarter industry                         industry_description       value
-0         1    Q  2019       1       11  Agriculture, forestry, fishing, and hunting  156.300003
-1         1    Q  2019       1    111CA                                        Farms  117.599998
-2         1    Q  2019       1    113FF    Forestry, fishing, and related activities   38.700001
-3         1    Q  2019       1       21                                       Mining  305.700012
-4         1    Q  2019       1      211                       Oil and gas extraction  190.199997
+   table_id freq  year quarter industry                         industry_description ...
+0         1    Q  2019       1       11  Agriculture, forestry, fishing, and hunting ...
+1         1    Q  2019       1    111CA                                        Farms ...
+2         1    Q  2019       1    113FF    Forestry, fishing, and related activities ...
+3         1    Q  2019       1       21                                       Mining ...
+4         1    Q  2019       1      211                       Oil and gas extraction ...
 
 Getting data from the FRED API.
 
@@ -147,7 +147,10 @@ fy   fp filed                                                                 ..
 
 Getting tickers sorted according to industry-normalized SEC EDGAR features.
 
->>> finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by("EarningsPerShareBasic", year=2019)[:5]  # doctest: +SKIP
+>>> finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by(
+...   "EarningsPerShareBasic",
+...   year=2019
+... )[:5]  # doctest: +SKIP
 ['XRAY', 'TSLA', 'SYY', 'WHR', 'KMB']
 >>> finagg.fundam.feat.fundam.normalized.get_tickers_sorted_by(
 ...   "PriceEarningsRatio",

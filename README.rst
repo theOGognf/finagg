@@ -155,7 +155,10 @@ fy   fp filed                                                                 ..
 
 Get tickers sorted by an industry-averaged quarterly report feature.
 
->>> finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by("EarningsPerShareBasic", year=2019)[:5]
+>>> finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by(
+...   "EarningsPerShareBasic",
+...   year=2019
+... )[:5]
 ['XRAY', 'TSLA', 'SYY', 'WHR', 'KMB']
 
 Get tickers sorted by an industry-averaged fundamental feature.
@@ -208,7 +211,8 @@ Dependencies
 
 * `pandas`_ for fast, flexible, and expressive representations of relational data.
 * `requests`_ for HTTP requests to 3rd party APIs.
-* `requests-cache`_ for caching HTTP requests to avoid getting throttled by 3rd party API servers.
+* `requests-cache`_ for caching HTTP requests to avoid getting throttled by 3rd
+  party API servers.
 * `SQLAlchemy`_ for a SQL Python interface.
 * `yfinance`_ for historical stock data from Yahoo! Finance.
 
@@ -222,7 +226,8 @@ API References
 Related Projects
 ================
 
-* `FinRL`_ is a collection of financial reinforcement learning environments and tools.
+* `FinRL`_ is a collection of financial reinforcement learning environments
+  and tools.
 * `fredapi`_ is an implementation of the FRED API.
 * `OpenBBTerminal`_ is an open-source version of the Bloomberg Terminal.
 * `sec-edgar`_ is an implementation of a file-based SEC EDGAR parser.
