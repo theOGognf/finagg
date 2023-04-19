@@ -54,7 +54,17 @@ def is_valid_fiscal_seq(seq: list[int], /) -> bool:
 
 @dataclass
 class FiscalDelta:
-    """A displacement or change from a :class:`FiscalFrame`."""
+    """A displacement or change from a :class:`FiscalFrame`.
+
+    Examples:
+        Get the total number of quarters from a fiscal delta.
+
+        >>> from finagg.frame import FiscalDelta
+        >>> delta = FiscalDelta(2, 2)
+        >>> int(delta)
+        10
+
+    """
 
     #: Year delta.
     years: int = 0
@@ -96,7 +106,7 @@ class FiscalFrame:
         >>> frame + 2
         FiscalFrame(year=1995, quarter=3)
 
-        Adding/subtracting with tuples converts tuuples to :class:`FiscalDelta`.
+        Adding/subtracting with tuples converts tuples to :class:`FiscalDelta`.
 
         >>> frame + (2, 2)
         FiscalFrame(year=1997, quarter=3)
