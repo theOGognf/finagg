@@ -177,9 +177,10 @@ class FiscalFrame:
         """Subtract quarters and/or years from a fiscal frame."""
         if not isinstance(other, int | FiscalDelta | FiscalFrame | tuple):
             raise TypeError(
-                f"can only subtract {int.__name__}, {FiscalDelta.__name__}, "
-                f"{tuple.__name__}, and {self.__class__.__name__} from "
-                f"{self.__class__.__name__} but got `{other.__class__.__name__}` instead."
+                f"can only subtract {int.__name__}, {FiscalDelta.__name__},"
+                f" {tuple.__name__}, and {self.__class__.__name__} from"
+                f" {self.__class__.__name__} but got `{other.__class__.__name__}`"
+                " instead."
             )
 
         if isinstance(other, tuple):
@@ -193,6 +194,7 @@ class FiscalFrame:
 
     @classmethod
     def fromstr(cls, s: str, /) -> "FiscalFrame":
-        """Split a string into year-quarter parts by splitting on alphabetical characters."""
+        """Split a string into year-quarter parts by splitting on alphabetical characters.
+        """
         year, quarter = [c for c in re.split("[a-zA-Z]", s) if c]
         return cls(int(year), int(quarter))

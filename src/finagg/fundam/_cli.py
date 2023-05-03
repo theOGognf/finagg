@@ -89,7 +89,14 @@ def install(
         total_rows += _feat.fundam.normalized.install(recreate_tables=recreate_tables)
 
     if all_ or all_refined:
-        logger.info(f"{total_rows} total rows inserted for {__package__}")
+        if total_rows:
+            logger.info(f"{total_rows} total rows inserted for {__package__}")
+        else:
+            logger.warning(
+                f"No rows were inserted for {__package__}. This could be an error if"
+                " installations were not skipped. Set the verbose flag with the"
+                " `--verbose/-v` option to enable debug logging."
+            )
     else:
         logger.info(
             f"Skipping {__package__} installation because no installation "

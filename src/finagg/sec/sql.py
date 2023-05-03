@@ -355,19 +355,28 @@ normalized_annual = sa.Table(
         "NORM(ReturnOnAssets)",
         sa.Float,
         nullable=False,
-        doc="Net income/loss over total assets normalized against the company's industry.",
+        doc=(
+            "Net income/loss over total assets normalized against the company's"
+            " industry."
+        ),
     ),
     sa.Column(
         "NORM(ReturnOnEquity)",
         sa.Float,
         nullable=False,
-        doc="Net income/loss over stockholder's equity normalized against the company's industry.",
+        doc=(
+            "Net income/loss over stockholder's equity normalized against the company's"
+            " industry."
+        ),
     ),
     sa.Column(
         "NORM(WorkingCapitalRatio)",
         sa.Float,
         nullable=False,
-        doc="Current assets over current liabilities normalized against the company's industry.",
+        doc=(
+            "Current assets over current liabilities normalized against the company's"
+            " industry."
+        ),
     ),
 )
 """SQL table for storing refined data as managed by
@@ -411,7 +420,10 @@ quarterly = sa.Table(
         "LOG_CHANGE(CommonStockSharesOutstanding)",
         sa.Float,
         nullable=False,
-        doc="Logarithmic change in a company's stock shares outstanding between quarters.",
+        doc=(
+            "Logarithmic change in a company's stock shares outstanding between"
+            " quarters."
+        ),
     ),
     sa.Column(
         "LOG_CHANGE(InventoryNet)",
@@ -531,8 +543,8 @@ normalized_quarterly = sa.Table(
         sa.Float,
         nullable=False,
         doc=(
-            "Logarithmic change in a company's stock shares outstanding between quarters "
-            "normalized against the company's industry."
+            "Logarithmic change in a company's stock shares outstanding between"
+            " quarters normalized against the company's industry."
         ),
     ),
     sa.Column(
@@ -617,19 +629,28 @@ normalized_quarterly = sa.Table(
         "NORM(ReturnOnAssets)",
         sa.Float,
         nullable=False,
-        doc="Net income/loss over total assets normalized against the company's industry.",
+        doc=(
+            "Net income/loss over total assets normalized against the company's"
+            " industry."
+        ),
     ),
     sa.Column(
         "NORM(ReturnOnEquity)",
         sa.Float,
         nullable=False,
-        doc="Net income/loss over stockholder's equity normalized against the company's industry.",
+        doc=(
+            "Net income/loss over stockholder's equity normalized against the company's"
+            " industry."
+        ),
     ),
     sa.Column(
         "NORM(WorkingCapitalRatio)",
         sa.Float,
         nullable=False,
-        doc="Current assets over current liabilities normalized against the company's industry.",
+        doc=(
+            "Current assets over current liabilities normalized against the company's"
+            " industry."
+        ),
     ),
 )
 """SQL table for storing refined data as managed by
@@ -666,6 +687,8 @@ def get_cik(ticker: str, /, *, engine: None | Engine = None) -> str:
 
     """
     engine = engine or backend.engine
+    if not sa.inspect(engine).has_table(submissions.name):
+        submissions.create(engine)
     with engine.begin() as conn:
         (cik,) = conn.execute(
             sa.select(submissions.c.cik).where(submissions.c.ticker == ticker)
@@ -701,6 +724,8 @@ def get_metadata(
 
     """
     engine = engine or backend.engine
+    if not sa.inspect(engine).has_table(submissions.name):
+        submissions.create(engine)
 
     if bool(cik) == bool(ticker):
         raise ValueError("Must provide a `cik` or a `ticker`.")
@@ -747,6 +772,8 @@ def get_ticker(cik: str, /, *, engine: None | Engine = None) -> str:
 
     """
     engine = engine or backend.engine
+    if not sa.inspect(engine).has_table(submissions.name):
+        submissions.create(engine)
     with engine.begin() as conn:
         (ticker,) = conn.execute(
             sa.select(submissions.c.ticker).where(submissions.c.cik == cik)
@@ -797,6 +824,8 @@ def get_tickers_in_industry(
 
     """
     engine = engine or backend.engine
+    if not sa.inspect(engine).has_table(submissions.name):
+        submissions.create(engine)
     with engine.begin() as conn:
         if ticker:
             (sic,) = conn.execute(

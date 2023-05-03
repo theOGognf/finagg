@@ -110,6 +110,10 @@ class IndustryAnnual:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.annual.name):
+            sql.annual.create(engine)
         with engine.begin() as conn:
             if ticker:
                 (sic,) = conn.execute(
@@ -295,6 +299,10 @@ class NormalizedAnnual:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.normalized_annual.name):
+            sql.normalized_annual.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -365,6 +373,10 @@ class NormalizedAnnual:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.normalized_annual.name):
+            sql.normalized_annual.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
@@ -416,6 +428,10 @@ class NormalizedAnnual:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.normalized_annual.name):
+            sql.normalized_annual.create(engine)
         with engine.begin() as conn:
             if year == -1:
                 (max_year,) = conn.execute(
@@ -471,6 +487,14 @@ class NormalizedAnnual:
 
         """
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
+        if not tickers:
+            logger.info(
+                "Skipping finagg.sec.feat.annual.normalized installation because no"
+                " tickers were provided or no tickers were found with prerequisite data"
+                " (i.e., finagg.sec.feat.annual data)"
+            )
+            return 0
+
         engine = engine or backend.engine
         if recreate_tables or not sa.inspect(engine).has_table(
             sql.normalized_annual.name
@@ -521,6 +545,8 @@ class NormalizedAnnual:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.normalized_annual.name):
+            sql.normalized_annual.create(engine)
         df = df.reset_index(["fy", "filed"])
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
@@ -703,6 +729,10 @@ class Annual:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.annual.name):
+            sql.annual.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -747,6 +777,10 @@ class Annual:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.tags.name):
+            sql.tags.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
@@ -796,6 +830,10 @@ class Annual:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.annual.name):
+            sql.annual.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
@@ -838,6 +876,14 @@ class Annual:
 
         """
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
+        if not tickers:
+            logger.info(
+                "Skipping finagg.sec.feat.annual installation because no tickers were"
+                " provided or no tickers were found with prerequisite data (i.e.,"
+                " finagg.sec.feat.submissions and finagg.sec.feat.raw data)"
+            )
+            return 0
+
         engine = engine or backend.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.annual.name):
             sql.annual.drop(engine, checkfirst=True)
@@ -886,6 +932,8 @@ class Annual:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.annual.name):
+            sql.annual.create(engine)
         df = df.reset_index(["fy", "filed"])
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:

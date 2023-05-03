@@ -81,6 +81,9 @@ def get_ticker_set(*, engine: None | Engine = None) -> set[str]:
 
     """
     engine = engine or backend.engine
+    for table in (djia, nasdaq100, sp500):
+        if not sa.inspect(engine).has_table(table.name):
+            table.create(engine)
     with engine.begin() as conn:
         tickers: set[str] = set()
         for table in (djia, nasdaq100, sp500):

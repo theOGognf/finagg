@@ -141,6 +141,8 @@ class Economic:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.series.name):
+            sql.series.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -199,6 +201,8 @@ class Economic:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.economic.name):
+            sql.economic.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -272,6 +276,8 @@ class Economic:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.economic.name):
+            sql.economic.create(engine)
         df = df.reset_index("date")
         with engine.begin() as conn:
             conn.execute(sql.economic.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]

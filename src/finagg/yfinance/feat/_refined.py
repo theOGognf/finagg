@@ -120,6 +120,8 @@ class Daily:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.prices.name):
+            sql.prices.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -180,6 +182,8 @@ class Daily:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.daily.name):
+            sql.daily.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -239,6 +243,8 @@ class Daily:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.daily.name):
+            sql.daily.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
@@ -279,6 +285,14 @@ class Daily:
 
         """
         tickers = tickers or cls.get_candidate_ticker_set()
+        if not tickers:
+            logger.info(
+                "Skipping finagg.yfinance.feat.daily installation because no tickers"
+                " were provided or no tickers were found with prerequisite data (i.e.,"
+                " finagg.yfinance.feat.prices data)"
+            )
+            return 0
+
         engine = engine or backend.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.daily.name):
             sql.daily.drop(engine, checkfirst=True)
@@ -327,6 +341,8 @@ class Daily:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.daily.name):
+            sql.daily.create(engine)
         df = df.reset_index("date")
         df["ticker"] = ticker
         with engine.begin() as conn:

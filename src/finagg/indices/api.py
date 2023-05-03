@@ -210,11 +210,9 @@ def _get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
     """
     user_agent = user_agent or os.environ.get(
         "INDICES_API_USER_AGENT",
-        (
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/39.0.2171.95 Safari/537.36"
-        ),
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/39.0.2171.95 Safari/537.36",
     )
     if not user_agent:
         raise RuntimeError(
