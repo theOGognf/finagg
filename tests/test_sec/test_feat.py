@@ -24,19 +24,27 @@ def test_annual_all_equal(engine: Engine) -> None:
     pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)
 
 
-def test_annual_candidate_ticker_set(engine: Engine) -> None:
+def test_annual_get_candidate_ticker_set(engine: Engine) -> None:
     finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
     finagg.sec.feat.tags.install({"AAPL"}, engine=engine)
     assert "AAPL" in finagg.sec.feat.tags.get_ticker_set(engine=engine)
     assert "AAPL" in finagg.sec.feat.annual.get_candidate_ticker_set(engine=engine)
 
 
-def test_annual_ticker_set(engine: Engine) -> None:
+def test_annual_get_candidate_ticker_set_empty(engine: Engine) -> None:
+    assert len(finagg.sec.feat.annual.get_candidate_ticker_set(engine=engine)) == 0
+
+
+def test_annual_get_ticker_set(engine: Engine) -> None:
     finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
     finagg.sec.feat.tags.install({"AAPL"}, engine=engine)
     finagg.sec.feat.annual.install({"AAPL"}, engine=engine)
     assert "AAPL" in finagg.sec.feat.annual.get_candidate_ticker_set(engine=engine)
     assert "AAPL" in finagg.sec.feat.annual.get_ticker_set(engine=engine)
+
+
+def test_annual_get_ticker_set_empty(engine: Engine) -> None:
+    assert len(finagg.sec.feat.annual.get_ticker_set(engine=engine)) == 0
 
 
 def test_annual_to_from_refined(engine: Engine) -> None:
@@ -61,19 +69,27 @@ def test_quarterly_all_equal(engine: Engine) -> None:
     pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)
 
 
-def test_quarterly_candidate_ticker_set(engine: Engine) -> None:
+def test_quarterly_get_candidate_ticker_set(engine: Engine) -> None:
     finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
     finagg.sec.feat.tags.install({"AAPL"}, engine=engine)
     assert "AAPL" in finagg.sec.feat.tags.get_ticker_set(engine=engine)
     assert "AAPL" in finagg.sec.feat.quarterly.get_candidate_ticker_set(engine=engine)
 
 
-def test_quarterly_ticker_set(engine: Engine) -> None:
+def test_quarterly_get_candidate_ticker_set_empty(engine: Engine) -> None:
+    assert len(finagg.sec.feat.quarterly.get_candidate_ticker_set(engine=engine)) == 0
+
+
+def test_quarterly_get_ticker_set(engine: Engine) -> None:
     finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
     finagg.sec.feat.tags.install({"AAPL"}, engine=engine)
     finagg.sec.feat.quarterly.install({"AAPL"}, engine=engine)
     assert "AAPL" in finagg.sec.feat.quarterly.get_candidate_ticker_set(engine=engine)
     assert "AAPL" in finagg.sec.feat.quarterly.get_ticker_set(engine=engine)
+
+
+def test_quarterly_get_ticker_set_empty(engine: Engine) -> None:
+    assert len(finagg.sec.feat.quarterly.get_ticker_set(engine=engine)) == 0
 
 
 def test_quarterly_to_from_refined(engine: Engine) -> None:

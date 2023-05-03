@@ -13,7 +13,7 @@ def engine() -> Engine:
     )
 
 
-def test_fundam_candidate_ticker_set(engine: Engine) -> None:
+def test_fundam_get_candidate_ticker_set(engine: Engine) -> None:
     finagg.yfinance.feat.prices.install({"AAPL"}, engine=engine)
     finagg.yfinance.feat.daily.install({"AAPL"}, engine=engine)
     finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
@@ -22,14 +22,22 @@ def test_fundam_candidate_ticker_set(engine: Engine) -> None:
     assert "AAPL" in finagg.fundam.feat.fundam.get_candidate_ticker_set(engine=engine)
 
 
-def test_fundam_ticker_set(engine: Engine) -> None:
+def test_fundam_get_candidate_ticker_set_empty(engine: Engine) -> None:
+    assert len(finagg.fundam.feat.fundam.get_candidate_ticker_set(engine=engine)) == 0
+
+
+def test_fundam_get_ticker_set(engine: Engine) -> None:
     finagg.yfinance.feat.prices.install({"AAPL"}, engine=engine)
     finagg.yfinance.feat.daily.install({"AAPL"}, engine=engine)
     finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
     finagg.sec.feat.tags.install({"AAPL"}, engine=engine)
     finagg.sec.feat.quarterly.install({"AAPL"}, engine=engine)
     finagg.fundam.feat.fundam.install({"AAPL"}, engine=engine)
-    assert "AAPL" in finagg.sec.feat.quarterly.get_ticker_set(engine=engine)
+    assert "AAPL" in finagg.fundam.feat.fundam.get_ticker_set(engine=engine)
+
+
+def test_fundam_get_ticker_set_empty(engine: Engine) -> None:
+    assert len(finagg.fundam.feat.fundam.get_ticker_set(engine=engine)) == 0
 
 
 def test_fundam_to_from_refined(engine: Engine) -> None:

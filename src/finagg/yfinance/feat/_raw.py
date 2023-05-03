@@ -71,6 +71,8 @@ class Prices:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.prices.name):
+            sql.prices.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -108,6 +110,8 @@ class Prices:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.prices.name):
+            sql.prices.create(engine)
         with engine.begin() as conn:
             tickers = set(
                 conn.execute(
@@ -186,6 +190,8 @@ class Prices:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.prices.name):
+            sql.prices.create(engine)
         with engine.begin() as conn:
             conn.execute(sql.prices.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df)

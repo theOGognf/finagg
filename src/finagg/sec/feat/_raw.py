@@ -112,6 +112,8 @@ class Submissions:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -146,6 +148,8 @@ class Submissions:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
         with engine.begin() as conn:
             tickers = conn.execute(sa.select(sql.submissions.c.ticker)).scalars().all()
         return set(tickers)
@@ -164,6 +168,8 @@ class Submissions:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
         with engine.begin() as conn:
             conn.execute(sql.submissions.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df)
@@ -232,6 +238,10 @@ class Tags:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.tags.name):
+            sql.tags.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -287,6 +297,10 @@ class Tags:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.tags.name):
+            sql.tags.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
@@ -357,7 +371,8 @@ class Tags:
                             cls.to_raw(df_unique, engine=engine)
                             total_rows += rowcount
                             logger.debug(
-                                f"{rowcount} rows inserted for {ticker} {tag} {form} filings"
+                                f"{rowcount} rows inserted for"
+                                f" {ticker} {tag} {form} filings"
                             )
                         else:
                             logger.debug(
@@ -426,6 +441,10 @@ class Tags:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.tags.name):
+            sql.tags.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -465,6 +484,8 @@ class Tags:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.tags.name):
+            sql.tags.create(engine)
         with engine.begin() as conn:
             conn.execute(sql.tags.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df)

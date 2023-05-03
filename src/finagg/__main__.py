@@ -29,8 +29,10 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
 
 
 @cli.command(
-    help="Set API keys/user agents, drop and recreate tables, "
-    "and install the recommended datasets into the SQL database.",
+    help=(
+        "Set API keys/user agents, drop and recreate tables, "
+        "and install the recommended datasets into the SQL database."
+    ),
 )
 @click.option(
     "--skip",

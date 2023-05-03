@@ -120,11 +120,7 @@ class CompanyConcept(API):
 
     """
 
-    url = (
-        "https://data.sec.gov/api/xbrl"
-        "/companyconcept"
-        "/CIK{cik}/{taxonomy}/{tag}.json"
-    )
+    url = "https://data.sec.gov/api/xbrl/companyconcept/CIK{cik}/{taxonomy}/{tag}.json"
 
     @classmethod
     def get(

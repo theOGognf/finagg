@@ -64,7 +64,10 @@ economic = sa.Table(
         "LOG_CHANGE(CSUSHPINSA)",
         sa.Float,
         nullable=False,
-        doc="Logarithmic change in S&P/Case-Shiller national home price index between days.",
+        doc=(
+            "Logarithmic change in S&P/Case-Shiller national home price index between"
+            " days."
+        ),
     ),
     sa.Column("FEDFUNDS", sa.Float, nullable=False, doc="Federal funds interest rate."),
     sa.Column(
@@ -84,7 +87,10 @@ economic = sa.Table(
         "LOG_CHANGE(M2)",
         sa.Float,
         nullable=False,
-        doc="Logarithmic change in money stock measures (i.e., savings and related balances) between days.",
+        doc=(
+            "Logarithmic change in money stock measures (i.e., savings and related"
+            " balances) between days."
+        ),
     ),
     sa.Column(
         "MICH",
@@ -104,7 +110,10 @@ economic = sa.Table(
         "LOG_CHANGE(WALCL)",
         sa.Float,
         nullable=False,
-        doc="Logarithmic change in US assets, total assets (less eliminations from consolidation) between days.",
+        doc=(
+            "Logarithmic change in US assets, total assets (less eliminations from"
+            " consolidation) between days."
+        ),
     ),
 )
 """SQL table for storing refined data as managed by :data:`finagg.fred.feat.economic`

@@ -110,6 +110,10 @@ class IndustryQuarterly:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.quarterly.name):
+            sql.quarterly.create(engine)
         with engine.begin() as conn:
             if ticker:
                 (sic,) = conn.execute(
@@ -297,6 +301,10 @@ class NormalizedQuarterly:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.normalized_quarterly.name):
+            sql.normalized_quarterly.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -367,6 +375,10 @@ class NormalizedQuarterly:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.normalized_quarterly.name):
+            sql.normalized_quarterly.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
@@ -422,6 +434,8 @@ class NormalizedQuarterly:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.normalized_quarterly.name):
+            sql.normalized_quarterly.create(engine)
         with engine.begin() as conn:
             if year == -1:
                 (max_year,) = conn.execute(
@@ -486,6 +500,14 @@ class NormalizedQuarterly:
 
         """
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
+        if not tickers:
+            logger.info(
+                "Skipping finagg.sec.feat.quarterly.normalized installation because no"
+                " tickers were provided or no tickers were found with prerequisite data"
+                " (i.e., finagg.sec.feat.quarterly data)"
+            )
+            return 0
+
         engine = engine or backend.engine
         if recreate_tables or not sa.inspect(engine).has_table(
             sql.normalized_quarterly.name
@@ -536,6 +558,8 @@ class NormalizedQuarterly:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.normalized_quarterly.name):
+            sql.normalized_quarterly.create(engine)
         df = df.reset_index(["fy", "fp", "filed"])
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:
@@ -722,6 +746,10 @@ class Quarterly:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.quarterly.name):
+            sql.quarterly.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -766,6 +794,10 @@ class Quarterly:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.tags.name):
+            sql.tags.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
@@ -815,6 +847,10 @@ class Quarterly:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.quarterly.name):
+            sql.quarterly.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
@@ -857,6 +893,14 @@ class Quarterly:
 
         """
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
+        if not tickers:
+            logger.info(
+                "Skipping finagg.sec.feat.quarterly installation because no tickers"
+                " were provided or no tickers were found with prerequisite data (i.e.,"
+                " finagg.sec.feat.submissions and finagg.sec.feat.raw data)"
+            )
+            return 0
+
         engine = engine or backend.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.quarterly.name):
             sql.quarterly.drop(engine, checkfirst=True)
@@ -905,6 +949,8 @@ class Quarterly:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.quarterly.name):
+            sql.quarterly.create(engine)
         df = df.reset_index(["fy", "fp", "filed"])
         df["cik"] = sql.get_cik(ticker, engine=engine)
         with engine.begin() as conn:

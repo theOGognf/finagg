@@ -23,6 +23,8 @@ repos:
     rev: 22.8.0
     hooks:
     - id: black
+      args:
+        - --preview
 
   - repo: https://github.com/pycqa/isort
     rev: 5.11.5

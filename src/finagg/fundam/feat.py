@@ -109,6 +109,10 @@ class IndustryFundamental:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sec.sql.submissions.name):
+            sec.sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.fundam.name):
+            sql.fundam.create(engine)
         with engine.begin() as conn:
             if ticker:
                 (sic,) = conn.execute(
@@ -285,6 +289,8 @@ class NormalizedFundamental:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.normalized_fundam.name):
+            sql.normalized_fundam.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -350,6 +356,8 @@ class NormalizedFundamental:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.normalized_fundam.name):
+            sql.normalized_fundam.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
@@ -402,6 +410,8 @@ class NormalizedFundamental:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.normalized_fundam.name):
+            sql.normalized_fundam.create(engine)
         with engine.begin() as conn:
             if isinstance(date, int):
                 if date > 0:
@@ -461,6 +471,14 @@ class NormalizedFundamental:
         """
         engine = engine or backend.engine
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
+        if not tickers:
+            logger.info(
+                "Skipping finagg.fundam.feat.fundam.normalized installation because no"
+                " tickers were provided or no tickers were found with prerequisite data"
+                " (i.e., finagg.fundam.feat.fundam data)"
+            )
+            return 0
+
         if recreate_tables or not sa.inspect(engine).has_table(
             sql.normalized_fundam.name
         ):
@@ -514,6 +532,8 @@ class NormalizedFundamental:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.normalized_fundam.name):
+            sql.normalized_fundam.create(engine)
         df = df.reset_index("date")
         df["ticker"] = ticker
         with engine.begin() as conn:
@@ -721,6 +741,8 @@ class Fundamental:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.fundam.name):
+            sql.fundam.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
@@ -783,6 +805,8 @@ class Fundamental:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.fundam.name):
+            sql.fundam.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
@@ -824,6 +848,14 @@ class Fundamental:
         """
         engine = engine or backend.engine
         tickers = tickers or cls.get_candidate_ticker_set(engine=engine)
+        if not tickers:
+            logger.info(
+                "Skipping finagg.fundam.feat.fundam installation because no tickers"
+                " were provided or no tickers were found with prerequisite data (i.e.,"
+                " finagg.yfinance.feat.daily and finagg.sec.feat.quarterly data)"
+            )
+            return 0
+
         if recreate_tables or not sa.inspect(engine).has_table(sql.fundam.name):
             sql.fundam.drop(engine, checkfirst=True)
             sql.fundam.create(engine)
@@ -871,6 +903,8 @@ class Fundamental:
 
         """
         engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.fundam.name):
+            sql.fundam.create(engine)
         df = df.reset_index("date")
         df["ticker"] = ticker
         with engine.begin() as conn:
