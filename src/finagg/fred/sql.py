@@ -98,7 +98,25 @@ economic = sa.Table(
         nullable=False,
         doc="University of Michigan: inflation expectation.",
     ),
+    sa.Column(
+        "LOG_CHANGE(NASDAQ100)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in Nasdaq 100 index.",
+    ),
+    sa.Column(
+        "LOG_CHANGE(NASDAQCOMP)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in Nasdaq Composite index.",
+    ),
     sa.Column("PSAVERT", sa.Float, nullable=False, doc="Personal savings rate."),
+    sa.Column(
+        "LOG_CHANGE(SP500)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in S&P 500 index.",
+    ),
     sa.Column(
         "UMCSENT",
         sa.Float,

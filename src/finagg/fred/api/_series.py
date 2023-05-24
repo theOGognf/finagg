@@ -12,9 +12,36 @@ See the official FRED API docs for more info:
 
 """
 
+from typing import TypedDict
+
 import pandas as pd
 
 from . import _api
+
+
+class SeriesObservation(TypedDict):
+    """Options for getting economic data series observations."""
+
+    #: An integer indicating the type of observations to include.
+    #:     Options include:
+    #:
+    #:         - 1 = observations by realtime period
+    #:         - 2 = all observations by vintage dates
+    #:         - 3 = new and revised observations only
+    #:         - 4 = initial release observations only
+    #:
+    output_type: None | int
+
+    #: Start date for fetching results according to their publication date.
+    #: ``0`` indicates since the beginning of time.
+    realtime_start: None | int | str
+
+    #: End date for fetching results according to their publication date.
+    #: ``-1`` indicates to present day.
+    realtime_end: None | int | str
+
+    #: Economic data series ID.
+    series_id: str
 
 
 class SeriesCategories(_api.API):
@@ -937,21 +964,113 @@ class Series(_api.API):
         return pd.DataFrame(data)
 
 
-popular_series = [
-    "CIVPART",  # Labor force participation rate
-    "CPIAUCNS",  # Consumer price index
-    "CSUSHPINSA",  # S&P/Case-Shiller national home price index
-    "FEDFUNDS",  # Federal funds interest rate
-    "GDP",  # Gross domestic product
-    "GDPC1",  # Real gross domestic product
-    "GS10",  # 10-Year treasury yield
-    "M2",  # Money stock measures (i.e., savings and related balances)
-    "MICH",  # University of Michigan: inflation expectation
-    "PSAVERT",  # Personal savings rate
-    "UMCSENT",  # University of Michigan: consumer sentiment
-    "UNRATE",  # Unemployment rate
-    "WALCL",  # US assets, total assets (less eliminations from consolidation)
+popular_series_observations: list[SeriesObservation] = [
+    {
+        "series_id": "CIVPART",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # Labor force participation rate
+    {
+        "series_id": "CPIAUCNS",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # Consumer price index
+    {
+        "series_id": "CSUSHPINSA",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # S&P/Case-Shiller national home price index
+    {
+        "series_id": "FEDFUNDS",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # Federal funds interest rate
+    {
+        "series_id": "GDP",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # Gross domestic product
+    {
+        "series_id": "GDPC1",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # Real gross domestic product
+    {
+        "series_id": "GS10",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # 10-Year treasury yield
+    {
+        "series_id": "M2",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # Money stock measures (i.e., savings and related balances)
+    {
+        "series_id": "MICH",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # University of Michigan: inflation expectation
+    {
+        "series_id": "NASDAQ100",
+        "realtime_start": None,
+        "realtime_end": None,
+        "output_type": 1,
+    },  # Nasdaq 100 index
+    {
+        "series_id": "NASDAQCOMP",
+        "realtime_start": None,
+        "realtime_end": None,
+        "output_type": 1,
+    },  # Nasdaq Composite index
+    {
+        "series_id": "PSAVERT",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # Personal savings rate
+    {
+        "series_id": "SP500",
+        "realtime_start": None,
+        "realtime_end": None,
+        "output_type": 1,
+    },  # S&P 500 index
+    {
+        "series_id": "UMCSENT",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # University of Michigan: consumer sentiment
+    {
+        "series_id": "UNRATE",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # Unemployment rate
+    {
+        "series_id": "WALCL",
+        "realtime_start": 0,
+        "realtime_end": -1,
+        "output_type": 4,
+    },  # US assets, total assets (less eliminations from consolidation)
 ]
+"""Economic data series that are relatively popular for economic analysis
+along with parameters required for getting their full history.
+Includes things like gross domestic product, unemployment rate, etc..
+
+:meta hide-value:
+"""
+
+
+popular_series = [pso["series_id"] for pso in popular_series_observations]
 """Economic data series that are relatively popular for economic analysis.
 Includes things like gross domestic product, unemployment rate, etc..
 

@@ -85,14 +85,14 @@ class Economic:
         start = start or "1776-07-04"
         end = end or utils.today
         dfs = []
-        for series_id in api.popular_series:
+        for observation in api.popular_series_observations:
             df = api.series.observations.get(
-                series_id,
-                realtime_start=0,
-                realtime_end=-1,
+                observation["series_id"],
+                realtime_start=observation["realtime_start"],
+                realtime_end=observation["realtime_end"],
                 observation_start=start,
                 observation_end=end,
-                output_type=4,
+                output_type=observation["output_type"],
             )
             dfs.append(df)
         df = pd.concat(dfs)
