@@ -31,7 +31,6 @@ series = sa.Table(
     sa.Column(
         "value",
         sa.Float,
-        nullable=False,
         doc="Economic series value for a particular date.",
     ),
 )
@@ -69,6 +68,12 @@ economic = sa.Table(
             " days."
         ),
     ),
+    sa.Column(
+        "LOG_CHANGE(DJIA)",
+        sa.Float,
+        nullable=False,
+        doc="Logarithmic change in Dow Jones Industrial index.",
+    ),
     sa.Column("FEDFUNDS", sa.Float, nullable=False, doc="Federal funds interest rate."),
     sa.Column(
         "LOG_CHANGE(GDP)",
@@ -105,7 +110,7 @@ economic = sa.Table(
         doc="Logarithmic change in Nasdaq 100 index.",
     ),
     sa.Column(
-        "LOG_CHANGE(NASDAQCOMP)",
+        "LOG_CHANGE(NASDAQCOM)",
         sa.Float,
         nullable=False,
         doc="Logarithmic change in Nasdaq Composite index.",

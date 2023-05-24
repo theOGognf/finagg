@@ -159,11 +159,8 @@ class Series:
             leave=True,
         ):
             try:
-                df = api.series.observations.get(
+                df = api.series.observations.get_first_observations(
                     series_id,
-                    realtime_start=0,
-                    realtime_end=-1,
-                    output_type=4,
                 )
                 rowcount = len(df.index)
                 if rowcount:

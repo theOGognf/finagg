@@ -12,36 +12,10 @@ See the official FRED API docs for more info:
 
 """
 
-from typing import TypedDict
-
 import pandas as pd
+from requests import HTTPError
 
 from . import _api
-
-
-class SeriesObservation(TypedDict):
-    """Options for getting economic data series observations."""
-
-    #: An integer indicating the type of observations to include.
-    #:     Options include:
-    #:
-    #:         - 1 = observations by realtime period
-    #:         - 2 = all observations by vintage dates
-    #:         - 3 = new and revised observations only
-    #:         - 4 = initial release observations only
-    #:
-    output_type: None | int
-
-    #: Start date for fetching results according to their publication date.
-    #: ``0`` indicates since the beginning of time.
-    realtime_start: None | int | str
-
-    #: End date for fetching results according to their publication date.
-    #: ``-1`` indicates to present day.
-    realtime_end: None | int | str
-
-    #: Economic data series ID.
-    series_id: str
 
 
 class SeriesCategories(_api.API):
@@ -245,7 +219,129 @@ class SeriesObservations(_api.API):
         data = data["observations"]
         df = pd.DataFrame(data)
         df["series_id"] = series_id
+        df["value"] = pd.to_numeric(df["value"], errors="coerce")
         return df
+
+    @classmethod
+    def get_first_observations(
+        cls,
+        series_id: str,
+        /,
+        *,
+        limit: None | int = 100000,
+        offset: None | int = 0,
+        sort_order: None | str = None,
+        observation_start: None | int | str = None,
+        observation_end: None | int | str = None,
+        units: None | str = "lin",
+        frequency: None | str = None,
+        aggregation_method: None | str = "avg",
+        api_key: None | str = None,
+    ) -> pd.DataFrame:
+        """Get only the initial releases/observations for an
+        economic data series.
+
+        Similar to :meth:`SeriesObservations.get`, but tries to get initial
+        releases/observations only.
+
+        Args:
+            series_id: The ID for a series.
+            limit: Maximum number of results to return.
+            offset: Result start offset.
+            sort_order: Sort results in ascending ("asc") or
+                descending ("desc") order.
+            observation_start: The start date of the observation period.
+            observation_end: The end date of the observation period.
+            units: Units to return the series values in. Options include:
+
+                - "lin" = levels (no unit transformation)
+                - "chg" = change
+                - "ch1" = change from a year ago
+                - "pch" = percent change
+                - "pc1" = percent change from a year ago
+                - "pca" = compounded annual rate of change
+                - "cch" = continuously compounded rate of change
+                - "cca" = continuously compounded annual rate of change
+                - "log" = natural log
+
+            frequency: An optional parameter that indicates a lower frequency to
+                aggregate values to. Frequency options without period descriptions
+                include:
+
+                    - "d" = daily
+                    - "w" = weekly
+                    - "bw" = biweekly
+                    - "m" = monthly
+                    - "q" = quarterly
+                    - "sa" = semiannual
+                    - "a" = annual
+
+                Frequency options with period descriptions include:
+
+                    - "wef" = weekly, ending Friday
+                    - "weth" = weekly, ending Thursday
+                    - "wetu" = weekly, ending Wednesday
+                    - "wem" = weekly, ending Monday
+                    - "wesu" = weekly, ending Sunday
+                    - "wesa" = weekly, ending Saturday
+                    - "bwew" = weekly, ending Wednesday
+                    - "bwem" = weekly, Monday
+
+            aggregation_method: A key that indicates the aggregation method used
+                for frequency aggregation. Options include:
+
+                    - "avg" = average
+                    - "sum" = sum
+                    - "eop" = end of period
+
+            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
+                environment variable.
+
+        Returns:
+            A dataframe containing economic data series observations/values according to
+            the given parameters.
+
+        Examples:
+            >>> finagg.fred.api.series.observations.get_first_observations(
+            ...     "CPIAUCNS",
+            ... ).head(5)  # doctest: +SKIP
+              realtime_start realtime_end        date  value series_id
+            0     1949-04-22   1953-02-26  1949-03-01  169.5  CPIAUCNS
+            1     1949-05-23   1953-02-26  1949-04-01  169.7  CPIAUCNS
+            2     1949-06-24   1953-02-26  1949-05-01  169.2  CPIAUCNS
+            3     1949-07-22   1953-02-26  1949-06-01  169.6  CPIAUCNS
+            4     1949-08-26   1953-02-26  1949-07-01  168.5  CPIAUCNS
+
+        """
+        try:
+            return cls.get(
+                series_id,
+                realtime_start=0,
+                realtime_end=-1,
+                limit=limit,
+                offset=offset,
+                sort_order=sort_order,
+                observation_start=observation_start,
+                observation_end=observation_end,
+                units=units,
+                frequency=frequency,
+                aggregation_method=aggregation_method,
+                output_type=4,
+                api_key=api_key,
+            )
+        except HTTPError:
+            return cls.get(
+                series_id,
+                limit=limit,
+                offset=offset,
+                sort_order=sort_order,
+                observation_start=observation_start,
+                observation_end=observation_end,
+                units=units,
+                frequency=frequency,
+                aggregation_method=aggregation_method,
+                api_key=api_key,
+            )
 
 
 class SeriesRelease(_api.API):
@@ -964,113 +1060,25 @@ class Series(_api.API):
         return pd.DataFrame(data)
 
 
-popular_series_observations: list[SeriesObservation] = [
-    {
-        "series_id": "CIVPART",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # Labor force participation rate
-    {
-        "series_id": "CPIAUCNS",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # Consumer price index
-    {
-        "series_id": "CSUSHPINSA",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # S&P/Case-Shiller national home price index
-    {
-        "series_id": "FEDFUNDS",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # Federal funds interest rate
-    {
-        "series_id": "GDP",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # Gross domestic product
-    {
-        "series_id": "GDPC1",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # Real gross domestic product
-    {
-        "series_id": "GS10",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # 10-Year treasury yield
-    {
-        "series_id": "M2",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # Money stock measures (i.e., savings and related balances)
-    {
-        "series_id": "MICH",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # University of Michigan: inflation expectation
-    {
-        "series_id": "NASDAQ100",
-        "realtime_start": None,
-        "realtime_end": None,
-        "output_type": 1,
-    },  # Nasdaq 100 index
-    {
-        "series_id": "NASDAQCOMP",
-        "realtime_start": None,
-        "realtime_end": None,
-        "output_type": 1,
-    },  # Nasdaq Composite index
-    {
-        "series_id": "PSAVERT",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # Personal savings rate
-    {
-        "series_id": "SP500",
-        "realtime_start": None,
-        "realtime_end": None,
-        "output_type": 1,
-    },  # S&P 500 index
-    {
-        "series_id": "UMCSENT",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # University of Michigan: consumer sentiment
-    {
-        "series_id": "UNRATE",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # Unemployment rate
-    {
-        "series_id": "WALCL",
-        "realtime_start": 0,
-        "realtime_end": -1,
-        "output_type": 4,
-    },  # US assets, total assets (less eliminations from consolidation)
+popular_series = [
+    "CIVPART",  # Labor force participation rate
+    "CPIAUCNS",  # Consumer price index
+    "CSUSHPINSA",  # S&P/Case-Shiller national home price index
+    "DJIA",  # Dow Jones Industrial Average index
+    "FEDFUNDS",  # Federal funds interest rate
+    "GDP",  # Gross domestic product
+    "GDPC1",  # Real gross domestic product
+    "GS10",  # 10-Year treasury yield
+    "M2",  # Money stock measures (i.e., savings and related balances)
+    "MICH",  # University of Michigan: inflation expectation
+    "NASDAQ100",  # Nasdaq 100 index
+    "NASDAQCOM",  # Nasdaq Composite index
+    "PSAVERT",  # Personal savings rate
+    "SP500",  # S&P 500 index
+    "UMCSENT",  # University of Michigan: consumer sentiment
+    "UNRATE",  # Unemployment rate
+    "WALCL",  # US assets, total assets (less eliminations from consolidation)
 ]
-"""Economic data series that are relatively popular for economic analysis
-along with parameters required for getting their full history.
-Includes things like gross domestic product, unemployment rate, etc..
-
-:meta hide-value:
-"""
-
-
-popular_series = [pso["series_id"] for pso in popular_series_observations]
 """Economic data series that are relatively popular for economic analysis.
 Includes things like gross domestic product, unemployment rate, etc..
 

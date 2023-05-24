@@ -56,7 +56,6 @@ from ._series import (
     SeriesUpdates,
     SeriesVintageDates,
     popular_series,
-    popular_series_observations,
 )
 from ._source import Source, SourceReleases, Sources
 from ._tags import RelatedTags, Tags
@@ -64,7 +63,6 @@ from ._tags import RelatedTags, Tags
 __all__ = [
     "category",
     "popular_series",
-    "popular_series_observations",
     "related_tags",
     "release",
     "releases",
