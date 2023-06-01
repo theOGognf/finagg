@@ -27,8 +27,8 @@ jobs:
       - name: Build
         run: tox -e build
       - name: Publish
-        run: tox -e publish -- --repository pypi
+        run: tox -e publish
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-          TWIN_REPOSITORY: pypi
+          TWINE_REPOSITORY: pypi
