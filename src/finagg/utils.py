@@ -85,6 +85,10 @@ def get_func_cols(table: sa.Table | pd.DataFrame, /) -> list[str]:
         List of functional-style column names in ``table``. Returns
         an empty list if none are found.
 
+    Raises:
+        `TypeError`: If the given object is not a SQLAlchemy
+            table or dataframe.
+
     """
     match table:
         case sa.Table():
@@ -171,6 +175,10 @@ def resolve_func_cols(
         A new dataframe with columns from ``df`` and columns according to
         columns named within ``table`` like ``FUNC(col0, col1, ...)`` where
         columns ``col0`` and ``col1`` exist in ``df``.
+
+    Raises:
+        `ValueError`: If the function parsed from the column name has no
+            supported and corresponding function.
 
     """
     out = df if inplace else df.copy(deep=True)
