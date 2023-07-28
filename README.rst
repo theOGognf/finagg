@@ -157,7 +157,7 @@ fy   fp filed                                                                 ..
 Get tickers sorted by an industry-averaged quarterly report feature.
 
 >>> finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by(
-...   "EarningsPerShareBasic",
+...   "NORM(EarningsPerShareBasic)",
 ...   year=2019
 ... )[:5]
 ['XRAY', 'TSLA', 'SYY', 'WHR', 'KMB']
@@ -165,7 +165,7 @@ Get tickers sorted by an industry-averaged quarterly report feature.
 Get tickers sorted by an industry-averaged fundamental feature.
 
 >>> finagg.fundam.feat.fundam.normalized.get_tickers_sorted_by(
-...   "PriceEarningsRatio",
+...   "NORM(PriceEarningsRatio)",
 ...   date="2019-01-04"
 ... )[:5]
 ['AMD', 'TRGP', 'HPE', 'CZR', 'TSLA']
