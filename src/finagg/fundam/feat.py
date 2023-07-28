@@ -402,7 +402,7 @@ class NormalizedFundamental:
 
         Examples:
             >>> ts = finagg.fundam.feat.fundam.normalized.get_tickers_sorted_by(
-            ...         "PriceEarningsRatio",
+            ...         "NORM(PriceEarningsRatio)",
             ...         date="2019-01-04"
             ... )
             >>> "AMD" == ts[0]  # doctest: +SKIP

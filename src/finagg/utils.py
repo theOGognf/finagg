@@ -74,19 +74,26 @@ def expand_csv(values: str | list[str], /) -> set[str]:
     return out
 
 
-def get_func_cols(table: sa.Table, /) -> list[str]:
+def get_func_cols(table: sa.Table | pd.DataFrame, /) -> list[str]:
     """Return the column names in ``table`` that have the format
     ``FUNC(arg0, arg1, ...)``.
 
     Args:
-        table: SQLAlchemy table.
+        table: SQLAlchemy table or dataframe.
 
     Returns:
         List of functional-style column names in ``table``. Returns
         an empty list if none are found.
 
     """
-    return [key for key in table.columns.keys() if parse_func_call(key)]
+    match table:
+        case sa.Table():
+            cols = table.columns.keys()
+        case pd.DataFrame():
+            cols = table.columns.to_list()
+        case _:
+            raise TypeError(f"{table.__class__.__name__} is not supported")
+    return [col for col in cols if parse_func_call(col)]
 
 
 def parse_func_call(s: str, /) -> None | tuple[str, list[str]]:

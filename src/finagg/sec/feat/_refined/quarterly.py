@@ -425,7 +425,7 @@ class NormalizedQuarterly:
 
         Examples:
             >>> ts = finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by(
-            ...         "EarningsPerShareBasic",
+            ...         "NORM(EarningsPerShareBasic)",
             ...         year=2020,
             ...         quarter=3
             ... )

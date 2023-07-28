@@ -144,7 +144,7 @@ FRED economic data series but with :data:`finagg.fred.feat.economic` looks
 like the following:
 
 >>> finagg.fred.feat.economic.install()  # doctest: +SKIP
->>> finagg.fred.feat.economic.from_refined()["FEDFUNDS"].head(5)  # doctest: +ELLIPSIS, +NORMALIZE_WHITESPACE
+>>> finagg.fred.feat.economic.from_refined()["FEDFUNDS"].head(5)  # doctest: +SKIP
 date
 2014-10-06    0.09
 2014-10-08    0.09

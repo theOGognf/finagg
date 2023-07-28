@@ -175,7 +175,7 @@ class Position:
             >>> from finagg.portfolio import Position
             >>> pos = Position(100.0, 1)
             >>> pos.total_log_change(50.0)
-            -0.051293294387550536
+            -0.6931471805599453
 
         """
         return float(Decimal(cost).ln() - self._average_cost_basis.ln())

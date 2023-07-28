@@ -12,7 +12,7 @@ def test_CamelCase(s: str, expected: str) -> None:
     assert finagg.utils.CamelCase(s) == expected
 
 
-def test_get_func_cols() -> None:
+def test_get_func_cols_from_table() -> None:
     table = sa.Table(
         "test",
         sa.MetaData(),
@@ -22,6 +22,11 @@ def test_get_func_cols() -> None:
         sa.Column("UPPER(d)", sa.String, nullable=False),
     )
     assert tuple(finagg.utils.get_func_cols(table)) == ("LOWER(b)", "UPPER(d)")
+
+
+def test_get_func_cols_from_df() -> None:
+    df = pd.DataFrame({"a": [1], "LOWER(b)": [2], "c": [3], "UPPER(d)": [4]})
+    assert tuple(finagg.utils.get_func_cols(df)) == ("LOWER(b)", "UPPER(d)")
 
 
 @pytest.mark.parametrize(

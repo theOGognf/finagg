@@ -420,7 +420,7 @@ class NormalizedAnnual:
 
         Examples:
             >>> ts = finagg.sec.feat.annual.normalized.get_tickers_sorted_by(
-            ...         "EarningsPerShareBasic",
+            ...         "NORM(EarningsPerShareBasic)",
             ...         year=2020,
             ... )
             >>> "AMD" == ts[0]  # doctest: +SKIP
