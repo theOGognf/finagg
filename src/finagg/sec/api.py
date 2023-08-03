@@ -364,25 +364,9 @@ class CompanyFacts(API):
         url = cls.url.format(cik=cik)
         response = _get(url, user_agent=user_agent)
         content = response.json()
-        facts = content.pop("facts")
-        results_list = []
-        for taxonomy, tag_dict in facts.items():
-            for tag, data in tag_dict.items():
-                for col, rows in data["units"].items():
-                    df = pd.DataFrame(rows)
-                    df["taxonomy"] = taxonomy
-                    df["tag"] = tag
-                    df["label"] = data["label"]
-                    df["description"] = data["description"]
-                    df["units"] = col
-                    results_list.append(df)
-        results = pd.concat(results_list)
-        for k, v in content.items():
-            results[k] = v
-        results["cik"] = cik
-        return results.rename(
-            columns={"entityName": "entity", "uom": "units", "val": "value"}
-        )
+        df = parse_facts(content)
+        df["cik"] = cik
+        return df
 
 
 class Exchanges(API):
@@ -635,12 +619,7 @@ class Submissions(API):
         df.columns = map(utils.snake_case, df.columns)  # type: ignore
         df.rename(columns={"accession_number": "accn"})
         df["cik"] = cik
-        metadata = {}
-        for k, v in content.items():
-            if isinstance(v, str):
-                metadata[k] = utils.snake_case(v)
-        if "exchanges" in content:
-            metadata["exchanges"] = ",".join(content["exchanges"])
+        metadata = parse_metadata(content)
         metadata["cik"] = cik
         metadata["ticker"] = str(ticker)
         return {"metadata": metadata, "filings": df}
@@ -1090,3 +1069,34 @@ def join_filings(df: pd.DataFrame, /, *, form: str = "10-Q") -> pd.DataFrame:
             )
     df.columns = df.columns.rename(None)
     return df
+
+
+def parse_facts(content: dict[str, Any], /) -> pd.DataFrame:
+    facts = content.pop("facts")
+    results_list = []
+    for taxonomy, tag_dict in facts.items():
+        for tag, data in tag_dict.items():
+            for col, rows in data["units"].items():
+                df = pd.DataFrame(rows)
+                df["taxonomy"] = taxonomy
+                df["tag"] = tag
+                df["label"] = data["label"]
+                df["description"] = data["description"]
+                df["units"] = col
+                results_list.append(df)
+    results = pd.concat(results_list)
+    for k, v in content.items():
+        results[k] = v
+    return results.rename(
+        columns={"entityName": "entity", "uom": "units", "val": "value"}
+    )
+
+
+def parse_metadata(content: dict[str, Any], /) -> dict[str, Any]:
+    metadata = {}
+    for k, v in content.items():
+        if isinstance(v, str):
+            metadata[k] = utils.snake_case(v)
+    if "exchanges" in content:
+        metadata["exchanges"] = ",".join(content["exchanges"])
+    return metadata

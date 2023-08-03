@@ -18,19 +18,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def _metadata(data: bytes) -> pd.DataFrame:
-    content = json.loads(data)
-    metadata = {}
-    for k, v in content.items():
-        if isinstance(v, str):
-            metadata[k] = utils.snake_case(v)
-    if "exchanges" in content:
-        metadata["exchanges"] = ",".join(content["exchanges"])
-    metadata["cik"] = content["cik"].zfill(10)
-    metadata["ticker"] = content["tickers"][0]
-    return pd.DataFrame(metadata, index=[0])
-
-
 class Submissions:
     """Get a single company's metadata as-is from raw SEC data.
 
@@ -175,7 +162,7 @@ class Submissions:
         *,
         engine: None | Engine = None,
     ) -> int:
-        """Install all submissions data associated by downloading the bulk
+        """Install all submissions data by downloading the bulk
         submissions zip file from the API, and then writing the data to the
         raw submissions SQL table.
 
@@ -190,14 +177,11 @@ class Submissions:
             Number of rows written to the feature's SQL table.
 
         """
-        import zipfile
-
         engine = engine or backend.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.drop(engine, checkfirst=True)
-            sql.submissions.create(engine)
+        sql.submissions.drop(engine, checkfirst=True)
+        sql.submissions.create(engine)
 
-        zip = zipfile.ZipFile("findata/submissions.zip")
+        zip = api.submissions.download_zip()
         total_rows = 0
         for f in tqdm(
             zip.namelist(),
@@ -206,17 +190,19 @@ class Submissions:
             leave=True,
         ):
             try:
+                cik = f[3:-5]
+                ticker = api.get_ticker(cik)
                 data = zip.read(f)
-                df = _metadata(data)
-                rowcount = len(df.index)
-                if rowcount:
-                    cls.to_raw(df, engine=engine)
-                    total_rows += rowcount
-                    logger.debug(f"{rowcount} rows inserted for {df['ticker']}")
-                else:
-                    logger.debug(f"Skipping {df['ticker']} due to missing submissions")
+                content = json.loads(data)
+                metadata = api.parse_metadata(content)
+                metadata["cik"] = cik
+                metadata["ticker"] = ticker
+                df = pd.DataFrame(metadata, index=[0])
+                cls.to_raw(df, engine=engine)
+                total_rows += 1
+                logger.debug(f"Inserted row for {f}")
             except Exception as e:
-                logger.debug(f"Skipping {df['ticker']}", exc_info=e)
+                logger.debug(f"Skipping {f}", exc_info=e)
         return total_rows
 
     @classmethod
@@ -445,6 +431,75 @@ class Tags:
                             )
                 except Exception as e:
                     logger.debug(f"Skipping {ticker}", exc_info=e)
+        return total_rows
+
+    @classmethod
+    def install_bulk(
+        cls,
+        /,
+        *,
+        engine: None | Engine = None,
+    ) -> int:
+        """Install all popular tags data by downloading the bulk company
+        facts zip file from the API, and then writing the data to the
+        raw tags SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
+
+        Args:
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
+        engine = engine or backend.engine
+        sql.tags.drop(engine, checkfirst=True)
+        sql.tags.create(engine)
+
+        zip = api.company_facts.download_zip()
+        tickers = Submissions.get_ticker_set()
+        total_rows = 0
+        for f in tqdm(
+            zip.namelist(),
+            desc="Installing raw SEC tags data",
+            position=0,
+            leave=True,
+        ):
+            try:
+                cik = f[3:-5]
+                ticker = api.get_ticker(cik)
+                if ticker not in tickers:
+                    logger.debug(f"Skipping {f} due to missing submissions")
+                    continue
+                data = zip.read(f)
+                content = json.loads(data)
+                df = api.parse_facts(content)
+                df["cik"] = cik
+                for concept in api.popular_concepts:
+                    tag = concept["tag"]
+                    taxonomy = concept["taxonomy"]
+                    units = concept["units"]
+                    df_tag = df[(df["tag"] == tag) & (df["taxonomy"] == taxonomy)]
+                    for form in ("10-K", "10-Q"):
+                        df_unique = api.get_unique_filings(
+                            df_tag, form=form, units=units
+                        )
+                        rowcount = len(df_unique.index)
+                        if rowcount:
+                            cls.to_raw(df_unique, engine=engine)
+                            total_rows += rowcount
+                            logger.debug(
+                                f"{rowcount} rows inserted for {f} {tag} {form} filings"
+                            )
+                        else:
+                            logger.debug(
+                                f"Skipping {f} due to missing {tag} {form} filings"
+                            )
+            except Exception as e:
+                logger.debug(f"Skipping {f}", exc_info=e)
         return total_rows
 
     @classmethod
