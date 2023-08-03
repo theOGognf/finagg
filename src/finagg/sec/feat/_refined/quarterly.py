@@ -897,7 +897,7 @@ class Quarterly:
             logger.info(
                 "Skipping finagg.sec.feat.quarterly installation because no tickers"
                 " were provided or no tickers were found with prerequisite data (i.e.,"
-                " finagg.sec.feat.submissions and finagg.sec.feat.raw data)"
+                " finagg.sec.feat.submissions and finagg.sec.feat.tags data)"
             )
             return 0
 

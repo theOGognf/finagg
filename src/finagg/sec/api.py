@@ -364,7 +364,7 @@ class CompanyFacts(API):
         url = cls.url.format(cik=cik)
         response = _get(url, user_agent=user_agent)
         content = response.json()
-        df = parse_facts(content)
+        df = _parse_facts(content)
         df["cik"] = cik
         return df
 
@@ -619,7 +619,7 @@ class Submissions(API):
         df.columns = map(utils.snake_case, df.columns)  # type: ignore
         df.rename(columns={"accession_number": "accn"})
         df["cik"] = cik
-        metadata = parse_metadata(content)
+        metadata = _parse_metadata(content)
         metadata["cik"] = cik
         metadata["ticker"] = str(ticker)
         return {"metadata": metadata, "filings": df}
@@ -1071,7 +1071,20 @@ def join_filings(df: pd.DataFrame, /, *, form: str = "10-Q") -> pd.DataFrame:
     return df
 
 
-def parse_facts(content: dict[str, Any], /) -> pd.DataFrame:
+def _parse_facts(content: dict[str, Any], /) -> pd.DataFrame:
+    """Helper for parsing company facts.
+
+    This function is only defined to make parsing company
+    facts easier and common between parsing from the REST
+    API responses and the bulk zip file.
+
+    Args:
+        content: Company facts JSON data.
+
+    Returns:
+        A dataframe equivalent of the company facts data.
+
+    """
     facts = content.pop("facts")
     results_list = []
     for taxonomy, tag_dict in facts.items():
@@ -1092,7 +1105,20 @@ def parse_facts(content: dict[str, Any], /) -> pd.DataFrame:
     )
 
 
-def parse_metadata(content: dict[str, Any], /) -> dict[str, Any]:
+def _parse_metadata(content: dict[str, Any], /) -> dict[str, Any]:
+    """Helper for parsing submission metadata.
+
+    This function is only defined to make parsing submission
+    metadata easier and common between parsing from the REST
+    API responses and the bulk zip file.
+
+    Args:
+        content: Submissions JSON data.
+
+    Returns:
+        A dataframe equivalent of the submissions data.
+
+    """
     metadata = {}
     for k, v in content.items():
         if isinstance(v, str):

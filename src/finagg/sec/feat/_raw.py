@@ -2,6 +2,8 @@
 
 import json
 import logging
+import multiprocessing as mp
+from zipfile import ZipFile
 
 import pandas as pd
 import sqlalchemy as sa
@@ -16,6 +18,47 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
 )
 logger = logging.getLogger(__name__)
+
+
+def _process_zip_member(args: tuple[str, set[str]]) -> tuple[str, pd.DataFrame]:
+    """A nasty function to make it easier for processing files within
+    the company facts zip file using multiprocessing.
+
+    Args:
+        args: Tuple of company facts filename within the zip and
+            the actual zip filename.
+
+    Returns:
+        A dataframe of the company's facts (empty if any error occurs during
+        processing).
+
+    """
+    zip_filename, filename = args
+    zipfile = ZipFile(zip_filename)
+    dfs = []
+    cik = filename[3:-5]
+    data = zipfile.read(filename)
+    content = json.loads(data)
+    try:
+        df = api._parse_facts(content)
+    except:
+        return filename, pd.DataFrame()
+    df["cik"] = cik
+    for concept in api.popular_concepts:
+        try:
+            tag = concept["tag"]
+            taxonomy = concept["taxonomy"]
+            units = concept["units"]
+            df_tag = df[(df["tag"] == tag) & (df["taxonomy"] == taxonomy)]
+            for form in ("10-K", "10-Q"):
+                df_unique = api.get_unique_filings(df_tag, form=form, units=units)
+                if len(df_unique.index):
+                    dfs.append(df_unique)
+        except:
+            continue
+    if dfs:
+        return filename, pd.concat(dfs)
+    return filename, pd.DataFrame()
 
 
 class Submissions:
@@ -156,7 +199,7 @@ class Submissions:
         return total_rows
 
     @classmethod
-    def install_bulk(
+    def install_from_zip(
         cls,
         /,
         *,
@@ -194,7 +237,7 @@ class Submissions:
                 ticker = api.get_ticker(cik)
                 data = zip.read(f)
                 content = json.loads(data)
-                metadata = api.parse_metadata(content)
+                metadata = api._parse_metadata(content)
                 metadata["cik"] = cik
                 metadata["ticker"] = ticker
                 df = pd.DataFrame(metadata, index=[0])
@@ -434,10 +477,11 @@ class Tags:
         return total_rows
 
     @classmethod
-    def install_bulk(
+    def install_from_zip(
         cls,
         /,
         *,
+        processes: int = mp.cpu_count() - 1,
         engine: None | Engine = None,
     ) -> int:
         """Install all popular tags data by downloading the bulk company
@@ -459,47 +503,36 @@ class Tags:
         sql.tags.drop(engine, checkfirst=True)
         sql.tags.create(engine)
 
-        zip = api.company_facts.download_zip()
+        zipfile = api.company_facts.download_zip()
+        files = zipfile.namelist()
         tickers = Submissions.get_ticker_set()
-        total_rows = 0
-        for f in tqdm(
-            zip.namelist(),
-            desc="Installing raw SEC tags data",
-            position=0,
-            leave=True,
-        ):
+        args = []
+        for f in files:
             try:
-                cik = f[3:-5]
-                ticker = api.get_ticker(cik)
-                if ticker not in tickers:
-                    logger.debug(f"Skipping {f} due to missing submissions")
-                    continue
-                data = zip.read(f)
-                content = json.loads(data)
-                df = api.parse_facts(content)
-                df["cik"] = cik
-                for concept in api.popular_concepts:
-                    tag = concept["tag"]
-                    taxonomy = concept["taxonomy"]
-                    units = concept["units"]
-                    df_tag = df[(df["tag"] == tag) & (df["taxonomy"] == taxonomy)]
-                    for form in ("10-K", "10-Q"):
-                        df_unique = api.get_unique_filings(
-                            df_tag, form=form, units=units
-                        )
-                        rowcount = len(df_unique.index)
-                        if rowcount:
-                            cls.to_raw(df_unique, engine=engine)
-                            total_rows += rowcount
-                            logger.debug(
-                                f"{rowcount} rows inserted for {f} {tag} {form} filings"
-                            )
-                        else:
-                            logger.debug(
-                                f"Skipping {f} due to missing {tag} {form} filings"
-                            )
-            except Exception as e:
-                logger.debug(f"Skipping {f}", exc_info=e)
+                ticker = api.get_ticker(f[3:-5])
+            except KeyError:
+                continue
+            if ticker in tickers:
+                args.append((zipfile.filename, f))
+        total_rows = 0
+        with mp.Pool(processes) as pool:
+            for f, df in tqdm(
+                pool.imap_unordered(_process_zip_member, args),
+                total=len(args),
+                desc="Installing raw SEC tags data",
+                position=0,
+                leave=True,
+            ):
+                try:
+                    rowcount = len(df.index)
+                    if rowcount:
+                        cls.to_raw(df, engine=engine)
+                        total_rows += rowcount
+                        logger.debug(f"{rowcount} rows inserted for {f}")
+                    else:
+                        logger.debug(f"Skipping {f} due to missing filings")
+                except Exception as e:
+                    logger.debug(f"Skipping {f}", exc_info=e)
         return total_rows
 
     @classmethod
