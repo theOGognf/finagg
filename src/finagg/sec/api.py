@@ -30,10 +30,12 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from functools import cache
 from typing import Any, ClassVar, TypedDict
+from zipfile import ZipFile
 
 import pandas as pd
 import requests
 import requests_cache
+from tqdm import tqdm
 
 from .. import backend, ratelimit, utils
 
@@ -274,6 +276,51 @@ class CompanyFacts(API):
     url = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 
     @classmethod
+    def download_zip(
+        cls,
+        /,
+        *,
+        chunk_size: int = 1_000_000,
+        user_agent: None | str = None,
+    ) -> ZipFile:
+        """Download all XBRL disclosures for all companies in a zip file.
+
+        A progress bar displays the download progress as the download could
+        take a long time because the zip file is more than 1GB.
+        The zip file is updated by the SEC at approximately 3am ET nightly.
+
+        Args:
+            chunk_size: Chunk size to stream and write the zip file with.
+            user_agent: Self-declared bot header. Defaults to the value
+                found in the ``SEC_API_USER_AGENT`` environment variable.
+
+        Returns:
+            A zip file object representing the downloaded zip file.
+
+        """
+        response = _get(
+            "https://www.sec.gov/Archives/edgar/daily-index/xbrl/companyfacts.zip",
+            cache=False,
+            stream=True,
+            user_agent=user_agent,
+        )
+        dst = backend.root_path / "findata" / "companyfacts.zip"
+        pb = tqdm(
+            total=int(response.headers.get("content-length", 0)),
+            desc=f"Downloading companyfacts.zip to {dst}",
+            position=0,
+            leave=True,
+            unit="iB",
+            unit_scale=True,
+        )
+        with open(dst, "wb") as f:
+            for chunk in response.iter_content(chunk_size):
+                pb.update(len(chunk))
+                f.write(chunk)
+        pb.close()
+        return ZipFile(dst)
+
+    @classmethod
     def get(
         cls,
         /,
@@ -496,6 +543,51 @@ class Submissions(API):
     url = "https://data.sec.gov/submissions/CIK{cik}.json"
 
     @classmethod
+    def download_zip(
+        cls,
+        /,
+        *,
+        chunk_size: int = 1_000_000,
+        user_agent: None | str = None,
+    ) -> ZipFile:
+        """Download all SEC filings for all companies in a zip file.
+
+        A progress bar displays the download progress as the download could
+        take a long time because the zip file is more than 1GB.
+        The zip file is updated by the SEC at approximately 3am ET nightly.
+
+        Args:
+            chunk_size: Chunk size to stream and write the zip file with.
+            user_agent: Self-declared bot header. Defaults to the value
+                found in the ``SEC_API_USER_AGENT`` environment variable.
+
+        Returns:
+            A zip file object representing the downloaded zip file.
+
+        """
+        response = _get(
+            "https://www.sec.gov/Archives/edgar/daily-index/bulkdata/submissions.zip",
+            cache=False,
+            stream=True,
+            user_agent=user_agent,
+        )
+        dst = backend.root_path / "findata" / "submissions.zip"
+        pb = tqdm(
+            total=int(response.headers.get("content-length", 0)),
+            desc=f"Downloading submissions.zip to {dst}",
+            position=0,
+            leave=True,
+            unit="iB",
+            unit_scale=True,
+        )
+        with open(dst, "wb") as f:
+            for chunk in response.iter_content(chunk_size):
+                pb.update(len(chunk))
+                f.write(chunk)
+        pb.close()
+        return ZipFile(dst)
+
+    @classmethod
     def get(
         cls,
         /,
@@ -547,8 +639,8 @@ class Submissions(API):
         for k, v in content.items():
             if isinstance(v, str):
                 metadata[k] = utils.snake_case(v)
-        if "exchanges" in metadata:
-            metadata["exchanges"] = ",".join(metadata["exchanges"])
+        if "exchanges" in content:
+            metadata["exchanges"] = ",".join(content["exchanges"])
         metadata["cik"] = cik
         metadata["ticker"] = str(ticker)
         return {"metadata": metadata, "filings": df}
@@ -715,7 +807,14 @@ assets, etc.. Concepts contain all the parameters required for usage with the
 
 
 @ratelimit.guard([ratelimit.RequestLimit(9, timedelta(seconds=1))])
-def _get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
+def _get(
+    url: str,
+    /,
+    *,
+    cache: bool = False,
+    stream: bool = False,
+    user_agent: None | str = None,
+) -> requests.Response:
     """SEC EDGAR API request helper.
 
     Args:
@@ -737,7 +836,11 @@ def _get(url: str, /, *, user_agent: None | str = None) -> requests.Response:
             "Pass your user agent declaration to the API directly, or "
             "set the `SEC_API_USER_AGENT` environment variable."
         )
-    response = session.get(url, headers={"User-Agent": user_agent})
+    headers = {"User-Agent": user_agent}
+    if cache:
+        response = session.get(url, headers=headers, stream=stream)
+    else:
+        response = requests.get(url, headers=headers, stream=stream)
     response.raise_for_status()
     return response
 

@@ -1,5 +1,6 @@
 """Raw features from SEC sources."""
 
+import json
 import logging
 
 import pandas as pd
@@ -17,6 +18,19 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def _metadata(data: bytes) -> pd.DataFrame:
+    content = json.loads(data)
+    metadata = {}
+    for k, v in content.items():
+        if isinstance(v, str):
+            metadata[k] = utils.snake_case(v)
+    if "exchanges" in content:
+        metadata["exchanges"] = ",".join(content["exchanges"])
+    metadata["cik"] = content["cik"].zfill(10)
+    metadata["ticker"] = content["tickers"][0]
+    return pd.DataFrame(metadata, index=[0])
+
+
 class Submissions:
     """Get a single company's metadata as-is from raw SEC data.
 
@@ -25,59 +39,6 @@ class Submissions:
     calling feature methods.
 
     """
-
-    @classmethod
-    def install(
-        cls,
-        tickers: None | set[str] = None,
-        *,
-        engine: None | Engine = None,
-        recreate_tables: bool = False,
-    ) -> int:
-        """Install data associated with ``tickers`` by pulling data from the
-        API, and then writing the data to the raw submissions SQL table.
-
-        Tables associated with this method are created if they don't already
-        exist.
-
-        Args:
-            tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-            recreate_tables: Whether to drop and recreate tables, wiping all
-                previously installed data.
-
-        Returns:
-            Number of rows written to the feature's SQL table.
-
-        """
-        tickers = tickers or indices.api.get_ticker_set()
-        engine = engine or backend.engine
-        if recreate_tables or not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.drop(engine, checkfirst=True)
-            sql.submissions.create(engine)
-
-        total_rows = 0
-        for ticker in tqdm(
-            tickers,
-            desc="Installing raw SEC submissions data",
-            position=0,
-            leave=True,
-        ):
-            try:
-                metadata = api.submissions.get(ticker=ticker)["metadata"]
-                df = pd.DataFrame(metadata, index=[0])
-                rowcount = len(df.index)
-                if rowcount:
-                    cls.to_raw(df, engine=engine)
-                    total_rows += rowcount
-                    logger.debug(f"{rowcount} rows inserted for {ticker}")
-                else:
-                    logger.debug(f"Skipping {ticker} due to missing submissions")
-            except Exception as e:
-                logger.debug(f"Skipping {ticker}", exc_info=e)
-        return total_rows
 
     @classmethod
     def from_raw(
@@ -153,6 +114,110 @@ class Submissions:
         with engine.begin() as conn:
             tickers = conn.execute(sa.select(sql.submissions.c.ticker)).scalars().all()
         return set(tickers)
+
+    @classmethod
+    def install(
+        cls,
+        tickers: None | set[str] = None,
+        *,
+        engine: None | Engine = None,
+        recreate_tables: bool = False,
+    ) -> int:
+        """Install data associated with ``tickers`` by pulling data from the
+        API, and then writing the data to the raw submissions SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
+
+        Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+            recreate_tables: Whether to drop and recreate tables, wiping all
+                previously installed data.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
+        tickers = tickers or indices.api.get_ticker_set()
+        engine = engine or backend.engine
+        if recreate_tables or not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.drop(engine, checkfirst=True)
+            sql.submissions.create(engine)
+
+        total_rows = 0
+        for ticker in tqdm(
+            tickers,
+            desc="Installing raw SEC submissions data",
+            position=0,
+            leave=True,
+        ):
+            try:
+                metadata = api.submissions.get(ticker=ticker)["metadata"]
+                df = pd.DataFrame(metadata, index=[0])
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_raw(df, engine=engine)
+                    total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                else:
+                    logger.debug(f"Skipping {ticker} due to missing submissions")
+            except Exception as e:
+                logger.debug(f"Skipping {ticker}", exc_info=e)
+        return total_rows
+
+    @classmethod
+    def install_bulk(
+        cls,
+        /,
+        *,
+        engine: None | Engine = None,
+    ) -> int:
+        """Install all submissions data associated by downloading the bulk
+        submissions zip file from the API, and then writing the data to the
+        raw submissions SQL table.
+
+        Tables associated with this method are created if they don't already
+        exist.
+
+        Args:
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+
+        Returns:
+            Number of rows written to the feature's SQL table.
+
+        """
+        import zipfile
+
+        engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.drop(engine, checkfirst=True)
+            sql.submissions.create(engine)
+
+        zip = zipfile.ZipFile("findata/submissions.zip")
+        total_rows = 0
+        for f in tqdm(
+            zip.namelist(),
+            desc="Installing raw SEC submissions data",
+            position=0,
+            leave=True,
+        ):
+            try:
+                data = zip.read(f)
+                df = _metadata(data)
+                rowcount = len(df.index)
+                if rowcount:
+                    cls.to_raw(df, engine=engine)
+                    total_rows += rowcount
+                    logger.debug(f"{rowcount} rows inserted for {df['ticker']}")
+                else:
+                    logger.debug(f"Skipping {df['ticker']} due to missing submissions")
+            except Exception as e:
+                logger.debug(f"Skipping {df['ticker']}", exc_info=e)
+        return total_rows
 
     @classmethod
     def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
