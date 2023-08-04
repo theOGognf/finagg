@@ -1,7 +1,11 @@
 """Simple wrappers for Yahoo! Finance."""
 
+import logging
+
 import pandas as pd
 import yfinance as yf
+
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 
 
 def get(
@@ -12,7 +16,6 @@ def get(
     end: None | str = None,
     interval: str = "1d",
     period: str = "max",
-    debug: bool = False,
 ) -> pd.DataFrame:
     """Get a ticker's stock price history.
 
@@ -28,7 +31,6 @@ def get(
         interval: Frequency at which stock price history is grabbed.
         period: Time period to get in the past. ``"max"`` returns the full
             stock price history and the default.
-        debug: Debug mode passed to the Yahoo! Finance scraper.
 
     Returns:
         Yahoo! Finance auto-adjusted stock price history with slightly
@@ -51,7 +53,6 @@ def get(
         start=start,
         end=end,
         auto_adjust=True,
-        debug=debug,
     )
     df.index = pd.to_datetime(df.index).date.astype(str)
     df = df.rename_axis("date").reset_index()
