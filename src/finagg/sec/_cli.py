@@ -96,6 +96,18 @@ def entry_point() -> None:
     ),
 )
 @click.option(
+    "--from-zip",
+    "-z",
+    is_flag=True,
+    default=False,
+    help=(
+        "Whether to install raw data from bulk data zip files that're compiled by the"
+        " SEC nightly. If this flag is set and no tickers are specified, then all data"
+        " associated with all tickers is installed. Installing all SEC data with this"
+        " option can take upwards of 1.5 hours to complete."
+    ),
+)
+@click.option(
     "--recreate-tables",
     "-r",
     is_flag=True,
@@ -118,6 +130,7 @@ def install(
     all_: bool = False,
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
+    from_zip: bool = False,
     recreate_tables: bool = False,
     verbose: bool = False,
 ) -> int:
@@ -156,7 +169,7 @@ def install(
             case "sec":
                 all_tickers |= _api.get_ticker_set()
 
-        if not all_tickers:
+        if not all_tickers and not from_zip:
             logger.info(
                 f"Skipping {__package__} installation because no tickers were "
                 "provided (by the `ticker` option or by the `ticker-set` option)"
@@ -164,14 +177,24 @@ def install(
             return total_rows
 
         if "submissions" in all_raw:
-            total_rows += _feat.submissions.install(
-                all_tickers, recreate_tables=recreate_tables
-            )
+            if from_zip:
+                total_rows += _feat.submissions.install_from_zip(
+                    all_tickers, recreate_tables=recreate_tables
+                )
+            else:
+                total_rows += _feat.submissions.install(
+                    all_tickers, recreate_tables=recreate_tables
+                )
 
         if "tags" in all_raw:
-            total_rows += _feat.tags.install(
-                all_tickers, recreate_tables=recreate_tables
-            )
+            if from_zip:
+                total_rows += _feat.tags.install_from_zip(
+                    all_tickers, recreate_tables=recreate_tables
+                )
+            else:
+                total_rows += _feat.tags.install(
+                    all_tickers, recreate_tables=recreate_tables
+                )
 
     all_refined = set()
     if all_:

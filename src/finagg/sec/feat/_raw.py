@@ -238,7 +238,7 @@ class Submissions:
 
         # Filter by guaranteeing a ticker is actually present in
         # the set of tickers provided.
-        if tickers is not None:
+        if tickers:
             files = []
             for f in zipfile.namelist():
                 try:

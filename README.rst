@@ -34,7 +34,7 @@ SQL database.
 
 .. code:: console
 
-    finagg install --help
+    finagg install --ticker-set indices --from-zip
 
 The installation will point you where to get free API keys and write them to a
 local ``.env`` file for storage.

@@ -118,6 +118,18 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
     ),
 )
 @click.option(
+    "--from-zip",
+    "-z",
+    is_flag=True,
+    default=False,
+    help=(
+        "Whether to install raw SEC data from bulk data zip files that're compiled by"
+        " the SEC nightly. If this flag is set and no tickers are specified, then all"
+        " data associated with all tickers is installed. Installing all SEC data with"
+        " this option can take upwards of 1.5 hours to complete."
+    ),
+)
+@click.option(
     "--recreate-tables",
     "-r",
     is_flag=True,
@@ -143,6 +155,7 @@ def install(
     stock_data: bool = False,
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
+    from_zip: bool = False,
     recreate_tables: bool = False,
     verbose: bool = False,
 ) -> None:
@@ -184,6 +197,7 @@ def install(
             all_=True,
             ticker=ticker,
             ticker_set=ticker_set,
+            from_zip=from_zip,
             recreate_tables=recreate_tables,
             verbose=verbose,
         )
