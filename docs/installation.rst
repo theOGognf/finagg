@@ -14,12 +14,13 @@ Install from GitHub for the latest (unstable) version.
     git clone https://github.com/theOGognf/finagg.git
     pip install ./finagg/
 
-Optionally install the recommended datasets from 3rd party APIs into a local
-SQL database.
+Optionally install the recommended datasets (economic data, company
+financials, stock histories, etc.) from 3rd party APIs into a local SQL
+database.
 
 .. code:: console
 
-    finagg install --ticker-set indices --from-zip
+    finagg install -ss economic -ts indices -z
 
 The installation will point you where to get free API keys for each API that
 requires one and write those API keys to a local ``.env`` file for storage.
