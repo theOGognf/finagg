@@ -20,13 +20,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def _process_zip_member(args: tuple[str, set[str]]) -> tuple[str, pd.DataFrame]:
+def _process_zip_member(args: tuple[str, str]) -> tuple[str, pd.DataFrame]:
     """A nasty function to make it easier for processing files within
     the company facts zip file using multiprocessing.
 
     Args:
-        args: Tuple of company facts filename within the zip and
-            the actual zip filename.
+        args: Tuple of the zip filename and the company facts filename
+            within the zip that's being processed.
 
     Returns:
         A dataframe of the company's facts (empty if any error occurs during
@@ -201,9 +201,10 @@ class Submissions:
     @classmethod
     def install_from_zip(
         cls,
-        /,
+        tickers: None | set[str] = None,
         *,
         engine: None | Engine = None,
+        recreate_tables: bool = False,
     ) -> int:
         """Install all submissions data by downloading the bulk
         submissions zip file from the API, and then writing the data to the
@@ -213,21 +214,45 @@ class Submissions:
         exist.
 
         Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                tickers from the submission zip file.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
+            recreate_tables: Whether to drop and recreate tables, wiping all
+                previously installed data.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
         engine = engine or backend.engine
-        sql.submissions.drop(engine, checkfirst=True)
-        sql.submissions.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.drop(engine, checkfirst=True)
+            sql.submissions.create(engine)
 
-        zip = api.submissions.download_zip()
+        submissions_zipfile_path = backend.root_path / "findata" / "submissions.zip"
+        if recreate_tables or not submissions_zipfile_path.exists():
+            zipfile = api.submissions.download_zip()
+        else:
+            zipfile = ZipFile(submissions_zipfile_path)
+
+        # Filter by guaranteeing a ticker is actually present in
+        # the set of tickers provided.
+        if tickers is not None:
+            files = []
+            for f in zipfile.namelist():
+                try:
+                    ticker = api.get_ticker(f[3:-5])
+                except KeyError:
+                    continue
+                if ticker in tickers:
+                    files.append(f)
+        else:
+            files = zipfile.namelist()
+
         total_rows = 0
         for f in tqdm(
-            zip.namelist(),
+            files,
             desc="Installing raw SEC submissions data",
             position=0,
             leave=True,
@@ -235,7 +260,7 @@ class Submissions:
             try:
                 cik = f[3:-5]
                 ticker = api.get_ticker(cik)
-                data = zip.read(f)
+                data = zipfile.read(f)
                 content = json.loads(data)
                 metadata = api._parse_metadata(content)
                 metadata["cik"] = cik
@@ -479,10 +504,11 @@ class Tags:
     @classmethod
     def install_from_zip(
         cls,
-        /,
+        tickers: None | set[str] = None,
         *,
         processes: int = mp.cpu_count() - 1,
         engine: None | Engine = None,
+        recreate_tables: bool = False,
     ) -> int:
         """Install all popular tags data by downloading the bulk company
         facts zip file from the API, and then writing the data to the
@@ -492,32 +518,44 @@ class Tags:
         exist.
 
         Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                tickers from the company facts zip file.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
+            recreate_tables: Whether to drop and recreate tables, wiping all
+                previously installed data.
 
         Returns:
             Number of rows written to the feature's SQL table.
 
         """
         engine = engine or backend.engine
-        sql.tags.drop(engine, checkfirst=True)
-        sql.tags.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(sql.tags.name):
+            sql.tags.drop(engine, checkfirst=True)
+            sql.tags.create(engine)
 
-        zipfile = api.company_facts.download_zip()
-        files = zipfile.namelist()
-        tickers = Submissions.get_ticker_set()
+        company_facts_zipfile_path = backend.root_path / "findata" / "companyfacts.zip"
+        if recreate_tables or not company_facts_zipfile_path.exists():
+            zipfile = api.company_facts.download_zip()
+        else:
+            zipfile = ZipFile(company_facts_zipfile_path)
+
+        # Filter by guaranteeing a ticker is actually present in
+        # the set of tickers provided.
+        tickers = tickers or Submissions.get_ticker_set()
         args = []
-        for f in files:
+        for f in zipfile.namelist():
             try:
                 ticker = api.get_ticker(f[3:-5])
             except KeyError:
                 continue
             if ticker in tickers:
                 args.append((zipfile.filename, f))
+
         total_rows = 0
         with mp.Pool(processes) as pool:
             for f, df in tqdm(
-                pool.imap_unordered(_process_zip_member, args),
+                pool.imap_unordered(_process_zip_member, args),  # type: ignore[arg-type]
                 total=len(args),
                 desc="Installing raw SEC tags data",
                 position=0,

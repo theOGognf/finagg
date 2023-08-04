@@ -790,7 +790,7 @@ def _get(
     url: str,
     /,
     *,
-    cache: bool = False,
+    cache: bool = True,
     stream: bool = False,
     user_agent: None | str = None,
 ) -> requests.Response:
@@ -798,6 +798,9 @@ def _get(
 
     Args:
         url: Complete SEC EDGAR API URL to request from.
+        cache: Whether to cache the response from the given URL.
+        stream: Whether to stream the response content (useful for file
+            downloads).
         user_agent: Self-declared SEC bot header. Defaults to the value
             found in the ``SEC_API_USER_AGENT`` environment variable.
 
