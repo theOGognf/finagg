@@ -20,7 +20,7 @@ database.
 
 .. code:: console
 
-    finagg install -ss economic -ts indices -z
+    finagg install -ss economic -ts indices -z -r
 
 The installation will point you where to get free API keys for each API that
 requires one and write those API keys to a local ``.env`` file for storage.

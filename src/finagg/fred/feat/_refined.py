@@ -242,15 +242,19 @@ class Economic:
             sql.economic.drop(engine, checkfirst=True)
             sql.economic.create(engine)
 
-        df = cls.from_raw(engine=engine)
-        rowcount = len(df.index)
-        if rowcount:
-            cls.to_refined(df, engine=engine)
-            rowcount += rowcount
-            logger.debug(f"{rowcount} economic feature rows inserted")
-        else:
-            logger.debug("Skipping economic features due to missing data")
-        return rowcount
+        total_rows = 0
+        try:
+            df = cls.from_raw(engine=engine)
+            rowcount = len(df.index)
+            if rowcount:
+                cls.to_refined(df, engine=engine)
+                total_rows += rowcount
+                logger.debug(f"{rowcount} economic feature rows inserted")
+            else:
+                logger.debug("Skipping economic features due to missing data")
+        except Exception as e:
+            logger.debug(f"Skipping economic features", exc_info=e)
+        return total_rows
 
     @classmethod
     def to_refined(
