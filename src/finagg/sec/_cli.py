@@ -102,9 +102,8 @@ def entry_point() -> None:
     default=False,
     help=(
         "Whether to install raw data from bulk data zip files that're compiled by the"
-        " SEC nightly. If this flag is set and no tickers are specified, then all data"
-        " associated with all tickers is installed. Installing all SEC data with this"
-        " option can take upwards of 1.5 hours to complete."
+        " SEC nightly. Installing all SEC data with this option can take upwards of 1.5"
+        " hours to complete."
     ),
 )
 @click.option(
@@ -169,7 +168,7 @@ def install(
             case "sec":
                 all_tickers |= _api.get_ticker_set()
 
-        if not all_tickers and not from_zip:
+        if not all_tickers:
             logger.info(
                 f"Skipping {__package__} installation because no tickers were "
                 "provided (by the `ticker` option or by the `ticker-set` option)"

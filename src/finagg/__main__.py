@@ -123,10 +123,9 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
     is_flag=True,
     default=False,
     help=(
-        "Whether to install raw SEC data from bulk data zip files that're compiled by"
-        " the SEC nightly. If this flag is set and no tickers are specified, then all"
-        " data associated with all tickers is installed. Installing all SEC data with"
-        " this option can take upwards of 1.5 hours to complete."
+        "Whether to install raw data from bulk data zip files that're compiled by the"
+        " SEC nightly. Installing all SEC data with this option can take upwards of 1.5"
+        " hours to complete."
     ),
 )
 @click.option(
