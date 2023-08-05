@@ -164,7 +164,7 @@ class Prices:
             leave=True,
         ):
             try:
-                df = api.get(ticker, interval="1d", period="10y")
+                df = api.get(ticker)
                 rowcount = len(df.index)
                 if rowcount:
                     cls.to_raw(df, engine=engine)

@@ -15,7 +15,7 @@ def get(
     start: None | str = None,
     end: None | str = None,
     interval: str = "1d",
-    period: str = "10y",
+    period: str = "max",
 ) -> pd.DataFrame:
     """Get a ticker's stock price history.
 
