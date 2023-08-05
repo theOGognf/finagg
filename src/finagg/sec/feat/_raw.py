@@ -238,17 +238,15 @@ class Submissions:
 
         # Filter by guaranteeing a ticker is actually present in
         # the set of tickers provided.
-        if tickers:
-            files = []
-            for f in zipfile.namelist():
-                try:
-                    ticker = api.get_ticker(f[3:-5])
-                except KeyError:
-                    continue
-                if ticker in tickers:
-                    files.append(f)
-        else:
-            files = zipfile.namelist()
+        tickers = tickers or indices.api.get_ticker_set()
+        files = []
+        for f in zipfile.namelist():
+            try:
+                ticker = api.get_ticker(f[3:-5])
+            except KeyError:
+                continue
+            if ticker in tickers:
+                files.append(f)
 
         total_rows = 0
         for f in tqdm(
@@ -449,7 +447,7 @@ class Tags:
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+                the tickers from :meth:`Submissions.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -459,7 +457,7 @@ class Tags:
             Number of rows written to the feature's SQL table.
 
         """
-        tickers = tickers or indices.api.get_ticker_set()
+        tickers = tickers or Submissions.get_ticker_set()
         engine = engine or backend.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.tags.name):
             sql.tags.drop(engine, checkfirst=True)
@@ -519,7 +517,7 @@ class Tags:
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                tickers from the company facts zip file.
+                the tickers from :meth:`Submissions.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all

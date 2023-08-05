@@ -37,9 +37,9 @@ database.
 
     finagg install -ss economic -ts indices -z -r
 
-The installation will point you where to get free API keys and write them to a
-local ``.env`` file for storage. Run ``finagg install --help`` for more
-installation options and details.
+The installation will point you where to get free API keys and will write
+them to a local ``.env`` file for storage. Run ``finagg install --help``
+for more installation options and details.
 
 Basic Usage
 -----------
