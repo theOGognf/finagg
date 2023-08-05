@@ -23,7 +23,7 @@ database.
     finagg install -ss economic -ts indices -z -r
 
 The installation will point you where to get free API keys for each API that
-requires one and write those API keys to a local ``.env`` file for storage.
+requires one and will write those API keys to a local ``.env`` file for storage.
 ``finagg install`` is effectively an alias for installing the recommended
 datasets from each 3rd party API individually. ``finagg install`` is equivalent
 to:
