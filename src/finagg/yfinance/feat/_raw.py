@@ -30,6 +30,10 @@ class Prices:
 
     @classmethod
     def _install_worker(cls, ticker: str) -> tuple[None | Exception, str, pd.DataFrame]:
+        """Helper for installing data from the Yahoo! Finance API using
+        multiprocessing.
+
+        """
         try:
             df = api.get(ticker)
         except Exception as e:
