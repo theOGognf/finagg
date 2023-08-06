@@ -9,7 +9,6 @@ import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
-from tqdm import tqdm
 
 from .... import backend, utils
 from ... import api, sql
@@ -506,45 +505,15 @@ class NormalizedAnnual:
             sql.normalized_annual.drop(engine, checkfirst=True)
             sql.normalized_annual.create(engine)
 
-        tickers_ = list(tickers)
-        total_rows = 0
-        with (
-            mp.Pool(
-                processes,
-                initializer=utils.FeatureWorker.init,
-                initargs=(engine.url, cls.from_other_refined),
-            ) as pool,
-            tqdm(
-                total=len(tickers),
-                desc="Installing refined SEC industry-normalized annual data",
-                position=0,
-                leave=True,
-            ) as pb,
-        ):
-            for group in (
-                tickers_[i : i + processes] for i in range(0, len(tickers_), processes)
-            ):
-                results = []
-                for exc, ticker, df in pool.imap_unordered(
-                    utils.FeatureWorker.call, group
-                ):
-                    if exc:
-                        logger.debug(f"Skipping {ticker}", exc_info=exc)
-                    else:
-                        results.append((ticker, df))
-                for ticker, df in results:
-                    try:
-                        rowcount = len(df.index)
-                        if rowcount:
-                            cls.to_refined(ticker, df, engine=engine)
-                            total_rows += rowcount
-                            logger.debug(f"{rowcount} rows inserted for {ticker}")
-                        else:
-                            logger.debug(f"Skipping {ticker} due to missing data")
-                    except Exception as e:
-                        logger.debug(f"Skipping {ticker}", exc_info=e)
-                    pb.update()
-        return total_rows
+        return utils._install(
+            cls.from_other_refined,
+            cls.to_refined,
+            logger,
+            tickers,
+            engine,
+            desc="Installing refined SEC industry-normalized annual data",
+            processes=processes,
+        )
 
     @classmethod
     def to_refined(
@@ -916,45 +885,15 @@ class Annual:
             sql.annual.drop(engine, checkfirst=True)
             sql.annual.create(engine)
 
-        tickers_ = list(tickers)
-        total_rows = 0
-        with (
-            mp.Pool(
-                processes,
-                initializer=utils.FeatureWorker.init,
-                initargs=(engine.url, cls.from_raw),
-            ) as pool,
-            tqdm(
-                total=len(tickers),
-                desc="Installing refined SEC annual data",
-                position=0,
-                leave=True,
-            ) as pb,
-        ):
-            for group in (
-                tickers_[i : i + processes] for i in range(0, len(tickers_), processes)
-            ):
-                results = []
-                for exc, ticker, df in pool.imap_unordered(
-                    utils.FeatureWorker.call, group
-                ):
-                    if exc:
-                        logger.debug(f"Skipping {ticker}", exc_info=exc)
-                    else:
-                        results.append((ticker, df))
-                for ticker, df in results:
-                    try:
-                        rowcount = len(df.index)
-                        if rowcount:
-                            cls.to_refined(ticker, df, engine=engine)
-                            total_rows += rowcount
-                            logger.debug(f"{rowcount} rows inserted for {ticker}")
-                        else:
-                            logger.debug(f"Skipping {ticker} due to missing data")
-                    except Exception as e:
-                        logger.debug(f"Skipping {ticker}", exc_info=e)
-                    pb.update()
-        return total_rows
+        return utils._install(
+            cls.from_raw,
+            cls.to_refined,
+            logger,
+            tickers,
+            engine,
+            desc="Installing refined SEC annual data",
+            processes=processes,
+        )
 
     @classmethod
     def to_refined(

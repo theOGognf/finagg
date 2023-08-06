@@ -1,6 +1,8 @@
 """Generic utils used by subpackages."""
 
 import csv
+import logging
+import multiprocessing as mp
 import os
 import pathlib
 import re
@@ -12,6 +14,7 @@ import numpy as np
 import pandas as pd
 import sqlalchemy as sa
 from dotenv import set_key
+from tqdm import tqdm
 
 
 def CamelCase(s: str, /) -> str:
@@ -314,28 +317,101 @@ when getting data from APIs or SQL tables.
 """
 
 
-class FeatureWorkerFunc(Protocol):
+class _ReadFn(Protocol):
+    @classmethod
+    def __call__(
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | sa.Engine = None,
+    ) -> pd.DataFrame:
+        ...
+
+
+class _WriteFn(Protocol):
+    @classmethod
+    def __call__(
+        cls, ticker: str, df: pd.DataFrame, /, *, engine: None | sa.Engine = None
+    ) -> int:
+        ...
+
+
+class _InstallWorkerFn(Protocol):
     @classmethod
     def __call__(cls, ticker: str, engine: None | sa.Engine = None) -> pd.DataFrame:
         ...
 
 
-class FeatureWorker:
+class _InstallWorker:
     engine: None | sa.Engine = None
 
-    f: None | FeatureWorkerFunc = None
+    fn: None | _InstallWorkerFn = None
 
     @classmethod
-    def init(cls, url: str | sa.URL, f: FeatureWorkerFunc) -> None:
+    def init(cls, url: str | sa.URL, fn: _InstallWorkerFn) -> None:
         cls.engine = sa.create_engine(url)
-        cls.f = f
+        cls.fn = fn
 
     @classmethod
     def call(cls, ticker: str) -> tuple[None | Exception, str, pd.DataFrame]:
         assert cls.engine is not None
-        assert cls.f is not None
+        assert cls.fn is not None
         try:
-            df = cls.f(ticker, engine=cls.engine)
+            df = cls.fn(ticker, engine=cls.engine)
         except Exception as e:
             return e, ticker, pd.DataFrame()
         return None, ticker, df
+
+
+def _install(
+    read_fn: _ReadFn,
+    write_fn: _WriteFn,
+    logger: logging.Logger,
+    tickers: set[str],
+    engine: sa.Engine,
+    /,
+    *,
+    desc: None | str = None,
+    processes: int = mp.cpu_count() - 1,
+) -> int:
+    tickers_ = list(tickers)
+    total_rows = 0
+    with (
+        mp.Pool(
+            processes,
+            initializer=_InstallWorker.init,
+            initargs=(engine.url, read_fn),
+        ) as pool,
+        tqdm(
+            total=len(tickers),
+            desc=desc,
+            position=0,
+            leave=True,
+        ) as pb,
+    ):
+        for group in (
+            tickers_[i : i + processes] for i in range(0, len(tickers_), processes)
+        ):
+            results = []
+            for exc, ticker, df in pool.imap_unordered(_InstallWorker.call, group):
+                if exc:
+                    logger.debug(f"Skipping {ticker}", exc_info=exc)
+                    pb.update()
+                else:
+                    results.append((ticker, df))
+            for ticker, df in results:
+                try:
+                    rowcount = len(df.index)
+                    if rowcount:
+                        write_fn(ticker, df, engine=engine)
+                        total_rows += rowcount
+                        logger.debug(f"{rowcount} rows inserted for {ticker}")
+                    else:
+                        logger.debug(f"Skipping {ticker} due to missing data")
+                except Exception as e:
+                    logger.debug(f"Skipping {ticker}", exc_info=e)
+                pb.update()
+    return total_rows
