@@ -305,7 +305,7 @@ class Daily:
             cls.from_raw,
             cls.to_refined,
             logger,
-            tickers,
+            list(tickers),
             engine,
             desc="Installing refined Yahoo! Finance daily data",
             processes=processes,

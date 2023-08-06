@@ -370,14 +370,19 @@ def _install(
     read_fn: _ReadFn,
     write_fn: _WriteFn,
     logger: logging.Logger,
-    tickers: set[str],
+    tickers: list[str],
     engine: sa.Engine,
     /,
     *,
     desc: None | str = None,
     processes: int = mp.cpu_count() - 1,
 ) -> int:
-    tickers_ = list(tickers)
+    """Helper for feature installation methods.
+
+    Useful for reducing code duplication, but this helper
+    may not exist in the future.
+
+    """
     total_rows = 0
     with (
         mp.Pool(
@@ -393,7 +398,7 @@ def _install(
         ) as pb,
     ):
         for group in (
-            tickers_[i : i + processes] for i in range(0, len(tickers_), processes)
+            tickers[i : i + processes] for i in range(0, len(tickers), processes)
         ):
             results = []
             for exc, ticker, df in pool.imap_unordered(_InstallWorker.call, group):
