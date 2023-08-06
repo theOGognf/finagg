@@ -4,6 +4,7 @@ import logging
 import multiprocessing as mp
 import os
 import pathlib
+import time
 from typing import Literal
 
 import click
@@ -185,6 +186,8 @@ def install(
     else:
         logger.info("FINAGG_ROOT_PATH found in the environment")
 
+    start = time.monotonic()
+
     all_skips = set(skip)
     if not stock_data and "bea" not in all_skips:
         ctx.invoke(bea._cli.install)
@@ -232,6 +235,8 @@ def install(
             processes=processes,
             recreate_tables=recreate_tables,
         )
+
+    logger.info(f"Installation took {time.monotonic() - start:.2f}s")
 
 
 def main() -> int:
