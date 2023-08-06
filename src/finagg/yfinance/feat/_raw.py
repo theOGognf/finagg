@@ -1,6 +1,7 @@
 """Raw features from Yahoo! Finance sources."""
 
 import logging
+import multiprocessing as mp
 
 import pandas as pd
 import sqlalchemy as sa
@@ -26,6 +27,14 @@ class Prices:
     calling feature methods.
 
     """
+
+    @classmethod
+    def _install_worker(cls, ticker: str) -> tuple[None | Exception, str, pd.DataFrame]:
+        try:
+            df = api.get(ticker)
+        except Exception as e:
+            return e, ticker, pd.DataFrame()
+        return None, ticker, df
 
     @classmethod
     def from_raw(
@@ -129,6 +138,7 @@ class Prices:
         cls,
         tickers: None | set[str] = None,
         *,
+        processes: int = mp.cpu_count() - 1,
         engine: None | Engine = None,
         recreate_tables: bool = False,
     ) -> int:
@@ -141,6 +151,8 @@ class Prices:
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+            processes: Number of background processes to use when installing
+                data.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -157,23 +169,27 @@ class Prices:
             sql.prices.create(engine)
 
         total_rows = 0
-        for ticker in tqdm(
-            tickers,
-            desc="Installing raw Yahoo! Finance stock data",
-            position=0,
-            leave=True,
-        ):
-            try:
-                df = api.get(ticker)
-                rowcount = len(df.index)
-                if rowcount:
-                    cls.to_raw(df, engine=engine)
-                    total_rows += rowcount
-                    logger.debug(f"{rowcount} rows inserted for {ticker}")
-                else:
-                    logger.debug(f"Skipping {ticker} due to missing stock data")
-            except Exception as e:
-                logger.debug(f"Skipping {ticker}", exc_info=e)
+        with mp.Pool(processes) as pool:
+            for exc, ticker, df in tqdm(
+                pool.imap_unordered(cls._install_worker, tickers),
+                desc="Installing raw Yahoo! Finance stock data",
+                total=len(tickers),
+                position=0,
+                leave=True,
+            ):
+                if exc:
+                    logger.debug(f"Skipping {ticker}", exc_info=exc)
+                    continue
+                try:
+                    rowcount = len(df.index)
+                    if rowcount:
+                        cls.to_raw(df, engine=engine)
+                        total_rows += rowcount
+                        logger.debug(f"{rowcount} rows inserted for {ticker}")
+                    else:
+                        logger.debug(f"Skipping {ticker} due to missing stock data")
+                except Exception as e:
+                    logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
 
     @classmethod

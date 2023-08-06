@@ -6,6 +6,7 @@ import pathlib
 import re
 from datetime import datetime
 from pathlib import Path
+from typing import Protocol
 
 import numpy as np
 import pandas as pd
@@ -311,3 +312,30 @@ when getting data from APIs or SQL tables.
 
 :meta hide-value:
 """
+
+
+class FeatureWorkerFunc(Protocol):
+    @classmethod
+    def __call__(cls, ticker: str, engine: None | sa.Engine = None) -> pd.DataFrame:
+        ...
+
+
+class FeatureWorker:
+    engine: None | sa.Engine = None
+
+    f: None | FeatureWorkerFunc = None
+
+    @classmethod
+    def init(cls, url: str | sa.URL, f: FeatureWorkerFunc) -> None:
+        cls.engine = sa.create_engine(url)
+        cls.f = f
+
+    @classmethod
+    def call(cls, ticker: str) -> tuple[None | Exception, str, pd.DataFrame]:
+        assert cls.engine is not None
+        assert cls.f is not None
+        try:
+            df = cls.f(ticker, engine=cls.engine)
+        except Exception as e:
+            return e, ticker, pd.DataFrame()
+        return None, ticker, df

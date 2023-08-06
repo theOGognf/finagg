@@ -1,6 +1,7 @@
 """CLI and tools for yfinance."""
 
 import logging
+import multiprocessing as mp
 from typing import Literal
 
 import click
@@ -90,6 +91,16 @@ def entry_point() -> None:
     ),
 )
 @click.option(
+    "--processes",
+    "-n",
+    type=int,
+    default=mp.cpu_count() - 1,
+    help=(
+        "Number of backgruond processes to run in parallel when installing data. Note,"
+        " not all tables support installations with multiprocessing."
+    ),
+)
+@click.option(
     "--recreate-tables",
     "-r",
     is_flag=True,
@@ -112,6 +123,7 @@ def install(
     all_: bool = False,
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
+    processes: int = mp.cpu_count() - 1,
     recreate_tables: bool = False,
     verbose: bool = False,
 ) -> int:
@@ -142,7 +154,7 @@ def install(
 
         if "prices" in all_raw:
             total_rows += _feat.prices.install(
-                all_tickers, recreate_tables=recreate_tables
+                all_tickers, processes=processes, recreate_tables=recreate_tables
             )
 
     all_refined = set()
@@ -153,7 +165,7 @@ def install(
 
     if "daily" in all_refined:
         total_rows += _feat.daily.install(
-            tickers=all_tickers, recreate_tables=recreate_tables
+            tickers=all_tickers, processes=processes, recreate_tables=recreate_tables
         )
 
     if all_ or all_refined or all_raw:

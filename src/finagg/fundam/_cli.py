@@ -1,6 +1,7 @@
 """CLI and tools for aggregating fundamental features."""
 
 import logging
+import multiprocessing as mp
 import os
 from typing import Literal
 
@@ -43,6 +44,16 @@ def entry_point() -> None:
     help="Whether to install all defined tables (including all refined tables).",
 )
 @click.option(
+    "--processes",
+    "-n",
+    type=int,
+    default=mp.cpu_count() - 1,
+    help=(
+        "Number of backgruond processes to run in parallel when installing data. Note,"
+        " not all tables support installations with multiprocessing."
+    ),
+)
+@click.option(
     "--recreate-tables",
     "-r",
     is_flag=True,
@@ -62,6 +73,7 @@ def entry_point() -> None:
 def install(
     refined: list[Literal["fundam", "fundam.normalized"]] = [],
     all_: bool = False,
+    processes: int = mp.cpu_count() - 1,
     recreate_tables: bool = False,
     verbose: bool = False,
 ) -> int:
@@ -83,10 +95,14 @@ def install(
         all_refined = set(refined)
 
     if "fundam" in all_refined:
-        total_rows += _feat.fundam.install(recreate_tables=recreate_tables)
+        total_rows += _feat.fundam.install(
+            processes=processes, recreate_tables=recreate_tables
+        )
 
     if "fundam.normalized" in all_refined:
-        total_rows += _feat.fundam.normalized.install(recreate_tables=recreate_tables)
+        total_rows += _feat.fundam.normalized.install(
+            processes=processes, recreate_tables=recreate_tables
+        )
 
     if all_ or all_refined:
         if total_rows:

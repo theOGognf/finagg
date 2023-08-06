@@ -176,21 +176,6 @@ class NormalizedAnnual:
 
     """
 
-    class _InstallWorker:
-        engine = None
-
-        @classmethod
-        def init(cls, url: str | sa.URL) -> None:
-            cls.engine = sa.create_engine(url)
-
-        @classmethod
-        def process(cls, ticker: str) -> tuple[None | Exception, str, pd.DataFrame]:
-            try:
-                df = NormalizedAnnual.from_other_refined(ticker, engine=cls.engine)
-            except Exception as e:
-                return e, ticker, pd.DataFrame()
-            return None, ticker, df
-
     @classmethod
     def from_other_refined(
         cls,
@@ -525,7 +510,9 @@ class NormalizedAnnual:
         total_rows = 0
         with (
             mp.Pool(
-                processes, initializer=cls._InstallWorker.init, initargs=(engine.url,)
+                processes,
+                initializer=utils.FeatureWorker.init,
+                initargs=(engine.url, cls.from_other_refined),
             ) as pool,
             tqdm(
                 total=len(tickers),
@@ -539,7 +526,7 @@ class NormalizedAnnual:
             ):
                 results = []
                 for exc, ticker, df in pool.imap_unordered(
-                    cls._InstallWorker.process, group
+                    utils.FeatureWorker.call, group
                 ):
                     if exc:
                         logger.debug(f"Skipping {ticker}", exc_info=exc)
@@ -625,21 +612,6 @@ class Annual:
 
     :meta hide-value:
     """
-
-    class _InstallWorker:
-        engine = None
-
-        @classmethod
-        def init(cls, url: str | sa.URL) -> None:
-            cls.engine = sa.create_engine(url)
-
-        @classmethod
-        def process(cls, ticker: str) -> tuple[None | Exception, str, pd.DataFrame]:
-            try:
-                df = Annual.from_raw(ticker, engine=cls.engine)
-            except Exception as e:
-                return e, ticker, pd.DataFrame()
-            return None, ticker, df
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
@@ -948,7 +920,9 @@ class Annual:
         total_rows = 0
         with (
             mp.Pool(
-                processes, initializer=cls._InstallWorker.init, initargs=(engine.url,)
+                processes,
+                initializer=utils.FeatureWorker.init,
+                initargs=(engine.url, cls.from_raw),
             ) as pool,
             tqdm(
                 total=len(tickers),
@@ -962,7 +936,7 @@ class Annual:
             ):
                 results = []
                 for exc, ticker, df in pool.imap_unordered(
-                    cls._InstallWorker.process, group
+                    utils.FeatureWorker.call, group
                 ):
                     if exc:
                         logger.debug(f"Skipping {ticker}", exc_info=exc)
