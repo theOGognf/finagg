@@ -1,6 +1,7 @@
 """Main CLI entry points."""
 
 import logging
+import multiprocessing as mp
 import os
 import pathlib
 from typing import Literal
@@ -129,6 +130,16 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
     ),
 )
 @click.option(
+    "--processes",
+    "-n",
+    type=int,
+    default=mp.cpu_count() - 1,
+    help=(
+        "Number of backgruond processes to run in parallel when installing data. Note,"
+        " not all tables support installations with multiprocessing."
+    ),
+)
+@click.option(
     "--recreate-tables",
     "-r",
     is_flag=True,
@@ -155,6 +166,7 @@ def install(
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
     from_zip: bool = False,
+    processes: int = mp.cpu_count() - 1,
     recreate_tables: bool = False,
     verbose: bool = False,
 ) -> None:
@@ -197,6 +209,7 @@ def install(
             ticker=ticker,
             ticker_set=ticker_set,
             from_zip=from_zip,
+            processes=processes,
             recreate_tables=recreate_tables,
             verbose=verbose,
         )
@@ -207,6 +220,7 @@ def install(
             all_=True,
             ticker=ticker,
             ticker_set=ticker_set,
+            processes=processes,
             recreate_tables=recreate_tables,
             verbose=verbose,
         )
@@ -215,6 +229,7 @@ def install(
         ctx.invoke(
             fundam._cli.install,
             all_=True,
+            processes=processes,
             recreate_tables=recreate_tables,
         )
 

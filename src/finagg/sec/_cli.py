@@ -1,6 +1,7 @@
 """SEC CLI and tools."""
 
 import logging
+import multiprocessing as mp
 import os
 from typing import Literal
 
@@ -107,6 +108,16 @@ def entry_point() -> None:
     ),
 )
 @click.option(
+    "--processes",
+    "-n",
+    type=int,
+    default=mp.cpu_count() - 1,
+    help=(
+        "Number of backgruond processes to run in parallel when installing data. Note,"
+        " not all tables support installations with multiprocessing."
+    ),
+)
+@click.option(
     "--recreate-tables",
     "-r",
     is_flag=True,
@@ -130,6 +141,7 @@ def install(
     ticker: list[str] = [],
     ticker_set: None | Literal["indices", "sec"] = None,
     from_zip: bool = False,
+    processes: int = mp.cpu_count() - 1,
     recreate_tables: bool = False,
     verbose: bool = False,
 ) -> int:
@@ -188,7 +200,7 @@ def install(
         if "tags" in all_raw:
             if from_zip:
                 total_rows += _feat.tags.install_from_zip(
-                    all_tickers, recreate_tables=recreate_tables
+                    all_tickers, processes=processes, recreate_tables=recreate_tables
                 )
             else:
                 total_rows += _feat.tags.install(
@@ -208,22 +220,22 @@ def install(
 
     if "annual" in all_refined:
         total_rows += _feat.annual.install(
-            tickers=all_tickers, recreate_tables=recreate_tables
+            tickers=all_tickers, processes=processes, recreate_tables=recreate_tables
         )
 
     if "annual.normalized" in all_refined:
         total_rows += _feat.annual.normalized.install(
-            tickers=all_tickers, recreate_tables=recreate_tables
+            tickers=all_tickers, processes=processes, recreate_tables=recreate_tables
         )
 
     if "quarterly" in all_refined:
         total_rows += _feat.quarterly.install(
-            tickers=all_tickers, recreate_tables=recreate_tables
+            tickers=all_tickers, processes=processes, recreate_tables=recreate_tables
         )
 
     if "quarterly.normalized" in all_refined:
         total_rows += _feat.quarterly.normalized.install(
-            tickers=all_tickers, recreate_tables=recreate_tables
+            tickers=all_tickers, processes=processes, recreate_tables=recreate_tables
         )
 
     if all_ or all_refined or all_raw:

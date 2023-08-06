@@ -1,6 +1,7 @@
 """Quarterly features from SEC sources."""
 
 import logging
+import multiprocessing as mp
 from typing import Literal
 
 import numpy as np
@@ -176,6 +177,21 @@ class NormalizedQuarterly:
         >>> pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)
 
     """
+
+    class _InstallWorker:
+        engine = None
+
+        @classmethod
+        def init(cls, url: str | sa.URL) -> None:
+            cls.engine = sa.create_engine(url)
+
+        @classmethod
+        def process(cls, ticker: str) -> tuple[None | Exception, str, pd.DataFrame]:
+            try:
+                df = NormalizedQuarterly.from_other_refined(ticker, engine=cls.engine)
+            except Exception as e:
+                return e, ticker, pd.DataFrame()
+            return None, ticker, df
 
     @classmethod
     def from_other_refined(
@@ -476,6 +492,7 @@ class NormalizedQuarterly:
         cls,
         tickers: None | set[str] = None,
         *,
+        processes: int = mp.cpu_count() - 1,
         engine: None | Engine = None,
         recreate_tables: bool = False,
     ) -> int:
@@ -490,6 +507,8 @@ class NormalizedQuarterly:
             tickers: Set of tickers to install features for. Defaults to all
                 the candidate tickers from
                 :meth:`NormalizedQuarterly.get_candidate_ticker_set`.
+            processes: Number of background processes to run in parallel
+                when processing ``tickers``.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -515,24 +534,42 @@ class NormalizedQuarterly:
             sql.normalized_quarterly.drop(engine, checkfirst=True)
             sql.normalized_quarterly.create(engine)
 
+        tickers_ = list(tickers)
         total_rows = 0
-        for ticker in tqdm(
-            tickers,
-            desc="Installing refined SEC industry-normalized quarterly data",
-            position=0,
-            leave=True,
+        with (
+            mp.Pool(
+                processes, initializer=cls._InstallWorker.init, initargs=(engine.url,)
+            ) as pool,
+            tqdm(
+                total=len(tickers),
+                desc="Installing refined SEC industry-normalized quarterly data",
+                position=0,
+                leave=True,
+            ) as pb,
         ):
-            try:
-                df = cls.from_other_refined(ticker, engine=engine)
-                rowcount = len(df.index)
-                if rowcount:
-                    cls.to_refined(ticker, df, engine=engine)
-                    total_rows += rowcount
-                    logger.debug(f"{rowcount} rows inserted for {ticker}")
-                else:
-                    logger.debug(f"Skipping {ticker} due to missing data")
-            except Exception as e:
-                logger.debug(f"Skipping {ticker}", exc_info=e)
+            for group in (
+                tickers_[i : i + processes] for i in range(0, len(tickers_), processes)
+            ):
+                results = []
+                for exc, ticker, df in pool.imap_unordered(
+                    cls._InstallWorker.process, group
+                ):
+                    if exc:
+                        logger.debug(f"Skipping {ticker}", exc_info=exc)
+                    else:
+                        results.append((ticker, df))
+                for ticker, df in results:
+                    try:
+                        rowcount = len(df.index)
+                        if rowcount:
+                            cls.to_refined(ticker, df, engine=engine)
+                            total_rows += rowcount
+                            logger.debug(f"{rowcount} rows inserted for {ticker}")
+                        else:
+                            logger.debug(f"Skipping {ticker} due to missing data")
+                    except Exception as e:
+                        logger.debug(f"Skipping {ticker}", exc_info=e)
+                    pb.update()
         return total_rows
 
     @classmethod
@@ -601,6 +638,21 @@ class Quarterly:
 
     :meta hide-value:
     """
+
+    class _InstallWorker:
+        engine = None
+
+        @classmethod
+        def init(cls, url: str | sa.URL) -> None:
+            cls.engine = sa.create_engine(url)
+
+        @classmethod
+        def process(cls, ticker: str) -> tuple[None | Exception, str, pd.DataFrame]:
+            try:
+                df = Quarterly.from_raw(ticker, engine=cls.engine)
+            except Exception as e:
+                return e, ticker, pd.DataFrame()
+            return None, ticker, df
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
@@ -869,6 +921,7 @@ class Quarterly:
         cls,
         tickers: None | set[str] = None,
         *,
+        processes: int = mp.cpu_count() - 1,
         engine: None | Engine = None,
         recreate_tables: bool = False,
     ) -> int:
@@ -883,6 +936,8 @@ class Quarterly:
             tickers: Set of tickers to install features for. Defaults to all
                 the candidate tickers from
                 :meth:`Quarterly.get_candidate_ticker_set`.
+            processes: Number of background processes to run in parallel
+                when processing ``tickers``.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -906,24 +961,42 @@ class Quarterly:
             sql.quarterly.drop(engine, checkfirst=True)
             sql.quarterly.create(engine)
 
+        tickers_ = list(tickers)
         total_rows = 0
-        for ticker in tqdm(
-            tickers,
-            desc="Installing refined SEC quarterly data",
-            position=0,
-            leave=True,
+        with (
+            mp.Pool(
+                processes, initializer=cls._InstallWorker.init, initargs=(engine.url,)
+            ) as pool,
+            tqdm(
+                total=len(tickers),
+                desc="Installing refined SEC quarterly data",
+                position=0,
+                leave=True,
+            ) as pb,
         ):
-            try:
-                df = cls.from_raw(ticker, engine=engine)
-                rowcount = len(df.index)
-                if rowcount:
-                    cls.to_refined(ticker, df, engine=engine)
-                    total_rows += rowcount
-                    logger.debug(f"{rowcount} rows inserted for {ticker}")
-                else:
-                    logger.debug(f"Skipping {ticker} due to missing data")
-            except Exception as e:
-                logger.debug(f"Skipping {ticker}", exc_info=e)
+            for group in (
+                tickers_[i : i + processes] for i in range(0, len(tickers_), processes)
+            ):
+                results = []
+                for exc, ticker, df in pool.imap_unordered(
+                    cls._InstallWorker.process, group
+                ):
+                    if exc:
+                        logger.debug(f"Skipping {ticker}", exc_info=exc)
+                    else:
+                        results.append((ticker, df))
+                for ticker, df in results:
+                    try:
+                        rowcount = len(df.index)
+                        if rowcount:
+                            cls.to_refined(ticker, df, engine=engine)
+                            total_rows += rowcount
+                            logger.debug(f"{rowcount} rows inserted for {ticker}")
+                        else:
+                            logger.debug(f"Skipping {ticker} due to missing data")
+                    except Exception as e:
+                        logger.debug(f"Skipping {ticker}", exc_info=e)
+                    pb.update()
         return total_rows
 
     @classmethod

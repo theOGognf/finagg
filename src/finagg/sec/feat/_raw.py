@@ -20,47 +20,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def _process_zip_member(args: tuple[str, str]) -> tuple[str, pd.DataFrame]:
-    """A nasty function to make it easier for processing files within
-    the company facts zip file using multiprocessing.
-
-    Args:
-        args: Tuple of the zip filename and the company facts filename
-            within the zip that's being processed.
-
-    Returns:
-        A dataframe of the company's facts (empty if any error occurs during
-        processing).
-
-    """
-    zip_filename, filename = args
-    zipfile = ZipFile(zip_filename)
-    dfs = []
-    cik = filename[3:-5]
-    data = zipfile.read(filename)
-    content = json.loads(data)
-    try:
-        df = api._parse_facts(content)
-    except:
-        return filename, pd.DataFrame()
-    df["cik"] = cik
-    for concept in api.popular_concepts:
-        try:
-            tag = concept["tag"]
-            taxonomy = concept["taxonomy"]
-            units = concept["units"]
-            df_tag = df[(df["tag"] == tag) & (df["taxonomy"] == taxonomy)]
-            for form in ("10-K", "10-Q"):
-                df_unique = api.get_unique_filings(df_tag, form=form, units=units)
-                if len(df_unique.index):
-                    dfs.append(df_unique)
-        except:
-            continue
-    if dfs:
-        return filename, pd.concat(dfs)
-    return filename, pd.DataFrame()
-
-
 class Submissions:
     """Get a single company's metadata as-is from raw SEC data.
 
@@ -302,6 +261,49 @@ class Tags:
     """
 
     @classmethod
+    def _install_from_zip_worker(
+        cls, args: tuple[str, str]
+    ) -> tuple[str, pd.DataFrame]:
+        """A nasty function to make it easier for processing files within
+        the company facts zip file using multiprocessing.
+
+        Args:
+            args: Tuple of the zip filename and the company facts filename
+                within the zip that's being processed.
+
+        Returns:
+            A dataframe of the company's facts (empty if any error occurs during
+            processing).
+
+        """
+        zip_filename, filename = args
+        zipfile = ZipFile(zip_filename)
+        dfs = []
+        cik = filename[3:-5]
+        data = zipfile.read(filename)
+        content = json.loads(data)
+        try:
+            df = api._parse_facts(content)
+        except:
+            return filename, pd.DataFrame()
+        df["cik"] = cik
+        for concept in api.popular_concepts:
+            try:
+                tag = concept["tag"]
+                taxonomy = concept["taxonomy"]
+                units = concept["units"]
+                df_tag = df[(df["tag"] == tag) & (df["taxonomy"] == taxonomy)]
+                for form in ("10-K", "10-Q"):
+                    df_unique = api.get_unique_filings(df_tag, form=form, units=units)
+                    if len(df_unique.index):
+                        dfs.append(df_unique)
+            except:
+                continue
+        if dfs:
+            return filename, pd.concat(dfs)
+        return filename, pd.DataFrame()
+
+    @classmethod
     def from_raw(
         cls,
         ticker: str,
@@ -518,6 +520,8 @@ class Tags:
         Args:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`Submissions.get_ticker_set`.
+            processes: Number of background processes to use when installing
+                data.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -553,7 +557,7 @@ class Tags:
         total_rows = 0
         with mp.Pool(processes) as pool:
             for f, df in tqdm(
-                pool.imap_unordered(_process_zip_member, args),  # type: ignore[arg-type]
+                pool.imap_unordered(cls._install_from_zip_worker, args),  # type: ignore[arg-type]
                 total=len(args),
                 desc="Installing raw SEC tags data",
                 position=0,
