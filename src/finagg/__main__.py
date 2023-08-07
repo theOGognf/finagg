@@ -1,5 +1,6 @@
 """Main CLI entry points."""
 
+import datetime
 import logging
 import multiprocessing as mp
 import os
@@ -236,7 +237,8 @@ def install(
             recreate_tables=recreate_tables,
         )
 
-    logger.info(f"Installation took {time.monotonic() - start:.2f}s")
+    td = datetime.timedelta(seconds=int(time.monotonic() - start))
+    logger.info(f"Installation took {td}")
 
 
 def main() -> int:
