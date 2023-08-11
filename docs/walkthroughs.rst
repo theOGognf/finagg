@@ -319,4 +319,4 @@ is equivalent to:
 
     finagg sec install --raw submissions --raw tags --refined quarterly -t MSFT
 
-.. _`FRED API docs have good explanations and examples`: https://fred.stlouisfe ...
+.. _`FRED API docs have good explanations and examples`: https://fred.stlouisfed.org/docs/api/fred/
