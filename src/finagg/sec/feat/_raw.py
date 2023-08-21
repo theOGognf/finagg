@@ -393,6 +393,8 @@ class Tags:
         cls,
         lb: int = 1,
         *,
+        start: None | str = None,
+        end: None | str = None,
         engine: None | Engine = None,
     ) -> set[str]:
         """Get all unique ticker symbols in the raw SQL tables that have at least
@@ -407,6 +409,10 @@ class Tags:
         Args:
             lb: Lower bound number of rows that a company must have for its ticker
                 to be included in the set returned by this method.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -415,6 +421,8 @@ class Tags:
             True
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
         engine = engine or backend.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
@@ -425,6 +433,10 @@ class Tags:
                 conn.execute(
                     sa.select(sql.submissions.c.ticker)
                     .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
+                    .where(
+                        sql.tags.c.filed >= start,
+                        sql.tags.c.filed <= end,
+                    )
                     .group_by(sql.tags.c.cik)
                     .having(sa.func.count(sql.tags.c.filed) >= lb)
                 )

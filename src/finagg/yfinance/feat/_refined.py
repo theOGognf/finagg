@@ -200,7 +200,12 @@ class Daily:
 
     @classmethod
     def get_candidate_ticker_set(
-        cls, lb: int = 1, *, engine: None | Engine = None
+        cls,
+        lb: int = 1,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> set[str]:
         """Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE
         to be in the feature's refined SQL table.
@@ -208,6 +213,10 @@ class Daily:
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -221,15 +230,26 @@ class Daily:
             True
 
         """
-        return _raw.Prices.get_ticker_set(lb=lb, engine=engine)
+        return _raw.Prices.get_ticker_set(lb=lb, start=start, end=end, engine=engine)
 
     @classmethod
-    def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
+    def get_ticker_set(
+        cls,
+        lb: int = 1,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
+    ) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -242,6 +262,8 @@ class Daily:
             True
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
         engine = engine or backend.engine
         if not sa.inspect(engine).has_table(sql.daily.name):
             sql.daily.create(engine)
@@ -249,6 +271,10 @@ class Daily:
             tickers = (
                 conn.execute(
                     sa.select(sql.daily.c.ticker)
+                    .where(
+                        sql.daily.c.date >= start,
+                        sql.daily.c.date <= end,
+                    )
                     .group_by(sql.daily.c.ticker)
                     .having(sa.func.count(sql.daily.c.date) >= lb)
                 )

@@ -310,7 +310,12 @@ class NormalizedFundamental:
 
     @classmethod
     def get_candidate_ticker_set(
-        cls, lb: int = 1, *, engine: None | Engine = None
+        cls,
+        lb: int = 1,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> set[str]:
         """Get all unique tickers in the fundamental SQL table that MAY BE
         ELIGIBLE to be in the feature's SQL table.
@@ -321,6 +326,10 @@ class NormalizedFundamental:
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -334,15 +343,26 @@ class NormalizedFundamental:
             True
 
         """
-        return Fundamental.get_ticker_set(lb=lb, engine=engine)
+        return Fundamental.get_ticker_set(lb=lb, start=start, end=end, engine=engine)
 
     @classmethod
-    def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
+    def get_ticker_set(
+        cls,
+        lb: int = 1,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
+    ) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -355,6 +375,8 @@ class NormalizedFundamental:
             True
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
         engine = engine or backend.engine
         if not sa.inspect(engine).has_table(sql.normalized_fundam.name):
             sql.normalized_fundam.create(engine)
@@ -362,6 +384,10 @@ class NormalizedFundamental:
             tickers = (
                 conn.execute(
                     sa.select(sql.normalized_fundam.c.ticker)
+                    .where(
+                        sql.normalized_fundam.c.date >= start,
+                        sql.normalized_fundam.c.date <= end,
+                    )
                     .group_by(sql.normalized_fundam.c.ticker)
                     .having(sa.func.count(sql.normalized_fundam.c.date) >= lb)
                 )
@@ -753,7 +779,12 @@ class Fundamental:
 
     @classmethod
     def get_candidate_ticker_set(
-        cls, lb: int = 1, *, engine: None | Engine = None
+        cls,
+        lb: int = 1,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> set[str]:
         """Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE
         to be in the feature's SQL table.
@@ -761,6 +792,10 @@ class Fundamental:
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -775,16 +810,29 @@ class Fundamental:
 
         """
         return sec.feat.quarterly.get_ticker_set(
-            lb=lb, engine=engine
-        ) & yfinance.feat.daily.get_ticker_set(lb=lb, engine=engine)
+            lb=lb, start=start, end=end, engine=engine
+        ) & yfinance.feat.daily.get_ticker_set(
+            lb=lb, start=start, end=end, engine=engine
+        )
 
     @classmethod
-    def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
+    def get_ticker_set(
+        cls,
+        lb: int = 1,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
+    ) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -797,6 +845,8 @@ class Fundamental:
             True
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
         engine = engine or backend.engine
         if not sa.inspect(engine).has_table(sql.fundam.name):
             sql.fundam.create(engine)
@@ -804,6 +854,10 @@ class Fundamental:
             tickers = (
                 conn.execute(
                     sa.select(sql.fundam.c.ticker)
+                    .where(
+                        sql.fundam.c.date >= start,
+                        sql.fundam.c.date <= end,
+                    )
                     .group_by(sql.fundam.c.ticker)
                     .having(sa.func.count(sql.fundam.c.date) >= lb)
                 )

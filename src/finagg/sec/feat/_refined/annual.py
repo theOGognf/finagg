@@ -327,7 +327,12 @@ class NormalizedAnnual:
 
     @classmethod
     def get_candidate_ticker_set(
-        cls, lb: int = 1, *, engine: None | Engine = None
+        cls,
+        lb: int = 1,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> set[str]:
         """Get all unique tickers in the annual SQL table that MAY BE
         ELIGIBLE to be in the feature's SQL table.
@@ -337,6 +342,10 @@ class NormalizedAnnual:
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -350,15 +359,26 @@ class NormalizedAnnual:
             True
 
         """
-        return Annual.get_ticker_set(lb=lb, engine=engine)
+        return Annual.get_ticker_set(lb=lb, start=start, end=end, engine=engine)
 
     @classmethod
-    def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
+    def get_ticker_set(
+        cls,
+        lb: int = 1,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
+    ) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -372,6 +392,8 @@ class NormalizedAnnual:
             True
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
         engine = engine or backend.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
@@ -384,6 +406,10 @@ class NormalizedAnnual:
                     .join(
                         sql.normalized_annual,
                         sql.normalized_annual.c.cik == sql.submissions.c.cik,
+                    )
+                    .where(
+                        sql.normalized_annual.c.filed >= start,
+                        sql.normalized_annual.c.filed <= end,
                     )
                     .group_by(sql.normalized_annual.c.cik)
                     .having(sa.func.count(sql.normalized_annual.c.filed) >= lb)
@@ -748,7 +774,12 @@ class Annual:
 
     @classmethod
     def get_candidate_ticker_set(
-        cls, lb: int = 1, *, engine: None | Engine = None
+        cls,
+        lb: int = 1,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
     ) -> set[str]:
         """Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE
         to be in the feature's SQL table.
@@ -756,6 +787,10 @@ class Annual:
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -769,6 +804,8 @@ class Annual:
             True
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
         engine = engine or backend.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
@@ -789,7 +826,11 @@ class Annual:
                         ],
                     )
                     .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
-                    .where(sql.tags.c.form == "10-K")
+                    .where(
+                        sql.tags.c.form == "10-K",
+                        sql.tags.c.filed >= start,
+                        sql.tags.c.filed <= end,
+                    )
                     .group_by(sql.tags.c.cik)
                     .having(
                         *[
@@ -804,12 +845,23 @@ class Annual:
         return set(tickers)
 
     @classmethod
-    def get_ticker_set(cls, lb: int = 1, *, engine: None | Engine = None) -> set[str]:
+    def get_ticker_set(
+        cls,
+        lb: int = 1,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
+    ) -> set[str]:
         """Get all unique tickers in the feature's SQL table.
 
         Args:
             lb: Minimum number of rows required to include a ticker in the
                 returned set.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.backend.engine`.
 
@@ -822,6 +874,8 @@ class Annual:
             True
 
         """
+        start = start or "1776-07-04"
+        end = end or utils.today
         engine = engine or backend.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
@@ -832,6 +886,10 @@ class Annual:
                 conn.execute(
                     sa.select(sql.submissions.c.ticker)
                     .join(sql.annual, sql.annual.c.cik == sql.submissions.c.cik)
+                    .where(
+                        sql.annual.c.filed >= start,
+                        sql.annual.c.filed <= end,
+                    )
                     .group_by(sql.annual.c.cik)
                     .having(sa.func.count(sql.annual.c.filed) >= lb)
                 )
