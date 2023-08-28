@@ -605,8 +605,8 @@ class Fundamental:
         """Normalize the feature columns."""
         df = pd.merge(quarterly, prices, how="outer", left_index=True, right_index=True)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
-        df["PriceBookRatio"] = df["open"] / df["BookRatio"]
-        df["PriceEarningsRatio"] = df["open"] / df["EarningsPerShareBasic"]
+        df["PriceBookRatio"] = df["close"] / df["BookRatio"]
+        df["PriceEarningsRatio"] = df["close"] / df["EarningsPerShareBasic"]
         df.index.names = ["date"]
         df = utils.resolve_col_order(sql.fundam, df)
         return df.dropna()
