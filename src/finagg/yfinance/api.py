@@ -53,7 +53,6 @@ def get(
         start=start,
         end=end,
         auto_adjust=True,
-        debug=False,
     )
     df.index = pd.to_datetime(df.index).date.astype(str)
     df = df.rename_axis("date").reset_index()
