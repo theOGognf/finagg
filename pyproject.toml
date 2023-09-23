@@ -35,7 +35,7 @@ dependencies = [
     "tqdm==4.*",
     "types-requests==2.*",
     "typing-extensions==4.*",
-    "yfinance==0.2.*"
+    "yfinance<0.2.29"
 ]
 dynamic = ["version"]
 license = {file = "LICENSE"}
