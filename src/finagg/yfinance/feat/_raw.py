@@ -2,11 +2,12 @@
 
 import logging
 import multiprocessing as mp
+from datetime import datetime, timedelta
 
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, NoSuchTableError
 from tqdm import tqdm
 
 from ... import backend, indices, utils
@@ -36,6 +37,32 @@ class Prices:
         """
         try:
             df = api.get(ticker)
+        except Exception as e:
+            return e, ticker, pd.DataFrame()
+        return None, ticker, df
+
+    @classmethod
+    def _update_worker(
+        cls,
+        ticker: str,
+        /,
+        *,
+        engine: None | Engine = None,
+    ) -> tuple[None | Exception, str, pd.DataFrame]:
+        """Helper for updating data from the Yahoo! Finance API using
+        multiprocessing.
+
+        """
+        engine = engine or backend.engine
+        try:
+            with engine.begin() as conn:
+                (start,) = conn.execute(
+                    sa.select(sa.func.max(sql.prices.c.date)).where(
+                        sql.prices.c.ticker == ticker
+                    )
+                ).one()
+                start_plus_one = datetime.fromisoformat(start) + timedelta(days=1)
+                df = api.get(ticker, start=start_plus_one.strftime("%Y-%m-%d"))
         except Exception as e:
             return e, ticker, pd.DataFrame()
         return None, ticker, df
@@ -232,3 +259,26 @@ class Prices:
         with engine.begin() as conn:
             conn.execute(sql.prices.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df)
+
+    @classmethod
+    def update(
+        cls,
+        tickers: None | set[str] = None,
+        *,
+        processes: int = mp.cpu_count() - 1,
+        engine: None | Engine = None,
+    ) -> int:
+        tickers = tickers or cls.get_ticker_set()
+        engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.prices.name):
+            raise NoSuchTableError(f"{sql.prices.name} table does not exist.")
+
+        return utils._install(
+            cls._update_worker,
+            cls.to_raw,
+            logger,
+            list(tickers),
+            engine,
+            desc="Updating raw Yahoo! Finance stock data",
+            processes=processes,
+        )

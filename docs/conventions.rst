@@ -133,9 +133,6 @@ There are only a handful of conventions regarding data organization:
   their own SQL table definitions. This is convenient for querying API data
   offline and for customizing features without having to repeatedly get data
   from APIs.
-* Feature SQL tables are typically "melted" and do not have a SQL table column
-  per feature dataframe column. This makes it so features can be changed without
-  breaking the SQL table schemas.
 * Classes within ``feat`` submodules and SQL tables within ``sql`` submodules are
   named similarly to indicate their relationship.
 * Unaltered data from APIs are typically referred to as "raw" data while
