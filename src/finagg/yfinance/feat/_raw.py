@@ -30,39 +30,16 @@ class Prices:
     """
 
     @classmethod
-    def _install_worker(cls, ticker: str) -> tuple[None | Exception, str, pd.DataFrame]:
+    def _install_worker(
+        cls, args: tuple[str, None | str]
+    ) -> tuple[None | Exception, str, pd.DataFrame]:
         """Helper for installing data from the Yahoo! Finance API using
         multiprocessing.
 
         """
+        ticker, start = args
         try:
-            df = api.get(ticker)
-        except Exception as e:
-            return e, ticker, pd.DataFrame()
-        return None, ticker, df
-
-    @classmethod
-    def _update_worker(
-        cls,
-        ticker: str,
-        /,
-        *,
-        engine: None | Engine = None,
-    ) -> tuple[None | Exception, str, pd.DataFrame]:
-        """Helper for updating data from the Yahoo! Finance API using
-        multiprocessing.
-
-        """
-        engine = engine or backend.engine
-        try:
-            with engine.begin() as conn:
-                (start,) = conn.execute(
-                    sa.select(sa.func.max(sql.prices.c.date)).where(
-                        sql.prices.c.ticker == ticker
-                    )
-                ).one()
-                start_plus_one = datetime.fromisoformat(start) + timedelta(days=1)
-                df = api.get(ticker, start=start_plus_one.strftime("%Y-%m-%d"))
+            df = api.get(ticker, start=start)
         except Exception as e:
             return e, ticker, pd.DataFrame()
         return None, ticker, df
@@ -219,7 +196,9 @@ class Prices:
         total_rows = 0
         with mp.Pool(processes) as pool:
             for exc, ticker, df in tqdm(
-                pool.imap_unordered(cls._install_worker, tickers),
+                pool.imap_unordered(
+                    cls._install_worker, [(ticker, None) for ticker in tickers]
+                ),
                 desc="Installing raw Yahoo! Finance stock data",
                 total=len(tickers),
                 position=0,
@@ -268,17 +247,61 @@ class Prices:
         processes: int = mp.cpu_count() - 1,
         engine: None | Engine = None,
     ) -> int:
+        """Update data associated with ``tickers`` by pulling data from the
+        API, and then writing the data to the raw prices SQL table.
+
+        Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the tickers from :meth:`finagg.yfinance.feat.Prices.get_ticker_set`.
+            processes: Number of background processes to use when installing
+                data.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+
+        Returns:
+            Number of rows written to the feature's raw SQL table.
+
+        Raises:
+            `NoSuchTableError`: If the table associated with this feature
+                set update does not exist.
+
+        """
         tickers = tickers or cls.get_ticker_set()
         engine = engine or backend.engine
         if not sa.inspect(engine).has_table(sql.prices.name):
             raise NoSuchTableError(f"{sql.prices.name} table does not exist.")
 
-        return utils._install(
-            cls._update_worker,
-            cls.to_raw,
-            logger,
-            list(tickers),
-            engine,
-            desc="Updating raw Yahoo! Finance stock data",
-            processes=processes,
-        )
+        with engine.begin() as conn:
+            result = conn.execute(
+                sa.select(sql.prices.c.ticker, sa.func.max(sql.prices.c.date))
+                .where(sql.prices.c.ticker.in_(tickers))
+                .group_by(sql.prices.c.ticker)
+            )
+        updates = []
+        for ticker, start in result:
+            start_plus_one = datetime.fromisoformat(start) + timedelta(days=1)
+            updates.append((ticker, start_plus_one.strftime("%Y-%m-%d")))
+
+        total_rows = 0
+        with mp.Pool(processes) as pool:
+            for exc, ticker, df in tqdm(
+                pool.imap_unordered(cls._install_worker, updates),
+                desc="Updating raw Yahoo! Finance stock data",
+                total=len(updates),
+                position=0,
+                leave=True,
+            ):
+                if exc:
+                    logger.debug(f"Skipping {ticker}", exc_info=exc)
+                    continue
+                try:
+                    rowcount = len(df.index)
+                    if rowcount:
+                        cls.to_raw(df, engine=engine)
+                        total_rows += rowcount
+                        logger.debug(f"{rowcount} rows inserted for {ticker}")
+                    else:
+                        logger.debug(f"Skipping {ticker} due to missing stock data")
+                except Exception as e:
+                    logger.debug(f"Skipping {ticker}", exc_info=e)
+        return total_rows
