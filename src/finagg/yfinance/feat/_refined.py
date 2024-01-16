@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, NoSuchTableError
 
 from ... import backend, utils
 from .. import api, sql
@@ -37,6 +37,27 @@ class Daily:
         >>> pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)
 
     """
+
+    @classmethod
+    def _from_raw_for_update(
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
+    ) -> pd.DataFrame:
+        """Helper for getting raw features for the update method."""
+        engine = engine or backend.engine
+        if start is None:
+            with engine.begin() as conn:
+                (start,) = conn.execute(
+                    sa.select(sa.func.max(sql.daily.c.date)).where(
+                        sql.daily.c.ticker == ticker
+                    )
+                ).one()
+        return cls.from_raw(ticker, start=start, end=end, engine=engine)
 
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
@@ -367,3 +388,46 @@ class Daily:
         with engine.begin() as conn:
             conn.execute(sql.daily.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
         return len(df.index)
+
+    @classmethod
+    def update(
+        cls,
+        tickers: None | set[str] = None,
+        *,
+        processes: int = mp.cpu_count() - 1,
+        engine: None | Engine = None,
+    ) -> int:
+        """Update data associated with ``tickers`` by pulling data from the
+        raw SQL tables, transforming them into daily features, and then writing
+        to the refined daily SQL table.
+
+        Args:
+            tickers: Set of tickers to install features for. Defaults to all
+                the tickers from :meth:`finagg.yfinance.feat.Daily.get_ticker_set`.
+            processes: Number of background processes to run in parallel
+                when processing ``tickers``.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+
+        Returns:
+            Number of rows written to the feature's refined SQL table.
+
+        Raises:
+            `NoSuchTableError`: If the table associated with this feature
+                set update does not exist.
+
+        """
+        tickers = tickers or cls.get_ticker_set()
+        engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.prices.name):
+            raise NoSuchTableError(f"{sql.daily.name} table does not exist.")
+
+        return utils._install(
+            cls._from_raw_for_update,
+            cls.to_refined,
+            logger,
+            list(tickers),
+            engine,
+            desc="Updating refined Yahoo! Finance daily data",
+            processes=processes,
+        )
