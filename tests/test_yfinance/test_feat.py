@@ -57,3 +57,13 @@ def test_daily_to_from_refined(engine: Engine) -> None:
 def test_prices_get_ticker_set(engine: Engine) -> None:
     finagg.yfinance.feat.prices.install({"AAPL"}, engine=engine)
     assert "AAPL" in finagg.yfinance.feat.prices.get_ticker_set(engine=engine)
+
+
+def test_prices_update(engine: Engine) -> None:
+    df = finagg.yfinance.api.get("AAPL", end="2023-01-01")
+    finagg.yfinance.feat.prices.to_raw(df, engine=engine)
+    finagg.yfinance.feat.prices.update({"AAPL"}, engine=engine)
+    df1 = finagg.yfinance.api.get("AAPL")
+    df2 = finagg.yfinance.feat.prices.from_raw("AAPL", engine=engine).reset_index()
+    df2["ticker"] = "AAPL"
+    pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)

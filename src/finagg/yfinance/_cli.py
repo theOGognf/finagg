@@ -15,16 +15,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-@click.group(help="Yahoo! finance tools.")
+@click.group(help="Yahoo! Finance tools.")
 def entry_point() -> None:
     ...
 
 
 @entry_point.command(
-    help=(
-        "Drop and recreate tables, and install the recommended "
-        "tables into the SQL database."
-    ),
+    help="Install Yahoo! Finance stock price and price feature data.",
 )
 @click.option(
     "--raw",
@@ -181,5 +178,123 @@ def install(
         logger.info(
             f"Skipping {__package__} installation because no installation "
             "options are provided"
+        )
+    return total_rows
+
+
+@entry_point.command(
+    help="Update Yahoo! Finance stock price and price feature data.",
+)
+@click.option(
+    "--raw",
+    type=click.Choice(["prices"]),
+    multiple=True,
+    help=(
+        "Raw tables to update. `prices` indicates daily historical stock "
+        "price data. `prices` must be specified to enable updating refined "
+        "data using the `refined` flag."
+    ),
+)
+@click.option(
+    "--refined",
+    type=click.Choice(["daily"]),
+    multiple=True,
+    help=(
+        "Refined tables to update. This requires raw data to be "
+        "updated beforehand using the `--raw` flag or for the "
+        "`--raw` flag to be set when this option is provided."
+    ),
+)
+@click.option(
+    "--all",
+    "-a",
+    "all_",
+    is_flag=True,
+    default=False,
+    help="Whether to update all defined tables (including all refined tables).",
+)
+@click.option(
+    "--ticker",
+    "-t",
+    multiple=True,
+    help=(
+        "Ticker whose data is attempted to be downloaded and inserted into "
+        "the SQL tables. Multiple tickers can be specified by providing "
+        "multiple `ticker` options, by separating tickers with a comma (e.g., "
+        "`AAPL,MSFT,NVDA`), or by providing tickers in a CSV file by "
+        "specifying a file path (e.g., `bank_tickers.txt`). The CSV file "
+        "can be formatted such that there's one ticker per line or multiple "
+        "tickers per line (delimited by a comma). The tickers specified "
+        "by this option are combined with the tickers specified by the "
+        "`ticker-set` option."
+    ),
+)
+@click.option(
+    "--processes",
+    "-n",
+    type=int,
+    default=mp.cpu_count() - 1,
+    help=(
+        "Number of backgruond processes to run in parallel when updating. Note,"
+        " not all tables support updates with multiprocessing."
+    ),
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Sets the log level to DEBUG to show update errors for each ticker.",
+)
+def update(
+    raw: list[Literal["prices"]] = [],
+    refined: list[Literal["daily"]] = [],
+    all_: bool = False,
+    ticker: list[str] = [],
+    processes: int = mp.cpu_count() - 1,
+    verbose: bool = False,
+) -> int:
+    if verbose:
+        logging.getLogger(__package__).setLevel(logging.DEBUG)
+
+    total_rows = 0
+    all_raw = set()
+    if all_:
+        all_raw = {"prices"}
+    elif raw:
+        all_raw = set(raw)
+
+    all_tickers = utils.expand_csv(ticker)
+    if all_raw:
+        if "prices" in all_raw:
+            total_rows += _feat.prices.update(
+                all_tickers,
+                processes=processes,
+            )
+
+    all_refined = set()
+    if all_:
+        all_refined = {"daily"}
+    elif refined:
+        all_refined = set(refined)
+
+    if "daily" in all_refined:
+        total_rows += _feat.daily.update(
+            tickers=all_tickers,
+            processes=processes,
+        )
+
+    if all_ or all_refined or all_raw:
+        if total_rows:
+            logger.info(f"{total_rows} total rows inserted for {__package__}")
+        else:
+            logger.warning(
+                f"No rows were inserted for {__package__}. This could be an error if"
+                " updates were skipped. Set the verbose flag with the"
+                " `--verbose/-v` option to enable debug logging."
+            )
+    else:
+        logger.info(
+            f"Skipping {__package__} update because no update options are provided"
         )
     return total_rows

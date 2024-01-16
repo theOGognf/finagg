@@ -17,7 +17,7 @@ prices = sa.Table(
     sa.Column("high", sa.Float, doc="Stock price max during trading hours."),
     sa.Column("low", sa.Float, doc="Stock price min during trading hours."),
     sa.Column("close", sa.Float, doc="Stock price at market close."),
-    sa.Column("volume", sa.Float, doc="Units traded during trading hours."),
+    sa.Column("volume", sa.Integer, doc="Units traded during trading hours."),
 )
 """SQL table for storing raw data as managed by
 :data:`finagg.yfinance.feat.prices` (an alias for
