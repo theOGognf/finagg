@@ -645,7 +645,12 @@ class Fundamental:
 
         """
         start = start or "1776-07-04"
-        end = end or utils.today
+        # yfinance returns data exclusive of the end date if provided,
+        # so we add an extra day.
+        if end is None:
+            today = datetime.fromisoformat(utils.today)
+            today_plus_one = today + timedelta(days=1)
+            end = (today_plus_one).strftime("%Y-%m-%d")
         quarterly = sec.feat.quarterly.from_api(
             ticker,
             start=start,
