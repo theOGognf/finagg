@@ -34,6 +34,8 @@ Yahoo! Finance
 
 .. program-output:: finagg yfinance install --help
 
+.. program-output:: finagg yfinance update --help
+
 Fundamental Features
 --------------------
 
