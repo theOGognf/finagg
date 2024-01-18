@@ -110,7 +110,7 @@ def install(
         else:
             logger.warning(
                 f"No rows were inserted for {__package__}. This could be an error if"
-                " installations were not skipped. Set the verbose flag with the"
+                " installations were skipped. Set the verbose flag with the"
                 " `--verbose/-v` option to enable debug logging."
             )
     else:
