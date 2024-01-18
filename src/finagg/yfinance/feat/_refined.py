@@ -2,7 +2,6 @@
 
 import logging
 import multiprocessing as mp
-from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
@@ -96,12 +95,7 @@ class Daily:
 
         """
         start = start or "1776-07-04"
-        # yfinance returns data exclusive of the end date if provided,
-        # so we add an extra day.
-        if end is None:
-            today = datetime.fromisoformat(utils.today)
-            today_plus_one = today + timedelta(days=1)
-            end = (today_plus_one).strftime("%Y-%m-%d")
+        end = end or utils.today
         df = api.get(ticker, start=start, end=end)
         return cls._normalize(df)
 

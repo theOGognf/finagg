@@ -1,6 +1,7 @@
 """Simple wrappers for Yahoo! Finance."""
 
 import logging
+from datetime import datetime, timedelta
 
 import pandas as pd
 import yfinance as yf
@@ -46,6 +47,12 @@ def get(
         4  1980-12-18  0.0924  0.0928  0.0924  0.0924   73449600   AAPL
 
     """
+    # yfinance returns data exclusive of the end date if provided,
+    # so we add an extra day to be consistent across all other
+    # methods that're inclusive of the end date.
+    if end is not None:
+        end_plus_one = datetime.fromisoformat(end) + timedelta(days=1)
+        end = end_plus_one.strftime("%Y-%m-%d")
     stock = yf.Ticker(ticker)
     df = stock.history(
         period=period,
