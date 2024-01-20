@@ -50,11 +50,10 @@ can take up to several hours. The Yahoo! Finance installation process is usually
 the main bottleneck (extensive stock histories can take a while to pull from APIs
 and can take a while to insert into local databases).
 
-You can speed up subsequent updates by updating Yahoo! Finance data rather than
+You can speed up subsequent installations by updating Yahoo! Finance data rather than
 installing from scratch, keeping previously installed data and only installing
-new data. This can result in much faster subsequent installations. Instead of
-calling the normal installation CLI, you can instead do something like the
-following:
+new data. Instead of calling the normal installation CLI, you can instead do something
+like the following:
 
 .. code:: console
 
