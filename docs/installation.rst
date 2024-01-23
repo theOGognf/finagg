@@ -1,13 +1,13 @@
 Installation
 ============
 
-Install with pip for the latest (stable) version.
+Install with pip for the latest stable version.
 
 .. code:: console
 
   pip install finagg
 
-Install from GitHub for the latest (unstable) version.
+Install from GitHub for the latest unstable version.
 
 .. code:: console
 
