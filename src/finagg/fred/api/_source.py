@@ -34,6 +34,7 @@ class SourceReleases(_api.API):
         offset: None | int = 0,
         order_by: None | str = None,
         sort_order: None | str = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all releases for a source of economic data.
@@ -60,6 +61,8 @@ class SourceReleases(_api.API):
 
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -77,7 +80,8 @@ class SourceReleases(_api.API):
             4  18     2023-03-15   2023-03-15                       H.15 Selected Interest Rates           True  http://www.federalreserve.gov/releases/h15/
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "releases",
             cls.url,
             source_id=source_id,
             realtime_start=realtime_start,
@@ -86,10 +90,9 @@ class SourceReleases(_api.API):
             offset=offset,
             order_by=order_by,
             sort_order=sort_order,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["releases"]
-        return pd.DataFrame(data)
+        )
 
 
 class Source(_api.API):
@@ -176,6 +179,7 @@ class Sources(_api.API):
         offset: None | int = 0,
         order_by: None | str = None,
         sort_order: None | str = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all sources of economic data.
@@ -201,6 +205,8 @@ class Sources(_api.API):
 
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -218,7 +224,8 @@ class Sources(_api.API):
             4  11     2023-03-15   2023-03-15                                Dow Jones & Company           http://www.dowjones.com
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "sources",
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -226,7 +233,6 @@ class Sources(_api.API):
             offset=offset,
             order_by=order_by,
             sort_order=sort_order,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["sources"]
-        return pd.DataFrame(data)
+        )
