@@ -239,6 +239,7 @@ class SeriesObservations(_api.API):
         units: None | str = "lin",
         frequency: None | str = None,
         aggregation_method: None | str = "avg",
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get only the initial releases/observations for an
@@ -297,6 +298,8 @@ class SeriesObservations(_api.API):
                     - "sum" = sum
                     - "eop" = end of period
 
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -330,6 +333,7 @@ class SeriesObservations(_api.API):
                 frequency=frequency,
                 aggregation_method=aggregation_method,
                 output_type=4,
+                paginate=paginate,
                 api_key=api_key,
             )
         except HTTPError:
@@ -343,6 +347,7 @@ class SeriesObservations(_api.API):
                 units=units,
                 frequency=frequency,
                 aggregation_method=aggregation_method,
+                paginate=paginate,
                 api_key=api_key,
             )
 
