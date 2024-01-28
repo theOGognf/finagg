@@ -60,7 +60,7 @@ def maybe_paginate(data_key: str, url: str, /, **kwargs: Any) -> pd.DataFrame:
         **kwargs: Mapping of request parameter name to their value.
 
     Returns:
-        A dataframe.
+        A dataframe containing (possibly all) data results.
 
     """
     do_paginate = kwargs.pop("paginate", False)
