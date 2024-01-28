@@ -3,13 +3,14 @@
 import os
 from abc import ABC, abstractmethod
 from datetime import timedelta
+from functools import partial
 from typing import Any, ClassVar
 
 import pandas as pd
 import requests
 import requests_cache
 
-from ... import backend
+from ... import backend, ratelimit
 
 session = requests_cache.CachedSession(
     str(backend.http_cache_path),
@@ -30,6 +31,7 @@ class API(ABC):
         """Main dataset API method."""
 
 
+@ratelimit.guard([ratelimit.RequestLimit(120, timedelta(minutes=1))])
 def get(url: str, /, **kwargs: Any) -> requests.Response:
     """Main API get function used by all `Dataset.get` methods.
 
@@ -46,6 +48,24 @@ def get(url: str, /, **kwargs: Any) -> requests.Response:
     response = session.get(url, params=pformat(**kwargs))
     response.raise_for_status()
     return response
+
+
+def paginate(data_key: str, url: str, /, **kwargs: Any) -> pd.DataFrame:
+    do_paginate = kwargs.pop("paginate", False)
+    offset = kwargs.pop("offset", 0)
+    getter = partial(get, url, **kwargs)
+
+    buffer = []
+    batch_size = kwargs.get("limit", 1000)
+    data = {"count": 0}
+    i = offset
+    while not buffer or i <= data["count"]:
+        data = getter(offset=i).json()
+        buffer.extend(data[data_key])
+        if not do_paginate:
+            break
+        i += batch_size
+    return pd.DataFrame(buffer)
 
 
 def pformat(**kwargs: Any) -> dict[str, Any]:
