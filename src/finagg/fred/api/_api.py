@@ -50,14 +50,26 @@ def get(url: str, /, **kwargs: Any) -> requests.Response:
     return response
 
 
-def paginate(data_key: str, url: str, /, **kwargs: Any) -> pd.DataFrame:
+def maybe_paginate(data_key: str, url: str, /, **kwargs: Any) -> pd.DataFrame:
+    """Do pagination for API get functions that support pagination (if
+    pagination is enabled).
+
+    Args:
+        data_key: Key from the response that the underlying data resides in.
+        url: Request URL.
+        **kwargs: Mapping of request parameter name to their value.
+
+    Returns:
+        A dataframe.
+
+    """
     do_paginate = kwargs.pop("paginate", False)
     offset = kwargs.pop("offset", 0)
     getter = partial(get, url, **kwargs)
 
-    buffer = []
+    buffer: list[dict[str, Any]] = []
     batch_size = kwargs.get("limit", 1000)
-    data = {"count": 0}
+    data = {"count": offset}
     i = offset
     while not buffer or i <= data["count"]:
         data = getter(offset=i).json()

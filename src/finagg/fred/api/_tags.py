@@ -36,6 +36,7 @@ class RelatedTags(_api.API):
         offset: None | int = 0,
         order_by: None | str = None,
         sort_order: None | str = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data for tags related to an economic release.
@@ -74,6 +75,8 @@ class RelatedTags(_api.API):
 
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -90,7 +93,8 @@ class RelatedTags(_api.API):
             4                                gdp      gen    Gross Domestic Product  2012-02-27 10:18:19-06          81         60040
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "tags",
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -102,10 +106,9 @@ class RelatedTags(_api.API):
             offset=offset,
             order_by=order_by,
             sort_order=sort_order,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["tags"]
-        return pd.DataFrame(data)
+        )
 
 
 class Series(_api.API):
@@ -131,6 +134,7 @@ class Series(_api.API):
         offset: None | int = 0,
         order_by: None | str = None,
         sort_order: None | str = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the economic data series matching tags.
@@ -165,6 +169,8 @@ class Series(_api.API):
 
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -181,7 +187,8 @@ class Series(_api.API):
             4  A001RL1A225NBEA     2023-03-15   2023-03-15                       Real Gross National Product ...
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "seriess",
             cls.url,
             tag_names=tag_names,
             exclude_tag_names=exclude_tag_names,
@@ -191,10 +198,9 @@ class Series(_api.API):
             offset=offset,
             order_by=order_by,
             sort_order=sort_order,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["seriess"]
-        return pd.DataFrame(data)
+        )
 
 
 class Tags(_api.API):
@@ -228,6 +234,7 @@ class Tags(_api.API):
         offset: None | int = 0,
         order_by: None | str = None,
         sort_order: None | str = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the FRED tags for a series.
@@ -266,6 +273,8 @@ class Tags(_api.API):
 
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -282,7 +291,8 @@ class Tags(_api.API):
             4      frb stl      src                St. Louis Fed  2012-02-27 10:18:19-06          68         78442
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "tags",
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -294,6 +304,4 @@ class Tags(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             api_key=api_key,
-        ).json()
-        data = data["tags"]
-        return pd.DataFrame(data)
+        )

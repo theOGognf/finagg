@@ -202,7 +202,7 @@ class SeriesObservations(_api.API):
             4     1949-08-26   1953-02-26  1949-07-01  168.5  CPIAUCNS
 
         """
-        df = _api.paginate(
+        df = _api.maybe_paginate(
             "observations",
             cls.url,
             series_id=series_id,
@@ -486,7 +486,7 @@ class SeriesSearchRelatedTags(_api.API):
             4  public domain: citation requested       cc                     None  2018-12-17 23:33:13-06 ...
 
         """
-        return _api.paginate(
+        return _api.maybe_paginate(
             "tags",
             cls.url,
             series_search_text=series_search_text,
@@ -591,7 +591,7 @@ class SeriesSearchTags(_api.API):
             4  public domain: citation requested       cc                     None ...
 
         """
-        return _api.paginate(
+        return _api.maybe_paginate(
             "tags",
             cls.url,
             series_search_text=series_search_text,
@@ -723,7 +723,7 @@ class SeriesSearch(_api.API):
             4    CSUSHPISA     2023-03-16   2023-03-16    S&P/Case-Shiller U.S. National Home Price Index ...
 
         """
-        return _api.paginate(
+        return _api.maybe_paginate(
             "seriess",
             cls.url,
             search_text=search_text,
@@ -881,7 +881,7 @@ class SeriesUpdates(_api.API):
             data series.
 
         """
-        return _api.paginate(
+        return _api.maybe_paginate(
             "seriess",
             cls.url,
             realtime_start=realtime_start,
@@ -918,6 +918,7 @@ class SeriesVintageDates(_api.API):
         limit: None | int = 10000,
         offset: None | int = 0,
         sort_order: None | str = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the dates in history when a series' data values were revised
@@ -949,7 +950,7 @@ class SeriesVintageDates(_api.API):
             A dataframe containing dates on vintage release dates for a series.
 
         """
-        return _api.paginate(
+        return _api.maybe_paginate(
             "seriess",
             cls.url,
             series_id=series_id,
@@ -958,6 +959,7 @@ class SeriesVintageDates(_api.API):
             limit=limit,
             offset=offset,
             sort_order=sort_order,
+            paginate=paginate,
             api_key=api_key,
         )
 

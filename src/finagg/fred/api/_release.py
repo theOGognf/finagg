@@ -33,6 +33,7 @@ class ReleasesDates(_api.API):
         order_by: None | str = "release_date",
         sort_order: None | str = "desc",
         include_release_dates_with_no_data: None | bool = False,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all release dates of economic data.
@@ -58,6 +59,8 @@ class ReleasesDates(_api.API):
                 descending ("desc") order.
             include_release_dates_with_no_data: Whether to return release
                 dates that don't contain any data.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -66,7 +69,8 @@ class ReleasesDates(_api.API):
             releases of economic data.
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "release_dates",
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -75,10 +79,9 @@ class ReleasesDates(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             include_release_dates_with_no_data=include_release_dates_with_no_data,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["release_dates"]
-        return pd.DataFrame(data)
+        )
 
 
 class Releases(_api.API):
@@ -104,6 +107,7 @@ class Releases(_api.API):
         offset: None | int = 0,
         order_by: None | str = None,
         sort_order: None | str = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all releases of economic data.
@@ -129,6 +133,8 @@ class Releases(_api.API):
 
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -137,7 +143,8 @@ class Releases(_api.API):
             data.
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "releases",
             cls.url,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
@@ -145,10 +152,9 @@ class Releases(_api.API):
             offset=offset,
             order_by=order_by,
             sort_order=sort_order,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["releases"]
-        return pd.DataFrame(data)
+        )
 
 
 class ReleaseDates(_api.API):
@@ -174,6 +180,7 @@ class ReleaseDates(_api.API):
         offset: None | int = 0,
         sort_order: None | str = None,
         include_release_dates_with_no_data: None | bool = False,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data on release dates for a particular release of economic data.
@@ -194,6 +201,8 @@ class ReleaseDates(_api.API):
                 descending ("desc") order.
             include_release_dates_with_no_data: Whether to return release
                 dates that don't contain any data.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -201,7 +210,8 @@ class ReleaseDates(_api.API):
             A dataframe containing data for an economic data release's release dates.
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "release_dates",
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -210,10 +220,9 @@ class ReleaseDates(_api.API):
             offset=offset,
             sort_order=sort_order,
             include_release_dates_with_no_data=include_release_dates_with_no_data,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["release_dates"]
-        return pd.DataFrame(data)
+        )
 
 
 class ReleaseSeries(_api.API):
@@ -243,6 +252,7 @@ class ReleaseSeries(_api.API):
         filter_value: None | str = None,
         tag_names: None | str | list[str] = None,
         exclude_tag_names: None | str | list[str] = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data on the series related to a release of economic data.
@@ -287,6 +297,8 @@ class ReleaseSeries(_api.API):
                 by.
             tag_names: Find tags related to these tags.
             exclude_tag_names: Exclude tags related to these tags.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -294,7 +306,8 @@ class ReleaseSeries(_api.API):
             A dataframe containing series data for a release.
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "seriess",
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -307,10 +320,9 @@ class ReleaseSeries(_api.API):
             filter_value=filter_value,
             tag_names=tag_names,
             exclude_tag_names=exclude_tag_names,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["seriess"]
-        return pd.DataFrame(data)
+        )
 
 
 class ReleaseSources(_api.API):
@@ -390,6 +402,7 @@ class ReleaseTags(_api.API):
         offset: None | int = 0,
         order_by: None | str = None,
         sort_order: None | str = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get tags for an economic release.
@@ -428,6 +441,8 @@ class ReleaseTags(_api.API):
 
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -436,7 +451,8 @@ class ReleaseTags(_api.API):
             according to the given parameters.
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "tags",
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -448,10 +464,9 @@ class ReleaseTags(_api.API):
             offset=offset,
             order_by=order_by,
             sort_order=sort_order,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["tags"]
-        return pd.DataFrame(data)
+        )
 
 
 class ReleaseRelatedTags(_api.API):
@@ -481,6 +496,7 @@ class ReleaseRelatedTags(_api.API):
         offset: None | int = 0,
         order_by: None | str = None,
         sort_order: None | str = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data for tags related to an economic release.
@@ -520,6 +536,8 @@ class ReleaseRelatedTags(_api.API):
 
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -528,7 +546,8 @@ class ReleaseRelatedTags(_api.API):
             release according to the given parameters.
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "tags",
             cls.url,
             release_id=release_id,
             realtime_start=realtime_start,
@@ -541,10 +560,9 @@ class ReleaseRelatedTags(_api.API):
             offset=offset,
             order_by=order_by,
             sort_order=sort_order,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["tags"]
-        return pd.DataFrame(data)
+        )
 
 
 class ReleaseTables(_api.API):

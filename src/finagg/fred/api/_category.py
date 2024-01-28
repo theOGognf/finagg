@@ -154,6 +154,7 @@ class CategorySeries(_api.API):
         filter_value: None | str = None,
         tag_names: None | str | list[str] = None,
         exclude_tag_names: None | str | list[str] = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get series within a category.
@@ -192,6 +193,8 @@ class CategorySeries(_api.API):
                 by.
             tag_names: Find tags related to these tags.
             exclude_tag_names: Exclude tags related to these tags.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -208,7 +211,8 @@ class CategorySeries(_api.API):
             3   FFWSJLOW     2023-03-15   2023-03-15  Low Value of the Federal Funds Rate for the In... ...
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "seriess",
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -221,10 +225,9 @@ class CategorySeries(_api.API):
             filter_value=filter_value,
             tag_names=tag_names,
             exclude_tag_names=exclude_tag_names,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["seriess"]
-        return pd.DataFrame(data)
+        )
 
 
 class CategoryTags(_api.API):
@@ -253,6 +256,7 @@ class CategoryTags(_api.API):
         offset: None | int = 0,
         order_by: None | str = None,
         sort_order: None | str = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get a FRED category's tags.
@@ -292,6 +296,8 @@ class CategoryTags(_api.API):
 
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -309,7 +315,8 @@ class CategoryTags(_api.API):
             4          funds      gen  None  2020-05-11 13:13:02-05          28             8
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "tags",
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -321,10 +328,9 @@ class CategoryTags(_api.API):
             tag_names=tag_names,
             tag_group_id=tag_group_id,
             search_text=search_text,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["tags"]
-        return pd.DataFrame(data)
+        )
 
 
 class CategoryRelatedTags(_api.API):
@@ -354,6 +360,7 @@ class CategoryRelatedTags(_api.API):
         offset: None | int = 0,
         order_by: None | str = None,
         sort_order: None | str = None,
+        paginate: bool = False,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data for tags related to a category.
@@ -394,6 +401,8 @@ class CategoryRelatedTags(_api.API):
 
             sort_order: Sort results in ascending ("asc") or
                 descending ("desc") order.
+            paginate: Whether to manage `offset` automatically, making multiple
+                API calls until all results are returned.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -420,7 +429,8 @@ class CategoryRelatedTags(_api.API):
             13                                wsj      rls       Wall Street Journal ...
 
         """
-        data = _api.get(
+        return _api.maybe_paginate(
+            "tags",
             cls.url,
             category_id=category_id,
             realtime_start=realtime_start,
@@ -433,10 +443,9 @@ class CategoryRelatedTags(_api.API):
             offset=offset,
             order_by=order_by,
             sort_order=sort_order,
+            paginate=paginate,
             api_key=api_key,
-        ).json()
-        data = data["tags"]
-        return pd.DataFrame(data)
+        )
 
 
 class Category(_api.API):
