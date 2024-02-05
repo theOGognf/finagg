@@ -1,11 +1,17 @@
 Installation
 ============
 
+Installing from PyPI
+--------------------
+
 Install with pip for the latest stable version.
 
 .. code:: console
 
   pip install finagg
+
+Installing from GitHub
+----------------------
 
 Install from GitHub for the latest unstable version.
 
@@ -13,6 +19,9 @@ Install from GitHub for the latest unstable version.
 
     git clone https://github.com/theOGognf/finagg.git
     pip install ./finagg/
+
+Installing Datasets
+-------------------
 
 Optionally install the recommended datasets (economic data, company
 financials, stock histories, etc.) from 3rd party APIs into a local SQL

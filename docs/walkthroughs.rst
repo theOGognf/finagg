@@ -20,6 +20,9 @@ environment.
 Using the FRED API Subpackages
 ------------------------------
 
+Searching for economic data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Let's say we're interested in finding economic data series corresponding
 to various US treasuries. The FRED series search API is a good place to start.
 The FRED series search API allows us to search through economic data series
@@ -49,6 +52,9 @@ key info for further exploring and aggregating the economic data series:
   series are relevant)
 * the ``observation_start`` column indicates the oldest date with data for
   each series (we may want to ignore series that don't have as much history)
+
+Retrieving economic data
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 Let's assume we're only interested in the economic data series corresponding
 to economic series ID ``"DGS10"`` under the ``id`` column. We can get the
@@ -84,6 +90,9 @@ initial release observations. To successfully retrieve data for the ``"DGS10"``
 series (and most treasury yield series), the ``realtime_start`` and
 ``realtime_end`` parameters must be today's date (the default) and the
 ``output_type`` parameter must be ``1`` (also the default).
+
+Installing economic data
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 So now we have an economic data series we're interested in and can retrieve
 observation values for. We can download and store (or install) the economic
@@ -180,6 +189,9 @@ is equivalent to:
 Using the SEC API Subpackages
 -----------------------------
 
+Retrieving company financial data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Let's say we're interested in a specific company. The SEC EDGAR API is a good
 place to start accessing a company's financials. However, not all companies
 have all their financial data accessible through the SEC EDGAR API. The best
@@ -226,8 +238,11 @@ with the following:
 3  2007-07-01  2008-06-30   1.90  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...
 4  2008-04-01  2008-06-30   0.46  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...
 
+Filtering company financial data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 However, the SEC EDGAR company concept API implementation returns all the
-earnings per share publications for Microsft, including amendments. We may
+earnings per share publications for Microsoft, including amendments. We may
 not necessarily care about amendments because we may be building strategies
 or models that use *current* data and not *future* data. Fortunately, **finagg**
 provides :meth:`finagg.sec.api.get_unique_filings` to further select
@@ -245,19 +260,20 @@ Unfortunately, the SEC EDGAR API is still relatively new and a lot of the
 financial data publications are unaudited, so not all financials are available
 for all companies through the SEC EDGAR API. I.e., a workflow for retrieving
 Microsoft's financial data may not work for retrieving another company's
-financial data. It requires some trial-and-error to find a set of tags that
+financial data.
+
+It requires some trial-and-error to find a set of tags that
 are popular and available for the majority of companies. In addition, the
 workflow for exploring these tags and filtering forms can be cumbersome.
-
-Fortunately again, **finagg** exists for a reason besides implementing these
-useful APIs. **finagg** provides additional conveniences that makes these
-common workflows even easier.
-
-First, **finagg** provides :data:`finagg.sec.api.popular_concepts` for listing
+However, **finagg** provides :data:`finagg.sec.api.popular_concepts` for listing
 company concepts (combinations of financial data tags and other parameters)
-that're popular and widely available for companies. Second, it's extremely
-straightforward to filter and install widely popular and available quarterly
-financial data for a set of companies using the :mod:`finagg.sec.feat`
+that're popular and widely available for companies.
+
+Installing company financial data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It's extremely straightforward to filter and install widely popular and available
+quarterly financial data for a set of companies using the :mod:`finagg.sec.feat`
 subpackage and :data:`finagg.sec.feat.quarterly` member. The
 :data:`finagg.sec.feat.quarterly` member also goes a step further by somewhat
 normalizing the installed financial data (e.g., total asset value is converted

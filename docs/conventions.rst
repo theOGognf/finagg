@@ -5,7 +5,7 @@ Conventions
 data organization, and data normalization. Understanding these conventions
 makes **finagg** a bit more ergonomic. This page covers those conventions.
 
-Import conventions
+Import Conventions
 ------------------
 
 Following **finagg**'s import conventions guarantees updates to **finagg**
@@ -31,7 +31,7 @@ It's also common for subpackages to be imported using their name as an alias:
 >>> import finagg.fred as fred
 >>> import finagg.sec as sec
 
-Package organization
+Package Organization
 --------------------
 
 **finagg** is organized according to API implementations, SQL table
@@ -63,7 +63,7 @@ because there is no use for further transforming or normalizing the data
 available through :mod:`finagg.indices.api` or defined by
 :mod:`finagg.indices.sql`.
 
-API implementations
+API Implementations
 -------------------
 
 APIs are implemented as singleton class instances within ``api`` submodules
@@ -103,13 +103,13 @@ Other implemented APIs, such as the SEC EDGAR API implemented by
 :mod:`finagg.sec.api`, don't have as many helper methods and are barebone
 implementations.
 
-Almost everything is a dataframe
+Almost Everything is a Dataframe
 --------------------------------
 
 Dataframes are just too convenient to not use as the fundamental type within
 **finagg**. Almost all objects returned by APIs and features are dataframes.
 
-Helper methods for inspecting available data
+Helper Methods for Inspecting Available Data
 --------------------------------------------
 
 Most submodules and singletons contain helper methods for getting sets of
@@ -124,7 +124,7 @@ further refinement. Examples of these methods include:
 * :meth:`finagg.sec.feat.Quarterly.get_ticker_set` returns all the tickers
   that have quarterly features available
 
-Data organization
+Data Organization
 -----------------
 
 There are only a handful of conventions regarding data organization:
@@ -140,7 +140,7 @@ There are only a handful of conventions regarding data organization:
   have foreign key constraints on raw data SQL tables such that refined rows
   are deleted when raw rows are deleted with the same primary key.
 
-Data normalization
+Data Normalization
 ------------------
 
 Data returned by API implementations is not normalized or standardized
@@ -164,7 +164,7 @@ rules implemented for data normalization are as follows:
   granular to most granular (e.g., year -> quarter -> date). Indices
   are always sorted.
 
-Feature method naming
+Feature Method Naming
 ---------------------
 
 Features are aggregations or collections of raw and/or refined data that're
