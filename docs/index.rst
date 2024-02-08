@@ -162,14 +162,14 @@ Getting tickers sorted according to industry-normalized SEC EDGAR features.
    :maxdepth: 2
    :caption: Contents
 
-   Conventions <conventions>
-   Walkthroughs <walkthroughs>
    Installation <installation>
    Configuration <configuration>
-   CLI <cli>
+   Conventions <conventions>
+   Walkthroughs <walkthroughs>
    API <api/modules>
-   References <references>
+   CLI <cli>
    FAQ <faq>
+   References <references>
 
 :ref:`genindex`
 ---------------
