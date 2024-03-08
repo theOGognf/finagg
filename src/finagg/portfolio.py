@@ -20,17 +20,17 @@ class Position:
     # Average dollar cost for each share in the position.
     _average_cost_basis: Decimal
 
-    # Total dollar cost for all shares in the position.
-    # The amount of dollars or cash invested in this security.
-    _cost_basis_total: Decimal
-
     # Current number of shares owned in the position.
     _quantity: Decimal
+
+    # Total dollar cost for all shares in the position.
+    # The amount of dollars or cash invested in this security.
+    _total_cost_basis: Decimal
 
     def __init__(self, cost: float, quantity: float, /) -> None:
         self._average_cost_basis = Decimal(cost)
         self._quantity = Decimal(quantity)
-        self._cost_basis_total = self._average_cost_basis * self._quantity
+        self._total_cost_basis = self._average_cost_basis * self._quantity
 
     def __eq__(self, __o: object) -> bool:
         """Compare the position's cost basis."""
@@ -63,14 +63,6 @@ class Position:
         """Average dollar cost for each share in the position."""
         return float(self._average_cost_basis)
 
-    @property
-    def cost_basis_total(self) -> float:
-        """Total dollar cost for all shares in the position. The amount of
-        dollars or cash invested in this security.
-
-        """
-        return float(self._cost_basis_total)
-
     def buy(self, cost: float, quantity: float, /) -> float:
         """Buy ``quantity`` of the position for ``cost``.
 
@@ -97,8 +89,8 @@ class Position:
         exact_cost = Decimal(cost)
         exact_quantity = Decimal(quantity)
         self._quantity += exact_quantity
-        self._cost_basis_total = self._cost_basis_total + exact_cost * exact_quantity
-        self._average_cost_basis = self._cost_basis_total / self._quantity
+        self._total_cost_basis = self._total_cost_basis + exact_cost * exact_quantity
+        self._average_cost_basis = self._total_cost_basis / self._quantity
         return float(exact_cost * exact_quantity)
 
     @property
@@ -138,8 +130,16 @@ class Position:
         if self._quantity < exact_quantity:
             raise ValueError("Invalid order - not enough shares.")
         self._quantity -= exact_quantity
-        self._cost_basis_total = self._average_cost_basis * self._quantity
+        self._total_cost_basis = self._average_cost_basis * self._quantity
         return float(exact_cost * exact_quantity)
+
+    @property
+    def total_cost_basis(self) -> float:
+        """Total dollar cost for all shares in the position. The amount of
+        dollars or cash invested in this security.
+
+        """
+        return float(self._total_cost_basis)
 
     def total_dollar_change(self, cost: float, /) -> float:
         """Compute the total dollar change relative to the average
@@ -213,18 +213,18 @@ class Portfolio:
     _cash: Decimal
 
     # Total cash deposited since starting the portfolio.
-    _deposits_total: Decimal
+    _total_deposits: Decimal
+
+    # Total cash withdrawn since starting the portfolio.
+    _total_withdrawals: Decimal
 
     #: Existing positions for each security.
     positions: dict[str, Position]
 
-    # Total cash withdrawn since starting the portfolio.
-    _withdrawals_total: Decimal
-
     def __init__(self, cash: float, /) -> None:
         self._cash = Decimal(cash)
-        self._deposits_total = self._cash
-        self._withdrawals_total = Decimal(0)
+        self._total_deposits = self._cash
+        self._total_withdrawals = Decimal(0)
         self.positions = {}
 
     def __contains__(self, symbol: str) -> bool:
@@ -298,13 +298,8 @@ class Portfolio:
         """
         exact_cash = Decimal(cash)
         self._cash += exact_cash
-        self._deposits_total += exact_cash
+        self._total_deposits += exact_cash
         return float(self._cash)
-
-    @property
-    def deposits_total(self) -> float:
-        """Total cash deposited since starting the portfolio."""
-        return float(self._deposits_total)
 
     def sell(self, symbol: str, cost: float, quantity: float, /) -> float:
         """Sell ``quantity`` of security with `symbol` for ``cost``.
@@ -340,6 +335,11 @@ class Portfolio:
         self._cash += Decimal(cost) * Decimal(quantity)
         return float(current_value)
 
+    @property
+    def total_deposits(self) -> float:
+        """Total cash deposited since starting the portfolio."""
+        return float(self._total_deposits)
+
     def total_dollar_change(self, costs: dict[str, float], /) -> float:
         """Compute the total dollar change relative to the total
         deposits made into the portfolio.
@@ -359,7 +359,7 @@ class Portfolio:
             -50.0
 
         """
-        return float(Decimal(self.total_dollar_value(costs)) - self._deposits_total)
+        return float(Decimal(self.total_dollar_value(costs)) - self._total_deposits)
 
     def total_dollar_value(self, costs: dict[str, float], /) -> float:
         """Compute the total dollar value of the portfolio.
@@ -406,7 +406,7 @@ class Portfolio:
 
         """
         return float(
-            Decimal(self.total_dollar_value(costs)).ln() - self._deposits_total.ln()
+            Decimal(self.total_dollar_value(costs)).ln() - self._total_deposits.ln()
         )
 
     def total_percent_change(self, costs: dict[str, float], /) -> float:
@@ -430,8 +430,13 @@ class Portfolio:
 
         """
         return float(
-            (Decimal(self.total_dollar_value(costs)) / self._deposits_total) - 1
+            (Decimal(self.total_dollar_value(costs)) / self._total_deposits) - 1
         )
+
+    @property
+    def total_withdrawals(self) -> float:
+        """Total cash withdrawn since starting the portfolio."""
+        return float(self._total_withdrawals)
 
     def withdraw(self, cash: float, /) -> float:
         """Withdraw cash from the portfolio.
@@ -457,10 +462,5 @@ class Portfolio:
         if self._cash < exact_cash:
             raise ValueError("Not enough cash to withdraw.")
         self._cash -= exact_cash
-        self._withdrawals_total += exact_cash
+        self._total_withdrawals += exact_cash
         return float(self._cash)
-
-    @property
-    def withdraws_total(self) -> float:
-        """Total cash withdrawn since starting the portfolio."""
-        return float(self._withdrawals_total)

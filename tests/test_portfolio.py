@@ -22,7 +22,7 @@ def test_portfolio_buy(portfolio: Portfolio, position: Position) -> None:
     portfolio.buy("TEST", INITIAL_COST, INITIAL_QUANTITY)
     assert portfolio.cash == (INITIAL_CASH - (INITIAL_COST * INITIAL_QUANTITY))
     assert portfolio["TEST"] == position
-    assert portfolio["TEST"].cost_basis_total == position.cost_basis_total
+    assert portfolio["TEST"].total_cost_basis == position.total_cost_basis
     assert portfolio["TEST"].quantity == position.quantity
 
 
@@ -53,32 +53,32 @@ def test_portfolio_total_percent_change(portfolio: Portfolio) -> None:
 
 def test_position_buy(position: Position) -> None:
     assert position.average_cost_basis == INITIAL_COST
-    assert position.cost_basis_total == (INITIAL_COST * INITIAL_QUANTITY)
+    assert position.total_cost_basis == (INITIAL_COST * INITIAL_QUANTITY)
     position.buy(CHANGE_MULTIPLE * INITIAL_COST, INITIAL_QUANTITY)
     assert position.average_cost_basis == (
         INITIAL_COST - INITIAL_COST * (CHANGE_MULTIPLE / 2)
     )
-    assert position.cost_basis_total == (
+    assert position.total_cost_basis == (
         (1 + CHANGE_MULTIPLE) * INITIAL_COST * INITIAL_QUANTITY
     )
 
 
 def test_position_sell(position: Position) -> None:
     assert position.average_cost_basis == INITIAL_COST
-    assert position.cost_basis_total == (INITIAL_COST * INITIAL_QUANTITY)
+    assert position.total_cost_basis == (INITIAL_COST * INITIAL_QUANTITY)
     position.sell(
         CHANGE_MULTIPLE * INITIAL_COST,
         CHANGE_MULTIPLE * INITIAL_QUANTITY,
     )
     assert position.average_cost_basis == INITIAL_COST
-    assert position.cost_basis_total == (
+    assert position.total_cost_basis == (
         (1 - CHANGE_MULTIPLE) * INITIAL_COST * INITIAL_QUANTITY
     )
 
 
 def test_position_total_dollar_change(position: Position) -> None:
     assert position.average_cost_basis == INITIAL_COST
-    assert position.cost_basis_total == (INITIAL_COST * INITIAL_QUANTITY)
+    assert position.total_cost_basis == (INITIAL_COST * INITIAL_QUANTITY)
     assert (
         position.total_dollar_change(CHANGE_MULTIPLE * INITIAL_COST)
         == -CHANGE_MULTIPLE * position.average_cost_basis * position.quantity
@@ -87,7 +87,7 @@ def test_position_total_dollar_change(position: Position) -> None:
 
 def test_position_total_percent_change(position: Position) -> None:
     assert position.average_cost_basis == INITIAL_COST
-    assert position.cost_basis_total == (INITIAL_COST * INITIAL_QUANTITY)
+    assert position.total_cost_basis == (INITIAL_COST * INITIAL_QUANTITY)
     assert (
         position.total_percent_change(CHANGE_MULTIPLE * INITIAL_COST)
         == -CHANGE_MULTIPLE
