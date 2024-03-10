@@ -78,7 +78,7 @@ class Position:
             >>> pos = Position(100.0, 1)
             >>> pos.buy(50.0, 1)
             50.0
-            >>> pos.cost_basis_total
+            >>> pos.total_cost_basis
             150.0
             >>> pos.average_cost_basis
             75.0
@@ -117,7 +117,7 @@ class Position:
             >>> pos = Position(100.0, 2)
             >>> pos.sell(50.0, 1)
             50.0
-            >>> pos.cost_basis_total
+            >>> pos.total_cost_basis
             100.0
             >>> pos.average_cost_basis
             100.0
@@ -268,7 +268,7 @@ class Portfolio:
             >>> port.buy("AAPL", 100.0, 1)
             100.0
             >>> pos = port["AAPL"]
-            >>> pos.cost_basis_total
+            >>> pos.total_cost_basis
             100.0
             >>> pos.average_cost_basis
             100.0
@@ -321,7 +321,7 @@ class Portfolio:
             >>> port.sell("AAPL", 50.0, 1)
             50.0
             >>> pos = port["AAPL"]
-            >>> pos.cost_basis_total
+            >>> pos.total_cost_basis
             100.0
             >>> pos.average_cost_basis
             100.0
@@ -379,11 +379,11 @@ class Portfolio:
             950.0
 
         """
-        dollar_value_total = self._cash
+        total_dollar_value = self._cash
         for symbol, cost in costs.items():
             if symbol in self.positions:
-                dollar_value_total += Decimal(cost) * self.positions[symbol]._quantity
-        return float(dollar_value_total)
+                total_dollar_value += Decimal(cost) * self.positions[symbol]._quantity
+        return float(total_dollar_value)
 
     def total_log_change(self, costs: dict[str, float], /) -> float:
         """Compute the total log change relative to the total
