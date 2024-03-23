@@ -1003,11 +1003,29 @@ def get_unique_filings(
 
     """
     mask = df["form"] == form
+    end = pd.DatetimeIndex(df["end"])
+    filed = pd.DatetimeIndex(df["filed"])
+    filing_delay = filed - end
+    # Make sure filings occurs within 90 days of the reporting end date.
+    # Helps ensure each filing is the first filing and not an amendment.
+    mask &= filing_delay.days <= 90
+    # Not all filings contain a start date, but it can be helpful to
+    # use the start date to ensure the filing corresponds to the time
+    # period we care about.
+    if "start" in df:
+        start = pd.DatetimeIndex(df["start"])
+        start_to_end = end - start
     match form:
         case "10-K":
             mask &= df["fp"] == "FY"
+            # Make sure the reporting frame is close to a year.
+            if "start" in df:
+                mask &= (350 <= start_to_end.days) & (start_to_end.days <= 380)
         case "10-Q":
             mask &= df["fp"].str.startswith("Q")
+            # Make sure the reporting frame is close to a quarter.
+            if "start" in df:
+                mask &= (75 <= start_to_end.days) & (start_to_end.days <= 105)
     if units:
         mask &= df["units"] == units
     df = df[mask]
