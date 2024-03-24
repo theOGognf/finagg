@@ -611,7 +611,7 @@ class Annual:
     @classmethod
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize annual features columns."""
-        df = api.get_financial_ratios(df)
+        df = api.compute_financial_ratios(df)
         df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
         df = utils.resolve_func_cols(sql.annual, df, drop=True, inplace=True)
         df.columns = df.columns.rename(None)
@@ -646,9 +646,10 @@ class Annual:
             2014 2014-10-27            0.161871                   0.239927                                  1.902394 ...
 
         """
-        df = api.company_concept.join_get(
+        df = api.company_concept.get_multiple_original(
             api.popular_concepts, ticker=ticker, form="10-K", start=start, end=end
         )
+        df = api.group_and_pivot_filings(df, form="10-K")
         return cls._normalize(df)
 
     @classmethod
