@@ -206,7 +206,7 @@ class CompanyConcept(API):
         user_agent: None | str = None,
     ) -> pd.DataFrame:
         """Return original (not amended) XBRL disclosures for a single company
-        and filing form from a set of company concepts.
+        using a set of company concepts.
 
         Args:
             concepts: Company concepts to retrieve.
