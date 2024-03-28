@@ -245,10 +245,10 @@ However, the SEC EDGAR company concept API implementation returns all the
 earnings per share publications for Microsoft, including amendments. We may
 not necessarily care about amendments because we may be building strategies
 or models that use *current* data and not *future* data. Fortunately, **finagg**
-provides :meth:`finagg.sec.api.get_unique_filings` to further select
+provides :meth:`finagg.sec.api.filter_original_filings` to further select
 original financial publication data from specific forms:
 
->>> finagg.sec.api.get_unique_filings(df, form="10-Q").head(5)  # doctest: +SKIP
+>>> finagg.sec.api.filter_original_filings(df, form="10-Q").head(5)  # doctest: +SKIP
      fy  fp                    tag       start         end  value ...
 0  2010  Q1  EarningsPerShareBasic  2008-07-01  2008-09-30   0.48 ...
 1  2010  Q2  EarningsPerShareBasic  2008-07-01  2008-12-31   0.95 ...

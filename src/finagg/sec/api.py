@@ -194,29 +194,27 @@ class CompanyConcept(API):
         return results.rename(columns={"entityName": "entity", "val": "value"})
 
     @classmethod
-    def join_get(
+    def get_multiple_original(
         cls,
         concepts: list[Concept],
         *,
         cik: None | str = None,
         ticker: None | str = None,
-        form: str = "10-Q",
+        form: None | str = None,
         start: None | str = None,
         end: None | str = None,
         user_agent: None | str = None,
     ) -> pd.DataFrame:
-        """Return unique XBRL disclosures for a single company and filing
-        form from a set of company concepts.
-
-        Tags are also joined and pivoted such that each tag has its own
-        column. Gaps in reporting periods are forward-filled.
+        """Return original (not amended) XBRL disclosures for a single company
+        using a set of company concepts.
 
         Args:
             concepts: Company concepts to retrieve.
             cik: Company SEC CIK. Mutually exclusive with ``ticker``.
             ticker: Company ticker. Mutually exclusive with ``cik``.
             form: SEC filing form type to include. ``"10-Q"`` is for quarterly
-                filing forms and ``"10-K"`` is for annual filing forms.
+                filing forms and ``"10-K"`` is for annual filing forms. Ignored
+                if left ``None``.
             start: The start date of the observation period. Defaults to the
                 first recorded date.
             end: The end date of the observation period. Defaults to the
@@ -228,17 +226,16 @@ class CompanyConcept(API):
             Pivoted dataframe with a tag per column.
 
         Examples:
-            >>> finagg.sec.api.company_concept.join_get(
+            >>> finagg.sec.api.company_concept.get_multiple_original(
             ...     finagg.sec.api.popular_concepts,
             ...     ticker="AAPL",
             ... ).head(5)  # doctest: +SKIP
-                                      Assets  AssetsCurrent  CommonStockSharesOutstanding ...
-            fy   fp filed                                                                 ...
-            2009 Q3 2009-07-22  3.957200e+10   3.231100e+10                   888325973.0 ...
-            2010 Q1 2010-01-25  4.750100e+10   3.155500e+10                   899805500.0 ...
-                 Q2 2010-04-21  4.750100e+10   3.155500e+10                   899805500.0 ...
-                 Q3 2010-07-21  4.750100e+10   3.155500e+10                   899805500.0 ...
-            2011 Q1 2011-01-19  7.518300e+10   4.167800e+10                   915970050.0 ...
+                fy  fp     tag         end         value  ...
+            0  2009  Q3  Assets  2009-06-27  4.814000e+10 ...
+            1  2010  Q1  Assets  2009-12-26  5.392600e+10 ...
+            2  2010  Q2  Assets  2010-03-27  5.705700e+10 ...
+            3  2010  Q3  Assets  2010-06-26  6.472500e+10 ...
+            4  2011  Q1  Assets  2010-12-25  8.674200e+10 ...
 
         """
         start = start or "1776-07-04"
@@ -256,11 +253,10 @@ class CompanyConcept(API):
                 units=units,
                 user_agent=user_agent,
             )
-            df = get_unique_filings(df, form=form, units=units)
+            df = filter_original_filings(df, form=form, units=units)
             df = df[(df["filed"] >= start) & (df["filed"] <= end)]
             dfs.append(df)
         df = pd.concat(dfs)
-        df = join_filings(df, form=form)
         return df
 
 
@@ -364,7 +360,7 @@ class CompanyFacts(API):
         url = cls.url.format(cik=cik)
         response = _get(url, user_agent=user_agent)
         content = response.json()
-        df = _parse_facts(content)
+        df = _parse_company_facts(content)
         df["cik"] = cik
         return df
 
@@ -619,7 +615,7 @@ class Submissions(API):
         df.columns = map(utils.snake_case, df.columns)  # type: ignore
         df.rename(columns={"accession_number": "accn"})
         df["cik"] = cik
-        metadata = _parse_metadata(content)
+        metadata = _parse_submission_metadata(content)
         metadata["cik"] = cik
         metadata["ticker"] = str(ticker)
         return {"metadata": metadata, "filings": df}
@@ -827,6 +823,107 @@ def _get(
     return response
 
 
+def compute_financial_ratios(df: pd.DataFrame, /) -> pd.DataFrame:
+    """Compute financial ratios in-place for a dataframe using XBRL financial
+    tags.
+
+    Args:
+        df: Dataframe with common XBRL financial tags (e.g., "Assets",
+            "Liabilities", etc.).
+
+    Returns:
+        ``df`` but with additional columns that're normalized financial ratios.
+
+    """
+    df["AssetCoverageRatio"] = (df["Assets"] - df["LiabilitiesCurrent"]) / df[
+        "Liabilities"
+    ]
+    df["BookRatio"] = (df["Assets"] - df["Liabilities"]) / df[
+        "CommonStockSharesOutstanding"
+    ]
+    df["DebtEquityRatio"] = df["Liabilities"] / df["StockholdersEquity"]
+    df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
+        "LiabilitiesCurrent"
+    ]
+    df["ReturnOnAssets"] = df["NetIncomeLoss"] / df["Assets"]
+    df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
+    df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
+    return df
+
+
+def filter_original_filings(
+    df: pd.DataFrame, /, *, form: None | str = None, units: None | str = None
+) -> pd.DataFrame:
+    """Get all original filing rows as determined by the filing date and
+    tag for a period.
+
+    Args:
+        df: Dataframe without mixed original and amendment rows.
+        form: Only keep rows with form type ``form``. Most popular choices
+            include ``"10-K"`` for annual and ``"10-Q"`` for quarterly.
+            This parameter is ignored if left ``None``.
+        units: Only keep rows with units ``units`` if not ``None``.
+
+    Returns:
+        Dataframe with rows that only correspond to original filings.
+
+    Examples:
+        Only get a company's original quarterly earnings-per-share filings.
+
+        >>> df = finagg.sec.api.company_concept.get(
+        ...     "EarningsPerShareBasic",
+        ...     ticker="AAPL",
+        ...     taxonomy="us-gaap",
+        ...     units="USD/shares",
+        ... )
+        >>> finagg.sec.api.filter_original_filings(
+        ...     df,
+        ...     form="10-Q",
+        ...     units="USD/shares"
+        ... ).head(5)  # doctest: +SKIP
+             fy  fp  ...
+        0  2009  Q3  ...
+        1  2010  Q1  ...
+        2  2010  Q2  ...
+        3  2010  Q3  ...
+        4  2011  Q1  ...
+
+    """
+    end = pd.DatetimeIndex(df["end"])
+    filed = pd.DatetimeIndex(df["filed"])
+    filing_delay = filed - end
+    # Make sure filings occurs within 90 days of the reporting end date.
+    # Helps ensure each filing is the first filing and not an amendment.
+    mask = filing_delay.days <= 90
+    if form:
+        mask &= df["form"] == form
+        # Not all filings contain a start date, but it can be helpful to
+        # use the start date to ensure the filing corresponds to the time
+        # period we care about.
+        if "start" in df:
+            start = pd.DatetimeIndex(df["start"])
+            start_to_end = end - start
+        match form:
+            case "10-K":
+                mask &= df["fp"] == "FY"
+                # Make sure the reporting frame is close to a year.
+                if "start" in df:
+                    mask &= (350 <= start_to_end.days) & (start_to_end.days <= 380)
+            case "10-Q":
+                mask &= df["fp"].str.startswith("Q")
+                # Make sure the reporting frame is close to a quarter.
+                if "start" in df:
+                    mask &= (75 <= start_to_end.days) & (start_to_end.days <= 105)
+    if units:
+        mask &= df["units"] == units
+    df = df[mask]
+    return (
+        df.sort_values(["fy", "fp", "filed"])
+        .groupby(["fy", "fp", "tag"], as_index=False)
+        .first()
+    )
+
+
 def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
     """Return a company's SEC CIK from its ticker.
 
@@ -853,34 +950,6 @@ def get_cik(ticker: str, /, *, user_agent: None | str = None) -> str:
             _tickers_to_cik[items["ticker"]] = normalized_cik
             _cik_to_tickers[normalized_cik] = items["ticker"]
     return _tickers_to_cik[ticker.upper()]
-
-
-def get_financial_ratios(df: pd.DataFrame, /) -> pd.DataFrame:
-    """Compute financial ratios in-place for a dataframe using XBRL financial
-    tags.
-
-    Args:
-        df: Dataframe with common XBRL financial tags (e.g., "Assets",
-            "Liabilities", etc.).
-
-    Returns:
-        ``df`` but with additional columns that're normalized financial ratios.
-
-    """
-    df["AssetCoverageRatio"] = (df["Assets"] - df["LiabilitiesCurrent"]) / df[
-        "Liabilities"
-    ]
-    df["BookRatio"] = (df["Assets"] - df["Liabilities"]) / df[
-        "CommonStockSharesOutstanding"
-    ]
-    df["DebtEquityRatio"] = df["Liabilities"] / df["StockholdersEquity"]
-    df["QuickRatio"] = (df["AssetsCurrent"] - df["InventoryNet"]) / df[
-        "LiabilitiesCurrent"
-    ]
-    df["ReturnOnAssets"] = df["NetIncomeLoss"] / df["Assets"]
-    df["ReturnOnEquity"] = df["NetIncomeLoss"] / df["StockholdersEquity"]
-    df["WorkingCapitalRatio"] = df["AssetsCurrent"] / df["LiabilitiesCurrent"]
-    return df
 
 
 def get_ticker(cik: str, /, *, user_agent: None | str = None) -> str:
@@ -965,103 +1034,36 @@ def get_ticker_set(*, user_agent: None | str = None) -> set[str]:
     return tickers
 
 
-def get_unique_filings(
-    df: pd.DataFrame, /, *, form: str = "10-Q", units: None | str = None
+def group_and_pivot_filings(
+    df: pd.DataFrame, /, *, form: None | str = None
 ) -> pd.DataFrame:
-    """Get all unique rows as determined by the filing date and tag for a
-    period.
-
-    Args:
-        df: Dataframe without unique rows.
-        form: Only keep rows with form type ``form``. Most popular choices
-            include ``"10-K"`` for annual and ``"10-Q"`` for quarterly.
-        units: Only keep rows with units ``units`` if not ``None``.
-
-    Returns:
-        Dataframe with unique rows.
-
-    Examples:
-        Only get a company's original quarterly earnings-per-share filings.
-
-        >>> df = finagg.sec.api.company_concept.get(
-        ...     "EarningsPerShareBasic",
-        ...     ticker="AAPL",
-        ...     taxonomy="us-gaap",
-        ...     units="USD/shares",
-        ... )
-        >>> finagg.sec.api.get_unique_filings(
-        ...     df,
-        ...     form="10-Q",
-        ...     units="USD/shares"
-        ... ).head(5)  # doctest: +SKIP
-             fy  fp  ...
-        0  2009  Q3  ...
-        1  2010  Q1  ...
-        2  2010  Q2  ...
-        3  2010  Q3  ...
-        4  2011  Q1  ...
-
-    """
-    mask = df["form"] == form
-    end = pd.DatetimeIndex(df["end"])
-    filed = pd.DatetimeIndex(df["filed"])
-    filing_delay = filed - end
-    # Make sure filings occurs within 90 days of the reporting end date.
-    # Helps ensure each filing is the first filing and not an amendment.
-    mask &= filing_delay.days <= 90
-    # Not all filings contain a start date, but it can be helpful to
-    # use the start date to ensure the filing corresponds to the time
-    # period we care about.
-    if "start" in df:
-        start = pd.DatetimeIndex(df["start"])
-        start_to_end = end - start
-    match form:
-        case "10-K":
-            mask &= df["fp"] == "FY"
-            # Make sure the reporting frame is close to a year.
-            if "start" in df:
-                mask &= (350 <= start_to_end.days) & (start_to_end.days <= 380)
-        case "10-Q":
-            mask &= df["fp"].str.startswith("Q")
-            # Make sure the reporting frame is close to a quarter.
-            if "start" in df:
-                mask &= (75 <= start_to_end.days) & (start_to_end.days <= 105)
-    if units:
-        mask &= df["units"] == units
-    df = df[mask]
-    return (
-        df.sort_values(["fy", "fp", "filed"])
-        .groupby(["fy", "fp", "tag"], as_index=False)
-        .first()
-    )
-
-
-def join_filings(df: pd.DataFrame, /, *, form: str = "10-Q") -> pd.DataFrame:
-    """Helper for joining filings into a pivoted dataframe such that each
+    """Helper for grouping filings into a pivoted dataframe such that each
     tag has its own column.
 
-    Tags are joined according to fiscal year and fiscal period. The newest
+    Tags are grouped according to fiscal year and fiscal period. The newest
     filing date is used when tags have different filing dates for the same
     fiscal year and fiscal period. Tags are forward-filled to fill gaps
     in filings.
 
     Args:
         df: "Melted" dataframe where each filing is a row.
-        form: Type of form to join. ``"10-K"`` sets the index to the fiscal
+        form: Type of form to group. ``"10-K"`` sets the index to the fiscal
             year and filing date whereas ``"10-Q"`` sets the index to the
-            fiscal year, fiscal period, and filing date.
+            fiscal year, fiscal period, and filing date. If not provided,
+            the form type is chosen by inspecting the first element of the
+            ``"form"`` column.
 
     Returns:
         A pivoted dataframe where each column is a tag.
 
     Examples:
         Get all XBRL filings from a company, unintelligently select the first
-        unique filings for each XBRL tag, and then join all filings into
+        unique filings for each XBRL tag, and then group all filings into
         a pivoted table.
 
         >>> df = finagg.sec.api.company_facts.get(ticker="AAPL")
-        >>> df = finagg.sec.api.get_unique_filings(df, form="10-K")
-        >>> finagg.sec.api.join_filings(df, form="10-K")  # doctest: +SKIP
+        >>> df = finagg.sec.api.filter_original_filings(df, form="10-K")
+        >>> finagg.sec.api.group_and_pivot_filings(df, form="10-K")  # doctest: +SKIP
                          AccountsPayableCurrent  AccountsReceivableNetCurrent ...
         fy   filed                                                            ...
         2009 2009-10-27            5.520000e+09                  2.422000e+09 ...
@@ -1071,6 +1073,8 @@ def join_filings(df: pd.DataFrame, /, *, form: str = "10-Q") -> pd.DataFrame:
         2013 2013-10-30            2.117500e+10                  1.093000e+10 ...
 
     """
+    if form is None:
+        form = df.iloc[0]["form"]
     match form:
         case "10-K":
             df = df.drop(columns=["fp"]).set_index(["fy"]).sort_index()
@@ -1092,7 +1096,7 @@ def join_filings(df: pd.DataFrame, /, *, form: str = "10-Q") -> pd.DataFrame:
     return df
 
 
-def _parse_facts(content: dict[str, Any], /) -> pd.DataFrame:
+def _parse_company_facts(content: dict[str, Any], /) -> pd.DataFrame:
     """Helper for parsing company facts.
 
     This function is only defined to make parsing company
@@ -1126,7 +1130,7 @@ def _parse_facts(content: dict[str, Any], /) -> pd.DataFrame:
     )
 
 
-def _parse_metadata(content: dict[str, Any], /) -> dict[str, Any]:
+def _parse_submission_metadata(content: dict[str, Any], /) -> dict[str, Any]:
     """Helper for parsing submission metadata.
 
     This function is only defined to make parsing submission

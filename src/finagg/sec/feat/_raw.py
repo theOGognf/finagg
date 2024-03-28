@@ -219,7 +219,7 @@ class Submissions:
                 ticker = api.get_ticker(cik)
                 data = zipfile.read(f)
                 content = json.loads(data)
-                metadata = api._parse_metadata(content)
+                metadata = api._parse_submission_metadata(content)
                 metadata["cik"] = cik
                 metadata["ticker"] = ticker
                 df = pd.DataFrame(metadata, index=[0])
@@ -283,7 +283,7 @@ class Tags:
         data = zipfile.read(filename)
         content = json.loads(data)
         try:
-            df = api._parse_facts(content)
+            df = api._parse_company_facts(content)
         except:
             return filename, pd.DataFrame()
         df["cik"] = cik
@@ -294,7 +294,9 @@ class Tags:
                 units = concept["units"]
                 df_tag = df[(df["tag"] == tag) & (df["taxonomy"] == taxonomy)]
                 for form in ("10-K", "10-Q"):
-                    df_unique = api.get_unique_filings(df_tag, form=form, units=units)
+                    df_unique = api.filter_original_filings(
+                        df_tag, form=form, units=units
+                    )
                     if len(df_unique.index):
                         dfs.append(df_unique)
             except:
@@ -496,7 +498,9 @@ class Tags:
                         units=units,
                     )
                     for form in ("10-K", "10-Q"):
-                        df_unique = api.get_unique_filings(df, form=form, units=units)
+                        df_unique = api.filter_original_filings(
+                            df, form=form, units=units
+                        )
                         rowcount = len(df_unique.index)
                         if rowcount:
                             cls.to_raw(df_unique, engine=engine)
@@ -669,7 +673,7 @@ class Tags:
             )
         if not len(df.index):
             raise NoResultFound(f"No rows found for {ticker}.")
-        df = api.join_filings(df, form=form)
+        df = api.group_and_pivot_filings(df, form=form)
         for tag in tags:
             if tag not in df.columns:
                 raise NoResultFound(f"No {tag} rows found for {ticker}.")
