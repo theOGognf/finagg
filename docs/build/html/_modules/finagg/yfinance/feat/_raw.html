@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.yfinance.feat._raw &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script src="../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.yfinance.feat._raw</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.yfinance.feat._raw</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Raw features from Yahoo! Finance sources.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">sqlalchemy</span> <span class="k">as</span> <span class="nn">sa</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.exc</span> <span class="kn">import</span> <span class="n">NoResultFound</span><span class="p">,</span> <span class="n">NoSuchTableError</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">...</span> <span class="kn">import</span> <span class="n">backend</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">api</span><span class="p">,</span> <span class="n">sql</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> | </span><span class="si">%(levelname)s</span><span class="s2"> | </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span>
+<span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Prices"><a class="viewcode-back" href="../../../../api/finagg.yfinance.feat.html#finagg.yfinance.feat.Prices">[docs]</a><span class="k">class</span> <span class="nc">Prices</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a single company&#39;s daily stock history as-is from raw Yahoo! Finance</span>
+<span class="sd">    data.</span>
+
+<span class="sd">    The module variable :data:`finagg.yfinance.feat.prices` is an instance of</span>
+<span class="sd">    this feature set implementation and is the most popular interface for</span>
+<span class="sd">    calling feature methods.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_install_worker</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="kc">None</span> <span class="o">|</span> <span class="ne">Exception</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper for installing data from the Yahoo! Finance API using</span>
+<span class="sd">        multiprocessing.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ticker</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ticker</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">e</span><span class="p">,</span> <span class="n">ticker</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ticker</span><span class="p">,</span> <span class="n">df</span>
+
+<div class="viewcode-block" id="Prices.from_raw"><a class="viewcode-back" href="../../../../api/finagg.yfinance.feat.html#finagg.yfinance.feat.Prices.from_raw">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_raw</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a single company&#39;s daily stock history as-is from raw</span>
+<span class="sd">        Yahoo! Finance SQL tables.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker.</span>
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.backend.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing the company&#39;s daily stock history</span>
+<span class="sd">            across the specified period.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `NoResultFound`: If there are no rows for ``ticker`` in the raw</span>
+<span class="sd">                SQL table.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.yfinance.feat.prices.from_raw(&quot;AAPL&quot;).head(5)  # doctest: +SKIP</span>
+<span class="sd">                          open    high     low   close      volume</span>
+<span class="sd">            date</span>
+<span class="sd">            1980-12-12  0.0997  0.1002  0.0997  0.0997  4.6903e+08</span>
+<span class="sd">            1980-12-15  0.0950  0.0950  0.0945  0.0945  1.7588e+08</span>
+<span class="sd">            1980-12-16  0.0880  0.0880  0.0876  0.0876  1.0573e+08</span>
+<span class="sd">            1980-12-17  0.0897  0.0902  0.0897  0.0897  8.6442e+07</span>
+<span class="sd">            1980-12-18  0.0924  0.0928  0.0924  0.0924  7.3450e+07</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">backend</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">select</span><span class="p">()</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span> <span class="o">==</span> <span class="n">ticker</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">date</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">date</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No rows found for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;ticker&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Prices.get_ticker_set"><a class="viewcode-back" href="../../../../api/finagg.yfinance.feat.html#finagg.yfinance.feat.Prices.get_ticker_set">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_ticker_set</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">lb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all unique ticker symbols in the raw SQL tables that have at least</span>
+<span class="sd">        ``lb`` rows.</span>
+
+<span class="sd">        This method is convenient for accessing the tickers that have raw SQL data</span>
+<span class="sd">        associated with them so the data associated with those tickers can be</span>
+<span class="sd">        further refined. A common pattern is to use this method and other</span>
+<span class="sd">        ``get_ticker_set`` methods (such as those found in :mod:`finagg.yfinance.feat`)</span>
+<span class="sd">        to determine which tickers are missing data from other tables or features.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lb: Lower bound number of rows that a company must have for its ticker</span>
+<span class="sd">                to be included in the set returned by this method.</span>
+<span class="sd">            start: The start date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the first recorded date.</span>
+<span class="sd">            end: The end date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.backend.engine`.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; &quot;AAPL&quot; in finagg.yfinance.feat.prices.get_ticker_set()  # doctest: +SKIP</span>
+<span class="sd">            True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">backend</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">tickers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">date</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">date</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">having</span><span class="p">(</span><span class="n">sa</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">date</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">lb</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">scalars</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">tickers</span></div>
+
+<div class="viewcode-block" id="Prices.install"><a class="viewcode-back" href="../../../../api/finagg.yfinance.feat.html#finagg.yfinance.feat.Prices.install">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">install</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">tickers</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">processes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">recreate_tables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Install data associated with ``tickers`` by pulling data from the</span>
+<span class="sd">        API, and then writing the data to the raw prices SQL table.</span>
+
+<span class="sd">        Tables associated with this method are created if they don&#39;t already</span>
+<span class="sd">        exist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tickers: Set of tickers to install features for. Defaults to all</span>
+<span class="sd">                the tickers from :meth:`finagg.indices.api.get_ticker_set`.</span>
+<span class="sd">            processes: Number of background processes to use when installing</span>
+<span class="sd">                data.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.backend.engine`.</span>
+<span class="sd">            recreate_tables: Whether to drop and recreate tables, wiping all</span>
+<span class="sd">                previously installed data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the feature&#39;s raw SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tickers</span> <span class="o">=</span> <span class="n">tickers</span> <span class="ow">or</span> <span class="n">indices</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_ticker_set</span><span class="p">()</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">backend</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="n">recreate_tables</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">checkfirst</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+        <span class="n">total_rows</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">exc</span><span class="p">,</span> <span class="n">ticker</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+                <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">_install_worker</span><span class="p">,</span> <span class="p">[(</span><span class="n">ticker</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tickers</span><span class="p">]</span>
+                <span class="p">),</span>
+                <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Installing raw Yahoo! Finance stock data&quot;</span><span class="p">,</span>
+                <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">tickers</span><span class="p">),</span>
+                <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">exc</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">rowcount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">rowcount</span><span class="p">:</span>
+                        <span class="bp">cls</span><span class="o">.</span><span class="n">to_raw</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+                        <span class="n">total_rows</span> <span class="o">+=</span> <span class="n">rowcount</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rowcount</span><span class="si">}</span><span class="s2"> rows inserted for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2"> due to missing stock data&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_rows</span></div>
+
+<div class="viewcode-block" id="Prices.to_raw"><a class="viewcode-back" href="../../../../api/finagg.yfinance.feat.html#finagg.yfinance.feat.Prices.to_raw">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">to_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the given dataframe to the raw feature table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            df: Dataframe to store as rows in a local SQL table</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.backend.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">backend</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">insert</span><span class="p">(),</span> <span class="n">df</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">))</span>  <span class="c1"># type: ignore[arg-type]</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Prices.update"><a class="viewcode-back" href="../../../../api/finagg.yfinance.feat.html#finagg.yfinance.feat.Prices.update">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">tickers</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">processes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update data associated with ``tickers`` by pulling data from the</span>
+<span class="sd">        API, and then writing the data to the raw prices SQL table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tickers: Set of tickers to install features for. Defaults to all</span>
+<span class="sd">                the tickers from :meth:`finagg.yfinance.feat.Prices.get_ticker_set`.</span>
+<span class="sd">            processes: Number of background processes to use when installing</span>
+<span class="sd">                data.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.backend.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the feature&#39;s raw SQL table.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `NoSuchTableError`: If the table associated with this feature</span>
+<span class="sd">                set update does not exist.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tickers</span> <span class="o">=</span> <span class="n">tickers</span> <span class="ow">or</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_ticker_set</span><span class="p">()</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">backend</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NoSuchTableError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> table does not exist.&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">date</span><span class="p">))</span>
+                <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">tickers</span><span class="p">))</span>
+                <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">prices</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">updates</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ticker</span><span class="p">,</span> <span class="n">start</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">start_plus_one</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">updates</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ticker</span><span class="p">,</span> <span class="n">start_plus_one</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)))</span>
+
+        <span class="n">total_rows</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">exc</span><span class="p">,</span> <span class="n">ticker</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+                <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_install_worker</span><span class="p">,</span> <span class="n">updates</span><span class="p">),</span>
+                <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Updating raw Yahoo! Finance stock data&quot;</span><span class="p">,</span>
+                <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">updates</span><span class="p">),</span>
+                <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">exc</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">rowcount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">rowcount</span><span class="p">:</span>
+                        <span class="bp">cls</span><span class="o">.</span><span class="n">to_raw</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+                        <span class="n">total_rows</span> <span class="o">+=</span> <span class="n">rowcount</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rowcount</span><span class="si">}</span><span class="s2"> rows inserted for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2"> due to missing stock data&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_rows</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

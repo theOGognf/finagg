@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuration" href="configuration.html" />
+    <link rel="prev" title="finagg: Financial Aggregation for Python" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installing-from-pypi">Installing from PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-from-github">Installing from GitHub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-datasets">Installing Datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#updating-for-faster-subsequent-installations">Updating for Faster Subsequent Installations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
+<section id="installing-from-pypi">
+<h2>Installing from PyPI<a class="headerlink" href="#installing-from-pypi" title="Permalink to this heading"></a></h2>
+<p>Install with pip for the latest stable version.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install finagg</span>
+</pre></div>
+</div>
+</section>
+<section id="installing-from-github">
+<h2>Installing from GitHub<a class="headerlink" href="#installing-from-github" title="Permalink to this heading"></a></h2>
+<p>Install from GitHub for the latest unstable version.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">git clone https://github.com/theOGognf/finagg.git</span>
+<span class="go">pip install ./finagg/</span>
+</pre></div>
+</div>
+</section>
+<section id="installing-datasets">
+<h2>Installing Datasets<a class="headerlink" href="#installing-datasets" title="Permalink to this heading"></a></h2>
+<p>Optionally install the recommended datasets (economic data, company
+financials, stock histories, etc.) from 3rd party APIs into a local SQL
+database.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">finagg install -ss economic -ts indices -z -r</span>
+</pre></div>
+</div>
+<p>The installation will point you where to get free API keys for each API that
+requires one and will write those API keys to a local <code class="docutils literal notranslate"><span class="pre">.env</span></code> file for storage.
+<code class="docutils literal notranslate"><span class="pre">finagg</span> <span class="pre">install</span></code> is effectively an alias for installing the recommended
+datasets from each 3rd party API individually. <code class="docutils literal notranslate"><span class="pre">finagg</span> <span class="pre">install</span></code> is equivalent
+to:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">finagg bea install</span>
+<span class="go">finagg fred install -a ...</span>
+<span class="go">finagg indices install -a ...</span>
+<span class="go">finagg sec install -a ...</span>
+<span class="go">finagg yfinance install -a ...</span>
+<span class="go">finagg fundam install -a ...</span>
+</pre></div>
+</div>
+<p>Installation will enable offline usage of aggregated and refined financial
+features without internet access or API keys (the recommended way to explore
+data uninterrupted). See the <a class="reference internal" href="cli.html"><span class="doc">CLI docs</span></a> for more <strong>finagg</strong> CLI
+details.</p>
+</section>
+<section id="updating-for-faster-subsequent-installations">
+<h2>Updating for Faster Subsequent Installations<a class="headerlink" href="#updating-for-faster-subsequent-installations" title="Permalink to this heading"></a></h2>
+<p>Depending on the number of tickers you’re aggregating data for, installation
+can take up to several hours. The Yahoo! Finance installation process is usually
+the main bottleneck (extensive stock histories can take a while to pull from APIs
+and can take a while to insert into local databases).</p>
+<p>You can speed up subsequent installations by updating Yahoo! Finance data rather than
+installing from scratch, keeping previously installed data and only installing
+new data. Instead of calling the normal installation CLI, you can instead do something
+like the following:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">finagg yfinance update -a</span>
+<span class="go">finagg install -s yfinance -ss economic -ts indices -z -r</span>
+</pre></div>
+</div>
+<p>This will update the Yahoo! Finance tables and then freshly install all the
+other tables, resulting in a much faster installation.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="finagg: Financial Aggregation for Python" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="configuration.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

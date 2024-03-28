@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg: Financial Aggregation for Python &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">finagg: Financial Aggregation for Python</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="finagg-financial-aggregation-for-python">
+<h1>finagg: Financial Aggregation for Python<a class="headerlink" href="#finagg-financial-aggregation-for-python" title="Permalink to this heading"></a></h1>
+<p><strong>finagg</strong> is a Python package that provides implementations of popular and free
+financial APIs, tools for aggregating historical data from those APIs into SQL
+databases, and tools for transforming aggregated data into features useful for
+analysis and AI/ML.</p>
+<p><strong>finagg</strong> currently supports the following free APIs:</p>
+<ul class="simple">
+<li><p>The Bureau of Economic Analysis <a class="reference external" href="https://apps.bea.gov/api/signup/">(BEA) API</a>. The BEA API provides methods
+for retrieving a subset of economic statistical data as published by the BEA
+along with metadata that describes that economic statistical data.</p></li>
+<li><p>The Federal Reserve Economic Data <a class="reference external" href="https://fred.stlouisfed.org/docs/api/fred/">(FRED) API</a>. The FRED API provides
+methods for retrieving, searching, and describing economic data from a variety
+of sources. The FRED API is one of the most popular APIs in the finance
+industry.</p></li>
+<li><p>The Securities and Exchange Commission’s <a class="reference external" href="https://www.sec.gov/edgar/sec-api-documentation">(SEC) EDGAR API</a>. The SEC EDGAR
+API provides methods for retrieving XBRL data (e.g., earnings per share) from
+financial statements and methods for retrieving SEC filing submission
+histories (e.g., 10-Q/10-K forms). The SEC EDGAR API is one of the few APIs
+that provides historical and current company financial data for free.</p></li>
+</ul>
+<p>Methods for aggregating data from these APIs are organized according to their
+API/subpackage and usage (i.e., <code class="docutils literal notranslate"><span class="pre">finagg.&lt;api/subpackage&gt;.&lt;usage&gt;</span></code>). For
+example, SEC EDGAR API methods are accesible under the subpackage
+<a class="reference internal" href="api/finagg.sec.html#module-finagg.sec.api" title="finagg.sec.api"><code class="xref py py-mod docutils literal notranslate"><span class="pre">finagg.sec.api</span></code></a> (e.g., the SEC company facts API is accessible as
+<a class="reference internal" href="api/finagg.sec.html#finagg.sec.api.company_facts" title="finagg.sec.api.company_facts"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.company_facts</span></code></a>) while features aggregated from the SEC
+EDGAR API are accessible under the fully qualified name <a class="reference internal" href="api/finagg.sec.feat.html#module-finagg.sec.feat" title="finagg.sec.feat"><code class="xref py py-mod docutils literal notranslate"><span class="pre">finagg.sec.feat</span></code></a>
+(e.g., quarterly SEC features are accessible as
+<a class="reference internal" href="api/finagg.sec.feat.html#finagg.sec.feat.quarterly" title="finagg.sec.feat.quarterly"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.feat.quarterly</span></code></a>).</p>
+<section id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading"></a></h2>
+<p>These are just <strong>finagg</strong> usage samples. See the <a class="reference internal" href="api/modules.html"><span class="doc">API docs</span></a>
+for all the supported APIs and features.</p>
+<section id="explore-the-apis-directly">
+<h3>Explore the APIs directly<a class="headerlink" href="#explore-the-apis-directly" title="Permalink to this heading"></a></h3>
+<p><em>These methods require internet access and API keys/user agent declarations.</em></p>
+<p>Getting data from the BEA API.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">bea</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">gdp_by_industry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="p">[</span><span class="mi">2019</span><span class="p">])</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">   table_id freq  year quarter industry                         industry_description ...</span>
+<span class="go">0         1    Q  2019       1       11  Agriculture, forestry, fishing, and hunting ...</span>
+<span class="go">1         1    Q  2019       1    111CA                                        Farms ...</span>
+<span class="go">2         1    Q  2019       1    113FF    Forestry, fishing, and related activities ...</span>
+<span class="go">3         1    Q  2019       1       21                                       Mining ...</span>
+<span class="go">4         1    Q  2019       1      211                       Oil and gas extraction ...</span>
+</pre></div>
+</div>
+<p>Getting data from the FRED API.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">observations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+<span class="gp">... </span>  <span class="s2">&quot;CPIAUCNS&quot;</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="n">realtime_start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="n">realtime_end</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="n">output_type</span><span class="o">=</span><span class="mi">4</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">  realtime_start realtime_end        date  value series_id</span>
+<span class="go">0     1949-04-22   1953-02-26  1949-03-01  169.5  CPIAUCNS</span>
+<span class="go">1     1949-05-23   1953-02-26  1949-04-01  169.7  CPIAUCNS</span>
+<span class="go">2     1949-06-24   1953-02-26  1949-05-01  169.2  CPIAUCNS</span>
+<span class="go">3     1949-07-22   1953-02-26  1949-06-01  169.6  CPIAUCNS</span>
+<span class="go">4     1949-08-26   1953-02-26  1949-07-01  168.5  CPIAUCNS</span>
+</pre></div>
+</div>
+<p>Getting data from the SEC EDGAR API.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">company_facts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">          end        value                  accn    fy  fp    form       filed ...</span>
+<span class="go">0  2009-06-27  895816758.0  0001193125-09-153165  2009  Q3    10-Q  2009-07-22 ...</span>
+<span class="go">1  2009-10-16  900678473.0  0001193125-09-214859  2009  FY    10-K  2009-10-27 ...</span>
+<span class="go">2  2009-10-16  900678473.0  0001193125-10-012091  2009  FY  10-K/A  2010-01-25 ...</span>
+<span class="go">3  2010-01-15  906794589.0  0001193125-10-012085  2010  Q1    10-Q  2010-01-25 ...</span>
+<span class="go">4  2010-04-09  909938383.0  0001193125-10-088957  2010  Q2    10-Q  2010-04-21 ...</span>
+</pre></div>
+</div>
+</section>
+<section id="use-installed-raw-data-for-exploring-the-most-popular-features">
+<h3>Use installed raw data for exploring the most popular features<a class="headerlink" href="#use-installed-raw-data-for-exploring-the-most-popular-features" title="Permalink to this heading"></a></h3>
+<p><em>These methods require internet access, API keys/user agent declarations, and
+downloading and installing raw data through the</em> <code class="docutils literal notranslate"><span class="pre">finagg</span> <span class="pre">install</span></code> <em>or</em>
+<code class="docutils literal notranslate"><span class="pre">finagg</span> <span class="pre">&lt;api/subpackage&gt;</span> <span class="pre">install</span></code> <em>commands.</em></p>
+<p>Getting FRED features.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">from_raw</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            CIVPART  LOG_CHANGE(CPIAUCNS)  LOG_CHANGE(CSUSHPINSA)  FEDFUNDS ...</span>
+<span class="go">date                                                                        ...</span>
+<span class="go">2014-10-06     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-08     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-13     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-15     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-20     62.8                   0.0                     0.0      0.09 ...</span>
+</pre></div>
+</div>
+<p>Getting SEC EDGAR features.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">from_raw</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">                    LOG_CHANGE(Assets)  LOG_CHANGE(AssetsCurrent) ...</span>
+<span class="go">fy   fp filed                                                     ...</span>
+<span class="go">2010 Q1 2010-01-25            0.182629                  -0.023676 ...</span>
+<span class="go">     Q2 2010-04-21            0.000000                   0.000000 ...</span>
+<span class="go">     Q3 2010-07-21            0.000000                   0.000000 ...</span>
+<span class="go">2011 Q1 2011-01-19            0.459174                   0.278241 ...</span>
+<span class="go">     Q2 2011-04-21            0.000000                   0.000000 ...</span>
+</pre></div>
+</div>
+<p>Getting fundamental financial features.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">from_raw</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            PriceBookRatio  PriceEarningsRatio</span>
+<span class="go">date</span>
+<span class="go">2010-01-25        0.175061            2.423509</span>
+<span class="go">2010-01-26        0.178035            2.464678</span>
+<span class="go">2010-01-27        0.178813            2.475448</span>
+<span class="go">2010-01-28        0.177154            2.452471</span>
+<span class="go">2010-01-29        0.173825            2.406396</span>
+</pre></div>
+</div>
+</section>
+<section id="use-installed-features-for-exploring-refined-aggregations-of-raw-data">
+<h3>Use installed features for exploring refined aggregations of raw data<a class="headerlink" href="#use-installed-features-for-exploring-refined-aggregations-of-raw-data" title="Permalink to this heading"></a></h3>
+<p><em>These methods require installing refined data through the</em> <code class="docutils literal notranslate"><span class="pre">finagg</span> <span class="pre">install</span></code>
+<em>or</em> <code class="docutils literal notranslate"><span class="pre">finagg</span> <span class="pre">&lt;api/subpackage&gt;</span> <span class="pre">install</span></code> <em>commands.</em></p>
+<p>Getting industry-wide SEC EDGAR features.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">industry</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span><span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">                                 mean                           ...            std ...</span>
+<span class="go">name               AssetCoverageRatio BookRatio DebtEquityRatio ... ReturnOnAssets ...</span>
+<span class="go">fy   fp filed                                                   ...                ...</span>
+<span class="go">2014 Q1 2014-05-15          10.731301  9.448954        0.158318 ...       0.002048 ...</span>
+<span class="go">     Q2 2014-08-14          10.731301  9.448954        0.158318 ...       0.004264 ...</span>
+<span class="go">     Q3 2014-11-14          10.731301  9.448954        0.158318 ...       0.027235 ...</span>
+<span class="go">2015 Q1 2015-05-15          16.738972  9.269250        0.294238 ...       0.006839 ...</span>
+<span class="go">     Q2 2015-08-13          16.738972  9.269250        0.294238 ...       0.015112 ...</span>
+</pre></div>
+</div>
+<p>Getting industry-normalized SEC EDGAR features.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">                    NORM(LOG_CHANGE(Assets))  NORM(LOG_CHANGE(AssetsCurrent)) ...</span>
+<span class="go">fy   fp filed                                                                 ...</span>
+<span class="go">2010 Q2 2010-04-21                  0.000000                         0.000000 ...</span>
+<span class="go">     Q3 2010-07-21                  0.000000                         0.000000 ...</span>
+<span class="go">2011 Q1 2011-01-19                  0.978816                         0.074032 ...</span>
+<span class="go">     Q2 2011-04-21                  0.000000                         0.000000 ...</span>
+<span class="go">     Q3 2011-07-20                 -0.353553                        -0.353553 ...</span>
+</pre></div>
+</div>
+<p>Getting tickers sorted according to industry-normalized SEC EDGAR features.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">get_tickers_sorted_by</span><span class="p">(</span>
+<span class="gp">... </span>  <span class="s2">&quot;EarningsPerShareBasic&quot;</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="n">year</span><span class="o">=</span><span class="mi">2019</span>
+<span class="gp">... </span><span class="p">)[:</span><span class="mi">5</span><span class="p">]</span>  
+<span class="go">[&#39;XRAY&#39;, &#39;TSLA&#39;, &#39;SYY&#39;, &#39;WHR&#39;, &#39;KMB&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">get_tickers_sorted_by</span><span class="p">(</span>
+<span class="gp">... </span>  <span class="s2">&quot;PriceEarningsRatio&quot;</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="n">date</span><span class="o">=</span><span class="s2">&quot;2019-01-04&quot;</span>
+<span class="gp">... </span><span class="p">)[:</span><span class="mi">5</span><span class="p">]</span>  
+<span class="go">[&#39;AMD&#39;, &#39;TRGP&#39;, &#39;HPE&#39;, &#39;CZR&#39;, &#39;TSLA&#39;]</span>
+</pre></div>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-from-pypi">Installing from PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-from-github">Installing from GitHub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installing-datasets">Installing Datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#updating-for-faster-subsequent-installations">Updating for Faster Subsequent Installations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#api-keys-and-user-agents">API Keys and User Agents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#data-locations">Data Locations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="conventions.html">Conventions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="conventions.html#import-conventions">Import Conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conventions.html#package-organization">Package Organization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conventions.html#api-implementations">API Implementations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conventions.html#almost-everything-is-a-dataframe">Almost Everything is a Dataframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conventions.html#helper-methods-for-inspecting-available-data">Helper Methods for Inspecting Available Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conventions.html#data-organization">Data Organization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conventions.html#data-normalization">Data Normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conventions.html#feature-method-naming">Feature Method Naming</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="walkthroughs.html">Walkthroughs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="walkthroughs.html#using-the-fred-api-subpackages">Using the FRED API Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="walkthroughs.html#using-the-sec-api-subpackages">Using the SEC API Subpackages</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/finagg.html">finagg package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#general">General</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#bea">BEA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#fred">FRED</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#popular-indices">Popular Indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#sec">SEC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#yahoo-finance">Yahoo! Finance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#fundamental-features">Fundamental Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#where-should-i-start">Where should I start?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#why-aren-t-features-being-installed-for-a-specific-ticker-or-economic-data-series">Why aren’t features being installed for a specific ticker or economic data series?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#what-python-versions-are-supported">What Python versions are supported?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html#what-operating-systems-are-supported">What operating systems are supported?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">References</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="references.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="references.html#api-references">API References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="references.html#related-projects">Related Projects</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="genindex">
+<h2><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a><a class="headerlink" href="#genindex" title="Permalink to this heading"></a></h2>
+<p>Alphabetically-ordered index of all package members.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
