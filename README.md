@@ -1,5 +1,4 @@
-finagg: Financial Aggregation for Python
-========================================
+# finagg: Financial Aggregation for Python
 
 **finagg** is a Python package that provides implementations of popular and free
 financial APIs, tools for aggregating historical data from those APIs into SQL
@@ -10,11 +9,9 @@ analysis and AI/ML.
 * **PyPI**: https://pypi.org/project/finagg/
 * **Repository**: https://github.com/theOGognf/finagg
 
-Quick Start
-===========
+# Quick Start
 
-Installation
-------------
+## Installation
 
 Install with pip for the latest stable version.
 
@@ -41,14 +38,12 @@ The installation will point you where to get free API keys for each API that
 requires one and will write those API keys to a local ``.env`` file for storage.
 Run ``finagg install --help`` for more installation options and details.
 
-Basic Usage
------------
+## Basic Usage
 
 These are just **finagg** usage samples. See the [documentation][4] for all the
 supported APIs and features.
 
-Explore the APIs directly
-^^^^^^^^^^^^^^^^^^^^^^^^^
+### Explore the APIs directly
 
 *These methods require internet access and API keys/user agent declarations.*
 
@@ -93,8 +88,7 @@ Get Securities and Exchange Commission (SEC) filings.
 4  2010-04-09  909938383.0  0001193125-10-088957  2010  Q2    10-Q  2010-04-21 ...
 ```
 
-Use installed raw data for exploring the most popular features
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+### Use installed raw data for exploring the most popular features
 
 *These methods require internet access, API keys/user agent declarations, and
 downloading and installing raw data through the* ``finagg install`` *or*
@@ -139,8 +133,7 @@ date
 2010-01-29        0.173825            2.406396
 ```
 
-Use installed features for exploring refined aggregations of raw data
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+### Use installed features for exploring refined aggregations of raw data
 
 *These methods require installing refined data through the* ``finagg install``
 *or* ``finagg <api/subpackage> install`` *commands.*
@@ -192,11 +185,9 @@ Get tickers sorted by an industry-averaged fundamental feature.
 ['AMD', 'TRGP', 'HPE', 'CZR', 'TSLA']
 ```
 
-Configuration
-=============
+# Configuration
 
-API Keys and User Agents
-------------------------
+## API Keys and User Agents
 
 API keys and user agent declarations are required for most of the APIs.
 You can set environment variables to expose your API keys and user agents
@@ -214,8 +205,7 @@ configuring API keys and user agents:
 * ``SEC_API_USER_AGENT`` is for the Securities and Exchange Commission's API. This
   should be of the format ``FIRST_NAME LAST_NAME E_MAIL``.
 
-Data Locations
---------------
+## Data Locations
 
 **finagg**'s root path, HTTP cache path, and database path are all configurable
 through environment variables. By default, all data related to **finagg** is put
@@ -229,8 +219,7 @@ locations by modifying the respective environment variables:
 * ``FINAGG_DATABASE_URL`` points to the **finagg** data storage. Defaults to
   ``./findata/finagg.sqlite``.
 
-Dependencies
-============
+# Dependencies
 
 * [pandas][11] for fast, flexible, and expressive representations of relational data.
 * [requests][12] for HTTP requests to 3rd party APIs.
@@ -239,15 +228,13 @@ Dependencies
 * [SQLAlchemy][17] for a SQL Python interface.
 * [yfinance][18] for historical stock data from Yahoo! Finance.
 
-API References
-==============
+# API References
 
 * The [BEA API][1] and the [BEA API key registration link][2].
 * The [FRED API][6] and the [FRED API key registration link][7].
 * The [SEC API][14].
 
-Related Projects
-================
+# Related Projects
 
 * [FinRL][5] is a collection of financial reinforcement learning environments
   and tools.
@@ -256,11 +243,9 @@ Related Projects
 * [sec-edgar][15] is an implementation of a file-based SEC EDGAR parser.
 * [sec-edgar-api][16] is an implementation of the SEC EDGAR REST API.
 
-Frequently Asked Questions
-==========================
+# Frequently Asked Questions
 
-Where should I start?
----------------------
+## Where should I start?
 
 Aggregate some data, create some analysis notebooks, or create some RL
 environments using the implemented data features and SQL tables. This
@@ -270,8 +255,7 @@ data and features. That being said, all the implemented features are
 defined in such a way to make it very easy to develop financial AI/ML,
 so we encourage you to do just that!
 
-Why aren't features being installed for a specific ticker or economic data series?
-----------------------------------------------------------------------------------
+## Why aren't features being installed for a specific ticker or economic data series?
 
 Implemented APIs may be relatively new and simply may not provide data for a
 particular ticker or economic data series. For example, earnings per share may
@@ -282,15 +266,13 @@ sufficient data for feature normalization. If a ticker or series only has one
 data point, that data point could be dropped when computing a feature (such as
 percent change), causing no data to be installed.
 
-What Python versions are supported?
------------------------------------
+## What Python versions are supported?
 
 Python 3.10 and up are supported. We don't plan on supporting lower versions
 because 3.10 introduces some nice quality of life updates that are used
 throughout the package.
 
-What operating systems are supported?
--------------------------------------
+## What operating systems are supported?
 
 The package is developed and tested on both Linux and Windows, but we recommend
 using Linux or WSL in practice. The package performs a good amount of I/O and
