@@ -1,5 +1,6 @@
 """Indices API (symbols in popular indices)."""
 
+import io
 import os
 from abc import ABC, abstractmethod
 from datetime import timedelta
@@ -65,7 +66,8 @@ class DJIA(API):
         response = _get(cls.url, user_agent=user_agent)
         soup = BeautifulSoup(response.text, "html.parser")
         tbl = soup.find("table", {"class": "wikitable"})
-        (df,) = pd.read_html(str(tbl))
+        tbl_io = io.StringIO(str(tbl))
+        (df,) = pd.read_html(tbl_io)
         df = pd.DataFrame(df)
 
         def _percent_to_fraction(item: str) -> float:
@@ -115,7 +117,8 @@ class Nasdaq100(API):
         response = _get(cls.url, user_agent=user_agent)
         soup = BeautifulSoup(response.text, "html.parser")
         tbl = soup.find_all("table", {"class": "wikitable"})[3]
-        (df,) = pd.read_html(str(tbl))
+        tbl_io = io.StringIO(str(tbl))
+        (df,) = pd.read_html(tbl_io)
         df = pd.DataFrame(df)
         return df.rename(
             columns={
@@ -155,7 +158,8 @@ class SP500(API):
         response = _get(cls.url, user_agent=user_agent)
         soup = BeautifulSoup(response.text, "html.parser")
         tbl = soup.find("table", {"class": "wikitable"})
-        (df,) = pd.read_html(str(tbl))
+        tbl_io = io.StringIO(str(tbl))
+        (df,) = pd.read_html(tbl_io)
         df = pd.DataFrame(df)
         df.drop("SEC filings", axis=1, inplace=True, errors="ignore")
         return df.rename(

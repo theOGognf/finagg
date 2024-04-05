@@ -227,7 +227,7 @@ def safe_log_change(series: pd.Series, other: None | pd.Series = None) -> pd.Ser
         other = series.shift(1)
 
     out = series.apply(np.log) - other.apply(np.log)
-    return out.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
+    return out.replace([-np.inf, np.inf], np.nan).ffill()
 
 
 def safe_pct_change(series: pd.Series, other: None | pd.Series = None) -> pd.Series:  # type: ignore[type-arg]
@@ -249,7 +249,7 @@ def safe_pct_change(series: pd.Series, other: None | pd.Series = None) -> pd.Ser
         other = series.shift(1)
 
     out = (series - other) / other
-    return out.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
+    return out.replace([-np.inf, np.inf], np.nan).ffill()
 
 
 def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:

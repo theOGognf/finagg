@@ -901,19 +901,19 @@ def filter_original_filings(
         # use the start date to ensure the filing corresponds to the time
         # period we care about.
         if "start" in df:
-            start = pd.DatetimeIndex(df["start"])
+            start: pd.DatetimeIndex = pd.DatetimeIndex(df["start"])
             start_to_end = end - start
         match form:
             case "10-K":
                 mask &= df["fp"] == "FY"
                 # Make sure the reporting frame is close to a year.
                 if "start" in df:
-                    mask &= (350 <= start_to_end.days) & (start_to_end.days <= 380)
+                    mask &= start.isna() | ((350 <= start_to_end.days) & (start_to_end.days <= 380))  # type: ignore[no-untyped-call]
             case "10-Q":
                 mask &= df["fp"].str.startswith("Q")
                 # Make sure the reporting frame is close to a quarter.
                 if "start" in df:
-                    mask &= (75 <= start_to_end.days) & (start_to_end.days <= 105)
+                    mask &= start.isna() | ((75 <= start_to_end.days) & (start_to_end.days <= 105))  # type: ignore[no-untyped-call]
     if units:
         mask &= df["units"] == units
     df = df[mask]

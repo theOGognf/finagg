@@ -151,7 +151,7 @@ class IndustryQuarterly:
             df.reset_index()  # type: ignore[return-value]
             .set_index(["fy", "fp", "filed"])
             .groupby(["fy", "fp", "filed", "name"])
-            .agg([np.mean, np.std])
+            .agg(["mean", "std"])
             .reset_index()
             .pivot(index=["fy", "fp", "filed"], columns="name")["value"]
             .sort_index()
@@ -242,7 +242,7 @@ class NormalizedQuarterly:
             .rename(lambda x: f"NORM({x})", axis=1)
         )
         company_df = (
-            company_df.fillna(method="ffill")
+            company_df.ffill()
             .reset_index()
             .dropna()
             .drop_duplicates("filed")
@@ -625,7 +625,7 @@ class Quarterly:
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize quarterly features columns."""
         df = api.compute_financial_ratios(df)
-        df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
+        df = df.replace([-np.inf, np.inf], np.nan).ffill()
         df = utils.resolve_func_cols(sql.quarterly, df, drop=True, inplace=True)
         df.columns = df.columns.rename(None)
         df = utils.resolve_col_order(sql.quarterly, df, extra_ignore=["filed"])
@@ -709,7 +709,7 @@ class Quarterly:
                  Q2 2011-04-21            0.000000                   0.000000                                  0.000000 ...
 
         """
-        df = _raw.Tags.join_from_raw(
+        df = _raw.Tags.group_and_pivot_from_raw(
             ticker,
             [concept["tag"] for concept in api.popular_concepts],
             form="10-Q",

@@ -448,6 +448,94 @@ class Tags:
         return set(tickers)
 
     @classmethod
+    def group_and_pivot_from_raw(
+        cls,
+        ticker: str,
+        tags: list[str],
+        /,
+        *,
+        form: str = "10-Q",
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
+    ) -> pd.DataFrame:
+        """Get one or more company concept tags from raw SEC data.
+
+        Joins all the tags into one table, pivoting the columns such that
+        each tag is in its own column. Tags are forward-filled to fill
+        gaps.
+
+        Args:
+            ticker: Company ticker.
+            tags: Company concept tags to retreive.
+            form: SEC filing form to retrieve rows for. Options include:
+
+                - "10-Q" = quarterly filings
+                - "10-K" = annual filings
+
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.backend.engine`.
+
+        Returns:
+            A dataframe containing the company concept tag values
+            across the specified period.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` or any of
+                the tags in ``tags`` for ``ticker`` in the raw SQL table.
+
+        Examples:
+            >>> finagg.sec.feat.tags.group_and_pivot_from_raw(
+            ...     "AAPL",
+            ...     ["Assets", "EarningsPerShareBasic"],
+            ...     form="10-Q"
+            ... ).head(5)  # doctest: +SKIP
+                                      Assets  EarningsPerShareBasic
+            fy   fp filed
+            2009 Q3 2009-07-22  3.957200e+10                   4.20
+            2010 Q1 2010-01-25  4.750100e+10                   2.54
+                 Q2 2010-04-21  4.750100e+10                   4.35
+                 Q3 2010-07-21  4.750100e+10                   6.40
+            2011 Q1 2011-01-19  7.518300e+10                   3.74
+
+        """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or backend.engine
+        if not sa.inspect(engine).has_table(sql.submissions.name):
+            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.tags.name):
+            sql.tags.create(engine)
+        with engine.begin() as conn:
+            df = pd.DataFrame(
+                conn.execute(
+                    sql.tags.select()
+                    .join(
+                        sql.submissions,
+                        (sql.submissions.c.cik == sql.tags.c.cik)
+                        & (sql.submissions.c.ticker == ticker),
+                    )
+                    .where(
+                        sql.tags.c.tag.in_(tags),
+                        sql.tags.c.form == form,
+                        sql.tags.c.filed >= start,
+                        sql.tags.c.filed <= end,
+                    )
+                )
+            )
+        if not len(df.index):
+            raise NoResultFound(f"No rows found for {ticker}.")
+        df = api.group_and_pivot_filings(df, form=form)
+        for tag in tags:
+            if tag not in df.columns:
+                raise NoResultFound(f"No {tag} rows found for {ticker}.")
+        return df
+
+    @classmethod
     def install(
         cls,
         tickers: None | set[str] = None,
@@ -590,94 +678,6 @@ class Tags:
                 except Exception as e:
                     logger.debug(f"Skipping {f}", exc_info=e)
         return total_rows
-
-    @classmethod
-    def join_from_raw(
-        cls,
-        ticker: str,
-        tags: list[str],
-        /,
-        *,
-        form: str = "10-Q",
-        start: None | str = None,
-        end: None | str = None,
-        engine: None | Engine = None,
-    ) -> pd.DataFrame:
-        """Get one or more company concept tags from raw SEC data.
-
-        Joins all the tags into one table, pivoting the columns such that
-        each tag is in its own column. Tags are forward-filled to fill
-        gaps.
-
-        Args:
-            ticker: Company ticker.
-            tags: Company concept tags to retreive.
-            form: SEC filing form to retrieve rows for. Options include:
-
-                - "10-Q" = quarterly filings
-                - "10-K" = annual filings
-
-            start: The start date of the observation period. Defaults to the
-                first recorded date.
-            end: The end date of the observation period. Defaults to the
-                last recorded date.
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
-
-        Returns:
-            A dataframe containing the company concept tag values
-            across the specified period.
-
-        Raises:
-            `NoResultFound`: If there are no rows for ``ticker`` or any of
-                the tags in ``tags`` for ``ticker`` in the raw SQL table.
-
-        Examples:
-            >>> finagg.sec.feat.tags.join_from_raw(
-            ...     "AAPL",
-            ...     ["Assets", "EarningsPerShareBasic"],
-            ...     form="10-Q"
-            ... ).head(5)  # doctest: +SKIP
-                                      Assets  EarningsPerShareBasic
-            fy   fp filed
-            2009 Q3 2009-07-22  3.957200e+10                   4.20
-            2010 Q1 2010-01-25  4.750100e+10                   2.54
-                 Q2 2010-04-21  4.750100e+10                   4.35
-                 Q3 2010-07-21  4.750100e+10                   6.40
-            2011 Q1 2011-01-19  7.518300e+10                   3.74
-
-        """
-        start = start or "1776-07-04"
-        end = end or utils.today
-        engine = engine or backend.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
-        if not sa.inspect(engine).has_table(sql.tags.name):
-            sql.tags.create(engine)
-        with engine.begin() as conn:
-            df = pd.DataFrame(
-                conn.execute(
-                    sql.tags.select()
-                    .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.tags.c.cik)
-                        & (sql.submissions.c.ticker == ticker),
-                    )
-                    .where(
-                        sql.tags.c.tag.in_(tags),
-                        sql.tags.c.form == form,
-                        sql.tags.c.filed >= start,
-                        sql.tags.c.filed <= end,
-                    )
-                )
-            )
-        if not len(df.index):
-            raise NoResultFound(f"No rows found for {ticker}.")
-        df = api.group_and_pivot_filings(df, form=form)
-        for tag in tags:
-            if tag not in df.columns:
-                raise NoResultFound(f"No {tag} rows found for {ticker}.")
-        return df
 
     @classmethod
     def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:

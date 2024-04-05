@@ -143,7 +143,7 @@ class IndustryFundamental:
         df = df.melt(["date"], var_name="name", value_name="value").set_index("date")
         return (
             df.groupby(["date", "name"])  # type: ignore[return-value]
-            .agg([np.mean, np.std])
+            .agg(["mean", "std"])
             .reset_index()
             .pivot(index=["date"], columns="name")["value"]
             .sort_index()
@@ -232,7 +232,7 @@ class NormalizedFundamental:
             .rename(lambda x: f"NORM({x})", axis=1)
         )
         company_df = (
-            company_df.fillna(method="ffill")
+            company_df.ffill()
             .reset_index()
             .dropna()
             .drop_duplicates("date")
@@ -604,7 +604,7 @@ class Fundamental:
     ) -> pd.DataFrame:
         """Normalize the feature columns."""
         df = pd.merge(quarterly, prices, how="outer", left_index=True, right_index=True)
-        df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
+        df = df.replace([-np.inf, np.inf], np.nan).ffill()
         df["PriceBookRatio"] = df["close"] / df["BookRatio"]
         df["PriceEarningsRatio"] = df["close"] / df["EarningsPerShareBasic"]
         df.index.names = ["date"]

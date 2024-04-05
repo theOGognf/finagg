@@ -43,7 +43,7 @@ class Economic:
             df.pivot(index="date", values="value", columns="series_id")
             .sort_index()
             .astype(float)
-            .fillna(method="ffill")
+            .ffill()
             .dropna()
         )
         df = utils.resolve_func_cols(sql.economic, df, drop=True, inplace=True)

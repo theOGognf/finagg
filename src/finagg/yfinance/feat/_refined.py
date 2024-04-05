@@ -63,7 +63,7 @@ class Daily:
     def _normalize(cls, df: pd.DataFrame, /) -> pd.DataFrame:
         """Normalize daily features columns."""
         df = df.drop(columns=["ticker"]).set_index("date").sort_index()
-        df = df.replace([-np.inf, np.inf], np.nan).fillna(method="ffill")
+        df = df.replace([-np.inf, np.inf], np.nan).ffill()
         df = utils.resolve_func_cols(sql.daily, df, drop=True, inplace=True)
         return df.dropna()
 

@@ -26,8 +26,8 @@ classifiers = [
 dependencies = [
     "beautifulsoup4==4.*",
     "click==8.*",
-    "pandas==1.*",
-    "pandas-stubs==1.*",
+    "pandas==2.*",
+    "pandas-stubs==2.*",
     "python-dotenv==0.21.*",
     "requests==2.*",
     "requests-cache==0.9.*",
@@ -35,7 +35,7 @@ dependencies = [
     "tqdm==4.*",
     "types-requests==2.*",
     "typing-extensions==4.*",
-    "yfinance<0.2.29"
+    "yfinance==0.2.*"
 ]
 dynamic = ["version"]
 license = {file = "LICENSE"}
