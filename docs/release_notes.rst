@@ -1,11 +1,11 @@
 Release Notes
 =============
 
-1.0
----
+1.0.0
+-----
 
-Bugfixes
-^^^^^^^^
+Bug Fixes
+^^^^^^^^^
 
 - Major bugfix for filtering original SEC filings affecting many SEC API and feature implementations.
 
