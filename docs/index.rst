@@ -170,6 +170,7 @@ Getting tickers sorted according to industry-normalized SEC EDGAR features.
    CLI <cli>
    FAQ <faq>
    References <references>
+   Release Notes <release_notes>
 
 :ref:`genindex`
 ---------------
