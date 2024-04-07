@@ -1,5 +1,9 @@
 # finagg: Financial Aggregation for Python
 
+![PyPI Downloads](https://img.shields.io/pypi/dm/finagg)
+![PyPI Version](https://img.shields.io/pypi/v/finagg)
+![Python Versions](https://img.shields.io/pypi/pyversions/finagg)
+
 **finagg** is a Python package that provides implementations of popular and free
 financial APIs, tools for aggregating historical data from those APIs into SQL
 databases, and tools for transforming aggregated data into features useful for
