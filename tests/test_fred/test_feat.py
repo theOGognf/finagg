@@ -1,3 +1,5 @@
+from typing import Generator
+
 import pandas as pd
 import pytest
 from sqlalchemy.engine import Engine
@@ -7,7 +9,7 @@ import finagg
 
 
 @pytest.fixture
-def engine() -> Engine:
+def engine() -> Generator[Engine, None, None]:
     yield from finagg.testing.sqlite_engine(
         finagg.backend.database_path, table=finagg.fred.sql.economic
     )

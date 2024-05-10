@@ -1,3 +1,5 @@
+from typing import Generator
+
 import pytest
 from sqlalchemy.engine import Engine
 
@@ -5,7 +7,7 @@ import finagg
 
 
 @pytest.fixture
-def engine() -> Engine:
+def engine() -> Generator[Engine, None, None]:
     yield from finagg.testing.sqlite_engine(
         finagg.backend.database_path, metadata=finagg.sec.sql.metadata
     )

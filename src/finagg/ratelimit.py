@@ -122,7 +122,7 @@ class RateLimit(ABC):
             for r in self._responses:
                 limit, ts = r
                 tmp_limit -= limit
-                tmp_wait += self.period - (self._ts - ts)
+                tmp_wait = self.period - (self._ts - ts)
                 if tmp_limit < self.limit:
                     break
 

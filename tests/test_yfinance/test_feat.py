@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Generator
 
 import pandas as pd
 import pytest
@@ -9,7 +10,7 @@ import finagg
 
 
 @pytest.fixture
-def engine() -> Engine:
+def engine() -> Generator[Engine, None, None]:
     yield from finagg.testing.sqlite_engine(
         finagg.backend.database_path, table=finagg.yfinance.sql.daily
     )

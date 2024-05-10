@@ -1,3 +1,4 @@
+from typing import Generator
 from unittest.mock import patch
 
 import pytest
@@ -18,7 +19,7 @@ class StrictLimiter(finagg.ratelimit.RateLimit):
 
 
 @pytest.fixture
-def expected_wait() -> list[int]:
+def expected_wait() -> Generator[list[int], None, None]:
     """Mock `time.perf_counter` and yield the expected test results.
 
     The first side effect goes to an internal dummy call.
