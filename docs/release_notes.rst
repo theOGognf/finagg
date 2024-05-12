@@ -1,6 +1,24 @@
 Release Notes
 =============
 
+1.0.1
+-----
+
+Bug Fixes
+^^^^^^^^^
+
+- Fix wait time calculation for rate limiting.
+
+Compatibility Notes
+^^^^^^^^^^^^^^^^^^^
+
+N/A
+
+New Features
+^^^^^^^^^^^^
+
+N/A
+
 1.0.0
 -----
 
