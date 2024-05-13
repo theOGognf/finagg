@@ -8,6 +8,7 @@ respecting 3rd party API rate limits to avoid server-side throttling.
 import time
 from abc import ABC, abstractmethod
 from collections import deque
+from dataclasses import dataclass
 from datetime import timedelta
 from functools import update_wrapper
 from typing import Callable, Generic, ParamSpec, Sequence
@@ -15,6 +16,30 @@ from typing import Callable, Generic, ParamSpec, Sequence
 import requests
 
 _P = ParamSpec("_P")
+
+
+@dataclass
+class _RateLimitData:
+    """Convenience container for rate limit data."""
+
+    #: Timestamp associated with the data.
+    ts: float
+
+    #: Response's contribution to a rate limit threshold.
+    quantity: float
+
+
+@dataclass
+class _RunningTotals:
+    """Track running totals associated with exceeding rate limits."""
+
+    #: Total limit contribution of all responses within a window towards
+    #: a rate limit threshold.
+    quantity: float = 0.0
+
+    #: Max wait time needed until another request can be made without
+    #: exceeding a rate limit.
+    wait: float = 0.0
 
 
 class RateLimit(ABC):
@@ -40,14 +65,12 @@ class RateLimit(ABC):
     """
 
     #: Deque of responses containing limits from ``eval`` and
-    #: the timestep they were observed.
-    _responses: deque[tuple[float, float]]
+    #: the timesteps they were observed.
+    _rate_limit_datas: deque[_RateLimitData]
 
-    #: Running total contributing to ``limit`` within ``period``.
-    _total_limit: float
-
-    #: Running total time to wait before next valid request (in seconds).
-    _total_wait: float
+    #: Running total contributions to ``limit`` within ``period``
+    #: and the total wait time.
+    _running_totals: _RunningTotals
 
     #: Max quantity allowed within ``period``. The quantity type being limited
     #: is dependent on what's returned by :meth:`eval`.
@@ -63,9 +86,8 @@ class RateLimit(ABC):
         self.period = (
             period.total_seconds() if isinstance(period, timedelta) else period
         )
-        self._total_limit = 0.0
-        self._total_wait = 0.0
-        self._responses = deque()
+        self._rate_limit_datas = deque()
+        self._running_totals = _RunningTotals()
 
     @property
     def _ts(self) -> float:
@@ -73,7 +95,11 @@ class RateLimit(ABC):
         the underlying getter.
 
         """
-        return self._responses[-1][1] if self._responses else time.perf_counter()
+        return (
+            self._rate_limit_datas[-1].ts
+            if self._rate_limit_datas
+            else time.perf_counter()
+        )
 
     def _update(self, response: requests.Response, /) -> float:
         """Update the rate limit's running ``total`` and ``responses``
@@ -90,44 +116,49 @@ class RateLimit(ABC):
             Estimated time to wait to avoid being throttled.
 
         """
-        # Get limit value and wait time from response.
+        # Get the timestamp and timedelta associated with this response.
+        ts = time.perf_counter()
+        dt = max(ts - self._ts, 0.0)
+
+        # Get the limit contribution value and wait time from the response.
         v = self.eval(response)
         if not isinstance(v, dict):
             v = {"limit": v}
         if "wait" not in v:
             v["wait"] = 0.0
-        limit = v["limit"]
+        quantity = v["limit"]
         wait = v["wait"]
 
-        ts = time.perf_counter()
-        dt = max(ts - self._ts, 0.0)
-        self._total_limit += limit
-        self._total_wait = max(self._total_wait - dt, 0.0)
-        self._total_wait = max(self._total_wait, wait)
-        new = (limit, ts)
-        self._responses.append(new)
+        # Create the new rate limit data.
+        new = _RateLimitData(ts, quantity)
+        self._rate_limit_datas.append(new)
+
+        # Update running totals for estimating wait times.
+        self._running_totals.quantity += quantity
+        self._running_totals.wait = max(self._running_totals.wait - dt, 0.0)
+        self._running_totals.wait = max(self._running_totals.wait, wait)
 
         # Remove timed-out responses and remove their contributions
         # to the total limit.
-        while self._responses and (
-            (self._responses[-1][1] - self._responses[0][1]) >= self.period
+        while self._rate_limit_datas and (
+            (self._rate_limit_datas[-1].ts - self._rate_limit_datas[0].ts)
+            >= self.period
         ):
-            old = self._responses.popleft()
-            self._total_limit -= old[0]
+            old = self._rate_limit_datas.popleft()
+            self._running_totals.quantity -= old.quantity
 
         # Update total wait time according to the max limit.
-        tmp_limit = self._total_limit
+        tmp_limit = self._running_totals.quantity
         tmp_wait = 0.0
-        if self._total_limit >= self.limit:
-            for r in self._responses:
-                limit, ts = r
-                tmp_limit -= limit
-                tmp_wait = self.period - (self._ts - ts)
+        if self._running_totals.quantity >= self.limit:
+            for r in self._rate_limit_datas:
+                tmp_wait = self.period - (self._ts - r.ts)
+                tmp_limit -= r.quantity
                 if tmp_limit < self.limit:
                     break
 
-        self._total_wait = max(self._total_wait, tmp_wait)
-        return self._total_wait
+        self._running_totals.wait = max(self._running_totals.wait, tmp_wait)
+        return self._running_totals.wait
 
     @abstractmethod
     def eval(self, response: requests.Response, /) -> float | dict[str, float]:
