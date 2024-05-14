@@ -37,6 +37,7 @@ class SeriesCategories(_api.API):
         *,
         realtime_start: None | int | str = None,
         realtime_end: None | int | str = None,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the categories for an economic data series.
@@ -51,6 +52,7 @@ class SeriesCategories(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -68,6 +70,7 @@ class SeriesCategories(_api.API):
             series_id=series_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
+            cache=cache,
             api_key=api_key,
         ).json()
         data = data["categories"]
@@ -104,6 +107,7 @@ class SeriesObservations(_api.API):
         output_type: None | int = 1,
         vintage_dates: None | str | list[str] = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the observations or data values for an economic data series.
@@ -180,6 +184,7 @@ class SeriesObservations(_api.API):
                 realtime periods.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -219,6 +224,7 @@ class SeriesObservations(_api.API):
             output_type=output_type,
             vintage_dates=vintage_dates,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
         df["series_id"] = series_id
@@ -371,6 +377,7 @@ class SeriesRelease(_api.API):
         *,
         realtime_start: None | int | str = None,
         realtime_end: None | int | str = None,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the release for an economic data series.
@@ -385,6 +392,7 @@ class SeriesRelease(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -397,6 +405,7 @@ class SeriesRelease(_api.API):
             series_id=series_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
+            cache=cache,
             api_key=api_key,
         ).json()
         data = data["releases"]
@@ -431,6 +440,7 @@ class SeriesSearchRelatedTags(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the related tags for a series search.
@@ -473,6 +483,7 @@ class SeriesSearchRelatedTags(_api.API):
                 order for the attribute values specified by `order_by`.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -506,6 +517,7 @@ class SeriesSearchRelatedTags(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -537,6 +549,7 @@ class SeriesSearchTags(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the tags for a series search.
@@ -578,6 +591,7 @@ class SeriesSearchTags(_api.API):
                 order for the attribute values specified by `order_by`.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -610,6 +624,7 @@ class SeriesSearchTags(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -659,6 +674,7 @@ class SeriesSearch(_api.API):
         tag_names: None | str | list[str] = None,
         exclude_tag_names: None | str | list[str] = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get economic data series that match search text.
@@ -712,6 +728,7 @@ class SeriesSearch(_api.API):
             exclude_tag_names: List of tag names that series match none of.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -744,6 +761,7 @@ class SeriesSearch(_api.API):
             tag_names=tag_names,
             exclude_tag_names=exclude_tag_names,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -769,6 +787,7 @@ class SeriesTags(_api.API):
         realtime_end: None | int | str = None,
         order_by: None | str = None,
         sort_order: None | str = None,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the FRED tags for a series.
@@ -794,6 +813,7 @@ class SeriesTags(_api.API):
 
             sort_order: Sort results in ascending ("asc") or descending ("desc")
                 order for the attribute values specified by `order_by`.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -817,6 +837,7 @@ class SeriesTags(_api.API):
             realtime_end=realtime_end,
             order_by=order_by,
             sort_order=sort_order,
+            cache=cache,
             api_key=api_key,
         ).json()
         data = data["tags"]
@@ -846,6 +867,7 @@ class SeriesUpdates(_api.API):
         start_time: None | str = None,
         end_time: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get economic data series sorted by when observations
@@ -878,6 +900,7 @@ class SeriesUpdates(_api.API):
                 Can filter down to minutes. Expects format "YYYMMDDHhmm".
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -897,6 +920,7 @@ class SeriesUpdates(_api.API):
             start_time=start_time,
             end_time=end_time,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -924,6 +948,7 @@ class SeriesVintageDates(_api.API):
         offset: None | int = 0,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the dates in history when a series' data values were revised
@@ -948,6 +973,7 @@ class SeriesVintageDates(_api.API):
                 vintage date order.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -965,6 +991,7 @@ class SeriesVintageDates(_api.API):
             offset=offset,
             sort_order=sort_order,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -1044,6 +1071,7 @@ class Series(_api.API):
         *,
         realtime_start: None | int | str = None,
         realtime_end: None | int | str = None,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get an economic data series.
@@ -1058,6 +1086,7 @@ class Series(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -1079,6 +1108,7 @@ class Series(_api.API):
             series_id=series_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
+            cache=cache,
             api_key=api_key,
         ).json()
         data = data["seriess"]

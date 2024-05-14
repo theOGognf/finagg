@@ -45,7 +45,11 @@ def get(url: str, /, **kwargs: Any) -> requests.Response:
         A valid FRED API response.
 
     """
-    response = session.get(url, params=pformat(**kwargs))
+    params = pformat(**kwargs)
+    if params.pop("cache", True):
+        response = session.get(url, params=params)
+    else:
+        response = requests.get(url, params=params)
     response.raise_for_status()
     return response
 

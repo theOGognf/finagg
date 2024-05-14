@@ -134,6 +134,7 @@ class CompanyConcept(API):
         ticker: None | str = None,
         taxonomy: str = "us-gaap",
         units: str = "USD",
+        cache: bool = True,
         user_agent: None | str = None,
     ) -> pd.DataFrame:
         """Return all XBRL disclosures for a single company (CIK)
@@ -146,6 +147,7 @@ class CompanyConcept(API):
             taxonomy: Valid SEC EDGAR taxonomy.
                 See https://www.sec.gov/info/edgar/edgartaxonomies.shtml for taxonomies.
             units: Currency to view results in.
+            cache: Whether to cache the response from the API.
             user_agent: Self-declared bot header. Defaults to the value
                 found in the ``SEC_API_USER_AGENT`` environment variable.
 
@@ -179,7 +181,7 @@ class CompanyConcept(API):
 
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik, taxonomy=taxonomy, tag=tag)
-        response = _get(url, user_agent=user_agent)
+        response = _get(url, cache=cache, user_agent=user_agent)
         content = response.json()
         units = content.pop("units")
         results_list = []
@@ -323,6 +325,7 @@ class CompanyFacts(API):
         *,
         cik: None | str = None,
         ticker: None | str = None,
+        cache: bool = True,
         user_agent: None | str = None,
     ) -> pd.DataFrame:
         """Return all XBRL disclosures for a single company (CIK).
@@ -330,6 +333,7 @@ class CompanyFacts(API):
         Args:
             cik: Company SEC CIK. Mutually exclusive with `ticker`.
             ticker: Company ticker. Mutually exclusive with `cik`.
+            cache: Whether to cache the response from the API.
             user_agent: Self-declared bot header. Defaults to the value
                 found in the ``SEC_API_USER_AGENT`` environment variable.
 
@@ -358,7 +362,7 @@ class CompanyFacts(API):
 
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik)
-        response = _get(url, user_agent=user_agent)
+        response = _get(url, cache=cache, user_agent=user_agent)
         content = response.json()
         df = _parse_company_facts(content)
         df["cik"] = cik
@@ -380,11 +384,12 @@ class Exchanges(API):
     url = "https://www.sec.gov/files/company_tickers_exchange.json"
 
     @classmethod
-    def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
+    def get(cls, *, cache: bool = True, user_agent: None | str = None) -> pd.DataFrame:
         """Get a dataframe containing all SEC-registered ticker
         info.
 
         Args:
+            cache: Whether to cache the response from the API.
             user_agent: Self-declared SEC bot header. Defaults to the value
                 found in the ``SEC_API_USER_AGENT`` environment variable.
 
@@ -402,7 +407,7 @@ class Exchanges(API):
             4  1045810     NVIDIA CORP   NVDA   Nasdaq
 
         """
-        response = _get(cls.url, user_agent=user_agent)
+        response = _get(cls.url, cache=cache, user_agent=user_agent)
         content: dict[str, list[str]] = response.json()
         df = pd.DataFrame(content["data"], columns=content["fields"])
         return df.rename(columns={"cik_str": "cik"})
@@ -441,6 +446,7 @@ class Frames(API):
         instant: bool = True,
         taxonomy: str = "us-gaap",
         units: str = "USD",
+        cache: bool = True,
         user_agent: None | str = None,
     ) -> pd.DataFrame:
         """Get one fact for each reporting entity that most closely fits
@@ -458,6 +464,7 @@ class Frames(API):
             taxonomy: Valid SEC EDGAR taxonomy.
                 See https://www.sec.gov/info/edgar/edgartaxonomies for taxonomies.
             units: Units to view results in.
+            cache: Whether to cache the response from the API.
             user_agent: Self-declared bot header. Defaults to the value
                 found in the ``SEC_API_USER_AGENT`` environment variable.
 
@@ -491,7 +498,7 @@ class Frames(API):
         url = cls.url.format(
             taxonomy=taxonomy, tag=tag, units=units, year=year, quarter=quarter
         )
-        response = _get(url, user_agent=user_agent)
+        response = _get(url, cache=cache, user_agent=user_agent)
         content = response.json()
         data = content.pop("data")
         df = pd.DataFrame(data)
@@ -574,6 +581,7 @@ class Submissions(API):
         *,
         cik: None | str = None,
         ticker: None | str = None,
+        cache: bool = True,
         user_agent: None | str = None,
     ) -> SubmissionsResult:
         """Return a company's metadata and all its recent SEC filings.
@@ -581,6 +589,7 @@ class Submissions(API):
         Args:
             cik: Company SEC CIK. Mutually exclusive with ``ticker``.
             ticker: Company ticker. Mutually exclusive with ``cik``.
+            cache: Whether to cache the response from the API.
             user_agent: Self-declared SEC bot header. Defaults to the value
                 found in the ``SEC_API_USER_AGENT`` environment variable.
 
@@ -608,7 +617,7 @@ class Submissions(API):
 
         cik = str(cik).zfill(10)
         url = cls.url.format(cik=cik)
-        response = _get(url, user_agent=user_agent)
+        response = _get(url, cache=cache, user_agent=user_agent)
         content = response.json()
         recent_filings = content.pop("filings")["recent"]
         df = pd.DataFrame(recent_filings)
@@ -639,11 +648,12 @@ class Tickers(API):
     url = "https://www.sec.gov/files/company_tickers.json"
 
     @classmethod
-    def get(cls, *, user_agent: None | str = None) -> pd.DataFrame:
+    def get(cls, *, cache: bool = True, user_agent: None | str = None) -> pd.DataFrame:
         """Get a dataframe containing all SEC-registered ticker
         info.
 
         Args:
+            cache: Whether to cache the response from the API.
             user_agent: Self-declared SEC bot header. Defaults to the value
                 found in the ``SEC_API_USER_AGENT`` environment variable.
 
@@ -661,7 +671,7 @@ class Tickers(API):
             4  1067983  BRK-B  BERKSHIRE HATHAWAY INC
 
         """
-        response = _get(cls.url, user_agent=user_agent)
+        response = _get(cls.url, cache=cache, user_agent=user_agent)
         content: dict[str, dict[str, str]] = response.json()
         df = pd.DataFrame([items for _, items in content.items()])
         return df.rename(columns={"cik_str": "cik"})
@@ -786,17 +796,17 @@ def _get(
     url: str,
     /,
     *,
-    cache: bool = True,
     stream: bool = False,
+    cache: bool = True,
     user_agent: None | str = None,
 ) -> requests.Response:
     """SEC EDGAR API request helper.
 
     Args:
         url: Complete SEC EDGAR API URL to request from.
-        cache: Whether to cache the response from the given URL.
         stream: Whether to stream the response content (useful for file
             downloads).
+        cache: Whether to cache the response from the given URL.
         user_agent: Self-declared SEC bot header. Defaults to the value
             found in the ``SEC_API_USER_AGENT`` environment variable.
 

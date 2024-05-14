@@ -37,6 +37,7 @@ class RelatedTags(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data for tags related to an economic release.
@@ -77,6 +78,7 @@ class RelatedTags(_api.API):
                 descending ("desc") order.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -107,6 +109,7 @@ class RelatedTags(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -135,6 +138,7 @@ class Series(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the economic data series matching tags.
@@ -171,6 +175,7 @@ class Series(_api.API):
                 descending ("desc") order.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -199,6 +204,7 @@ class Series(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -235,6 +241,7 @@ class Tags(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get the FRED tags for a series.
@@ -275,6 +282,7 @@ class Tags(_api.API):
                 descending ("desc") order.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -303,5 +311,7 @@ class Tags(_api.API):
             offset=offset,
             order_by=order_by,
             sort_order=sort_order,
+            paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )

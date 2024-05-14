@@ -34,6 +34,7 @@ class ReleasesDates(_api.API):
         sort_order: None | str = "desc",
         include_release_dates_with_no_data: None | bool = False,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all release dates of economic data.
@@ -61,6 +62,7 @@ class ReleasesDates(_api.API):
                 dates that don't contain any data.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -80,6 +82,7 @@ class ReleasesDates(_api.API):
             sort_order=sort_order,
             include_release_dates_with_no_data=include_release_dates_with_no_data,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -108,6 +111,7 @@ class Releases(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all releases of economic data.
@@ -135,6 +139,7 @@ class Releases(_api.API):
                 descending ("desc") order.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -153,6 +158,7 @@ class Releases(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -181,6 +187,7 @@ class ReleaseDates(_api.API):
         sort_order: None | str = None,
         include_release_dates_with_no_data: None | bool = False,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data on release dates for a particular release of economic data.
@@ -203,6 +210,7 @@ class ReleaseDates(_api.API):
                 dates that don't contain any data.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -221,6 +229,7 @@ class ReleaseDates(_api.API):
             sort_order=sort_order,
             include_release_dates_with_no_data=include_release_dates_with_no_data,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -253,6 +262,7 @@ class ReleaseSeries(_api.API):
         tag_names: None | str | list[str] = None,
         exclude_tag_names: None | str | list[str] = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data on the series related to a release of economic data.
@@ -299,6 +309,7 @@ class ReleaseSeries(_api.API):
             exclude_tag_names: Exclude tags related to these tags.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -321,6 +332,7 @@ class ReleaseSeries(_api.API):
             tag_names=tag_names,
             exclude_tag_names=exclude_tag_names,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -344,6 +356,7 @@ class ReleaseSources(_api.API):
         *,
         realtime_start: None | int | str = None,
         realtime_end: None | int | str = None,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get sources related to an economic release.
@@ -358,6 +371,7 @@ class ReleaseSources(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -370,6 +384,7 @@ class ReleaseSources(_api.API):
             release_id=release_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
+            cache=cache,
             api_key=api_key,
         ).json()
         data = data["sources"]
@@ -403,6 +418,7 @@ class ReleaseTags(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get tags for an economic release.
@@ -443,6 +459,7 @@ class ReleaseTags(_api.API):
                 descending ("desc") order.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -465,6 +482,7 @@ class ReleaseTags(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -497,6 +515,7 @@ class ReleaseRelatedTags(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data for tags related to an economic release.
@@ -538,6 +557,7 @@ class ReleaseRelatedTags(_api.API):
                 descending ("desc") order.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -561,6 +581,7 @@ class ReleaseRelatedTags(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -585,6 +606,7 @@ class ReleaseTables(_api.API):
         element_id: None | int = 0,
         include_observation_values: None | bool = False,
         observation_date: None | str = None,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get release tables for a given economic release.
@@ -600,6 +622,7 @@ class ReleaseTables(_api.API):
                 need to be returned.
             observation_date: The observation date to be included with the
                 returned release table.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -613,6 +636,7 @@ class ReleaseTables(_api.API):
             element_id=element_id,
             include_observation_values=include_observation_values,
             observation_date=observation_date,
+            cache=cache,
             api_key=api_key,
         ).json()
         data = data["tables"]
@@ -685,6 +709,7 @@ class Release(_api.API):
         *,
         realtime_start: None | int | str = None,
         realtime_end: None | int | str = None,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get overview data of an economic release.
@@ -699,6 +724,7 @@ class Release(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -711,6 +737,7 @@ class Release(_api.API):
             release_id=release_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
+            cache=cache,
             api_key=api_key,
         ).json()
         data = data["releases"]

@@ -35,6 +35,7 @@ class SourceReleases(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all releases for a source of economic data.
@@ -63,6 +64,7 @@ class SourceReleases(_api.API):
                 descending ("desc") order.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -91,6 +93,7 @@ class SourceReleases(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -122,6 +125,7 @@ class Source(_api.API):
         *,
         realtime_start: None | int | str = None,
         realtime_end: None | int | str = None,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get overview data of an economic series.
@@ -136,6 +140,7 @@ class Source(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -153,6 +158,7 @@ class Source(_api.API):
             source_id=source_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
+            cache=cache,
             api_key=api_key,
         ).json()
         data = data["sources"]
@@ -180,6 +186,7 @@ class Sources(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all sources of economic data.
@@ -207,6 +214,7 @@ class Sources(_api.API):
                 descending ("desc") order.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -234,5 +242,6 @@ class Sources(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )

@@ -29,6 +29,7 @@ class CategoryChildren(_api.API):
         *,
         realtime_start: None | int | str = None,
         realtime_end: None | int | str = None,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get all child categories for a specific parent category.
@@ -44,6 +45,7 @@ class CategoryChildren(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -68,6 +70,7 @@ class CategoryChildren(_api.API):
             category_id=category_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
+            cache=cache,
             api_key=api_key,
         ).json()
         data = data["categories"]
@@ -93,6 +96,7 @@ class CategoryRelated(_api.API):
         *,
         realtime_start: None | int | str = None,
         realtime_end: None | int | str = None,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get categories related to a category.
@@ -108,6 +112,7 @@ class CategoryRelated(_api.API):
                 according to their publication date.
             realtime_end: End date for fetching results according
                 to their publication date.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -121,6 +126,7 @@ class CategoryRelated(_api.API):
             category_id=category_id,
             realtime_start=realtime_start,
             realtime_end=realtime_end,
+            cache=cache,
             api_key=api_key,
         ).json()
         data = data["categories"]
@@ -155,6 +161,7 @@ class CategorySeries(_api.API):
         tag_names: None | str | list[str] = None,
         exclude_tag_names: None | str | list[str] = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get series within a category.
@@ -195,6 +202,7 @@ class CategorySeries(_api.API):
             exclude_tag_names: Exclude tags related to these tags.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -226,6 +234,7 @@ class CategorySeries(_api.API):
             tag_names=tag_names,
             exclude_tag_names=exclude_tag_names,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -257,6 +266,7 @@ class CategoryTags(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get a FRED category's tags.
@@ -298,6 +308,7 @@ class CategoryTags(_api.API):
                 descending ("desc") order.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -329,6 +340,7 @@ class CategoryTags(_api.API):
             tag_group_id=tag_group_id,
             search_text=search_text,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -361,6 +373,7 @@ class CategoryRelatedTags(_api.API):
         order_by: None | str = None,
         sort_order: None | str = None,
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get data for tags related to a category.
@@ -403,6 +416,7 @@ class CategoryRelatedTags(_api.API):
                 descending ("desc") order.
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -444,6 +458,7 @@ class CategoryRelatedTags(_api.API):
             order_by=order_by,
             sort_order=sort_order,
             paginate=paginate,
+            cache=cache,
             api_key=api_key,
         )
 
@@ -500,12 +515,15 @@ class Category(_api.API):
     url = "https://api.stlouisfed.org/fred/category"
 
     @classmethod
-    def get(cls, category_id: int = 0, *, api_key: None | str = None) -> pd.DataFrame:
+    def get(
+        cls, category_id: int = 0, *, cache: bool = True, api_key: None | str = None
+    ) -> pd.DataFrame:
         """Get a category's details.
 
         Args:
             category_id: The category's ID. Use the
                 "category/children" API to explore categories.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -518,6 +536,8 @@ class Category(_api.API):
             0   0  Categories          0
 
         """
-        data = _api.get(cls.url, category_id=category_id, api_key=api_key).json()
+        data = _api.get(
+            cls.url, category_id=category_id, cache=cache, api_key=api_key
+        ).json()
         data = data["categories"]
         return pd.DataFrame(data)
