@@ -86,7 +86,7 @@ class Economic:
         end = end or utils.today
         dfs = []
         for series_id in api.popular_series:
-            df = api.series.observations.get_first_observations(
+            df = api.series.observations.get_original_observations(
                 series_id,
                 observation_start=start,
                 observation_end=end,

@@ -232,7 +232,7 @@ class SeriesObservations(_api.API):
         return df
 
     @classmethod
-    def get_first_observations(
+    def get_original_observations(
         cls,
         series_id: str,
         /,
@@ -246,6 +246,7 @@ class SeriesObservations(_api.API):
         frequency: None | str = None,
         aggregation_method: None | str = "avg",
         paginate: bool = False,
+        cache: bool = True,
         api_key: None | str = None,
     ) -> pd.DataFrame:
         """Get only the initial releases/observations for an
@@ -306,6 +307,7 @@ class SeriesObservations(_api.API):
 
             paginate: Whether to manage `offset` automatically, making multiple
                 API calls until all results are returned.
+            cache: Whether to cache the response from the API.
             api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``
                 environment variable.
 
@@ -340,6 +342,7 @@ class SeriesObservations(_api.API):
                 aggregation_method=aggregation_method,
                 output_type=4,
                 paginate=paginate,
+                cache=cache,
                 api_key=api_key,
             )
         except HTTPError:
@@ -354,6 +357,7 @@ class SeriesObservations(_api.API):
                 frequency=frequency,
                 aggregation_method=aggregation_method,
                 paginate=paginate,
+                cache=cache,
                 api_key=api_key,
             )
 

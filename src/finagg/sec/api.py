@@ -205,6 +205,7 @@ class CompanyConcept(API):
         form: None | str = None,
         start: None | str = None,
         end: None | str = None,
+        cache: bool = True,
         user_agent: None | str = None,
     ) -> pd.DataFrame:
         """Return original (not amended) XBRL disclosures for a single company
@@ -221,6 +222,7 @@ class CompanyConcept(API):
                 first recorded date.
             end: The end date of the observation period. Defaults to the
                 last recorded date.
+            cache: Whether to cache the response from the API.
             user_agent: Self-declared bot header. Defaults to the value
                 found in the ``SEC_API_USER_AGENT`` environment variable.
 
@@ -253,6 +255,7 @@ class CompanyConcept(API):
                 ticker=ticker,
                 taxonomy=taxonomy,
                 units=units,
+                cache=cache,
                 user_agent=user_agent,
             )
             df = filter_original_filings(df, form=form, units=units)

@@ -159,7 +159,7 @@ class Series:
             leave=True,
         ):
             try:
-                df = api.series.observations.get_first_observations(
+                df = api.series.observations.get_original_observations(
                     series_id,
                 )
                 rowcount = len(df.index)
