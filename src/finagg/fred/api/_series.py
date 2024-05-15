@@ -316,7 +316,7 @@ class SeriesObservations(_api.API):
             the given parameters.
 
         Examples:
-            >>> finagg.fred.api.series.observations.get_first_observations(
+            >>> finagg.fred.api.series.observations.get_original_observations(
             ...     "CPIAUCNS",
             ... ).head(5)  # doctest: +SKIP
               realtime_start realtime_end        date  value series_id
