@@ -223,6 +223,14 @@ locations by modifying the respective environment variables:
 * ``FINAGG_DATABASE_URL`` points to the **finagg** data storage. Defaults to
   ``./findata/finagg.sqlite``.
 
+## Other
+
+You can change some **finagg** behavior with other environment variables:
+
+* ``FINAGG_DISABLE_HTTP_CACHE``: Set this to ``"1"`` or ``"True"`` to disable the
+  HTTP requests cache. Instead of a cachable session, a default, uncached user
+  session will be used for all requests.
+
 # Dependencies
 
 * [pandas][11] for fast, flexible, and expressive representations of relational data.

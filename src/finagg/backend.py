@@ -26,6 +26,16 @@ this value using the ``finagg install`` CLI.
 :meta hide-value:
 """
 
+disable_http_cache = os.environ.get("FINAGG_DISABLE_HTTP_CACHE", "false").lower() in {
+    "1",
+    "true",
+}
+"""Whether the disable the HTTP requests cache. Instead of a cachable session,
+a default, uncached user session will be used for all requests.
+
+:meta hide-value:
+"""
+
 http_cache_path = pathlib.Path(
     os.environ.get("FINAGG_HTTP_CACHE_PATH", root_path / "findata" / "http_cache")
 )

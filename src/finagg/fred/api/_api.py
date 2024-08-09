@@ -12,11 +12,14 @@ import requests_cache
 
 from ... import backend, ratelimit
 
-session = requests_cache.CachedSession(
-    str(backend.http_cache_path),
-    ignored_parameters=["api_key", "file_type"],
-    expire_after=timedelta(weeks=1),
-)
+if backend.disable_http_cache:
+    session = requests.Session()
+else:
+    session = requests_cache.CachedSession(
+        str(backend.http_cache_path),
+        ignored_parameters=["api_key", "file_type"],
+        expire_after=timedelta(weeks=1),
+    )
 
 
 class API(ABC):

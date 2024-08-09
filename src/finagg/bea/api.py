@@ -51,11 +51,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-session = requests_cache.CachedSession(
-    str(backend.http_cache_path),
-    ignored_parameters=["ResultFormat"],
-    expire_after=timedelta(days=1),
-)
+if backend.disable_http_cache:
+    session = requests.Session()
+else:
+    session = requests_cache.CachedSession(
+        str(backend.http_cache_path),
+        ignored_parameters=["ResultFormat"],
+        expire_after=timedelta(days=1),
+    )
 
 _YEAR = int | str
 

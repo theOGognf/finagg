@@ -40,5 +40,14 @@ locations by modifying the respective environment variables:
 * ``FINAGG_DATABASE_URL`` points to the **finagg** data storage. Defaults to
   ``./findata/finagg.sqlite``.
 
+Other
+-----
+
+You can change some **finagg** behavior with other environment variables:
+
+* ``FINAGG_DISABLE_HTTP_CACHE``: Set this to ``"1"`` or ``"True"`` to disable the
+  HTTP requests cache. Instead of a cachable session, a default, uncached user
+  session will be used for all requests.
+
 .. _`BEA API site`: https://apps.bea.gov/API/signup/
 .. _`FRED API site`: https://fredaccount.stlouisfed.org/login/secure/
