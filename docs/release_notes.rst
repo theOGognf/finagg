@@ -1,6 +1,25 @@
 Release Notes
 =============
 
+1.0.2
+-----
+
+Bug Fixes
+^^^^^^^^^
+
+N/A
+
+Compatibility Notes
+^^^^^^^^^^^^^^^^^^^
+
+N/A
+
+New Features
+^^^^^^^^^^^^
+
+- Added ``FINAGG_DISABLE_HTTP_CACHE`` environment variable for disabling
+  the HTTP requests cache.
+
 1.0.1
 -----
 
