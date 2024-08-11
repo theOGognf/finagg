@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.yfinance package &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="finagg.yfinance.feat package" href="finagg.yfinance.feat.html" />
+    <link rel="prev" title="finagg.sec.feat package" href="finagg.sec.feat.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="finagg.html">finagg package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="finagg.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="finagg.bea.html">finagg.bea package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.html">finagg.fred package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fundam.html">finagg.fundam package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.indices.html">finagg.indices package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.html">finagg.sec package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">finagg.yfinance package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.backend">finagg.backend module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.frame">finagg.frame module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.portfolio">finagg.portfolio module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.ratelimit">finagg.ratelimit module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.testing">finagg.testing module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.utils">finagg.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">finagg</a></li>
+          <li class="breadcrumb-item"><a href="finagg.html">finagg package</a></li>
+      <li class="breadcrumb-item active">finagg.yfinance package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/finagg.yfinance.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="finagg-yfinance-package">
+<h1>finagg.yfinance package<a class="headerlink" href="#finagg-yfinance-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="finagg.yfinance.feat.html">finagg.yfinance.feat package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="finagg.yfinance.feat.html#module-finagg.yfinance.feat">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.daily"><code class="docutils literal notranslate"><span class="pre">daily</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.prices"><code class="docutils literal notranslate"><span class="pre">prices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Daily"><code class="docutils literal notranslate"><span class="pre">Daily</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Daily.from_api"><code class="docutils literal notranslate"><span class="pre">Daily.from_api()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Daily.from_raw"><code class="docutils literal notranslate"><span class="pre">Daily.from_raw()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Daily.from_refined"><code class="docutils literal notranslate"><span class="pre">Daily.from_refined()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Daily.get_candidate_ticker_set"><code class="docutils literal notranslate"><span class="pre">Daily.get_candidate_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Daily.get_ticker_set"><code class="docutils literal notranslate"><span class="pre">Daily.get_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Daily.install"><code class="docutils literal notranslate"><span class="pre">Daily.install()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Daily.to_refined"><code class="docutils literal notranslate"><span class="pre">Daily.to_refined()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Daily.update"><code class="docutils literal notranslate"><span class="pre">Daily.update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Prices"><code class="docutils literal notranslate"><span class="pre">Prices</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Prices.from_raw"><code class="docutils literal notranslate"><span class="pre">Prices.from_raw()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Prices.get_ticker_set"><code class="docutils literal notranslate"><span class="pre">Prices.get_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Prices.install"><code class="docutils literal notranslate"><span class="pre">Prices.install()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Prices.to_raw"><code class="docutils literal notranslate"><span class="pre">Prices.to_raw()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Prices.update"><code class="docutils literal notranslate"><span class="pre">Prices.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-finagg.yfinance.api">
+<span id="finagg-yfinance-api-module"></span><h2>finagg.yfinance.api module<a class="headerlink" href="#module-finagg.yfinance.api" title="Permalink to this heading"></a></h2>
+<p>Simple wrappers for Yahoo! Finance.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.yfinance.api.get">
+<span class="sig-prename descclassname"><span class="pre">finagg.yfinance.api.</span></span><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'1d'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'max'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/yfinance/api.html#get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.yfinance.api.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get a ticker’s stock price history.</p>
+<p>Does a simple transform on Yahoo! Finance’s ticker API dataframe result to
+be a bit more consistent with other API implementations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – Company ticker to get historical price data for.</p></li>
+<li><p><strong>start</strong> – Start date for stock price history. Defaults to the first
+recorded date.</p></li>
+<li><p><strong>end</strong> – End date for stock price history. Defaults to the last recorded
+date.</p></li>
+<li><p><strong>interval</strong> – Frequency at which stock price history is grabbed.</p></li>
+<li><p><strong>period</strong> – Time period to get in the past. <code class="docutils literal notranslate"><span class="pre">&quot;max&quot;</span></code> returns the full
+stock price history and the default.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Yahoo! Finance auto-adjusted stock price history with slightly
+different (more normalized) column names.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">yfinance</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">         date    open    high     low   close     volume ticker</span>
+<span class="go">0  1980-12-12  0.0997  0.1002  0.0997  0.0997  469033600   AAPL</span>
+<span class="go">1  1980-12-15  0.0950  0.0950  0.0945  0.0945  175884800   AAPL</span>
+<span class="go">2  1980-12-16  0.0880  0.0880  0.0876  0.0876  105728000   AAPL</span>
+<span class="go">3  1980-12-17  0.0897  0.0902  0.0897  0.0897   86441600   AAPL</span>
+<span class="go">4  1980-12-18  0.0924  0.0928  0.0924  0.0924   73449600   AAPL</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-finagg.yfinance.sql">
+<span id="finagg-yfinance-sql-module"></span><h2>finagg.yfinance.sql module<a class="headerlink" href="#module-finagg.yfinance.sql" title="Permalink to this heading"></a></h2>
+<p>Yahoo! finance SQLAlchemy interfaces.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.yfinance.sql.metadata">
+<span class="sig-prename descclassname"><span class="pre">finagg.yfinance.sql.</span></span><span class="sig-name descname"><span class="pre">metadata</span></span><a class="headerlink" href="#finagg.yfinance.sql.metadata" title="Permalink to this definition"></a></dt>
+<dd><p>The metadata associated with all SQL tables defined in this module.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.yfinance.sql.prices">
+<span class="sig-prename descclassname"><span class="pre">finagg.yfinance.sql.</span></span><span class="sig-name descname"><span class="pre">prices</span></span><a class="headerlink" href="#finagg.yfinance.sql.prices" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing raw data as managed by
+<a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.prices" title="finagg.yfinance.feat.prices"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.yfinance.feat.prices</span></code></a> (an alias for
+<a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Prices" title="finagg.yfinance.feat.Prices"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.yfinance.feat.Prices</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.yfinance.sql.daily">
+<span class="sig-prename descclassname"><span class="pre">finagg.yfinance.sql.</span></span><span class="sig-name descname"><span class="pre">daily</span></span><a class="headerlink" href="#finagg.yfinance.sql.daily" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing refined data as managed by
+<a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.daily" title="finagg.yfinance.feat.daily"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.yfinance.feat.daily</span></code></a> (an alias for
+<a class="reference internal" href="finagg.yfinance.feat.html#finagg.yfinance.feat.Daily" title="finagg.yfinance.feat.Daily"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.yfinance.feat.Daily</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-finagg.yfinance">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-finagg.yfinance" title="Permalink to this heading"></a></h2>
+<p>Top-level yfinance interface.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="finagg.sec.feat.html" class="btn btn-neutral float-left" title="finagg.sec.feat package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="finagg.yfinance.feat.html" class="btn btn-neutral float-right" title="finagg.yfinance.feat package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

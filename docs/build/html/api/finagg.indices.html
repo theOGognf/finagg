@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.indices package &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="finagg.sec package" href="finagg.sec.html" />
+    <link rel="prev" title="finagg.fundam package" href="finagg.fundam.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="finagg.html">finagg package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="finagg.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="finagg.bea.html">finagg.bea package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.html">finagg.fred package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fundam.html">finagg.fundam package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">finagg.indices package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.html">finagg.sec package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.html">finagg.yfinance package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.backend">finagg.backend module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.frame">finagg.frame module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.portfolio">finagg.portfolio module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.ratelimit">finagg.ratelimit module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.testing">finagg.testing module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.utils">finagg.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">finagg</a></li>
+          <li class="breadcrumb-item"><a href="finagg.html">finagg package</a></li>
+      <li class="breadcrumb-item active">finagg.indices package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/finagg.indices.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="finagg-indices-package">
+<h1>finagg.indices package<a class="headerlink" href="#finagg-indices-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-finagg.indices.api">
+<span id="finagg-indices-api-module"></span><h2>finagg.indices.api module<a class="headerlink" href="#module-finagg.indices.api" title="Permalink to this heading"></a></h2>
+<p>Indices API (symbols in popular indices).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.indices.api.API">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.indices.api.</span></span><span class="sig-name descname"><span class="pre">API</span></span><a class="reference internal" href="../_modules/finagg/indices/api.html#API"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.indices.api.API" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/abc.html#abc.ABC" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
+<p>Abstract indices API.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.indices.api.API.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#finagg.indices.api.API.url" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.indices.api.API.get">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/indices/api.html#API.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.indices.api.API.get" title="Permalink to this definition"></a></dt>
+<dd><p>Main dataset API method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.indices.api.API.get_ticker_list">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_ticker_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#list" title="(in Python v3.10)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/indices/api.html#API.get_ticker_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.indices.api.API.get_ticker_list" title="Permalink to this definition"></a></dt>
+<dd><p>List the tickers in the index.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.indices.api.DJIA">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.indices.api.</span></span><span class="sig-name descname"><span class="pre">DJIA</span></span><a class="reference internal" href="../_modules/finagg/indices/api.html#DJIA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.indices.api.DJIA" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.indices.api.API" title="finagg.indices.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>Get data on all companies within the DJIA.</p>
+<p>The module variable <a class="reference internal" href="#finagg.indices.api.djia" title="finagg.indices.api.djia"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.indices.api.djia</span></code></a> is an instance of
+this API implementation and is the most popular interface for querying this
+API.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.indices.api.DJIA.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average'</span></em><a class="headerlink" href="#finagg.indices.api.DJIA.url" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.indices.api.DJIA.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/indices/api.html#DJIA.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.indices.api.DJIA.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get a dataframe containing data on the tickers in the DJIA.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">djia</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            company exchange ticker                industry       added  weight</span>
+<span class="go">0                3M     NYSE    MMM            Conglomerate  1976-08-09  0.0241</span>
+<span class="go">1  American Express     NYSE    AXP      Financial services  1982-08-30  0.0302</span>
+<span class="go">2             Amgen   NASDAQ   AMGN       Biopharmaceutical  2020-08-31  0.0548</span>
+<span class="go">3             Apple   NASDAQ   AAPL  Information technology  2015-03-19  0.0284</span>
+<span class="go">4            Boeing     NYSE     BA   Aerospace and defense  1987-03-12  0.0336</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.indices.api.Nasdaq100">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.indices.api.</span></span><span class="sig-name descname"><span class="pre">Nasdaq100</span></span><a class="reference internal" href="../_modules/finagg/indices/api.html#Nasdaq100"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.indices.api.Nasdaq100" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.indices.api.API" title="finagg.indices.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>Get data on all companies within the Nasdaq 100.</p>
+<p>The module variable <a class="reference internal" href="#finagg.indices.api.nasdaq100" title="finagg.indices.api.nasdaq100"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.indices.api.nasdaq100</span></code></a> is an instance of
+this API implementation and is the most popular interface for querying this
+API.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.indices.api.Nasdaq100.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://en.wikipedia.org/wiki/Nasdaq-100'</span></em><a class="headerlink" href="#finagg.indices.api.Nasdaq100.url" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.indices.api.Nasdaq100.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/indices/api.html#Nasdaq100.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.indices.api.Nasdaq100.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get a dataframe containing data on the tickers in the Nasdaq 100.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">nasdaq100</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">                       company ticker                industry                           sub_industry</span>
+<span class="go">0          Activision Blizzard   ATVI  Communication Services         Interactive Home Entertainment</span>
+<span class="go">1                   Adobe Inc.   ADBE  Information Technology                   Application Software</span>
+<span class="go">2                          ADP    ADP  Information Technology  Data Processing &amp; Outsourced Services</span>
+<span class="go">3                       Airbnb   ABNB  Consumer Discretionary     Internet &amp; Direct Marketing Retail</span>
+<span class="go">4             Align Technology   ALGN             Health Care                   Health Care Supplies</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.indices.api.SP500">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.indices.api.</span></span><span class="sig-name descname"><span class="pre">SP500</span></span><a class="reference internal" href="../_modules/finagg/indices/api.html#SP500"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.indices.api.SP500" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.indices.api.API" title="finagg.indices.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>Get data on all companies within the S&amp;P 500.</p>
+<p>The module variable <a class="reference internal" href="#finagg.indices.api.sp500" title="finagg.indices.api.sp500"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.indices.api.sp500</span></code></a> is an instance of
+this API implementation and is the most popular interface for querying this
+API.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.indices.api.SP500.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'</span></em><a class="headerlink" href="#finagg.indices.api.SP500.url" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.indices.api.SP500.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/indices/api.html#SP500.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.indices.api.SP500.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get a dataframe containing data on the tickers in the S&amp;P 500.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">sp500</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">    ticker               company                industry ...</span>
+<span class="go">0      MMM                    3M             Industrials ...</span>
+<span class="go">1      AOS           A. O. Smith             Industrials ...</span>
+<span class="go">2      ABT                Abbott             Health Care ...</span>
+<span class="go">3     ABBV                AbbVie             Health Care ...</span>
+<span class="go">4      ACN             Accenture  Information Technology ...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.indices.api.djia">
+<span class="sig-prename descclassname"><span class="pre">finagg.indices.api.</span></span><span class="sig-name descname"><span class="pre">djia</span></span><a class="headerlink" href="#finagg.indices.api.djia" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.indices.api.DJIA" title="finagg.indices.api.DJIA"><code class="xref py py-class docutils literal notranslate"><span class="pre">DJIA</span></code></a> API
+implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.indices.api.nasdaq100">
+<span class="sig-prename descclassname"><span class="pre">finagg.indices.api.</span></span><span class="sig-name descname"><span class="pre">nasdaq100</span></span><a class="headerlink" href="#finagg.indices.api.nasdaq100" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.indices.api.Nasdaq100" title="finagg.indices.api.Nasdaq100"><code class="xref py py-class docutils literal notranslate"><span class="pre">Nasdaq100</span></code></a> API
+implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.indices.api.sp500">
+<span class="sig-prename descclassname"><span class="pre">finagg.indices.api.</span></span><span class="sig-name descname"><span class="pre">sp500</span></span><a class="headerlink" href="#finagg.indices.api.sp500" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.indices.api.SP500" title="finagg.indices.api.SP500"><code class="xref py py-class docutils literal notranslate"><span class="pre">SP500</span></code></a> API
+implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.indices.api.get_ticker_set">
+<span class="sig-prename descclassname"><span class="pre">finagg.indices.api.</span></span><span class="sig-name descname"><span class="pre">get_ticker_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/indices/api.html#get_ticker_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.indices.api.get_ticker_set" title="Permalink to this definition"></a></dt>
+<dd><p>Get the set of tickers from all the popular indices.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;AAPL&quot;</span> <span class="ow">in</span> <span class="n">finagg</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_ticker_set</span><span class="p">()</span>  
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-finagg.indices.sql">
+<span id="finagg-indices-sql-module"></span><h2>finagg.indices.sql module<a class="headerlink" href="#module-finagg.indices.sql" title="Permalink to this heading"></a></h2>
+<p>Indices SQLAlchemy interfaces.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.indices.sql.metadata">
+<span class="sig-prename descclassname"><span class="pre">finagg.indices.sql.</span></span><span class="sig-name descname"><span class="pre">metadata</span></span><a class="headerlink" href="#finagg.indices.sql.metadata" title="Permalink to this definition"></a></dt>
+<dd><p>The metadata associated with all SQL tables defined in this module.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.indices.sql.djia">
+<span class="sig-prename descclassname"><span class="pre">finagg.indices.sql.</span></span><span class="sig-name descname"><span class="pre">djia</span></span><a class="headerlink" href="#finagg.indices.sql.djia" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing raw data as returned by
+<a class="reference internal" href="#finagg.indices.api.djia" title="finagg.indices.api.djia"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.indices.api.djia</span></code></a> (an alias for
+<a class="reference internal" href="#finagg.indices.api.DJIA" title="finagg.indices.api.DJIA"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.indices.api.DJIA</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.indices.sql.nasdaq100">
+<span class="sig-prename descclassname"><span class="pre">finagg.indices.sql.</span></span><span class="sig-name descname"><span class="pre">nasdaq100</span></span><a class="headerlink" href="#finagg.indices.sql.nasdaq100" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing raw data as returned by
+<a class="reference internal" href="#finagg.indices.api.nasdaq100" title="finagg.indices.api.nasdaq100"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.indices.api.nasdaq100</span></code></a> (an alias for
+<a class="reference internal" href="#finagg.indices.api.Nasdaq100" title="finagg.indices.api.Nasdaq100"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.indices.api.Nasdaq100</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.indices.sql.sp500">
+<span class="sig-prename descclassname"><span class="pre">finagg.indices.sql.</span></span><span class="sig-name descname"><span class="pre">sp500</span></span><a class="headerlink" href="#finagg.indices.sql.sp500" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing raw data as returned by
+<a class="reference internal" href="#finagg.indices.api.sp500" title="finagg.indices.api.sp500"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.indices.api.sp500</span></code></a> (an alias for
+<a class="reference internal" href="#finagg.indices.api.SP500" title="finagg.indices.api.SP500"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.indices.api.SP500</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.indices.sql.get_ticker_set">
+<span class="sig-prename descclassname"><span class="pre">finagg.indices.sql.</span></span><span class="sig-name descname"><span class="pre">get_ticker_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/indices/sql.html#get_ticker_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.indices.sql.get_ticker_set" title="Permalink to this definition"></a></dt>
+<dd><p>Get all unique tickers in the raw SQL tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;AAPL&quot;</span> <span class="ow">in</span> <span class="n">finagg</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">get_ticker_set</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-finagg.indices">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-finagg.indices" title="Permalink to this heading"></a></h2>
+<p>Top-level indices interface.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="finagg.fundam.html" class="btn btn-neutral float-left" title="finagg.fundam package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="finagg.sec.html" class="btn btn-neutral float-right" title="finagg.sec package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

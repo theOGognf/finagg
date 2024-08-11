@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.fundam package &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="finagg.indices package" href="finagg.indices.html" />
+    <link rel="prev" title="finagg.fred.feat package" href="finagg.fred.feat.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="finagg.html">finagg package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="finagg.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="finagg.bea.html">finagg.bea package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.html">finagg.fred package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">finagg.fundam package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.indices.html">finagg.indices package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.html">finagg.sec package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.yfinance.html">finagg.yfinance package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.backend">finagg.backend module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.frame">finagg.frame module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.portfolio">finagg.portfolio module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.ratelimit">finagg.ratelimit module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.testing">finagg.testing module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.utils">finagg.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">finagg</a></li>
+          <li class="breadcrumb-item"><a href="finagg.html">finagg package</a></li>
+      <li class="breadcrumb-item active">finagg.fundam package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/finagg.fundam.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="finagg-fundam-package">
+<h1>finagg.fundam package<a class="headerlink" href="#finagg-fundam-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-finagg.fundam.feat">
+<span id="finagg-fundam-feat-module"></span><h2>finagg.fundam.feat module<a class="headerlink" href="#module-finagg.fundam.feat" title="Permalink to this heading"></a></h2>
+<p>Fundamental features aggregated from several sources.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.fundam.feat.IndustryFundamental">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.fundam.feat.</span></span><span class="sig-name descname"><span class="pre">IndustryFundamental</span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#IndustryFundamental"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.IndustryFundamental" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Methods for gathering industry-averaged fundamental data.</p>
+<p>The class variable <a class="reference internal" href="#finagg.fundam.feat.Fundamental.industry" title="finagg.fundam.feat.Fundamental.industry"><code class="xref py py-attr docutils literal notranslate"><span class="pre">finagg.fundam.feat.Fundamental.industry</span></code></a> is an
+instance of this feature set implementation and is the most popular
+interface for calling feature methods.</p>
+<p class="rubric">Examples</p>
+<p>You can aggregate this feature set using a ticker or an industry code
+directly.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">industry</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span><span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;MSFT&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">industry</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">73</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.IndustryFundamental.from_refined">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_refined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Literal" title="(in Python v3.10)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">3</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#IndustryFundamental.from_refined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.IndustryFundamental.from_refined" title="Permalink to this definition"></a></dt>
+<dd><p>Get fundamental features from the feature store,
+aggregated for an entire industry.</p>
+<p>The industry can be chosen according to a company or
+by an industry code directly. If a company is provided,
+then the first <code class="docutils literal notranslate"><span class="pre">level</span></code> digits of the company’s SIC code
+is used for the industry code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – Company ticker. Lookup the industry associated
+with this company. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">code</span></code>.</p></li>
+<li><p><strong>code</strong> – Industry SIC code to use for industry lookup.
+Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">ticker</span></code>.</p></li>
+<li><p><strong>level</strong> – <p>Industry level to aggregate features at.
+The industry used according to <code class="docutils literal notranslate"><span class="pre">ticker</span></code> or <code class="docutils literal notranslate"><span class="pre">code</span></code>
+is subsampled according to this value. Options include:</p>
+<blockquote>
+<div><ul>
+<li><p>2 = major group (e.g., furniture and fixtures)</p></li>
+<li><p>3 = industry group (e.g., office furnitures)</p></li>
+<li><p>4 = industry (e.g., wood office furniture)</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>start</strong> – The start date of the observation period. Defaults to the
+first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period. Defaults to the
+last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fundamental data dataframe with each feature as a
+separate column. Sorted by date.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3.10/library/exceptions.html#ValueError" title="(in Python v3.10)"><strong>ValueError</strong></a> – If neither a <code class="docutils literal notranslate"><span class="pre">ticker</span></code> nor <code class="docutils literal notranslate"><span class="pre">code</span></code> are provided.</p></li>
+<li><p><strong>NoResultFound</strong> – If there are no rows for <code class="docutils literal notranslate"><span class="pre">ticker</span></code> or <code class="docutils literal notranslate"><span class="pre">code</span></code>
+    in the refined SQL table.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">industry</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span><span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">]</span>  
+<span class="go">name        PriceBookRatio  PriceEarningsRatio</span>
+<span class="go">date</span>
+<span class="go">2010-01-29        1.213018           17.020706</span>
+<span class="go">2010-02-01        1.166246           16.364503</span>
+<span class="go">2010-02-02        1.213047           17.021558</span>
+<span class="go">2010-02-03        1.222630           17.156233</span>
+<span class="go">2010-02-04        1.213401           17.026466</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">]</span>  
+<span class="go">name        PriceBookRatio  PriceEarningsRatio</span>
+<span class="go">date</span>
+<span class="go">2010-01-29        1.469641           20.667755</span>
+<span class="go">2010-02-01        1.414144           19.887156</span>
+<span class="go">2010-02-02        1.476001           20.756459</span>
+<span class="go">2010-02-03        1.490459           20.959443</span>
+<span class="go">2010-02-04        1.475500           20.749523</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.fundam.feat.NormalizedFundamental">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.fundam.feat.</span></span><span class="sig-name descname"><span class="pre">NormalizedFundamental</span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#NormalizedFundamental"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.NormalizedFundamental" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Fundamental features from quarterly and daily data, normalized
+according to industry averages and standard deviations.</p>
+<p>The class variable <a class="reference internal" href="#finagg.fundam.feat.Fundamental.normalized" title="finagg.fundam.feat.Fundamental.normalized"><code class="xref py py-attr docutils literal notranslate"><span class="pre">finagg.fundam.feat.Fundamental.normalized</span></code></a> is an
+instance of this feature set implementation and is the most popular
+interface for calling feature methods.</p>
+<p class="rubric">Examples</p>
+<p>It doesn’t matter which data source you use to gather features.
+They all return equivalent dataframes.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">from_other_refined</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.NormalizedFundamental.from_other_refined">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_other_refined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Literal" title="(in Python v3.10)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">3</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#NormalizedFundamental.from_other_refined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.NormalizedFundamental.from_other_refined" title="Permalink to this definition"></a></dt>
+<dd><p>Get features from other feature SQL tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – Company ticker.</p></li>
+<li><p><strong>level</strong> – <p>Industry level to aggregate relative features at.
+The industry used according to <code class="docutils literal notranslate"><span class="pre">ticker</span></code> is subsampled
+according to this value. Options include:</p>
+<blockquote>
+<div><ul>
+<li><p>2 = major group (e.g., furniture and fixtures)</p></li>
+<li><p>3 = industry group (e.g., office furnitures)</p></li>
+<li><p>4 = industry (e.g., wood office furniture)</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>start</strong> – The start date of the observation period. Defaults to the
+first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period. Defaults to the
+last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Relative fundamental data dataframe with each feature as a
+separate column. Sorted by filing date.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">from_other_refined</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            NORM(PriceBookRatio)  NORM(PriceEarningsRatio)</span>
+<span class="go">date</span>
+<span class="go">2010-01-25             -0.706266                 -0.706279</span>
+<span class="go">2010-01-26             -0.698805                 -0.698935</span>
+<span class="go">2010-01-27             -0.700699                 -0.700799</span>
+<span class="go">2010-01-28             -0.701446                 -0.701534</span>
+<span class="go">2010-01-29             -0.704558                 -0.704598</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.NormalizedFundamental.from_refined">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_refined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#NormalizedFundamental.from_refined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.NormalizedFundamental.from_refined" title="Permalink to this definition"></a></dt>
+<dd><p>Get features from the features SQL table.</p>
+<p>This is the preferred method for accessing features for
+offline analysis (assuming data in the local SQL table
+is current).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – Company ticker.</p></li>
+<li><p><strong>start</strong> – The start date of the observation period. Defaults to the
+first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period. Defaults to the
+last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fundamental data dataframe with each feature as a
+separate column. Sorted by date.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NoResultFound</strong> – If there are no rows for <code class="docutils literal notranslate"><span class="pre">ticker</span></code> in the
+    refined SQL table.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            NORM(PriceBookRatio)  NORM(PriceEarningsRatio)</span>
+<span class="go">date</span>
+<span class="go">2010-01-25             -0.706266                 -0.706279</span>
+<span class="go">2010-01-26             -0.698805                 -0.698935</span>
+<span class="go">2010-01-27             -0.700699                 -0.700799</span>
+<span class="go">2010-01-28             -0.701446                 -0.701534</span>
+<span class="go">2010-01-29             -0.704558                 -0.704598</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.NormalizedFundamental.get_candidate_ticker_set">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_candidate_ticker_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#NormalizedFundamental.get_candidate_ticker_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.NormalizedFundamental.get_candidate_ticker_set" title="Permalink to this definition"></a></dt>
+<dd><p>Get all unique tickers in the fundamental SQL table that MAY BE
+ELIGIBLE to be in the feature’s SQL table.</p>
+<p>This is just an alias for
+<a class="reference internal" href="#finagg.fundam.feat.Fundamental.get_ticker_set" title="finagg.fundam.feat.Fundamental.get_ticker_set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.fundam.feat.Fundamental.get_ticker_set()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lb</strong> – Minimum number of rows required to include a ticker in the
+returned set.</p></li>
+<li><p><strong>start</strong> – The start date of the observation period to include when
+searching for tickers. Defaults to the first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period to include when
+searching for tickers. Defaults to the last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All unique tickers that may be valid for creating
+industry-normalized fundamental features that also have at least
+<code class="docutils literal notranslate"><span class="pre">lb</span></code> rows for each tag used for constructing the features.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;AAPL&quot;</span> <span class="ow">in</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">get_candidate_ticker_set</span><span class="p">()</span>  
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.NormalizedFundamental.get_ticker_set">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_ticker_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#NormalizedFundamental.get_ticker_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.NormalizedFundamental.get_ticker_set" title="Permalink to this definition"></a></dt>
+<dd><p>Get all unique tickers in the feature’s SQL table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lb</strong> – Minimum number of rows required to include a ticker in the
+returned set.</p></li>
+<li><p><strong>start</strong> – The start date of the observation period to include when
+searching for tickers. Defaults to the first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period to include when
+searching for tickers. Defaults to the last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All unique tickers that contain all the columns for creating
+fundamental features that also have at least <code class="docutils literal notranslate"><span class="pre">lb</span></code> rows.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;AAPL&quot;</span> <span class="ow">in</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">get_ticker_set</span><span class="p">()</span>  
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.NormalizedFundamental.get_tickers_sorted_by">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_tickers_sorted_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ascending</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#list" title="(in Python v3.10)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#NormalizedFundamental.get_tickers_sorted_by"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.NormalizedFundamental.get_tickers_sorted_by" title="Permalink to this definition"></a></dt>
+<dd><p>Get all tickers in the feature’s SQL table sorted by a particular
+column for a date.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>column</strong> – Feature column to sort by.</p></li>
+<li><p><strong>ascending</strong> – Whether to return results in ascending order according
+to the values in <code class="docutils literal notranslate"><span class="pre">column</span></code>.</p></li>
+<li><p><strong>date</strong> – Date to select from. Defaults to the most recent date with
+available data. If a string, should be in “%Y-%m-%d” format.
+If an integer, should be days before the current date (e.g,
+<code class="docutils literal notranslate"><span class="pre">-2</span></code> indicates two days before today).</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tickers sorted by a feature column for a particular date.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/exceptions.html#ValueError" title="(in Python v3.10)"><strong>ValueError</strong></a> – If the integer date is positive.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ts</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">get_tickers_sorted_by</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="s2">&quot;NORM(PriceEarningsRatio)&quot;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="n">date</span><span class="o">=</span><span class="s2">&quot;2019-01-04&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;AMD&quot;</span> <span class="o">==</span> <span class="n">ts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.NormalizedFundamental.install">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recreate_tables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#NormalizedFundamental.install"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.NormalizedFundamental.install" title="Permalink to this definition"></a></dt>
+<dd><p>Install data associated with <code class="docutils literal notranslate"><span class="pre">tickers</span></code> by pulling data from the
+refined SQL tables, transforming them into normalized features, and
+then writing to the refined normalized fundamental SQL table.</p>
+<p>Tables associated with this method are created if they don’t already
+exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tickers</strong> – Set of tickers to install features for. Defaults to all
+the tickers from <a class="reference internal" href="#finagg.fundam.feat.Fundamental.get_ticker_set" title="finagg.fundam.feat.Fundamental.get_ticker_set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.fundam.feat.Fundamental.get_ticker_set()</span></code></a>.</p></li>
+<li><p><strong>processes</strong> – Number of background processes to run in parallel
+when processing <code class="docutils literal notranslate"><span class="pre">tickers</span></code>.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+<li><p><strong>recreate_tables</strong> – Whether to drop and recreate tables, wiping all
+previously installed data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of rows written to the feature’s SQL table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.NormalizedFundamental.to_refined">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_refined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#NormalizedFundamental.to_refined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.NormalizedFundamental.to_refined" title="Permalink to this definition"></a></dt>
+<dd><p>Write the dataframe to the feature store for <code class="docutils literal notranslate"><span class="pre">ticker</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – Company ticker.</p></li>
+<li><p><strong>df</strong> – Dataframe to store completely as rows in a local SQL
+table.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of rows written to the SQL table.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/exceptions.html#ValueError" title="(in Python v3.10)"><strong>ValueError</strong></a> – If the given dataframe’s columns do not match this
+    feature’s columns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.fundam.feat.Fundamental">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.fundam.feat.</span></span><span class="sig-name descname"><span class="pre">Fundamental</span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#Fundamental"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.Fundamental" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Method for gathering fundamental data on a stock using several sources.</p>
+<p>The module variable <a class="reference internal" href="#finagg.fundam.feat.fundam" title="finagg.fundam.feat.fundam"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.fundam.feat.fundam</span></code></a> is an instance of
+this feature set implementation and is the most popular interface for
+calling feature methods.</p>
+<p class="rubric">Examples</p>
+<p>It doesn’t matter which data source you use to gather features.
+They all return equivalent dataframes.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">from_api</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">from_raw</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df3</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">df3</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.fundam.feat.Fundamental.industry">
+<span class="sig-name descname"><span class="pre">industry</span></span><a class="headerlink" href="#finagg.fundam.feat.Fundamental.industry" title="Permalink to this definition"></a></dt>
+<dd><p>Fundamental features aggregated for an entire industry.
+The most popular way for accessing the <a class="reference internal" href="#finagg.fundam.feat.IndustryFundamental" title="finagg.fundam.feat.IndustryFundamental"><code class="xref py py-class docutils literal notranslate"><span class="pre">IndustryFundamental</span></code></a>
+feature set.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.fundam.feat.Fundamental.normalized">
+<span class="sig-name descname"><span class="pre">normalized</span></span><a class="headerlink" href="#finagg.fundam.feat.Fundamental.normalized" title="Permalink to this definition"></a></dt>
+<dd><p>A company’s fundamental features normalized by its industry.
+The most popular way for accessing the <a class="reference internal" href="#finagg.fundam.feat.NormalizedFundamental" title="finagg.fundam.feat.NormalizedFundamental"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalizedFundamental</span></code></a>
+feature set.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.Fundamental.from_api">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#Fundamental.from_api"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.Fundamental.from_api" title="Permalink to this definition"></a></dt>
+<dd><p>Get features directly from APIs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – Company ticker.</p></li>
+<li><p><strong>start</strong> – The start date of the observation period. Defaults to the
+first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period. Defaults to the
+last recorded date.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Combined quarterly and daily feature dataframe.
+Sorted by date.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">from_api</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            PriceBookRatio  PriceEarningsRatio</span>
+<span class="go">date</span>
+<span class="go">2010-01-25        0.175061            2.423509</span>
+<span class="go">2010-01-26        0.178035            2.464677</span>
+<span class="go">2010-01-27        0.178813            2.475447</span>
+<span class="go">2010-01-28        0.177153            2.452471</span>
+<span class="go">2010-01-29        0.173825            2.406396</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.Fundamental.from_raw">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#Fundamental.from_raw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.Fundamental.from_raw" title="Permalink to this definition"></a></dt>
+<dd><p>Get features directly from other raw SQL tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – Company ticker.</p></li>
+<li><p><strong>start</strong> – The start date of the observation period. Defaults to the
+first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period. Defaults to the
+last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Combined quarterly and daily feature dataframe.
+Sorted by date.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">from_raw</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            PriceBookRatio  PriceEarningsRatio</span>
+<span class="go">date</span>
+<span class="go">2010-01-25        0.175061            2.423509</span>
+<span class="go">2010-01-26        0.178035            2.464677</span>
+<span class="go">2010-01-27        0.178813            2.475447</span>
+<span class="go">2010-01-28        0.177153            2.452471</span>
+<span class="go">2010-01-29        0.173825            2.406396</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.Fundamental.from_refined">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_refined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#Fundamental.from_refined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.Fundamental.from_refined" title="Permalink to this definition"></a></dt>
+<dd><p>Get features from the feature-dedicated local SQL tables.</p>
+<p>This is the preferred method for accessing features for
+offline analysis (assuming data in the local SQL tables
+is current).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – Company ticker.</p></li>
+<li><p><strong>start</strong> – The start date of the observation period. Defaults to the
+first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period. Defaults to the
+last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Combined quarterly and daily feature dataframe.
+Sorted by date.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NoResultFound</strong> – If there are no rows for <code class="docutils literal notranslate"><span class="pre">ticker</span></code> in the
+    refined SQL table.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            PriceBookRatio  PriceEarningsRatio</span>
+<span class="go">date</span>
+<span class="go">2010-01-25        0.175061            2.423509</span>
+<span class="go">2010-01-26        0.178035            2.464677</span>
+<span class="go">2010-01-27        0.178813            2.475447</span>
+<span class="go">2010-01-28        0.177153            2.452471</span>
+<span class="go">2010-01-29        0.173825            2.406396</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.Fundamental.get_candidate_ticker_set">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_candidate_ticker_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#Fundamental.get_candidate_ticker_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.Fundamental.get_candidate_ticker_set" title="Permalink to this definition"></a></dt>
+<dd><p>Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE
+to be in the feature’s SQL table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lb</strong> – Minimum number of rows required to include a ticker in the
+returned set.</p></li>
+<li><p><strong>start</strong> – The start date of the observation period to include when
+searching for tickers. Defaults to the first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period to include when
+searching for tickers. Defaults to the last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All unique tickers that may be valid for both quarterly and daily
+features that also have at least <code class="docutils literal notranslate"><span class="pre">lb</span></code> rows used for constructing
+the features.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;AAPL&quot;</span> <span class="ow">in</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">get_candidate_ticker_set</span><span class="p">()</span>  
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.Fundamental.get_ticker_set">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_ticker_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#Fundamental.get_ticker_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.Fundamental.get_ticker_set" title="Permalink to this definition"></a></dt>
+<dd><p>Get all unique tickers in the feature’s SQL table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lb</strong> – Minimum number of rows required to include a ticker in the
+returned set.</p></li>
+<li><p><strong>start</strong> – The start date of the observation period to include when
+searching for tickers. Defaults to the first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period to include when
+searching for tickers. Defaults to the last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All unique tickers that contain all the columns for creating
+fundamental features that also have at least <code class="docutils literal notranslate"><span class="pre">lb</span></code> rows.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;AAPL&quot;</span> <span class="ow">in</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">fundam</span><span class="o">.</span><span class="n">get_ticker_set</span><span class="p">()</span>  
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.Fundamental.install">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tickers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recreate_tables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#Fundamental.install"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.Fundamental.install" title="Permalink to this definition"></a></dt>
+<dd><p>Install data associated with <code class="docutils literal notranslate"><span class="pre">tickers</span></code> by pulling data from other
+refined SQL tables, transforming them into fundamental features, and
+then writing to the refined fundamental features SQL table.</p>
+<p>Tables associated with this method are created if they don’t already
+exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tickers</strong> – Set of tickers to install features for. Defaults to all
+the tickers from <a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.get_ticker_set" title="finagg.sec.feat.Quarterly.get_ticker_set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.sec.feat.Quarterly.get_ticker_set()</span></code></a>.</p></li>
+<li><p><strong>processes</strong> – Number of background processes to run in parallel
+when processing <code class="docutils literal notranslate"><span class="pre">tickers</span></code>.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+<li><p><strong>recreate_tables</strong> – Whether to drop and recreate tables, wiping all
+previously installed data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of rows written to the feature’s SQL table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fundam.feat.Fundamental.to_refined">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_refined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.2)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/finagg/fundam/feat.html#Fundamental.to_refined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fundam.feat.Fundamental.to_refined" title="Permalink to this definition"></a></dt>
+<dd><p>Write the dataframe to the feature store for <code class="docutils literal notranslate"><span class="pre">ticker</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – Company ticker.</p></li>
+<li><p><strong>df</strong> – Dataframe to store completely as rows in a local SQL
+table.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.backend.engine" title="finagg.backend.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.backend.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of rows written to the SQL table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.fundam.feat.fundam">
+<span class="sig-prename descclassname"><span class="pre">finagg.fundam.feat.</span></span><span class="sig-name descname"><span class="pre">fundam</span></span><a class="headerlink" href="#finagg.fundam.feat.fundam" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing <a class="reference internal" href="#finagg.fundam.feat.Fundamental" title="finagg.fundam.feat.Fundamental"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.fundam.feat.Fundamental</span></code></a>.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-finagg.fundam.sql">
+<span id="finagg-fundam-sql-module"></span><h2>finagg.fundam.sql module<a class="headerlink" href="#module-finagg.fundam.sql" title="Permalink to this heading"></a></h2>
+<p>SQLAlchemy interfaces for fundamental features.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.fundam.sql.metadata">
+<span class="sig-prename descclassname"><span class="pre">finagg.fundam.sql.</span></span><span class="sig-name descname"><span class="pre">metadata</span></span><a class="headerlink" href="#finagg.fundam.sql.metadata" title="Permalink to this definition"></a></dt>
+<dd><p>The metadata associated with all SQL tables defined in this module.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.fundam.sql.fundam">
+<span class="sig-prename descclassname"><span class="pre">finagg.fundam.sql.</span></span><span class="sig-name descname"><span class="pre">fundam</span></span><a class="headerlink" href="#finagg.fundam.sql.fundam" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing refined data as managed by
+<a class="reference internal" href="#finagg.fundam.feat.fundam" title="finagg.fundam.feat.fundam"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.fundam.feat.fundam</span></code></a> (an alias for
+<a class="reference internal" href="#finagg.fundam.feat.Fundamental" title="finagg.fundam.feat.Fundamental"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.fundam.feat.Fundamental</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.fundam.sql.normalized_fundam">
+<span class="sig-prename descclassname"><span class="pre">finagg.fundam.sql.</span></span><span class="sig-name descname"><span class="pre">normalized_fundam</span></span><a class="headerlink" href="#finagg.fundam.sql.normalized_fundam" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing refined data as managed by
+<a class="reference internal" href="#finagg.fundam.feat.Fundamental.normalized" title="finagg.fundam.feat.Fundamental.normalized"><code class="xref py py-attr docutils literal notranslate"><span class="pre">finagg.fundam.feat.Fundamental.normalized</span></code></a> (an alias for
+<a class="reference internal" href="#finagg.fundam.feat.NormalizedFundamental" title="finagg.fundam.feat.NormalizedFundamental"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.fundam.feat.NormalizedFundamental</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-finagg.fundam">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-finagg.fundam" title="Permalink to this heading"></a></h2>
+<p>Top-level fundamentals interface.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="finagg.fred.feat.html" class="btn btn-neutral float-left" title="finagg.fred.feat package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="finagg.indices.html" class="btn btn-neutral float-right" title="finagg.indices package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
