@@ -123,7 +123,7 @@ class Nasdaq100(API):
         return df.rename(
             columns={
                 "Company": "company",
-                "Ticker": "ticker",
+                "Symbol": "ticker",
                 "GICS Sector": "industry",
                 "GICS Sub-Industry": "sub_industry",
             }
