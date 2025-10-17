@@ -202,13 +202,13 @@ def resolve_func_cols(
                 case _:
                     raise ValueError(f"{key} is not supported")
     if inplace and drop:
-        out.drop(columns=list(set(out.columns) - set(other_keys)), inplace=True)
+        out.drop(columns=list(set(out.columns) - set(other_keys)), inplace=True)  # type: ignore[arg-type, call-overload]
     elif drop:
-        out = out.drop(columns=list(set(out.columns) - set(other_keys)))
+        out = out.drop(columns=list(set(out.columns) - set(other_keys)))  # type: ignore[arg-type]
     return out
 
 
-def safe_log_change(series: pd.Series, other: None | pd.Series = None) -> pd.Series:  # type: ignore[type-arg]
+def safe_log_change(series: pd.Series, other: None | pd.Series = None) -> pd.Series:
     """Safely compute log change between two columns.
 
     Replaces ``Inf`` values with ``NaN`` and forward-fills.
@@ -230,7 +230,7 @@ def safe_log_change(series: pd.Series, other: None | pd.Series = None) -> pd.Ser
     return out.replace([-np.inf, np.inf], np.nan).ffill()
 
 
-def safe_pct_change(series: pd.Series, other: None | pd.Series = None) -> pd.Series:  # type: ignore[type-arg]
+def safe_pct_change(series: pd.Series, other: None | pd.Series = None) -> pd.Series:
     """Safely compute percent change between two columns.
 
     Replaces ``Inf`` values with ``NaN`` and forward-fills.
