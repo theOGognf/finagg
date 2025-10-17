@@ -8,7 +8,7 @@ import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 
-from ... import backend, utils
+from ... import config, utils
 from .. import api, sql
 
 logging.basicConfig(
@@ -115,7 +115,7 @@ class Economic:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Economic data series dataframe with each series
@@ -137,7 +137,7 @@ class Economic:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.series.name):
             sql.series.create(engine)
         with engine.begin() as conn:
@@ -175,7 +175,7 @@ class Economic:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Economic data series dataframe with each series
@@ -197,7 +197,7 @@ class Economic:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.economic.name):
             sql.economic.create(engine)
         with engine.begin() as conn:
@@ -229,7 +229,7 @@ class Economic:
 
         Args:
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
                 previously installed data.
 
@@ -237,7 +237,7 @@ class Economic:
             Number of rows written to the feature's SQL table.
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.economic.name):
             sql.economic.drop(engine, checkfirst=True)
             sql.economic.create(engine)
@@ -270,13 +270,13 @@ class Economic:
             df: Dataframe to store completely as rows in a local SQL
                 table.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Number of rows written to the SQL table.
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.economic.name):
             sql.economic.create(engine)
         df = df.reset_index("date")

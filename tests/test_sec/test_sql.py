@@ -9,7 +9,7 @@ import finagg
 @pytest.fixture
 def engine() -> Generator[Engine, None, None]:
     yield from finagg.testing.sqlite_engine(
-        finagg.backend.database_path, metadata=finagg.sec.sql.metadata
+        finagg.config.database_path, metadata=finagg.sec.sql.metadata
     )
 
 

@@ -7,7 +7,7 @@ from typing import Literal
 
 import click
 
-from .. import indices, utils
+from .. import utils
 from . import api as _api
 from . import feat as _feat
 
@@ -80,20 +80,13 @@ def entry_point() -> None:
     "--ticker-set",
     "-ts",
     "ticker_set",
-    type=click.Choice(["indices", "sec"]),
+    type=click.Choice(["sec"]),
     default=None,
     help=(
         "Set of tickers whose data is attempted to be downloaded and "
-        "inserted into the SQL tables. 'indices' indicates the set "
-        "of tickers from the three most popular indices (DJIA, "
-        "Nasdaq 100, and S&P 500). 'sec' indicates all the tickers that "
+        "inserted into the SQL tables. 'sec' indicates all the tickers that "
         "have data available through the SEC API (which is approximately "
-        "all publicly-traded US companies). 'indices' will effectively "
-        "only attempt to download and install data for relatively "
-        "popular and large market cap companies, while 'sec' will "
-        "attempt to download and install data for nearly all "
-        "publicly-traded US companies. Choosing 'indices' will be fast, "
-        "while choosing 'sec' will be slow but will include more diverse data."
+        "all publicly-traded US companies)."
     ),
 )
 @click.option(
@@ -139,7 +132,7 @@ def install(
     refined: list[Literal["quarterly", "quarterly.normalized"]] = [],
     all_: bool = False,
     ticker: list[str] = [],
-    ticker_set: None | Literal["indices", "sec"] = None,
+    ticker_set: None | Literal["sec"] = None,
     from_zip: bool = False,
     processes: int = mp.cpu_count() - 1,
     recreate_tables: bool = False,
@@ -175,8 +168,6 @@ def install(
     all_tickers = utils.expand_csv(ticker)
     if all_raw:
         match ticker_set:
-            case "indices":
-                all_tickers |= indices.api.get_ticker_set()
             case "sec":
                 all_tickers |= _api.get_ticker_set()
 

@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 
-from .... import backend, utils
+from .... import config, utils
 from ... import api, sql
 from .. import _raw
 
@@ -76,7 +76,7 @@ class IndustryAnnual:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Annual data dataframe with each tag as a
@@ -109,7 +109,7 @@ class IndustryAnnual:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.annual.name):
@@ -141,7 +141,7 @@ class IndustryAnnual:
         if not len(df.index):
             raise NoResultFound(f"No industry annual rows found for industry {code}.")
         df = df.drop(columns=["cik"])
-        df = df.melt(["fy", "filed"], var_name="name", value_name="value").set_index(
+        df = df.melt(["fy", "filed"], var_name="name", value_name="val").set_index(
             ["fy"]
         )
         df["filed"] = df.groupby(["fy"])["filed"].max()
@@ -151,7 +151,7 @@ class IndustryAnnual:
             .groupby(["fy", "filed", "name"])
             .agg(["mean", "std"])
             .reset_index()
-            .pivot(index=["fy", "filed"], columns="name")["value"]
+            .pivot(index=["fy", "filed"], columns="name")["val"]
             .sort_index()
             .dropna()
         )
@@ -203,7 +203,7 @@ class NormalizedAnnual:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Relative annual data dataframe with each tag as a
@@ -222,7 +222,7 @@ class NormalizedAnnual:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         company_df = Annual.from_refined(
             ticker, start=start, end=end, engine=engine
         ).reset_index(["filed"])
@@ -275,7 +275,7 @@ class NormalizedAnnual:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Annual data dataframe with each tag as a
@@ -298,7 +298,7 @@ class NormalizedAnnual:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.normalized_annual.name):
@@ -347,7 +347,7 @@ class NormalizedAnnual:
             end: The end date of the observation period to include when
                 searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             All unique tickers that may be valid for creating
@@ -380,7 +380,7 @@ class NormalizedAnnual:
             end: The end date of the observation period to include when
                 searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             All unique tickers that contain all the columns for creating
@@ -394,7 +394,7 @@ class NormalizedAnnual:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.normalized_annual.name):
@@ -439,7 +439,7 @@ class NormalizedAnnual:
             year: Year to select from. Defaults to the most recent year that
                 has data available.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Tickers sorted by a feature column for a particular year.
@@ -453,7 +453,7 @@ class NormalizedAnnual:
             True
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.normalized_annual.name):
@@ -507,7 +507,7 @@ class NormalizedAnnual:
             processes: Number of background processes to run in parallel
                 when processing ``tickers``.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
                 previously installed data.
 
@@ -524,7 +524,7 @@ class NormalizedAnnual:
             )
             return 0
 
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if recreate_tables or not sa.inspect(engine).has_table(
             sql.normalized_annual.name
         ):
@@ -557,13 +557,13 @@ class NormalizedAnnual:
             df: Dataframe to store completely as rows in a local SQL
                 table.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Number of rows written to the SQL table.
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.normalized_annual.name):
             sql.normalized_annual.create(engine)
         df = df.reset_index(["fy", "filed"])
@@ -675,7 +675,7 @@ class Annual:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Annual data dataframe with each tag as a
@@ -725,7 +725,7 @@ class Annual:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Annual data dataframe with each tag as a
@@ -748,7 +748,7 @@ class Annual:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.annual.name):
@@ -793,7 +793,7 @@ class Annual:
             end: The end date of the observation period to include when
                 searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             All unique tickers that may be valid for creating annual features
@@ -807,7 +807,7 @@ class Annual:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.tags.name):
@@ -864,7 +864,7 @@ class Annual:
             end: The end date of the observation period to include when
                 searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             All unique tickers that contain all the columns for creating
@@ -877,7 +877,7 @@ class Annual:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.annual.name):
@@ -922,7 +922,7 @@ class Annual:
             processes: Number of background processes to run in parallel
                 when processing ``tickers``.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
                 previously installed data.
 
@@ -939,7 +939,7 @@ class Annual:
             )
             return 0
 
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.annual.name):
             sql.annual.drop(engine, checkfirst=True)
             sql.annual.create(engine)
@@ -970,13 +970,13 @@ class Annual:
             ticker: Company ticker.
             df: Dataframe to store as rows in a local SQL table
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Number of rows written to the SQL table.
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.annual.name):
             sql.annual.create(engine)
         df = df.reset_index(["fy", "filed"])

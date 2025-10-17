@@ -56,13 +56,6 @@ of the complexity of its API, its data, and its features:
 * :mod:`finagg.sec.feat` for defining features and helper methods for
   constructing those features
 
-However, not all subpackages contain all three submodules. As another example,
-the :mod:`finagg.indices` subpackage only contains ``api`` and ``sql``
-submodules. No ``feat`` submodule is necessary for :mod:`finagg.indices`
-because there is no use for further transforming or normalizing the data
-available through :mod:`finagg.indices.api` or defined by
-:mod:`finagg.indices.sql`.
-
 API Implementations
 -------------------
 

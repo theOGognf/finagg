@@ -105,17 +105,6 @@ fy   fp filed                                                     ...
 2011 Q1 2011-01-19            0.459174                   0.278241 ...
      Q2 2011-04-21            0.000000                   0.000000 ...
 
-Getting fundamental financial features.
-
->>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)  # doctest: +SKIP
-            PriceBookRatio  PriceEarningsRatio
-date
-2010-01-25        0.175061            2.423509
-2010-01-26        0.178035            2.464678
-2010-01-27        0.178813            2.475448
-2010-01-28        0.177154            2.452471
-2010-01-29        0.173825            2.406396
-
 Use installed features for exploring refined aggregations of raw data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -152,11 +141,6 @@ Getting tickers sorted according to industry-normalized SEC EDGAR features.
 ...   year=2019
 ... )[:5]  # doctest: +SKIP
 ['XRAY', 'TSLA', 'SYY', 'WHR', 'KMB']
->>> finagg.fundam.feat.fundam.normalized.get_tickers_sorted_by(
-...   "PriceEarningsRatio",
-...   date="2019-01-04"
-... )[:5]  # doctest: +SKIP
-['AMD', 'TRGP', 'HPE', 'CZR', 'TSLA']
 
 .. toctree::
    :maxdepth: 2

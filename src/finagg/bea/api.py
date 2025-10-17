@@ -44,18 +44,18 @@ import pandas as pd
 import requests
 import requests_cache
 
-from .. import backend, ratelimit
+from .. import config, ratelimit
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-if backend.disable_http_cache:
+if config.disable_http_cache:
     session = requests.Session()
 else:
     session = requests_cache.CachedSession(
-        str(backend.http_cache_path),
+        str(config.http_cache_path),
         ignored_parameters=["ResultFormat"],
         expire_after=timedelta(days=1),
     )
@@ -130,33 +130,20 @@ class FixedAssets(API):
             df = (
                 pd.DataFrame(data)
                 .drop("NoteRef", axis=1)
-                .rename(
-                    columns={
-                        "TableName": "table_id",
-                        "SeriesCode": "series_code",
-                        "LineNumber": "line",
-                        "LineDescription": "line_description",
-                        "TimePeriod": "year",
-                        "METRIC_NAME": "metric",
-                        "CL_UNIT": "units",
-                        "UNIT_MULT": "e",
-                        "DataValue": "value",
-                    }
-                )
                 .astype(
                     {
-                        "table_id": "category",
-                        "series_code": "category",
-                        "line": "int16",
-                        "line_description": "object",
-                        "year": "int16",
-                        "metric": "category",
-                        "units": "category",
-                        "e": "int16",
+                        "TableName": "category",
+                        "SeriesCode": "category",
+                        "LineNumber": "int16",
+                        "LineDescription": "object",
+                        "TimePeriod": "int16",
+                        "METRIC_NAME": "category",
+                        "CL_UNIT": "category",
+                        "UNIT_MULT": "int16",
                     }
                 )
             )
-            df["value"] = df["value"].str.replace(",", "").astype("float32")
+            df["DataValue"] = df["DataValue"].str.replace(",", "").astype("float32")
             results.append(df)
         return pd.concat(results)
 
@@ -256,25 +243,15 @@ class GDPByIndustry(API):
             df["Quarter"] = df["Quarter"].apply(_roman_to_int)
 
         df.drop("NoteRef", axis=1, inplace=True)
-        return df.rename(
-            columns={
-                "TableID": "table_id",
-                "Frequency": "freq",
-                "Year": "year",
-                "Quarter": "quarter",
-                "Industry": "industry",
-                "IndustrYDescription": "industry_description",
-                "DataValue": "value",
-            }
-        ).astype(
+        return df.astype(
             {
-                "table_id": "int16",
-                "freq": "category",
-                "year": "int16",
-                "quarter": "category",
-                "industry": "category",
-                "industry_description": "object",
-                "value": "float32",
+                "TableID": "int16",
+                "Frequency": "category",
+                "Year": "int16",
+                "Quarter": "category",
+                "Industry": "category",
+                "IndustrYDescription": "object",
+                "DataValue": "float32",
             }
         )
 
@@ -330,30 +307,17 @@ class InputOutput(API):
         return (
             pd.DataFrame(data)
             .drop("NoteRef", axis=1)
-            .rename(
-                columns={
-                    "TableID": "table_id",
-                    "Year": "year",
-                    "RowCode": "row_code",
-                    "RowDescr": "row_description",
-                    "RowType": "row_type",
-                    "ColCode": "col_code",
-                    "ColDescr": "col_description",
-                    "ColType": "col_type",
-                    "DataValue": "value",
-                }
-            )
             .astype(
                 {
-                    "table_id": "int16",
-                    "year": "int16",
-                    "row_code": "category",
-                    "row_description": "object",
-                    "row_type": "category",
-                    "col_code": "category",
-                    "col_description": "object",
-                    "col_type": "category",
-                    "value": "float32",
+                    "TableID": "int16",
+                    "Year": "int16",
+                    "RowCode": "category",
+                    "RowDescr": "object",
+                    "RowType": "category",
+                    "ColCode": "category",
+                    "ColDescr": "object",
+                    "ColType": "category",
+                    "DataValue": "float32",
                 }
             )
         )
@@ -411,33 +375,20 @@ class NIPA(API):
             df[["Year", "Quarter"]] = df["TimePeriod"].str.split("Q", n=1, expand=True)
             df["Quarter"] = df["Quarter"].astype(int)
             df.drop(["TimePeriod", "NoteRef"], axis=1, inplace=True)
-            df = df.rename(
-                columns={
-                    "TableName": "table_id",
-                    "SeriesCode": "series_code",
-                    "LineNumber": "line",
-                    "LineDescription": "line_description",
-                    "Year": "year",
-                    "Quarter": "quarter",
-                    "METRIC_NAME": "metric",
-                    "CL_UNIT": "units",
-                    "UNIT_MULT": "e",
-                    "DataValue": "value",
-                }
-            ).astype(
+            df = df.astype(
                 {
-                    "table_id": "category",
-                    "series_code": "category",
-                    "line": "int16",
-                    "line_description": "object",
-                    "year": "int16",
-                    "quarter": "int16",
-                    "metric": "category",
-                    "units": "category",
-                    "e": "int16",
+                    "TableName": "category",
+                    "SeriesCode": "category",
+                    "LineNumber": "int16",
+                    "LineDescription": "object",
+                    "Year": "int16",
+                    "Quarter": "int16",
+                    "METRIC_NAME": "category",
+                    "CL_UNIT": "category",
+                    "UNIT_MULT": "int16",
                 }
             )
-            df["value"] = df["value"].str.replace(",", "").astype("float32")
+            df["DataValue"] = df["DataValue"].str.replace(",", "").astype("float32")
             results.append(df)
         return pd.concat(results)
 

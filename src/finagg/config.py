@@ -56,7 +56,7 @@ variable will take precedence over this value.
 database_url = os.environ.get("FINAGG_DATABASE_URL", f"sqlite:///{database_path}")
 """SQLAlchemy URL to the database. This can be set with the
 ``FINAGG_DATABASE_URL`` environment variable and should include a file extension.
-This defaults to ``f"sqlite:///{finagg.backend.database_path}"``.
+This defaults to ``f"sqlite:///{finagg.config.database_path}"``.
 
 :meta hide-value:
 """

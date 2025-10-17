@@ -11,7 +11,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from ... import backend, indices, utils
+from ... import config, utils
 from .. import api, sql
 
 logging.basicConfig(
@@ -46,7 +46,7 @@ class Submissions:
         Args:
             ticker: Company ticker.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             A dataframe containing the company's metadata.
@@ -57,11 +57,11 @@ class Submissions:
 
         Examples:
             >>> finagg.sec.feat.submissions.from_raw("AAPL")  # doctest: +SKIP
-                      cik ticker entity_type   sic sic_description ...
+                      cik ticker  entityType   sic  sicDescription ...
             0  0000320193   AAPL        None  3571            None ...
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         with engine.begin() as conn:
@@ -90,14 +90,14 @@ class Submissions:
 
         Args:
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Examples:
             >>> "AAPL" in finagg.sec.feat.submissions.get_ticker_set()  # doctest: +SKIP
             True
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         with engine.begin() as conn:
@@ -107,7 +107,7 @@ class Submissions:
     @classmethod
     def install(
         cls,
-        tickers: None | set[str] = None,
+        tickers: set[str],
         *,
         engine: None | Engine = None,
         recreate_tables: bool = False,
@@ -119,10 +119,9 @@ class Submissions:
         exist.
 
         Args:
-            tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+            tickers: Set of tickers to install features for.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
                 previously installed data.
 
@@ -130,8 +129,7 @@ class Submissions:
             Number of rows written to the feature's SQL table.
 
         """
-        tickers = tickers or indices.api.get_ticker_set()
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.drop(engine, checkfirst=True)
             sql.submissions.create(engine)
@@ -160,7 +158,7 @@ class Submissions:
     @classmethod
     def install_from_zip(
         cls,
-        tickers: None | set[str] = None,
+        tickers: set[str],
         *,
         engine: None | Engine = None,
         recreate_tables: bool = False,
@@ -173,10 +171,9 @@ class Submissions:
         exist.
 
         Args:
-            tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`finagg.indices.api.get_ticker_set`.
+            tickers: Set of tickers to install features for.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
                 previously installed data.
 
@@ -184,12 +181,12 @@ class Submissions:
             Number of rows written to the feature's SQL table.
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.drop(engine, checkfirst=True)
             sql.submissions.create(engine)
 
-        submissions_zipfile_path = backend.root_path / "findata" / "submissions.zip"
+        submissions_zipfile_path = config.root_path / "findata" / "submissions.zip"
         if recreate_tables or not submissions_zipfile_path.exists():
             zipfile = api.submissions.download_zip()
         else:
@@ -197,7 +194,6 @@ class Submissions:
 
         # Filter by guaranteeing a ticker is actually present in
         # the set of tickers provided.
-        tickers = tickers or indices.api.get_ticker_set()
         files = []
         for f in zipfile.namelist():
             try:
@@ -237,13 +233,13 @@ class Submissions:
         Args:
             df: Dataframe to store as rows in a local SQL table
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Number of rows written to the SQL table.
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         with engine.begin() as conn:
@@ -335,7 +331,7 @@ class Tags:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             A dataframe containing the company concept tag values
@@ -347,7 +343,7 @@ class Tags:
 
         Examples:
             >>> finagg.sec.feat.tags.from_raw("AAPL", "EarningsPerShareBasic").head(5)  # doctest: +SKIP
-                                     units  value
+                                     units    val
             fy   fp filed
             2009 Q3 2009-07-22  USD/shares   4.20
             2010 Q1 2010-01-25  USD/shares   2.54
@@ -358,7 +354,7 @@ class Tags:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.tags.name):
@@ -370,8 +366,8 @@ class Tags:
                         sql.tags.c.fy,
                         sql.tags.c.fp,
                         sql.tags.c.filed,
-                        sql.tags.c.units,
-                        sql.tags.c.value,
+                        sql.tags.c.uom,
+                        sql.tags.c.val,
                     )
                     .join(
                         sql.submissions,
@@ -388,7 +384,7 @@ class Tags:
             )
         if not len(df.index):
             raise NoResultFound(f"No {tag} rows found for {ticker}.")
-        return df.set_index(["fy", "fp", "filed"]).sort_index()
+        return df.astype({"fy": "int32"}).set_index(["fy", "fp", "filed"]).sort_index()
 
     @classmethod
     def get_ticker_set(
@@ -416,7 +412,7 @@ class Tags:
             end: The end date of the observation period to include when
                 searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Examples:
             >>> "AAPL" in finagg.sec.feat.tags.get_ticker_set()  # doctest: +SKIP
@@ -425,7 +421,7 @@ class Tags:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.tags.name):
@@ -478,7 +474,7 @@ class Tags:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             A dataframe containing the company concept tag values
@@ -505,7 +501,7 @@ class Tags:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.tags.name):
@@ -553,7 +549,7 @@ class Tags:
             tickers: Set of tickers to install features for. Defaults to all
                 the tickers from :meth:`Submissions.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
                 previously installed data.
 
@@ -562,7 +558,7 @@ class Tags:
 
         """
         tickers = tickers or Submissions.get_ticker_set()
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.tags.name):
             sql.tags.drop(engine, checkfirst=True)
             sql.tags.create(engine)
@@ -627,7 +623,7 @@ class Tags:
             processes: Number of background processes to use when installing
                 data.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
                 previously installed data.
 
@@ -635,12 +631,12 @@ class Tags:
             Number of rows written to the feature's SQL table.
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.tags.name):
             sql.tags.drop(engine, checkfirst=True)
             sql.tags.create(engine)
 
-        company_facts_zipfile_path = backend.root_path / "findata" / "companyfacts.zip"
+        company_facts_zipfile_path = config.root_path / "findata" / "companyfacts.zip"
         if recreate_tables or not company_facts_zipfile_path.exists():
             zipfile = api.company_facts.download_zip()
         else:
@@ -686,13 +682,13 @@ class Tags:
         Args:
             df: Dataframe to store as rows in a local SQL table
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Number of rows written to the SQL table.
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.tags.name):
             sql.tags.create(engine)
         with engine.begin() as conn:

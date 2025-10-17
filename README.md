@@ -35,7 +35,7 @@ financials, stock histories, etc.) from 3rd party APIs into a local SQL
 database.
 
 ```console
-finagg install -ss economic -ts indices -z -r
+finagg install -ss economic -ts sec -z -r
 ```
 
 The installation will point you where to get free API keys for each API that
@@ -124,19 +124,6 @@ fy   fp filed                                                     ...
      Q2 2011-04-21            0.000000                   0.000000 ...
 ```
 
-Get an aggregation of quarterly and daily features for a particular ticker.
-
-```pycon
->>> finagg.fundam.feat.fundam.from_raw("AAPL").head(5)
-            PriceBookRatio  PriceEarningsRatio
-date
-2010-01-25        0.175061            2.423509
-2010-01-26        0.178035            2.464678
-2010-01-27        0.178813            2.475448
-2010-01-28        0.177154            2.452471
-2010-01-29        0.173825            2.406396
-```
-
 ### Use installed features for exploring refined aggregations of raw data
 
 *These methods require installing refined data through the* ``finagg install``
@@ -179,16 +166,6 @@ Get tickers sorted by an industry-averaged quarterly report feature.
 ['XRAY', 'TSLA', 'SYY', 'WHR', 'KMB']
 ```
 
-Get tickers sorted by an industry-averaged fundamental feature.
-
-```pycon
->>> finagg.fundam.feat.fundam.normalized.get_tickers_sorted_by(
-...   "NORM(PriceEarningsRatio)",
-...   date="2019-01-04"
-... )[:5]
-['AMD', 'TRGP', 'HPE', 'CZR', 'TSLA']
-```
-
 # Configuration
 
 ## API Keys and User Agents
@@ -203,9 +180,6 @@ configuring API keys and user agents:
   a free API key from the [BEA API site][3].
 * ``FRED_API_KEY`` is for the Federal Reserve Economic Data API key. You can get
   a free API key from the [FRED API site][8].
-* ``INDICES_API_USER_AGENT`` is for scraping popular indices' compositions from
-  Wikipedia and should be equivalent to a browser's user agent declaration.
-  This defaults to a hardcoded value, but it may not always work.
 * ``SEC_API_USER_AGENT`` is for the Securities and Exchange Commission's API. This
   should be of the format ``FIRST_NAME LAST_NAME E_MAIL``.
 
@@ -238,7 +212,6 @@ You can change some **finagg** behavior with other environment variables:
 * [requests-cache][13] for caching HTTP requests to avoid getting throttled by 3rd
   party API servers.
 * [SQLAlchemy][17] for a SQL Python interface.
-* [yfinance][18] for historical stock data from Yahoo! Finance.
 
 # API References
 
@@ -308,4 +281,3 @@ degradation on Windows.
 [15]: https://github.com/sec-edgar/sec-edgar
 [16]: https://github.com/jadchaar/sec-edgar-api
 [17]: https://www.sqlalchemy.org/
-[18]: https://github.com/ranaroussi/yfinance

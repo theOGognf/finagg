@@ -8,7 +8,6 @@ Dependencies
 * `requests`_ for HTTP requests to 3rd party APIs.
 * `requests-cache`_ for caching HTTP requests to avoid getting throttled by 3rd party API servers.
 * `SQLAlchemy`_ for a SQL Python interface.
-* `yfinance`_ for historical stock data from Yahoo! Finance.
 
 API References
 --------------
@@ -40,4 +39,3 @@ Related Projects
 .. _`sec-edgar`: https://github.com/sec-edgar/sec-edgar
 .. _`sec-edgar-api`: https://github.com/jadchaar/sec-edgar-api
 .. _`SQLAlchemy`: https://www.sqlalchemy.org/
-.. _`yfinance`: https://github.com/ranaroussi/yfinance

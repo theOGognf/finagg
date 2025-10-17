@@ -14,9 +14,6 @@ configuring API keys and user agents:
   a free API key from the `BEA API site`_.
 * ``FRED_API_KEY`` is for the Federal Reserve Economic Data API key. You can get
   a free API key from the `FRED API site`_.
-* ``INDICES_API_USER_AGENT`` is for scraping popular indices' compositions from
-  Wikipedia and should be equivalent to a browser's user agent declaration.
-  This defaults to a hardcoded value, but it may not always work.
 * ``SEC_API_USER_AGENT`` is for the Securities and Exchange Commission's API. This
   should be of the format ``FIRST_NAME LAST_NAME E_MAIL``.
 

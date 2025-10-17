@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 
-from .... import backend, utils
+from .... import config, utils
 from ... import api, sql
 from .. import _raw
 
@@ -76,7 +76,7 @@ class IndustryQuarterly:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Quarterly data dataframe with each tag as a
@@ -109,7 +109,7 @@ class IndustryQuarterly:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.quarterly.name):
@@ -144,7 +144,7 @@ class IndustryQuarterly:
             )
         df = df.drop(columns=["cik"])
         df = df.melt(
-            ["fy", "fp", "filed"], var_name="name", value_name="value"
+            ["fy", "fp", "filed"], var_name="name", value_name="val"
         ).set_index(["fy", "fp"])
         df["filed"] = df.groupby(["fy", "fp"])["filed"].max()
         return (
@@ -153,7 +153,7 @@ class IndustryQuarterly:
             .groupby(["fy", "fp", "filed", "name"])
             .agg(["mean", "std"])
             .reset_index()
-            .pivot(index=["fy", "fp", "filed"], columns="name")["value"]
+            .pivot(index=["fy", "fp", "filed"], columns="name")["val"]
             .sort_index()
             .dropna()
         )
@@ -205,7 +205,7 @@ class NormalizedQuarterly:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Relative quarterly data dataframe with each tag as a
@@ -224,7 +224,7 @@ class NormalizedQuarterly:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         company_df = Quarterly.from_refined(
             ticker, start=start, end=end, engine=engine
         ).reset_index(["filed"])
@@ -277,7 +277,7 @@ class NormalizedQuarterly:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Quarterly data dataframe with each tag as a
@@ -300,7 +300,7 @@ class NormalizedQuarterly:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.normalized_quarterly.name):
@@ -349,7 +349,7 @@ class NormalizedQuarterly:
             end: The end date of the observation period to include when
                 searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             All unique tickers that may be valid for creating
@@ -382,7 +382,7 @@ class NormalizedQuarterly:
             end: The end date of the observation period to include when
                 searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             All unique tickers that contain all the columns for creating
@@ -396,7 +396,7 @@ class NormalizedQuarterly:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.normalized_quarterly.name):
@@ -444,7 +444,7 @@ class NormalizedQuarterly:
             quarter: Quarter to select from. Defaults to the most recent quarter
                 that has data available.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Tickers sorted by a feature column for a particular year and quarter.
@@ -459,7 +459,7 @@ class NormalizedQuarterly:
             True
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.normalized_quarterly.name):
             sql.normalized_quarterly.create(engine)
         with engine.begin() as conn:
@@ -520,7 +520,7 @@ class NormalizedQuarterly:
             processes: Number of background processes to run in parallel
                 when processing ``tickers``.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
                 previously installed data.
 
@@ -537,7 +537,7 @@ class NormalizedQuarterly:
             )
             return 0
 
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if recreate_tables or not sa.inspect(engine).has_table(
             sql.normalized_quarterly.name
         ):
@@ -570,13 +570,13 @@ class NormalizedQuarterly:
             df: Dataframe to store completely as rows in a local SQL
                 table.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Number of rows written to the SQL table.
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.normalized_quarterly.name):
             sql.normalized_quarterly.create(engine)
         df = df.reset_index(["fy", "fp", "filed"])
@@ -692,7 +692,7 @@ class Quarterly:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Quarterly data dataframe with each tag as a
@@ -742,7 +742,7 @@ class Quarterly:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Quarterly data dataframe with each tag as a
@@ -765,7 +765,7 @@ class Quarterly:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.quarterly.name):
@@ -810,7 +810,7 @@ class Quarterly:
             end: The end date of the observation period to include when
                 searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             All unique tickers that may be valid for creating quarterly features
@@ -824,7 +824,7 @@ class Quarterly:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.tags.name):
@@ -881,7 +881,7 @@ class Quarterly:
             end: The end date of the observation period to include when
                 searching for tickers. Defaults to the last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             All unique tickers that contain all the columns for creating
@@ -894,7 +894,7 @@ class Quarterly:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.submissions.name):
             sql.submissions.create(engine)
         if not sa.inspect(engine).has_table(sql.quarterly.name):
@@ -939,7 +939,7 @@ class Quarterly:
             processes: Number of background processes to run in parallel
                 when processing ``tickers``.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
                 previously installed data.
 
@@ -956,7 +956,7 @@ class Quarterly:
             )
             return 0
 
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.quarterly.name):
             sql.quarterly.drop(engine, checkfirst=True)
             sql.quarterly.create(engine)
@@ -987,13 +987,13 @@ class Quarterly:
             ticker: Company ticker.
             df: Dataframe to store as rows in a local SQL table
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Number of rows written to the SQL table.
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.quarterly.name):
             sql.quarterly.create(engine)
         df = df.reset_index(["fy", "fp", "filed"])

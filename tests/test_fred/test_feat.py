@@ -11,7 +11,7 @@ import finagg
 @pytest.fixture
 def engine() -> Generator[Engine, None, None]:
     yield from finagg.testing.sqlite_engine(
-        finagg.backend.database_path, table=finagg.fred.sql.economic
+        finagg.config.database_path, table=finagg.fred.sql.economic
     )
 
 

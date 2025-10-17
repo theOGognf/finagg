@@ -10,13 +10,13 @@ import pandas as pd
 import requests
 import requests_cache
 
-from ... import backend, ratelimit
+from ... import config, ratelimit
 
-if backend.disable_http_cache:
+if config.disable_http_cache:
     session = requests.Session()
 else:
     session = requests_cache.CachedSession(
-        str(backend.http_cache_path),
+        str(config.http_cache_path),
         ignored_parameters=["api_key", "file_type"],
         expire_after=timedelta(weeks=1),
     )

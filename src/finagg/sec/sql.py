@@ -5,7 +5,7 @@ from typing import Any, Literal
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 
-from .. import backend
+from .. import config
 
 metadata = sa.MetaData()
 """The metadata associated with all SQL tables defined in this module.
@@ -19,10 +19,10 @@ submissions = sa.Table(
     sa.Column("cik", sa.String, primary_key=True, doc="Unique SEC ID."),
     sa.Column("ticker", sa.String, nullable=False, doc="Company ticker."),
     sa.Column(
-        "entity_type", sa.String, doc="Type of company standing (e.g., operating)."
+        "entityType", sa.String, doc="Type of company standing (e.g., operating)."
     ),
     sa.Column("sic", sa.String, nullable=False, doc="Industry code."),
-    sa.Column("sic_description", sa.String, doc="Industry code description."),
+    sa.Column("sicDescription", sa.String, doc="Industry code description."),
     sa.Column("name", sa.String, doc="Company name."),
     sa.Column(
         "exchanges",
@@ -33,7 +33,7 @@ submissions = sa.Table(
     sa.Column("description", sa.String, doc="Entity description (often empty/null)."),
     sa.Column("category", sa.String, doc="SEC entity category."),
     sa.Column(
-        "fiscal_year_end",
+        "fiscalYearEnd",
         sa.String,
         doc="The company's last day of the fiscal year (MMDD).",
     ),
@@ -55,7 +55,7 @@ tags = sa.Table(
         primary_key=True,
         doc="Unique SEC ID.",
     ),
-    sa.Column("accn", sa.String, doc="Unique submission/access number."),
+    sa.Column("accession_number", sa.String, doc="Unique submission/access number."),
     sa.Column(
         "taxonomy", sa.String, doc="XBRL taxonomy the submission's tag belongs to."
     ),
@@ -69,9 +69,8 @@ tags = sa.Table(
         "form", sa.String, nullable=False, doc="Submission form type (e.g., 10-Q)."
     ),
     sa.Column(
-        "units",
+        "uom",
         sa.String,
-        nullable=False,
         doc="Unit of measurements for tag value (e.g., USD or shares).",
     ),
     sa.Column(
@@ -102,7 +101,7 @@ tags = sa.Table(
         doc="When the submission was actually filed.",
     ),
     sa.Column(
-        "frame",
+        "ccp",
         sa.String,
         nullable=True,
         doc="Often a concatenation of `fy` and `fp`.",
@@ -119,8 +118,8 @@ tags = sa.Table(
         nullable=True,
         doc="Long description of `tag` and `label`.",
     ),
-    sa.Column("entity", sa.String, doc="Company name."),
-    sa.Column("value", sa.Float, nullable=False, doc="Tag value with units `units`."),
+    sa.Column("entityName", sa.String, doc="Company name."),
+    sa.Column("val", sa.Float, nullable=False, doc="Tag value with units `uom`."),
 )
 """SQL table for storing raw data as managed by :data:`finagg.sec.feat.tags`
 (an alias for :class:`finagg.sec.feat.Tags`).
@@ -674,7 +673,7 @@ def get_cik(ticker: str, /, *, engine: None | Engine = None) -> str:
     Args:
         ticker: A company's ticker symbol.
         engine: Feature store database engine. Defaults to the engine
-            at :data:`finagg.backend.engine`.
+            at :data:`finagg.config.engine`.
 
     Returns:
         The company's corresponding SEC CIK.
@@ -686,7 +685,7 @@ def get_cik(ticker: str, /, *, engine: None | Engine = None) -> str:
         True
 
     """
-    engine = engine or backend.engine
+    engine = engine or config.engine
     if not sa.inspect(engine).has_table(submissions.name):
         submissions.create(engine)
     with engine.begin() as conn:
@@ -713,7 +712,7 @@ def get_metadata(
         cik: Company SEC CIK. Mutually exclusive with ``ticker``.
         ticker: Company ticker. Mutually exclusive with ``cik``.
         engine: Feature store database engine. Defaults to the engine
-            at :data:`finagg.backend.engine`.
+            at :data:`finagg.config.engine`.
 
     Returns:
         A company's metadata as a dictionary.
@@ -723,7 +722,7 @@ def get_metadata(
         {'cik': '0000789019', 'ticker': 'MSFT', 'name': 'microsoft corp', 'sic': '7372'}
 
     """
-    engine = engine or backend.engine
+    engine = engine or config.engine
     if not sa.inspect(engine).has_table(submissions.name):
         submissions.create(engine)
 
@@ -759,7 +758,7 @@ def get_ticker(cik: str, /, *, engine: None | Engine = None) -> str:
     Args:
         cik: A company's SEC CIK.
         engine: Feature store database engine. Defaults to the engine
-            at :data:`finagg.backend.engine`.
+            at :data:`finagg.config.engine`.
 
     Returns:
         The company's corresponding ticker symbol.
@@ -771,7 +770,7 @@ def get_ticker(cik: str, /, *, engine: None | Engine = None) -> str:
         True
 
     """
-    engine = engine or backend.engine
+    engine = engine or config.engine
     if not sa.inspect(engine).has_table(submissions.name):
         submissions.create(engine)
     with engine.begin() as conn:
@@ -811,7 +810,7 @@ def get_tickers_in_industry(
                 - 4 = industry (e.g., wood office furniture)
 
         engine: Feature store database engine. Defaults to the engine
-            at :data:`finagg.backend.engine`.
+            at :data:`finagg.config.engine`.
 
     Returns:
         A set of tickers that all share the same industry as denoted by
@@ -823,7 +822,7 @@ def get_tickers_in_industry(
         True
 
     """
-    engine = engine or backend.engine
+    engine = engine or config.engine
     if not sa.inspect(engine).has_table(submissions.name):
         submissions.create(engine)
     with engine.begin() as conn:

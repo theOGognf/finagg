@@ -37,18 +37,18 @@ import requests
 import requests_cache
 from tqdm import tqdm
 
-from .. import backend, ratelimit, utils
+from .. import config, ratelimit, utils
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-if backend.disable_http_cache:
+if config.disable_http_cache:
     session = requests.Session()
 else:
     session = requests_cache.CachedSession(
-        str(backend.http_cache_path),
+        str(config.http_cache_path),
         expire_after=timedelta(weeks=1),
     )
 
@@ -168,7 +168,7 @@ class CompanyConcept(API):
             ...     taxonomy="us-gaap",
             ...     units="USD/shares",
             ... ).head(5)  # doctest: +SKIP
-                    start         end  value                  accn    fy  fp ...
+                    start         end    val      accession_number    fy  fp ...
             0  2006-10-01  2007-09-29   4.04  0001193125-09-214859  2009  FY ...
             1  2006-10-01  2007-09-29   4.04  0001193125-10-012091  2009  FY ...
             2  2007-09-30  2008-06-28   4.20  0001193125-09-153165  2009  Q3 ...
@@ -196,7 +196,7 @@ class CompanyConcept(API):
         for k, v in content.items():
             results[k] = v
         results["cik"] = cik
-        return results.rename(columns={"entityName": "entity", "val": "value"})
+        return results
 
     @classmethod
     def get_multiple_original(
@@ -237,7 +237,7 @@ class CompanyConcept(API):
             ...     finagg.sec.api.popular_concepts,
             ...     ticker="AAPL",
             ... ).head(5)  # doctest: +SKIP
-                fy  fp     tag         end         value  ...
+                 fy  fp     tag         end           val ...
             0  2009  Q3  Assets  2009-06-27  4.814000e+10 ...
             1  2010  Q1  Assets  2009-12-26  5.392600e+10 ...
             2  2010  Q2  Assets  2010-03-27  5.705700e+10 ...
@@ -265,7 +265,7 @@ class CompanyConcept(API):
             df = df[(df["filed"] >= start) & (df["filed"] <= end)]
             dfs.append(df)
         df = pd.concat(dfs)
-        return df
+        return df.astype({"fy": "int64"})
 
 
 class CompanyFacts(API):
@@ -308,7 +308,7 @@ class CompanyFacts(API):
             stream=True,
             user_agent=user_agent,
         )
-        dst = backend.root_path / "findata" / "companyfacts.zip"
+        dst = config.root_path / "findata" / "companyfacts.zip"
         pb = tqdm(
             total=int(response.headers.get("content-length", 0)),
             desc=f"Downloading companyfacts.zip to {dst}",
@@ -352,7 +352,7 @@ class CompanyFacts(API):
 
         Examples:
             >>> finagg.sec.api.company_facts.get(ticker="AAPL").head(5)  # doctest: +SKIP
-                      end       value                  accn    fy  fp    form ...
+                      end         val      accession_number    fy  fp    form ...
             0  2009-06-27  8.9582e+08  0001193125-09-153165  2009  Q3    10-Q ...
             1  2009-10-16  9.0068e+08  0001193125-09-214859  2009  FY    10-K ...
             2  2009-10-16  9.0068e+08  0001193125-10-012091  2009  FY  10-K/A ...
@@ -486,7 +486,7 @@ class Frames(API):
             ...     taxonomy="us-gaap",
             ...     units="USD-per-shares",
             ... ).head(5)  # doctest: +SKIP
-                               accn   cik                          entity    loc ...
+                   accession_number   cik                          entity    loc ...
             0  0001104659-21-118843  1750                       AAR CORP.  US-IL ...
             1  0001104659-21-133629  1800             ABBOTT LABORATORIES  US-IL ...
             2  0001264931-20-000235  1961                     WORLDS INC.  US-MA ...
@@ -510,14 +510,7 @@ class Frames(API):
         df = pd.DataFrame(data)
         for k, v in content.items():
             df[k] = v
-        return df.rename(
-            columns={
-                "ccp": "frame",
-                "entityName": "entity",
-                "uom": "units",
-                "val": "value",
-            }
-        )
+        return df
 
 
 class Submissions(API):
@@ -564,7 +557,7 @@ class Submissions(API):
             stream=True,
             user_agent=user_agent,
         )
-        dst = backend.root_path / "findata" / "submissions.zip"
+        dst = config.root_path / "findata" / "submissions.zip"
         pb = tqdm(
             total=int(response.headers.get("content-length", 0)),
             desc=f"Downloading submissions.zip to {dst}",
@@ -627,8 +620,6 @@ class Submissions(API):
         content = response.json()
         recent_filings = content.pop("filings")["recent"]
         df = pd.DataFrame(recent_filings)
-        df.columns = map(utils.snake_case, df.columns)  # type: ignore
-        df.rename(columns={"accession_number": "accn"})
         df["cik"] = cik
         metadata = _parse_submission_metadata(content)
         metadata["cik"] = cik
@@ -1098,7 +1089,7 @@ def group_and_pivot_filings(
             df = df.reset_index().pivot(
                 index=["fy", "filed"],
                 columns="tag",
-                values="value",
+                values="val",
             )
         case "10-Q":
             df = df.set_index(["fy", "fp"]).sort_index()
@@ -1106,7 +1097,7 @@ def group_and_pivot_filings(
             df = df.reset_index().pivot(
                 index=["fy", "fp", "filed"],
                 columns="tag",
-                values="value",
+                values="val",
             )
     df.columns = df.columns.rename(None)
     return df
@@ -1141,9 +1132,7 @@ def _parse_company_facts(content: dict[str, Any], /) -> pd.DataFrame:
     results = pd.concat(results_list)
     for k, v in content.items():
         results[k] = v
-    return results.rename(
-        columns={"entityName": "entity", "uom": "units", "val": "value"}
-    )
+    return results
 
 
 def _parse_submission_metadata(content: dict[str, Any], /) -> dict[str, Any]:

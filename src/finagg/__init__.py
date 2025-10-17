@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from . import backend, bea, fred, fundam, indices, sec, testing, utils, yfinance
+from . import bea, config, fred, sec, testing, utils
 
 try:
     __version__ = version("finagg")

@@ -8,7 +8,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import NoResultFound
 from tqdm import tqdm
 
-from ... import backend, utils
+from ... import config, utils
 from .. import api, sql
 
 logging.basicConfig(
@@ -48,7 +48,7 @@ class Series:
             end: The end date of the observation period. Defaults to the
                 last recorded date.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             A dataframe containing the economic data series values
@@ -71,7 +71,7 @@ class Series:
         """
         start = start or "1776-07-04"
         end = end or utils.today
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.series.name):
             sql.series.create(engine)
         with engine.begin() as conn:
@@ -97,14 +97,14 @@ class Series:
             lb: Lower bound number of rows that a series must have for its ID
                 to be included in the set returned by this method.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Examples:
             >>> "FEDFUNDS" in finagg.fred.feat.series.get_id_set()  # doctest: +SKIP
             True
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.series.name):
             sql.series.create(engine)
         with engine.begin() as conn:
@@ -137,7 +137,7 @@ class Series:
             series_ids: Set of series to install features for. Defaults to all
                 the series from :attr:`finagg.fred.feat.Series.get_id_set`.
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
                 previously installed data.
 
@@ -146,7 +146,7 @@ class Series:
 
         """
         series_ids = series_ids or set(api.popular_series)
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.series.name):
             sql.series.drop(engine, checkfirst=True)
             sql.series.create(engine)
@@ -180,13 +180,13 @@ class Series:
         Args:
             df: Dataframe to store as rows in a local SQL table
             engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.backend.engine`.
+                at :data:`finagg.config.engine`.
 
         Returns:
             Number of rows written to the SQL table.
 
         """
-        engine = engine or backend.engine
+        engine = engine or config.engine
         if not sa.inspect(engine).has_table(sql.series.name):
             sql.series.create(engine)
         with engine.begin() as conn:

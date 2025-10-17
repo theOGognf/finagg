@@ -12,15 +12,15 @@ metadata = MetaData()
 fixed_assets = Table(
     "fixed_assets",
     metadata,
-    Column("table_id", String, primary_key=True),
-    Column("series_code", String),
-    Column("line", Integer, primary_key=True),
-    Column("line_description", String),
-    Column("year", Integer, primary_key=True),
-    Column("metric", String),
-    Column("units", String),
-    Column("e", Integer),
-    Column("value", Float),
+    Column("TableName", String, primary_key=True),
+    Column("SeriesCode", String),
+    Column("LineNumber", Integer, primary_key=True),
+    Column("LineDescription", String),
+    Column("TimePeriod", Integer, primary_key=True),
+    Column("METRIC_NAME", String),
+    Column("CL_UNIT", String),
+    Column("UNIT_MULT", Integer),
+    Column("DataValue", Float),
 )
 """SQL table for storing raw data as returned by
 :data:`finagg.bea.api.fixed_assets` (an alias for
@@ -32,13 +32,13 @@ fixed_assets = Table(
 gdp_by_industry = Table(
     "gdp_by_industry",
     metadata,
-    Column("table_id", Integer, primary_key=True),
-    Column("freq", String),
-    Column("year", Integer, primary_key=True),
-    Column("quarter", Integer, primary_key=True),
-    Column("industry", String, primary_key=True),
-    Column("industry_description", String),
-    Column("value", Float),
+    Column("TableID", Integer, primary_key=True),
+    Column("Frequency", String),
+    Column("Year", Integer, primary_key=True),
+    Column("Quarter", Integer, primary_key=True),
+    Column("Industry", String, primary_key=True),
+    Column("IndustrYDescription", String),
+    Column("DataValue", Float),
 )
 """SQL table for storing raw data as returned by
 :data:`finagg.bea.api.gdp_by_industry` (an alias for
@@ -50,15 +50,15 @@ gdp_by_industry = Table(
 input_output = Table(
     "input_output",
     metadata,
-    Column("table_id", Integer, primary_key=True),
-    Column("year", Integer, primary_key=True),
-    Column("row_code", String, primary_key=True),
-    Column("row_description", String),
-    Column("row_type", String),
-    Column("col_code", String, primary_key=True),
-    Column("col_description", String),
-    Column("col_type", String),
-    Column("value", Float),
+    Column("TableID", Integer, primary_key=True),
+    Column("Year", Integer, primary_key=True),
+    Column("RowCode", String, primary_key=True),
+    Column("RowDescr", String),
+    Column("RowType", String),
+    Column("ColCode", String, primary_key=True),
+    Column("ColDescr", String),
+    Column("ColType", String),
+    Column("DataValue", Float),
 )
 """SQL table for storing raw data as returned by
 :data:`finagg.bea.api.input_output` (an alias for
@@ -70,16 +70,16 @@ input_output = Table(
 nipa = Table(
     "nipa",
     metadata,
-    Column("table_id", String, primary_key=True),
-    Column("series_code", String),
-    Column("line", Integer, primary_key=True),
-    Column("line_description", String),
-    Column("year", Integer, primary_key=True),
-    Column("quarter", Integer, primary_key=True),
-    Column("metric", String),
-    Column("units", String),
-    Column("e", Integer),
-    Column("value", Float),
+    Column("TableName", String, primary_key=True),
+    Column("SeriesCode", String),
+    Column("LineNumber", Integer, primary_key=True),
+    Column("LineDescription", String),
+    Column("Year", Integer, primary_key=True),
+    Column("Quarter", Integer, primary_key=True),
+    Column("METRIC_NAME", String),
+    Column("CL_UNIT", String),
+    Column("UNIT_MULT", Integer),
+    Column("DataValue", Float),
 )
 """SQL table for storing raw data as returned by
 :data:`finagg.bea.api.nipa` (an alias for

@@ -10,7 +10,7 @@ from typing import Literal
 
 import click
 
-from . import bea, fred, fundam, indices, sec, utils, yfinance
+from . import bea, fred, sec, utils
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO
@@ -25,10 +25,7 @@ def cli() -> None:
 
 cli.add_command(bea._cli.entry_point, "bea")
 cli.add_command(fred._cli.entry_point, "fred")
-cli.add_command(fundam._cli.entry_point, "fundam")
-cli.add_command(indices._cli.entry_point, "indices")
 cli.add_command(sec._cli.entry_point, "sec")
-cli.add_command(yfinance._cli.entry_point, "yfinance")
 
 
 @cli.command(
@@ -40,7 +37,7 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
 @click.option(
     "--skip",
     "-s",
-    type=click.Choice(["bea", "fred", "indices", "sec", "yfinance", "fundam"]),
+    type=click.Choice(["bea", "fred", "sec"]),
     multiple=True,
     help=(
         "Subpackage installations to skip. Useful to avoid reinstalling data "
@@ -77,14 +74,6 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
     ),
 )
 @click.option(
-    "--stock-data",
-    is_flag=True,
-    help=(
-        "Whether to only install stock data (SEC, Yahoo! Finance, and "
-        "fundamental stock data)."
-    ),
-)
-@click.option(
     "--ticker",
     "-t",
     multiple=True,
@@ -104,20 +93,13 @@ cli.add_command(yfinance._cli.entry_point, "yfinance")
     "--ticker-set",
     "-ts",
     "ticker_set",
-    type=click.Choice(["indices", "sec"]),
+    type=click.Choice(["sec"]),
     default=None,
     help=(
         "Set of tickers whose data is attempted to be downloaded and "
-        "inserted into the SQL tables. 'indices' indicates the set "
-        "of tickers from the three most popular indices (DJIA, "
-        "Nasdaq 100, and S&P 500). 'sec' indicates all the tickers that "
+        "inserted into the SQL tables. 'sec' indicates all the tickers that "
         "have data available through the SEC API (which is approximately "
-        "all publicly-traded US companies). 'indices' will effectively "
-        "only attempt to download and install data for relatively "
-        "popular and large market cap companies, while 'sec' will "
-        "attempt to download and install data for nearly all "
-        "publicly-traded US companies. Choosing 'indices' will be fast, "
-        "while choosing 'sec' will be slow but will include more diverse data."
+        "all publicly-traded US companies)."
     ),
 )
 @click.option(
@@ -164,9 +146,8 @@ def install(
     skip: list[str] = [],
     series: list[str] = [],
     series_set: None | Literal["economic"] = None,
-    stock_data: bool = False,
     ticker: list[str] = [],
-    ticker_set: None | Literal["indices", "sec"] = None,
+    ticker_set: None | Literal["sec"] = None,
     from_zip: bool = False,
     processes: int = mp.cpu_count() - 1,
     recreate_tables: bool = False,
@@ -190,10 +171,10 @@ def install(
     start = time.monotonic()
 
     all_skips = set(skip)
-    if not stock_data and "bea" not in all_skips:
+    if "bea" not in all_skips:
         ctx.invoke(bea._cli.install)
 
-    if not stock_data and "fred" not in all_skips:
+    if "fred" not in all_skips:
         ctx.invoke(
             fred._cli.install,
             all_=True,
@@ -202,9 +183,6 @@ def install(
             recreate_tables=recreate_tables,
             verbose=verbose,
         )
-
-    if not stock_data and "indices" not in all_skips:
-        ctx.invoke(indices._cli.install, all_=True)
 
     if "sec" not in all_skips:
         ctx.invoke(
@@ -216,25 +194,6 @@ def install(
             processes=processes,
             recreate_tables=recreate_tables,
             verbose=verbose,
-        )
-
-    if "yfinance" not in all_skips:
-        ctx.invoke(
-            yfinance._cli.install,
-            all_=True,
-            ticker=ticker,
-            ticker_set=ticker_set,
-            processes=processes,
-            recreate_tables=recreate_tables,
-            verbose=verbose,
-        )
-
-    if "fundam" not in all_skips:
-        ctx.invoke(
-            fundam._cli.install,
-            all_=True,
-            processes=processes,
-            recreate_tables=recreate_tables,
         )
 
     td = datetime.timedelta(seconds=int(time.monotonic() - start))
