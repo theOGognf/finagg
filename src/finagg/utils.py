@@ -202,9 +202,9 @@ def resolve_func_cols(
                 case _:
                     raise ValueError(f"{key} is not supported")
     if inplace and drop:
-        out.drop(columns=list(set(out.columns) - set(other_keys)), inplace=True)  # type: ignore[arg-type, call-overload]
+        out.drop(columns=list(set(out.columns) - set(other_keys)), inplace=True)
     elif drop:
-        out = out.drop(columns=list(set(out.columns) - set(other_keys)))  # type: ignore[arg-type]
+        out = out.drop(columns=list(set(out.columns) - set(other_keys)))
     return out
 
 
