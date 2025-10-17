@@ -55,7 +55,7 @@ tags = sa.Table(
         primary_key=True,
         doc="Unique SEC ID.",
     ),
-    sa.Column("accession_number", sa.String, doc="Unique submission/access number."),
+    sa.Column("accn", sa.String, doc="Unique submission/access number."),
     sa.Column(
         "taxonomy", sa.String, doc="XBRL taxonomy the submission's tag belongs to."
     ),

@@ -168,7 +168,7 @@ class CompanyConcept(API):
             ...     taxonomy="us-gaap",
             ...     units="USD/shares",
             ... ).head(5)  # doctest: +SKIP
-                    start         end    val      accession_number    fy  fp ...
+                    start         end    val                  accn    fy  fp ...
             0  2006-10-01  2007-09-29   4.04  0001193125-09-214859  2009  FY ...
             1  2006-10-01  2007-09-29   4.04  0001193125-10-012091  2009  FY ...
             2  2007-09-30  2008-06-28   4.20  0001193125-09-153165  2009  Q3 ...
@@ -196,7 +196,7 @@ class CompanyConcept(API):
         for k, v in content.items():
             results[k] = v
         results["cik"] = cik
-        return results
+        return results.astype({"fy": "Int64"})
 
     @classmethod
     def get_multiple_original(
@@ -265,7 +265,7 @@ class CompanyConcept(API):
             df = df[(df["filed"] >= start) & (df["filed"] <= end)]
             dfs.append(df)
         df = pd.concat(dfs)
-        return df.astype({"fy": "int64"})
+        return df
 
 
 class CompanyFacts(API):
@@ -352,7 +352,7 @@ class CompanyFacts(API):
 
         Examples:
             >>> finagg.sec.api.company_facts.get(ticker="AAPL").head(5)  # doctest: +SKIP
-                      end         val      accession_number    fy  fp    form ...
+                      end         val                  accn    fy  fp    form ...
             0  2009-06-27  8.9582e+08  0001193125-09-153165  2009  Q3    10-Q ...
             1  2009-10-16  9.0068e+08  0001193125-09-214859  2009  FY    10-K ...
             2  2009-10-16  9.0068e+08  0001193125-10-012091  2009  FY  10-K/A ...
@@ -372,7 +372,7 @@ class CompanyFacts(API):
         content = response.json()
         df = _parse_company_facts(content)
         df["cik"] = cik
-        return df
+        return df.astype({"fy": "Int64"})
 
 
 class Exchanges(API):
@@ -486,7 +486,7 @@ class Frames(API):
             ...     taxonomy="us-gaap",
             ...     units="USD-per-shares",
             ... ).head(5)  # doctest: +SKIP
-                   accession_number   cik                      entityName    loc ...
+                               accn   cik                      entityName    loc ...
             0  0001104659-21-118843  1750                       AAR CORP.  US-IL ...
             1  0001104659-21-133629  1800             ABBOTT LABORATORIES  US-IL ...
             2  0001264931-20-000235  1961                     WORLDS INC.  US-MA ...

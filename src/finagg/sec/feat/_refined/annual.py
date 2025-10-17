@@ -648,7 +648,7 @@ class Annual:
         """
         df = api.company_concept.get_multiple_original(
             api.popular_concepts, ticker=ticker, form="10-K", start=start, end=end
-        )
+        ).astype({"fy": "int64"})
         df = api.group_and_pivot_filings(df, form="10-K")
         return cls._normalize(df)
 

@@ -384,7 +384,7 @@ class Tags:
             )
         if not len(df.index):
             raise NoResultFound(f"No {tag} rows found for {ticker}.")
-        return df.astype({"fy": "int32"}).set_index(["fy", "fp", "filed"]).sort_index()
+        return df.set_index(["fy", "fp", "filed"]).sort_index()
 
     @classmethod
     def get_ticker_set(
