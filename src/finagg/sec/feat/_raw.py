@@ -366,7 +366,7 @@ class Tags:
                         sql.tags.c.fy,
                         sql.tags.c.fp,
                         sql.tags.c.filed,
-                        sql.tags.c.uom,
+                        sql.tags.c.units,
                         sql.tags.c.val,
                     )
                     .join(

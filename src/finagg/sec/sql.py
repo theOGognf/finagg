@@ -69,8 +69,9 @@ tags = sa.Table(
         "form", sa.String, nullable=False, doc="Submission form type (e.g., 10-Q)."
     ),
     sa.Column(
-        "uom",
+        "units",
         sa.String,
+        nullable=False,
         doc="Unit of measurements for tag value (e.g., USD or shares).",
     ),
     sa.Column(
@@ -119,7 +120,7 @@ tags = sa.Table(
         doc="Long description of `tag` and `label`.",
     ),
     sa.Column("entityName", sa.String, doc="Company name."),
-    sa.Column("val", sa.Float, nullable=False, doc="Tag value with units `uom`."),
+    sa.Column("val", sa.Float, nullable=False, doc="Tag value with units `units`."),
 )
 """SQL table for storing raw data as managed by :data:`finagg.sec.feat.tags`
 (an alias for :class:`finagg.sec.feat.Tags`).
