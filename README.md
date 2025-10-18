@@ -7,7 +7,7 @@
 **finagg** is a Python package that provides implementations of popular and free
 financial APIs, tools for aggregating historical data from those APIs into SQL
 databases, and tools for transforming aggregated data into features useful for
-analysis and AI/ML.
+analysis.
 
 * **Documentation**: https://theogognf.github.io/finagg/
 * **PyPI**: https://pypi.org/project/finagg/
@@ -232,13 +232,10 @@ You can change some **finagg** behavior with other environment variables:
 
 ## Where should I start?
 
-Aggregate some data, create some analysis notebooks, or create some RL
-environments using the implemented data features and SQL tables. This
-project was originally created to make RL environments for financial
-applications but has since focused its purpose to just aggregating financial
-data and features. That being said, all the implemented features are
-defined in such a way to make it very easy to develop financial AI/ML,
-so we encourage you to do just that!
+Aggregate some data or create some analysis notebooks using the implemented
+data features and SQL tables. This project was originally created to make RL
+environments for financial applications but has since focused its purpose to
+just aggregating financial data and features.
 
 ## Why aren't features being installed for a specific ticker or economic data series?
 
