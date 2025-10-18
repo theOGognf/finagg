@@ -191,4 +191,4 @@ class Series:
             sql.series.create(engine)
         with engine.begin() as conn:
             conn.execute(sql.series.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
-        return len(df)
+        return len(df.index)

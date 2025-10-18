@@ -20,10 +20,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class Submissions:
+class Entities:
     """Get a single company's metadata as-is from raw SEC data.
 
-    The module variable :data:`finagg.sec.feat.submissions` is an instance of
+    The module variable :data:`finagg.sec.feat.entities` is an instance of
     this feature set implementation and is the most popular interface for
     calling feature methods.
 
@@ -56,18 +56,18 @@ class Submissions:
                 SQL table.
 
         Examples:
-            >>> finagg.sec.feat.submissions.from_raw("AAPL")  # doctest: +SKIP
+            >>> finagg.sec.feat.entities.from_raw("AAPL")  # doctest: +SKIP
                       cik ticker  entityType   sic  sicDescription ...
             0  0000320193   AAPL        None  3571            None ...
 
         """
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         with engine.begin() as conn:
             df = pd.DataFrame(
                 conn.execute(
-                    sql.submissions.select().where(sql.submissions.c.ticker == ticker)
+                    sql.entities.select().where(sql.entities.c.ticker == ticker)
                 )
             )
         if not len(df.index):
@@ -80,7 +80,7 @@ class Submissions:
         *,
         engine: None | Engine = None,
     ) -> set[str]:
-        """Get all unique ticker symbols in the raw SQL submissions table.
+        """Get all unique ticker symbols in the raw SQL entities table.
 
         This method is convenient for accessing the tickers that have raw SQL data
         associated with them so the data associated with those tickers can be
@@ -93,16 +93,197 @@ class Submissions:
                 at :data:`finagg.config.engine`.
 
         Examples:
-            >>> "AAPL" in finagg.sec.feat.submissions.get_ticker_set()  # doctest: +SKIP
+            >>> "AAPL" in finagg.sec.feat.entities.get_ticker_set()  # doctest: +SKIP
             True
 
         """
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         with engine.begin() as conn:
-            tickers = conn.execute(sa.select(sql.submissions.c.ticker)).scalars().all()
+            tickers = conn.execute(sa.select(sql.entities.c.ticker)).scalars().all()
         return set(tickers)
+
+    @classmethod
+    def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
+        """Write the given dataframe to the raw feature table.
+
+        Args:
+            df: Dataframe to store as rows in a local SQL table
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.config.engine`.
+
+        Returns:
+            Number of rows written to the SQL table.
+
+        """
+        engine = engine or config.engine
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
+        with engine.begin() as conn:
+            conn.execute(sql.entities.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+        return len(df.index)
+
+
+class Filings:
+    """Get a single company's filing history metadata as-is from raw SEC data.
+
+    The module variable :data:`finagg.sec.feat.filings` is an instance of
+    this feature set implementation and is the most popular interface for
+    calling feature methods.
+
+    """
+
+    @classmethod
+    def from_raw(
+        cls,
+        ticker: str,
+        /,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
+    ) -> pd.DataFrame:
+        """Get a single company's filing history metadata as-is from raw SEC
+        data.
+
+        This is the preferred method for accessing raw SEC data without
+        using the SEC API.
+
+        Args:
+            ticker: Company ticker.
+            start: The start date of the observation period. Defaults to the
+                first recorded date.
+            end: The end date of the observation period. Defaults to the
+                last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.config.engine`.
+
+        Returns:
+            A dataframe containing the company's filing history metadata
+            across the specified period.
+
+        Raises:
+            `NoResultFound`: If there are no rows for ``ticker`` in the raw
+                SQL table.
+
+        Examples:
+            >>> finagg.sec.feat.filings.from_raw("AAPL").head(5)  # doctest: +SKIP
+
+        """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or config.engine
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
+        if not sa.inspect(engine).has_table(sql.filings.name):
+            sql.filings.create(engine)
+        with engine.begin() as conn:
+            df = pd.DataFrame(
+                conn.execute(
+                    sql.filings.select()
+                    .join(
+                        sql.entities,
+                        (sql.entities.c.cik == sql.filings.c.cik)
+                        & (sql.entities.c.ticker == ticker),
+                    )
+                    .where(
+                        sql.filings.c.filingDate >= start,
+                        sql.filings.c.filingDate <= end,
+                    )
+                )
+            )
+        if not len(df.index):
+            raise NoResultFound(f"No rows found for {ticker}.")
+        return df
+
+    @classmethod
+    def get_ticker_set(
+        cls,
+        lb: int = 1,
+        *,
+        start: None | str = None,
+        end: None | str = None,
+        engine: None | Engine = None,
+    ) -> set[str]:
+        """Get all unique ticker symbols in the raw SQL tables that have at least
+        ``lb`` rows.
+
+        This method is convenient for accessing the tickers that have raw SQL data
+        associated with them so the data associated with those tickers can be
+        further refined. A common pattern is to use this method and other
+        ``get_ticker_set`` methods (such as those found in :mod:`finagg.sec.feat`)
+        to determine which tickers are missing data from other tables or features.
+
+        Args:
+            lb: Lower bound number of rows that a company must have for its ticker
+                to be included in the set returned by this method.
+            start: The start date of the observation period to include when
+                searching for tickers. Defaults to the first recorded date.
+            end: The end date of the observation period to include when
+                searching for tickers. Defaults to the last recorded date.
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.config.engine`.
+
+        Examples:
+            >>> "AAPL" in finagg.sec.feat.filings.get_ticker_set()  # doctest: +SKIP
+            True
+
+        """
+        start = start or "1776-07-04"
+        end = end or utils.today
+        engine = engine or config.engine
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
+        if not sa.inspect(engine).has_table(sql.filings.name):
+            sql.filings.create(engine)
+        with engine.begin() as conn:
+            tickers = (
+                conn.execute(
+                    sa.select(sql.entities.c.ticker)
+                    .join(sql.filings, sql.filings.c.cik == sql.entities.c.cik)
+                    .where(
+                        sql.filings.c.filingDate >= start,
+                        sql.filings.c.filingDate <= end,
+                    )
+                    .group_by(sql.filings.c.cik)
+                    .having(sa.func.count(sql.filings.c.filingDate) >= lb)
+                )
+                .scalars()
+                .all()
+            )
+        return set(tickers)
+
+    @classmethod
+    def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
+        """Write the given dataframe to the raw feature table.
+
+        Args:
+            df: Dataframe to store as rows in a local SQL table
+            engine: Feature store database engine. Defaults to the engine
+                at :data:`finagg.config.engine`.
+
+        Returns:
+            Number of rows written to the SQL table.
+
+        """
+        engine = engine or config.engine
+        if not sa.inspect(engine).has_table(sql.filings.name):
+            sql.filings.create(engine)
+        with engine.begin() as conn:
+            conn.execute(sql.filings.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
+        return len(df.index)
+
+
+class Submissions:
+    """Install company's metadata along with the metadata for its filing
+    history.
+
+    The module variable :data:`finagg.sec.feat.submissions` is an instance of
+    this feature set implementation and is the most popular interface for
+    calling feature methods.
+
+    """
 
     @classmethod
     def install(
@@ -113,7 +294,8 @@ class Submissions:
         recreate_tables: bool = False,
     ) -> int:
         """Install data associated with ``tickers`` by pulling data from the
-        API, and then writing the data to the raw submissions SQL table.
+        API, and then writing the data to the raw entities and filings SQL
+        tables.
 
         Tables associated with this method are created if they don't already
         exist.
@@ -126,13 +308,13 @@ class Submissions:
                 previously installed data.
 
         Returns:
-            Number of rows written to the feature's SQL table.
+            Number of rows written to the feature's SQL tables.
 
         """
         engine = engine or config.engine
-        if recreate_tables or not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.drop(engine, checkfirst=True)
-            sql.submissions.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.drop(engine, checkfirst=True)
+            sql.entities.create(engine)
 
         total_rows = 0
         for ticker in tqdm(
@@ -142,15 +324,23 @@ class Submissions:
             leave=True,
         ):
             try:
-                metadata = api.submissions.get(ticker=ticker)["metadata"]
-                df = pd.DataFrame(metadata, index=[0])
+                submissions = api.submissions.get(ticker=ticker)
+                # Save entity data.
+                df = pd.DataFrame(submissions["entity"], index=[0])
                 rowcount = len(df.index)
                 if rowcount:
-                    cls.to_raw(df, engine=engine)
+                    Entities.to_raw(df, engine=engine)
                     total_rows += rowcount
-                    logger.debug(f"{rowcount} rows inserted for {ticker}")
+                    logger.debug(f"{rowcount} entity rows inserted for {ticker}")
+                    # Save filing data.
+                    df = pd.DataFrame(submissions["filings"])
+                    rowcount = len(df.index)
+                    if rowcount:
+                        Filings.to_raw(df, engine=engine)
+                        total_rows += rowcount
+                        logger.debug(f"{rowcount} filing rows inserted for {ticker}")
                 else:
-                    logger.debug(f"Skipping {ticker} due to missing submissions")
+                    logger.debug(f"Skipping {ticker} due to missing metadata")
             except Exception as e:
                 logger.debug(f"Skipping {ticker}", exc_info=e)
         return total_rows
@@ -182,9 +372,9 @@ class Submissions:
 
         """
         engine = engine or config.engine
-        if recreate_tables or not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.drop(engine, checkfirst=True)
-            sql.submissions.create(engine)
+        if recreate_tables or not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.drop(engine, checkfirst=True)
+            sql.entities.create(engine)
 
         submissions_zipfile_path = config.root_path / "findata" / "submissions.zip"
         if recreate_tables or not submissions_zipfile_path.exists():
@@ -215,36 +405,25 @@ class Submissions:
                 ticker = api.get_ticker(cik)
                 data = zipfile.read(f)
                 content = json.loads(data)
-                metadata = api._parse_submission_metadata(content)
-                metadata["cik"] = cik
-                metadata["ticker"] = ticker
-                df = pd.DataFrame(metadata, index=[0])
-                cls.to_raw(df, engine=engine)
-                total_rows += 1
-                logger.debug(f"Inserted row for {f}")
+                # Save entity data.
+                entity = api._parse_submission_entity(content)
+                entity["cik"] = cik
+                entity["ticker"] = ticker
+                df = pd.DataFrame(entity, index=[0])
+                rowcount = len(df.index)
+                Entities.to_raw(df, engine=engine)
+                total_rows += rowcount
+                logger.debug(f"{rowcount} entity rows inserted for {ticker}")
+                # Save filing data.
+                recent_filings = content.pop("filings")["recent"]
+                df = pd.DataFrame(recent_filings)
+                rowcount = len(df.index)
+                Filings.to_raw(df, engine=engine)
+                total_rows += rowcount
+                logger.debug(f"{rowcount} filing rows inserted for {ticker}")
             except Exception as e:
                 logger.debug(f"Skipping {f}", exc_info=e)
         return total_rows
-
-    @classmethod
-    def to_raw(cls, df: pd.DataFrame, /, *, engine: None | Engine = None) -> int:
-        """Write the given dataframe to the raw feature table.
-
-        Args:
-            df: Dataframe to store as rows in a local SQL table
-            engine: Feature store database engine. Defaults to the engine
-                at :data:`finagg.config.engine`.
-
-        Returns:
-            Number of rows written to the SQL table.
-
-        """
-        engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
-        with engine.begin() as conn:
-            conn.execute(sql.submissions.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
-        return len(df)
 
 
 class Tags:
@@ -355,8 +534,8 @@ class Tags:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.tags.name):
             sql.tags.create(engine)
         with engine.begin() as conn:
@@ -370,9 +549,9 @@ class Tags:
                         sql.tags.c.val,
                     )
                     .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.tags.c.cik)
-                        & (sql.submissions.c.ticker == ticker),
+                        sql.entities,
+                        (sql.entities.c.cik == sql.tags.c.cik)
+                        & (sql.entities.c.ticker == ticker),
                     )
                     .where(
                         sql.tags.c.form == form,
@@ -422,15 +601,15 @@ class Tags:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.tags.name):
             sql.tags.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
-                    sa.select(sql.submissions.c.ticker)
-                    .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
+                    sa.select(sql.entities.c.ticker)
+                    .join(sql.tags, sql.tags.c.cik == sql.entities.c.cik)
                     .where(
                         sql.tags.c.filed >= start,
                         sql.tags.c.filed <= end,
@@ -502,8 +681,8 @@ class Tags:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.tags.name):
             sql.tags.create(engine)
         with engine.begin() as conn:
@@ -511,9 +690,9 @@ class Tags:
                 conn.execute(
                     sql.tags.select()
                     .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.tags.c.cik)
-                        & (sql.submissions.c.ticker == ticker),
+                        sql.entities,
+                        (sql.entities.c.cik == sql.tags.c.cik)
+                        & (sql.entities.c.ticker == ticker),
                     )
                     .where(
                         sql.tags.c.tag.in_(tags),
@@ -547,7 +726,7 @@ class Tags:
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`Submissions.get_ticker_set`.
+                the tickers from :meth:`Entities.get_ticker_set`.
             engine: Feature store database engine. Defaults to the engine
                 at :data:`finagg.config.engine`.
             recreate_tables: Whether to drop and recreate tables, wiping all
@@ -557,7 +736,7 @@ class Tags:
             Number of rows written to the feature's SQL table.
 
         """
-        tickers = tickers or Submissions.get_ticker_set()
+        tickers = tickers or Entities.get_ticker_set()
         engine = engine or config.engine
         if recreate_tables or not sa.inspect(engine).has_table(sql.tags.name):
             sql.tags.drop(engine, checkfirst=True)
@@ -619,7 +798,7 @@ class Tags:
 
         Args:
             tickers: Set of tickers to install features for. Defaults to all
-                the tickers from :meth:`Submissions.get_ticker_set`.
+                the tickers from :meth:`Entities.get_ticker_set`.
             processes: Number of background processes to use when installing
                 data.
             engine: Feature store database engine. Defaults to the engine
@@ -644,7 +823,7 @@ class Tags:
 
         # Filter by guaranteeing a ticker is actually present in
         # the set of tickers provided.
-        tickers = tickers or Submissions.get_ticker_set()
+        tickers = tickers or Entities.get_ticker_set()
         args = []
         for f in zipfile.namelist():
             try:
@@ -693,4 +872,4 @@ class Tags:
             sql.tags.create(engine)
         with engine.begin() as conn:
             conn.execute(sql.tags.insert(), df.to_dict(orient="records"))  # type: ignore[arg-type]
-        return len(df)
+        return len(df.index)

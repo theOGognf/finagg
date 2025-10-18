@@ -91,7 +91,7 @@ def _frame_to_concept(frame: Frame, /) -> Concept:
 
 class SubmissionsResult(TypedDict):
     #: Company metadata.
-    metadata: dict[str, Any]
+    entity: dict[str, Any]
 
     #: Most recent company filings.
     filings: pd.DataFrame
@@ -601,7 +601,7 @@ class Submissions(API):
 
         Examples:
             >>> out = finagg.sec.api.submissions.get(ticker="AAPL")
-            >>> out["metadata"]  # doctest: +ELLIPSIS
+            >>> out["entity"]  # doctest: +ELLIPSIS
             {'cik': '0000320193', 'entityType': 'operating', 'sic': '3571', ...}
 
         """
@@ -621,10 +621,10 @@ class Submissions(API):
         recent_filings = content.pop("filings")["recent"]
         df = pd.DataFrame(recent_filings)
         df["cik"] = cik
-        metadata = _parse_submission_metadata(content)
-        metadata["cik"] = cik
-        metadata["ticker"] = str(ticker)
-        return {"metadata": metadata, "filings": df}
+        entity = _parse_submission_entity(content)
+        entity["cik"] = cik
+        entity["ticker"] = str(ticker)
+        return {"entity": entity, "filings": df}
 
 
 class Tickers(API):
@@ -1135,24 +1135,24 @@ def _parse_company_facts(content: dict[str, Any], /) -> pd.DataFrame:
     return results
 
 
-def _parse_submission_metadata(content: dict[str, Any], /) -> dict[str, Any]:
-    """Helper for parsing submission metadata.
+def _parse_submission_entity(content: dict[str, Any], /) -> dict[str, Any]:
+    """Helper for parsing submission entity metadata.
 
     This function is only defined to make parsing submission
-    metadata easier and common between parsing from the REST
+    data easier and common between parsing from the REST
     API responses and the bulk zip file.
 
     Args:
         content: Submissions JSON data.
 
     Returns:
-        A dataframe equivalent of the submissions data.
+        A dictionary containing entity metadata.
 
     """
-    metadata = {}
+    entity = {}
     for k, v in content.items():
         if isinstance(v, str):
-            metadata[k] = v
+            entity[k] = v
     if "exchanges" in content:
-        metadata["exchanges"] = ",".join(content["exchanges"])
-    return metadata
+        entity["exchanges"] = ",".join(content["exchanges"])
+    return entity

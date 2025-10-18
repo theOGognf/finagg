@@ -110,16 +110,14 @@ class IndustryQuarterly:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.quarterly.name):
             sql.quarterly.create(engine)
         with engine.begin() as conn:
             if ticker:
                 (sic,) = conn.execute(
-                    sa.select(sql.submissions.c.sic).where(
-                        sql.submissions.c.ticker == ticker
-                    )
+                    sa.select(sql.entities.c.sic).where(sql.entities.c.ticker == ticker)
                 ).one()
                 code = str(sic)[:level]
             elif code:
@@ -131,9 +129,9 @@ class IndustryQuarterly:
                 conn.execute(
                     sql.quarterly.select()
                     .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.quarterly.c.cik)
-                        & (sql.submissions.c.sic.startswith(code)),
+                        sql.entities,
+                        (sql.entities.c.cik == sql.quarterly.c.cik)
+                        & (sql.entities.c.sic.startswith(code)),
                     )
                     .where(sql.quarterly.c.filed >= start, sql.quarterly.c.filed <= end)
                 )
@@ -301,8 +299,8 @@ class NormalizedQuarterly:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.normalized_quarterly.name):
             sql.normalized_quarterly.create(engine)
         with engine.begin() as conn:
@@ -310,9 +308,9 @@ class NormalizedQuarterly:
                 conn.execute(
                     sql.normalized_quarterly.select()
                     .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.normalized_quarterly.c.cik)
-                        & (sql.submissions.c.ticker == ticker),
+                        sql.entities,
+                        (sql.entities.c.cik == sql.normalized_quarterly.c.cik)
+                        & (sql.entities.c.ticker == ticker),
                     )
                     .where(
                         sql.normalized_quarterly.c.filed >= start,
@@ -397,17 +395,17 @@ class NormalizedQuarterly:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.normalized_quarterly.name):
             sql.normalized_quarterly.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
-                    sa.select(sql.submissions.c.ticker)
+                    sa.select(sql.entities.c.ticker)
                     .join(
                         sql.normalized_quarterly,
-                        sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
+                        sql.normalized_quarterly.c.cik == sql.entities.c.cik,
                     )
                     .where(
                         sql.normalized_quarterly.c.filed >= start,
@@ -479,10 +477,10 @@ class NormalizedQuarterly:
 
             tickers = (
                 conn.execute(
-                    sa.select(sql.submissions.c.ticker)
+                    sa.select(sql.entities.c.ticker)
                     .join(
                         sql.normalized_quarterly,
-                        sql.normalized_quarterly.c.cik == sql.submissions.c.cik,
+                        sql.normalized_quarterly.c.cik == sql.entities.c.cik,
                     )
                     .where(
                         sql.normalized_quarterly.c.fy == year,
@@ -766,8 +764,8 @@ class Quarterly:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.quarterly.name):
             sql.quarterly.create(engine)
         with engine.begin() as conn:
@@ -775,9 +773,9 @@ class Quarterly:
                 conn.execute(
                     sql.quarterly.select()
                     .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.quarterly.c.cik)
-                        & (sql.submissions.c.ticker == ticker),
+                        sql.entities,
+                        (sql.entities.c.cik == sql.quarterly.c.cik)
+                        & (sql.entities.c.ticker == ticker),
                     )
                     .where(
                         sql.quarterly.c.filed >= start,
@@ -825,15 +823,15 @@ class Quarterly:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.tags.name):
             sql.tags.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
                     sa.select(
-                        sql.submissions.c.ticker,
+                        sql.entities.c.ticker,
                         *[
                             sa.func.sum(
                                 sa.case(
@@ -843,7 +841,7 @@ class Quarterly:
                             for concept in api.popular_concepts
                         ],
                     )
-                    .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
+                    .join(sql.tags, sql.tags.c.cik == sql.entities.c.cik)
                     .where(
                         sql.tags.c.form == "10-Q",
                         sql.tags.c.filed >= start,
@@ -895,15 +893,15 @@ class Quarterly:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.quarterly.name):
             sql.quarterly.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
-                    sa.select(sql.submissions.c.ticker)
-                    .join(sql.quarterly, sql.quarterly.c.cik == sql.submissions.c.cik)
+                    sa.select(sql.entities.c.ticker)
+                    .join(sql.quarterly, sql.quarterly.c.cik == sql.entities.c.cik)
                     .where(
                         sql.quarterly.c.filed >= start,
                         sql.quarterly.c.filed <= end,

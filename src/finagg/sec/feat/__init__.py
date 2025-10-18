@@ -1,6 +1,6 @@
 """Features from SEC sources."""
 
-from ._raw import Submissions, Tags
+from ._raw import Entities, Filings, Submissions, Tags
 from ._refined import (
     Annual,
     IndustryAnnual,
@@ -12,10 +12,14 @@ from ._refined import (
 
 __all__ = [
     "annual",
+    "entities",
+    "filings",
     "quarterly",
     "submissions",
     "tags",
     "Annual",
+    "Entities",
+    "Filings",
     "IndustryAnnual",
     "NormalizedAnnual",
     "Quarterly",
@@ -27,6 +31,18 @@ __all__ = [
 
 annual = Annual()
 """The most popular way for accessing :class:`finagg.sec.feat.Annual`.
+
+:meta hide-value:
+"""
+
+entities = Entities()
+"""The most popular way for accessing :class:`finagg.sec.feat.Entities`.
+
+:meta hide-value:
+"""
+
+filings = Filings()
+"""The most popular way for accessing :class:`finagg.sec.feat.Filings`.
 
 :meta hide-value:
 """

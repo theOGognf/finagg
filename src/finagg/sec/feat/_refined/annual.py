@@ -110,16 +110,14 @@ class IndustryAnnual:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.annual.name):
             sql.annual.create(engine)
         with engine.begin() as conn:
             if ticker:
                 (sic,) = conn.execute(
-                    sa.select(sql.submissions.c.sic).where(
-                        sql.submissions.c.ticker == ticker
-                    )
+                    sa.select(sql.entities.c.sic).where(sql.entities.c.ticker == ticker)
                 ).one()
                 code = str(sic)[:level]
             elif code:
@@ -131,9 +129,9 @@ class IndustryAnnual:
                 conn.execute(
                     sql.annual.select()
                     .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.annual.c.cik)
-                        & (sql.submissions.c.sic.startswith(code)),
+                        sql.entities,
+                        (sql.entities.c.cik == sql.annual.c.cik)
+                        & (sql.entities.c.sic.startswith(code)),
                     )
                     .where(sql.annual.c.filed >= start, sql.annual.c.filed <= end)
                 )
@@ -299,8 +297,8 @@ class NormalizedAnnual:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.normalized_annual.name):
             sql.normalized_annual.create(engine)
         with engine.begin() as conn:
@@ -308,9 +306,9 @@ class NormalizedAnnual:
                 conn.execute(
                     sql.normalized_annual.select()
                     .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.normalized_annual.c.cik)
-                        & (sql.submissions.c.ticker == ticker),
+                        sql.entities,
+                        (sql.entities.c.cik == sql.normalized_annual.c.cik)
+                        & (sql.entities.c.ticker == ticker),
                     )
                     .where(
                         sql.normalized_annual.c.filed >= start,
@@ -395,17 +393,17 @@ class NormalizedAnnual:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.normalized_annual.name):
             sql.normalized_annual.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
-                    sa.select(sql.submissions.c.ticker)
+                    sa.select(sql.entities.c.ticker)
                     .join(
                         sql.normalized_annual,
-                        sql.normalized_annual.c.cik == sql.submissions.c.cik,
+                        sql.normalized_annual.c.cik == sql.entities.c.cik,
                     )
                     .where(
                         sql.normalized_annual.c.filed >= start,
@@ -454,8 +452,8 @@ class NormalizedAnnual:
 
         """
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.normalized_annual.name):
             sql.normalized_annual.create(engine)
         with engine.begin() as conn:
@@ -467,10 +465,10 @@ class NormalizedAnnual:
 
             tickers = (
                 conn.execute(
-                    sa.select(sql.submissions.c.ticker)
+                    sa.select(sql.entities.c.ticker)
                     .join(
                         sql.normalized_annual,
-                        sql.normalized_annual.c.cik == sql.submissions.c.cik,
+                        sql.normalized_annual.c.cik == sql.entities.c.cik,
                     )
                     .where(
                         sql.normalized_annual.c.fy == year,
@@ -749,8 +747,8 @@ class Annual:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.annual.name):
             sql.annual.create(engine)
         with engine.begin() as conn:
@@ -758,9 +756,9 @@ class Annual:
                 conn.execute(
                     sql.annual.select()
                     .join(
-                        sql.submissions,
-                        (sql.submissions.c.cik == sql.annual.c.cik)
-                        & (sql.submissions.c.ticker == ticker),
+                        sql.entities,
+                        (sql.entities.c.cik == sql.annual.c.cik)
+                        & (sql.entities.c.ticker == ticker),
                     )
                     .where(
                         sql.annual.c.filed >= start,
@@ -808,15 +806,15 @@ class Annual:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.tags.name):
             sql.tags.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
                     sa.select(
-                        sql.submissions.c.ticker,
+                        sql.entities.c.ticker,
                         *[
                             sa.func.sum(
                                 sa.case(
@@ -826,7 +824,7 @@ class Annual:
                             for concept in api.popular_concepts
                         ],
                     )
-                    .join(sql.tags, sql.tags.c.cik == sql.submissions.c.cik)
+                    .join(sql.tags, sql.tags.c.cik == sql.entities.c.cik)
                     .where(
                         sql.tags.c.form == "10-K",
                         sql.tags.c.filed >= start,
@@ -878,15 +876,15 @@ class Annual:
         start = start or "1776-07-04"
         end = end or utils.today
         engine = engine or config.engine
-        if not sa.inspect(engine).has_table(sql.submissions.name):
-            sql.submissions.create(engine)
+        if not sa.inspect(engine).has_table(sql.entities.name):
+            sql.entities.create(engine)
         if not sa.inspect(engine).has_table(sql.annual.name):
             sql.annual.create(engine)
         with engine.begin() as conn:
             tickers = (
                 conn.execute(
-                    sa.select(sql.submissions.c.ticker)
-                    .join(sql.annual, sql.annual.c.cik == sql.submissions.c.cik)
+                    sa.select(sql.entities.c.ticker)
+                    .join(sql.annual, sql.annual.c.cik == sql.entities.c.cik)
                     .where(
                         sql.annual.c.filed >= start,
                         sql.annual.c.filed <= end,

@@ -13,8 +13,8 @@ metadata = sa.MetaData()
 :meta hide-value:
 """
 
-submissions = sa.Table(
-    "sec.raw.submissions",
+entities = sa.Table(
+    "sec.raw.entities",
     metadata,
     sa.Column("cik", sa.String, primary_key=True, doc="Unique SEC ID."),
     sa.Column("ticker", sa.String, nullable=False, doc="Company ticker."),
@@ -45,13 +45,83 @@ submissions = sa.Table(
 :meta hide-value:
 """
 
+filings = sa.Table(
+    "sec.raw.filings",
+    metadata,
+    sa.Column(
+        "accessionNumber",
+        sa.String,
+        primary_key=True,
+        nullable=False,
+        doc="Unique submission/access number.",
+    ),
+    sa.Column(
+        "filingDate", sa.String, nullable=False, doc="Date the filing was submitted."
+    ),
+    sa.Column("reportDate", sa.String, doc="Date the filing goes up to."),
+    sa.Column(
+        "acceptanceDateTime",
+        sa.String,
+        nullable=False,
+        doc="Timestamp the filing was accepted.",
+    ),
+    sa.Column("act", sa.Integer, doc="Regulatory act the filing is relevant to."),
+    sa.Column("form", sa.String, doc="Filing form type."),
+    sa.Column("fileNumber", sa.String, doc="Industry code."),
+    sa.Column("filmNumber", sa.Integer, doc="Filing document control number."),
+    sa.Column(
+        "items",
+        sa.String,
+        doc="Filing document type components included in the submission.",
+    ),
+    sa.Column("core_type", sa.String, doc="Primary filing document type."),
+    sa.Column(
+        "size",
+        sa.Integer,
+        doc="Size of the filing document.",
+    ),
+    sa.Column(
+        "isXBRL", sa.Boolean, nullable=False, doc="Whether the filing is XBRL data."
+    ),
+    sa.Column(
+        "isInlineXBRL",
+        sa.Boolean,
+        nullable=False,
+        doc="Whether the filing is inline XBRL data.",
+    ),
+    sa.Column(
+        "primaryDocument",
+        sa.String,
+        nullable=False,
+        doc="Primary filing document name.",
+    ),
+    sa.Column(
+        "primaryDocDescription",
+        sa.String,
+        doc="Primary filing document description.",
+    ),
+    sa.Column(
+        "cik",
+        sa.String,
+        sa.ForeignKey(entities.c.cik, ondelete="CASCADE"),
+        nullable=False,
+        doc="Unique SEC ID.",
+    ),
+)
+"""SQL table for storing raw data as managed by
+:data:`finagg.sec.feat.filings` (an alias for
+:class:`finagg.sec.feat.Filings`).
+
+:meta hide-value:
+"""
+
 tags = sa.Table(
     "sec.raw.tags",
     metadata,
     sa.Column(
         "cik",
         sa.String,
-        sa.ForeignKey(submissions.c.cik, ondelete="CASCADE"),
+        sa.ForeignKey(entities.c.cik, ondelete="CASCADE"),
         primary_key=True,
         doc="Unique SEC ID.",
     ),
@@ -134,7 +204,7 @@ annual = sa.Table(
     sa.Column(
         "cik",
         sa.String,
-        sa.ForeignKey(submissions.c.cik, ondelete="CASCADE"),
+        sa.ForeignKey(entities.c.cik, ondelete="CASCADE"),
         primary_key=True,
         doc="Unique company ticker.",
     ),
@@ -240,7 +310,7 @@ normalized_annual = sa.Table(
     sa.Column(
         "cik",
         sa.String,
-        sa.ForeignKey(submissions.c.cik, ondelete="CASCADE"),
+        sa.ForeignKey(entities.c.cik, ondelete="CASCADE"),
         primary_key=True,
         doc="Unique company ticker.",
     ),
@@ -392,7 +462,7 @@ quarterly = sa.Table(
     sa.Column(
         "cik",
         sa.String,
-        sa.ForeignKey(submissions.c.cik, ondelete="CASCADE"),
+        sa.ForeignKey(entities.c.cik, ondelete="CASCADE"),
         primary_key=True,
         doc="Unique company ticker.",
     ),
@@ -508,7 +578,7 @@ normalized_quarterly = sa.Table(
     sa.Column(
         "cik",
         sa.String,
-        sa.ForeignKey(submissions.c.cik, ondelete="CASCADE"),
+        sa.ForeignKey(entities.c.cik, ondelete="CASCADE"),
         primary_key=True,
         doc="Unique company ticker.",
     ),
@@ -687,11 +757,11 @@ def get_cik(ticker: str, /, *, engine: None | Engine = None) -> str:
 
     """
     engine = engine or config.engine
-    if not sa.inspect(engine).has_table(submissions.name):
-        submissions.create(engine)
+    if not sa.inspect(engine).has_table(entities.name):
+        entities.create(engine)
     with engine.begin() as conn:
         (cik,) = conn.execute(
-            sa.select(submissions.c.cik).where(submissions.c.ticker == ticker)
+            sa.select(entities.c.cik).where(entities.c.ticker == ticker)
         ).one()
     return str(cik)
 
@@ -724,8 +794,8 @@ def get_metadata(
 
     """
     engine = engine or config.engine
-    if not sa.inspect(engine).has_table(submissions.name):
-        submissions.create(engine)
+    if not sa.inspect(engine).has_table(entities.name):
+        entities.create(engine)
 
     if bool(cik) == bool(ticker):
         raise ValueError("Must provide a `cik` or a `ticker`.")
@@ -736,11 +806,11 @@ def get_metadata(
     with engine.begin() as conn:
         row = conn.execute(
             sa.select(
-                submissions.c.cik,
-                submissions.c.ticker,
-                submissions.c.name,
-                submissions.c.sic,
-            ).where(submissions.c.cik == cik)
+                entities.c.cik,
+                entities.c.ticker,
+                entities.c.name,
+                entities.c.sic,
+            ).where(entities.c.cik == cik)
         ).one()
     return row._asdict()
 
@@ -772,11 +842,11 @@ def get_ticker(cik: str, /, *, engine: None | Engine = None) -> str:
 
     """
     engine = engine or config.engine
-    if not sa.inspect(engine).has_table(submissions.name):
-        submissions.create(engine)
+    if not sa.inspect(engine).has_table(entities.name):
+        entities.create(engine)
     with engine.begin() as conn:
         (ticker,) = conn.execute(
-            sa.select(submissions.c.ticker).where(submissions.c.cik == cik)
+            sa.select(entities.c.ticker).where(entities.c.cik == cik)
         ).one()
     return str(ticker)
 
@@ -824,12 +894,12 @@ def get_tickers_in_industry(
 
     """
     engine = engine or config.engine
-    if not sa.inspect(engine).has_table(submissions.name):
-        submissions.create(engine)
+    if not sa.inspect(engine).has_table(entities.name):
+        entities.create(engine)
     with engine.begin() as conn:
         if ticker:
             (sic,) = conn.execute(
-                sa.select(submissions.c.sic).where(submissions.c.ticker == ticker)
+                sa.select(entities.c.sic).where(entities.c.ticker == ticker)
             ).one()
             code = str(sic)[:level]
         elif code:
@@ -839,9 +909,7 @@ def get_tickers_in_industry(
 
         tickers = (
             conn.execute(
-                sa.select(submissions.c.ticker).where(
-                    submissions.c.sic.startswith(code)
-                )
+                sa.select(entities.c.ticker).where(entities.c.sic.startswith(code))
             )
             .scalars()
             .all()
