@@ -106,7 +106,7 @@ def entry_point() -> None:
     type=int,
     default=mp.cpu_count() - 1,
     help=(
-        "Number of backgruond processes to run in parallel when installing data. Note,"
+        "Number of background processes to run in parallel when installing data. Note,"
         " not all tables support installations with multiprocessing."
     ),
 )

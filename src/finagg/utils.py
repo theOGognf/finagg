@@ -17,28 +17,6 @@ from dotenv import set_key
 from tqdm import tqdm
 
 
-def CamelCase(s: str, /) -> str:
-    """Transform a string to CamelCase.
-
-    Credit:
-        https://stackoverflow.com/a/1176023
-
-    Args:
-        s: Any string.
-
-    Returns:
-        A string in CamelCase format.
-
-    Examples:
-        >>> finagg.utils.CamelCase("snakes_are_dope") == "SnakesAreDope"
-        True
-        >>> finagg.utils.CamelCase("bar") == "Bar"
-        True
-
-    """
-    return "".join(word.title() for word in s.split("_"))
-
-
 def expand_csv(values: str | list[str], /) -> set[str]:
     """Expand the given list of strings into a set of strings, where each value
     in the list of strings could be:
@@ -282,31 +260,6 @@ def setenv(name: str, value: str, /, *, exist_ok: bool = False) -> pathlib.Path:
     dotenv = pathlib.Path.cwd() / ".env"
     set_key(str(dotenv), name, value)
     return dotenv
-
-
-def snake_case(s: str, /) -> str:
-    """Transform a string to snake_case.
-
-    Credit:
-        https://stackoverflow.com/a/1176023
-
-    Args:
-        s: Any string.
-
-    Returns:
-        A string in snake_case format.
-
-    Examples:
-        >>> finagg.utils.snake_case("CamelsAreCool") == "camels_are_cool"
-        True
-        >>> finagg.utils.snake_case("Foo") == "foo"
-        True
-
-    """
-    s = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", s)
-    s = re.sub("__([A-Z])", r"_\1", s)
-    s = re.sub("([a-z0-9])([A-Z])", r"\1_\2", s)
-    return s.lower()
 
 
 today = datetime.today().strftime("%Y-%m-%d")

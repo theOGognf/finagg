@@ -5,13 +5,6 @@ import sqlalchemy as sa
 import finagg
 
 
-@pytest.mark.parametrize(
-    "s,expected", [("foo_bar", "FooBar"), ("FooBar", "Foobar"), ("fooBar", "Foobar")]
-)
-def test_CamelCase(s: str, expected: str) -> None:
-    assert finagg.utils.CamelCase(s) == expected
-
-
 def test_get_func_cols_from_table() -> None:
     table = sa.Table(
         "test",
@@ -84,10 +77,3 @@ def test_safe_log_change() -> None:
 def test_safe_pct_change() -> None:
     series = pd.Series([1, 2, 1])
     assert finagg.utils.safe_pct_change(series).sum() == 0.5
-
-
-@pytest.mark.parametrize(
-    "s,expected", [("foo_bar", "foo_bar"), ("FooBar", "foo_bar"), ("fooBar", "foo_bar")]
-)
-def test_snake_case(s: str, expected: str) -> None:
-    assert finagg.utils.snake_case(s) == expected

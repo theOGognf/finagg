@@ -1152,7 +1152,7 @@ def _parse_submission_metadata(content: dict[str, Any], /) -> dict[str, Any]:
     metadata = {}
     for k, v in content.items():
         if isinstance(v, str):
-            metadata[k] = utils.snake_case(v)
+            metadata[k] = v
     if "exchanges" in content:
         metadata["exchanges"] = ",".join(content["exchanges"])
     return metadata

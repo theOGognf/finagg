@@ -119,7 +119,7 @@ cli.add_command(sec._cli.entry_point, "sec")
     type=int,
     default=mp.cpu_count() - 1,
     help=(
-        "Number of backgruond processes to run in parallel when installing data. Note,"
+        "Number of background processes to run in parallel when installing data. Note,"
         " not all tables support installations with multiprocessing."
     ),
 )
