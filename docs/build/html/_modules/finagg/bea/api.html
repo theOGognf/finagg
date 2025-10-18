@@ -1,0 +1,673 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.bea.api &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+
+  
+      <script src="../../../_static/jquery.js"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+      <script src="../../../_static/doctools.js"></script>
+      <script src="../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../_static/clipboard.min.js"></script>
+      <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.bea.api</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.bea.api</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;An implementation of the Bureau of Economic Analysis (BEA) API.</span>
+
+<span class="sd">The BEA API provides methods for retrieving a subset of economic</span>
+<span class="sd">statistical data as published by the BEA along with metadata that</span>
+<span class="sd">describes that economic statistical data.</span>
+
+<span class="sd">A BEA API key is required to use this API. You can register for</span>
+<span class="sd">a BEA API key at the `BEA API signup page`_. You can pass your</span>
+<span class="sd">BEA API key directly to the implemented API getters, or you</span>
+<span class="sd">can set the ``BEA_API_KEY`` environment variable to have the</span>
+<span class="sd">BEA API key be passed to the implemented API getters for you.</span>
+
+<span class="sd">Alternatively, running ``finagg bea install`` (or the broader</span>
+<span class="sd">``finagg install``) will  prompt you where to aquire a BEA API</span>
+<span class="sd">key and will automatically store it in an ``.env`` file in</span>
+<span class="sd">your current working directory. The environment variables set</span>
+<span class="sd">in that ``.env`` file will be loaded into your shell upon</span>
+<span class="sd">using ``finagg`` (whether that be through the Python interface</span>
+<span class="sd">or through the CLI tools).</span>
+
+<span class="sd">See the official `BEA API user guide`_ for more info on the BEA API.</span>
+
+<span class="sd">.. _`BEA API signup page`: https://apps.bea.gov/api/signup/</span>
+<span class="sd">.. _`BEA API user guide`: https://apps.bea.gov/api/_pdf/bea_web_service_api_user_guide.pdf</span>
+
+<span class="sd">.. note::</span>
+<span class="sd">    This was the first API implementation in this project, but has since</span>
+<span class="sd">    lost priority in favor of the FRED API as the FRED API provides</span>
+<span class="sd">    data that&#39;s found through the BEA API in addition to a plethora</span>
+<span class="sd">    of other data. This BEA API implementation is still maintained</span>
+<span class="sd">    and supported, but other features such as data installation are not</span>
+<span class="sd">    and will never be supported.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests_cache</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">ratelimit</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> | </span><span class="si">%(levelname)s</span><span class="s2"> | </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span>
+<span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">disable_http_cache</span><span class="p">:</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">requests_cache</span><span class="o">.</span><span class="n">CachedSession</span><span class="p">(</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">http_cache_path</span><span class="p">),</span>
+        <span class="n">ignored_parameters</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;ResultFormat&quot;</span><span class="p">],</span>
+        <span class="n">expire_after</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="p">)</span>
+
+<span class="n">_YEAR</span> <span class="o">=</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span>
+
+
+<div class="viewcode-block" id="API"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.API">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">API</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface for BEA Dataset APIs.&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Request API URL.</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+<div class="viewcode-block" id="API.get"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.API.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Main dataset API method.&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="API.get_parameter_list"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.API.get_parameter_list">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_parameter_list</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the list of parameters associated with the dataset API.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_get_parameter_list</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="API.get_parameter_values"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.API.get_parameter_values">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_parameter_values</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">param</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all possible parameter values associated with the dataset API.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_get_parameter_values</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="FixedAssets"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.FixedAssets">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">FixedAssets</span><span class="p">(</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;US fixed assets (assets for long-term use).&quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;FixedAssets&quot;</span>
+
+<div class="viewcode-block" id="FixedAssets.get"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.FixedAssets.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">table_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+        <span class="n">year</span><span class="p">:</span> <span class="n">_YEAR</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">_YEAR</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get US fixed assets by asset and year.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table_id: IDs associated with assets of concern.</span>
+<span class="sd">                Use :meth:`~finagg.bea.api.API.get_parameter_values` to see</span>
+<span class="sd">                possible values.</span>
+<span class="sd">            year: Years to return.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dataframe with normalized column names and true dtypes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">table_id</span> <span class="o">==</span> <span class="s2">&quot;ALL&quot;</span><span class="p">:</span>
+            <span class="n">table_id</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_parameter_values</span><span class="p">(</span><span class="s2">&quot;TableName&quot;</span><span class="p">)[</span><span class="s2">&quot;TableName&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">table_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">table_id</span> <span class="o">=</span> <span class="p">[</span><span class="n">table_id</span><span class="p">]</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">tid</span> <span class="ow">in</span> <span class="n">table_id</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;Method&quot;</span><span class="p">:</span> <span class="s2">&quot;GetData&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DatasetName&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;TableName&quot;</span><span class="p">:</span> <span class="n">tid</span><span class="p">,</span>
+                <span class="s2">&quot;Year&quot;</span><span class="p">:</span> <span class="n">year</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="n">results_data</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;Data&quot;</span><span class="p">]</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;NoteRef&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;TableName&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;SeriesCode&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;LineNumber&quot;</span><span class="p">:</span> <span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;LineDescription&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;TimePeriod&quot;</span><span class="p">:</span> <span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;METRIC_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;CL_UNIT&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;UNIT_MULT&quot;</span><span class="p">:</span> <span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;DataValue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;DataValue&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="GDPByIndustry"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.GDPByIndustry">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">GDPByIndustry</span><span class="p">(</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GDP (a single summary statistic) for each industry.</span>
+
+<span class="sd">    The module variable :data:`finagg.bea.api.gdp_by_industry` is an instance</span>
+<span class="sd">    of this API implementation and is the most popular interface for querying</span>
+<span class="sd">    this API.</span>
+
+<span class="sd">    Data provided by this API is considered coarse/high-level.</span>
+<span class="sd">    See :class:`InputOutput` for more granular/low-level industry data.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        List the GDP by industry API parameters.</span>
+
+<span class="sd">        &gt;&gt;&gt; finagg.bea.api.gdp_by_industry.get_parameter_list()  # doctest: +SKIP</span>
+<span class="sd">          ParameterName ParameterDataType                               ParameterDescription ... AllValue</span>
+<span class="sd">        0     Frequency            string                            A - Annual, Q-Quarterly ...      ALL</span>
+<span class="sd">        1      Industry            string       List of industries to retrieve (ALL for All) ...      ALL</span>
+<span class="sd">        2       TableID           integer  The unique GDP by Industry table identifier (A... ...      ALL</span>
+<span class="sd">        3          Year           integer  List of year(s) of data to retrieve (ALL for All) ...      ALL</span>
+
+<span class="sd">        List possible GDP by industry tables we can query.</span>
+
+<span class="sd">        &gt;&gt;&gt; finagg.bea.api.gdp_by_industry.get_parameter_values(&quot;TableID&quot;).head(5)  # doctest: +SKIP</span>
+<span class="sd">          Key                                               Desc</span>
+<span class="sd">        0   1                    Value Added by Industry (A) (Q)</span>
+<span class="sd">        1   5  Value added by Industry as a Percentage of Gro...</span>
+<span class="sd">        2   6          Components of Value Added by Industry (A)</span>
+<span class="sd">        3   7  Components of Value Added by Industry as a Per...</span>
+<span class="sd">        4   8  Chain-Type Quantity Indexes for Value Added by...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;GdpByIndustry&quot;</span>
+
+<div class="viewcode-block" id="GDPByIndustry.get"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.GDPByIndustry.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">table_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+        <span class="n">freq</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="s2">&quot;A,Q&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span>
+        <span class="n">year</span><span class="p">:</span> <span class="n">_YEAR</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">_YEAR</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+        <span class="n">industry</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get GDP by industry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table_id: IDs associated with GDP value type. Use</span>
+<span class="sd">                :meth:`~finagg.bea.api.API.get_parameter_values` to see</span>
+<span class="sd">                possible values. `&quot;ALL&quot;` indicates retrieve all GDP value</span>
+<span class="sd">                measurement type tables.</span>
+<span class="sd">            freq: Data frequency to return. `&quot;Q&quot;` for quarterly, `&quot;A&quot;` for</span>
+<span class="sd">                annually, and `&quot;A,Q&quot;` for both annually and quarterly.</span>
+<span class="sd">            year: Years to return. `&quot;ALL&quot;` indicates retrieve data for all</span>
+<span class="sd">                available years.</span>
+<span class="sd">            industry: IDs associated with industries. Use</span>
+<span class="sd">                :meth:`~finagg.bea.api.API.get_parameter_values` to see</span>
+<span class="sd">                possible values.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dataframe with GDP by industry, separated by year and/or quarter.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Get the GDP value added by an industry for a specific year.</span>
+
+<span class="sd">            &gt;&gt;&gt; finagg.bea.api.gdp_by_industry.get(table_id=1, freq=&quot;A&quot;, year=2020).head(5)  # doctest: +SKIP</span>
+<span class="sd">               TableID Frequency  Year Quarter Industry                          IndustrYDescription   DataValue</span>
+<span class="sd">            0        1         A  2020    2020       11  Agriculture, forestry, fishing, and hunting  164.399994</span>
+<span class="sd">            1        1         A  2020    2020    111CA                                        Farms  120.500000</span>
+<span class="sd">            2        1         A  2020    2020    113FF    Forestry, fishing, and related activities   43.900002</span>
+<span class="sd">            3        1         A  2020    2020       21                                       Mining  202.800003</span>
+<span class="sd">            4        1         A  2020    2020      211                       Oil and gas extraction  104.000000</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Method&quot;</span><span class="p">:</span> <span class="s2">&quot;GetData&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;DatasetName&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;TableID&quot;</span><span class="p">:</span> <span class="n">table_id</span><span class="p">,</span>
+            <span class="s2">&quot;Frequency&quot;</span><span class="p">:</span> <span class="n">freq</span><span class="p">,</span>
+            <span class="s2">&quot;Year&quot;</span><span class="p">:</span> <span class="n">year</span><span class="p">,</span>
+            <span class="s2">&quot;Industry&quot;</span><span class="p">:</span> <span class="n">industry</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="p">(</span><span class="n">results_data</span><span class="p">,)</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;Data&quot;</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">freq</span> <span class="o">!=</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">_roman_to_int</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+                <span class="n">_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;I&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;II&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;III&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;IV&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+                <span class="k">return</span> <span class="n">_map</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Quarter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Quarter&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_roman_to_int</span><span class="p">)</span>
+
+        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;NoteRef&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;TableID&quot;</span><span class="p">:</span> <span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Frequency&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Year&quot;</span><span class="p">:</span> <span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Quarter&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Industry&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;IndustrYDescription&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DataValue&quot;</span><span class="p">:</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="InputOutput"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.InputOutput">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">InputOutput</span><span class="p">(</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Specific input-output statistics for each industry.</span>
+
+<span class="sd">    Data provided by this API is considered granular/low-level.</span>
+<span class="sd">    See :class:`GDPByIndustry` for more coarse/high-level industry data.</span>
+
+<span class="sd">    Data is provided for different &quot;rows&quot; and &quot;columns&quot; where:</span>
+<span class="sd">        - a row is an industry and</span>
+<span class="sd">        - a column is a statistic associated with that industry</span>
+
+<span class="sd">    Columns are divided by column codes. Each industry of similar</span>
+<span class="sd">    type has the same set of column codes that provide input-output</span>
+<span class="sd">    statistics for that industry.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;InputOutput&quot;</span>
+
+<div class="viewcode-block" id="InputOutput.get"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.InputOutput.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">table_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+        <span class="n">year</span><span class="p">:</span> <span class="n">_YEAR</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">_YEAR</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get input-output statistics by industry.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table_id: IDs associated with input-output stats. Use</span>
+<span class="sd">                :meth:`~finagg.bea.api.API.get_parameter_values` to see</span>
+<span class="sd">                possible values. `&quot;ALL&quot;` indicates retrieve all tables for</span>
+<span class="sd">                all types of input-output statistics by industry.</span>
+<span class="sd">            year: Years to return. `&quot;ALL&quot;` indicates retrieve data for all</span>
+<span class="sd">                available years.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dataframe organized by table row and column codes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Method&quot;</span><span class="p">:</span> <span class="s2">&quot;GetData&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;DatasetName&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;TableID&quot;</span><span class="p">:</span> <span class="n">table_id</span><span class="p">,</span>
+            <span class="s2">&quot;Year&quot;</span><span class="p">:</span> <span class="n">year</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="p">(</span><span class="n">results_data</span><span class="p">,)</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;Data&quot;</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;NoteRef&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;TableID&quot;</span><span class="p">:</span> <span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;Year&quot;</span><span class="p">:</span> <span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;RowCode&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;RowDescr&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;RowType&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;ColCode&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;ColDescr&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;ColType&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;DataValue&quot;</span><span class="p">:</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="NIPA"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.NIPA">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NIPA</span><span class="p">(</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;National income and product accounts.</span>
+
+<span class="sd">    Details high-level US economic details in several</span>
+<span class="sd">    metrics.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;NIPA&quot;</span>
+
+<div class="viewcode-block" id="NIPA.get"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.NIPA.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">table_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+        <span class="n">freq</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="s2">&quot;A,Q&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span>
+        <span class="n">year</span><span class="p">:</span> <span class="n">_YEAR</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">_YEAR</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ALL&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get US income and product accounts by metric.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            table_id: IDs associated with metric of concern.</span>
+<span class="sd">                Use :meth:`~finagg.bea.api.API.get_parameter_values` to see</span>
+<span class="sd">                possible values.</span>
+<span class="sd">            freq: Data frequency to return. `&quot;Q&quot;` for quarterly, `&quot;A&quot;` for annually.</span>
+<span class="sd">            year: Years to return.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dataframe with normalized column names and true dtypes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">table_id</span> <span class="o">==</span> <span class="s2">&quot;ALL&quot;</span><span class="p">:</span>
+            <span class="n">table_id</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_parameter_values</span><span class="p">(</span><span class="s2">&quot;TableName&quot;</span><span class="p">)[</span><span class="s2">&quot;TableName&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">table_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">table_id</span> <span class="o">=</span> <span class="p">[</span><span class="n">table_id</span><span class="p">]</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">tid</span> <span class="ow">in</span> <span class="n">table_id</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;Method&quot;</span><span class="p">:</span> <span class="s2">&quot;GetData&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DatasetName&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;TableName&quot;</span><span class="p">:</span> <span class="n">tid</span><span class="p">,</span>
+                <span class="s2">&quot;Year&quot;</span><span class="p">:</span> <span class="n">year</span><span class="p">,</span>
+                <span class="s2">&quot;Frequency&quot;</span><span class="p">:</span> <span class="n">freq</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="n">results_data</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;Data&quot;</span><span class="p">]</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;Year&quot;</span><span class="p">,</span> <span class="s2">&quot;Quarter&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;TimePeriod&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Quarter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Quarter&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s2">&quot;TimePeriod&quot;</span><span class="p">,</span> <span class="s2">&quot;NoteRef&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;TableName&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;SeriesCode&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;LineNumber&quot;</span><span class="p">:</span> <span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;LineDescription&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;Year&quot;</span><span class="p">:</span> <span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;Quarter&quot;</span><span class="p">:</span> <span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;METRIC_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;CL_UNIT&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;UNIT_MULT&quot;</span><span class="p">:</span> <span class="s2">&quot;int16&quot;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;DataValue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;DataValue&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div></div>
+
+
+<span class="n">fixed_assets</span> <span class="o">=</span> <span class="n">FixedAssets</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;The most popular way for accessing the :class:`finagg.bea.api.FixedAssets`</span>
+<span class="sd">API implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">gdp_by_industry</span> <span class="o">=</span> <span class="n">GDPByIndustry</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;The most popular way for accessing the :class:`finagg.bea.api.GDPByIndustry`</span>
+<span class="sd">API implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">input_output</span> <span class="o">=</span> <span class="n">InputOutput</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;The most popular way for accessing the :class:`finagg.bea.api.InputOutput`</span>
+<span class="sd">API implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">nipa</span> <span class="o">=</span> <span class="n">NIPA</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;The most popular way for accessing the :class:`finagg.bea.api.NIPA`</span>
+<span class="sd">API implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1">#: The BEA API endpoint URL. All API requests are made to this URL.</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://apps.bea.gov/api/data&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_api_error_as_response</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert an API error to a :class:`requests.Response` object.&quot;&quot;&quot;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">()</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">error</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;APIErrorCode&quot;</span><span class="p">))</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">_content</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">response</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get</span><span class="p">(</span>
+    <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="o">/</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main get method used by dataset APIs.</span>
+
+<span class="sd">    Handles API key validation, formatting, and parameters common</span>
+<span class="sd">    amongst several API methods.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params: Params specific to the API method.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Results from the API request (typically a list of records).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        `RuntimeError`: If no BEA API key is passed or found.</span>
+<span class="sd">        `BEAAPIError`: If a BEA API error occurs.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BEA_API_KEY&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">api_key</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;No BEA API key found. &quot;</span>
+            <span class="s2">&quot;Pass the API key to the API directly, or &quot;</span>
+            <span class="s2">&quot;set the `BEA_API_KEY` environment variable.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;UserID&quot;</span><span class="p">:</span> <span class="n">api_key</span><span class="p">,</span> <span class="s2">&quot;ResultFormat&quot;</span><span class="p">:</span> <span class="s2">&quot;JSON&quot;</span><span class="p">})</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">_guarded_get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;BEAAPI&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">&quot;Error&quot;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">_api_error_as_response</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;Error&quot;</span><span class="p">])</span>
+        <span class="k">raise</span> <span class="n">BEAAPIError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">error</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;Error&quot;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;Results&quot;</span><span class="p">]:</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">_api_error_as_response</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;Results&quot;</span><span class="p">][</span><span class="s2">&quot;Error&quot;</span><span class="p">])</span>
+        <span class="k">raise</span> <span class="n">BEAAPIError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">error</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;Results&quot;</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_parameter_list</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a dataset&#39;s list of parameters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset: Dataset API to inspect. See :meth:`get_dataset_list` for a</span>
+<span class="sd">            list of datasets.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dataframe listing the dataset&#39;s parameters.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Method&quot;</span><span class="p">:</span> <span class="s2">&quot;GetParameterList&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DatasetName&quot;</span><span class="p">:</span> <span class="n">dataset</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)[</span><span class="s2">&quot;Parameter&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_parameter_values</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">param</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get potential values for a dataset&#39;s parameter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dataset: Dataset API to inspect. See :meth:`get_dataset_list` for a</span>
+<span class="sd">            list of datasets.</span>
+<span class="sd">        param: Dataset API&#39;s parameter to inspect.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dataframe describing the dataset&#39;s parameter values.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Method&quot;</span><span class="p">:</span> <span class="s2">&quot;GetParameterValues&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DatasetName&quot;</span><span class="p">:</span> <span class="n">dataset</span><span class="p">,</span>
+        <span class="s2">&quot;ParameterName&quot;</span><span class="p">:</span> <span class="n">param</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)[</span><span class="s2">&quot;ParamValue&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+
+<span class="nd">@ratelimit</span><span class="o">.</span><span class="n">guard</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">ratelimit</span><span class="o">.</span><span class="n">RequestLimit</span><span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="n">ratelimit</span><span class="o">.</span><span class="n">ErrorLimit</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="n">ratelimit</span><span class="o">.</span><span class="n">SizeLimit</span><span class="p">(</span><span class="mf">90e6</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_guarded_get</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Guarded version of `session.get`.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_dataset_list"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.get_dataset_list">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_dataset_list</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a list of datasets provided by the BEA API.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dataframe describing the datasets available through the BEA API.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; finagg.bea.api.get_dataset_list()  # doctest: +SKIP</span>
+<span class="sd">                        DatasetName                    DatasetDescription</span>
+<span class="sd">        0                      NIPA                  Standard NIPA tables</span>
+<span class="sd">        1        NIUnderlyingDetail  Standard NI underlying detail tables</span>
+<span class="sd">        2                       MNE             Multinational Enterprises</span>
+<span class="sd">        3               FixedAssets          Standard Fixed Assets tables</span>
+<span class="sd">        4                       ITA   International Transactions Accounts</span>
+<span class="sd">        5                       IIP     International Investment Position</span>
+<span class="sd">        6               InputOutput                     Input-Output Data</span>
+<span class="sd">        7             IntlServTrade          International Services Trade</span>
+<span class="sd">        8             GDPbyIndustry                       GDP by Industry</span>
+<span class="sd">        9                  Regional                    Regional data sets</span>
+<span class="sd">        10  UnderlyingGDPbyIndustry            Underlying GDP by Industry</span>
+<span class="sd">        11       APIDatasetMetaData     Metadata about other API datasets</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Method&quot;</span><span class="p">:</span> <span class="s2">&quot;GetDatasetList&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)[</span><span class="s2">&quot;Dataset&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BEAAPIError"><a class="viewcode-back" href="../../../api/finagg.bea.html#finagg.bea.api.BEAAPIError">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BEAAPIError</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An error raised in response to BEA API request errors.&quot;&quot;&quot;</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

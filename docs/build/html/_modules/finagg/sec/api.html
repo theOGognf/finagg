@@ -1,0 +1,1267 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.sec.api &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+
+  
+      <script src="../../../_static/jquery.js"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+      <script src="../../../_static/doctools.js"></script>
+      <script src="../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../_static/clipboard.min.js"></script>
+      <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.sec.api</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.sec.api</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;An implementation of the Securities and Exchange Commission&#39;s (SEC) EDGAR API.</span>
+
+<span class="sd">The SEC EDGAR API provides methods for retrieving XBRL data (e.g., earnings</span>
+<span class="sd">per share) from financial statements and SEC filing submission histories</span>
+<span class="sd">(e.g., 10-Q/10-K forms). The SEC EDGAR API is one of the few APIs that</span>
+<span class="sd">provides historical and current company financial data for free.</span>
+
+<span class="sd">An SEC EDGAR API user agent declaration is required to use this API.</span>
+<span class="sd">The user agent should be of format ``FIRST_NAME LAST_NAME E_MAIL``. You</span>
+<span class="sd">can pass your user agent directly to the implemented API getters, or you</span>
+<span class="sd">can set the ``SEC_API_USER_AGENT`` environment variable to have the user agent</span>
+<span class="sd">be passed to the implemented API getters for you.</span>
+
+<span class="sd">Alternatively, running ``finagg sec install`` (or the broader</span>
+<span class="sd">``finagg install``) will prompt you to enter an SEC EDGAR API user agent</span>
+<span class="sd">and will automatically store it in an ``.env`` file in your current working</span>
+<span class="sd">directory. The environment variables set in that ``.env`` file will be loaded</span>
+<span class="sd">into your shell upon using ``finagg`` (whether that be through the Python</span>
+<span class="sd">interface or through the CLI tools).</span>
+
+<span class="sd">See the official `SEC EDGAR API docs`_ for more info on the SEC API.</span>
+
+<span class="sd">.. _`SEC EDGAR API docs`: https://www.sec.gov/edgar/sec-api-documentation</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">TypedDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zipfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZipFile</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">ratelimit</span><span class="p">,</span> <span class="n">utils</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> | </span><span class="si">%(levelname)s</span><span class="s2"> | </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span>
+<span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">disable_http_cache</span><span class="p">:</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">requests_cache</span><span class="o">.</span><span class="n">CachedSession</span><span class="p">(</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">http_cache_path</span><span class="p">),</span>
+        <span class="n">expire_after</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">weeks</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="Concept"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.Concept">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Concept</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A collection of XBRL tag (data field), SEC EDGAR taxonomy that</span>
+<span class="sd">    tag is in, and units for that tag.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Valid tag within the given `taxonomy`.</span>
+    <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="c1">#: Valid SEC EDGAR taxonomy.</span>
+    <span class="c1">#: See https://www.sec.gov/info/edgar/edgartaxonomies.shtml for taxonomies.</span>
+    <span class="n">taxonomy</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="c1">#: Currency the concept is in.</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+<div class="viewcode-block" id="Frame"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.Frame">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Frame</span><span class="p">(</span><span class="n">Concept</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A frame is just a :class:`Concept` with a flag indicating if it supports</span>
+<span class="sd">    &quot;instantaneous&quot; frame data.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Whether to retrieve &quot;instant&quot; calendrical results.</span>
+    <span class="n">instant</span><span class="p">:</span> <span class="nb">bool</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_frame_to_concept</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Frame</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Concept</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for converting from a frame to a concept.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="n">frame</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="n">frame</span><span class="p">[</span><span class="s2">&quot;taxonomy&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">frame</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-per-&quot;</span><span class="p">)),</span>
+    <span class="p">}</span>
+
+
+<div class="viewcode-block" id="SubmissionsResult"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.SubmissionsResult">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SubmissionsResult</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+    <span class="c1">#: Company metadata.</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+
+    <span class="c1">#: Most recent company filings.</span>
+    <span class="n">filings</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span></div>
+
+
+<div class="viewcode-block" id="API"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.API">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">API</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract SEC EDGAR API.&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Request API URL.</span>
+    <span class="n">url</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+<div class="viewcode-block" id="API.get"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.API.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="n">SubmissionsResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Main API getter method.&quot;&quot;&quot;</span></div></div>
+
+
+<div class="viewcode-block" id="CompanyConcept"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.CompanyConcept">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">CompanyConcept</span><span class="p">(</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all XBRL disclosures for a single company and concept (a taxonomy</span>
+<span class="sd">    and tag) in a single dataframe.</span>
+
+<span class="sd">    The module variable :data:`finagg.sec.api.company_concept` is an instance of</span>
+<span class="sd">    this API implementation and is the most popular interface for querying this</span>
+<span class="sd">    API.</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        :data:`finagg.sec.api.popular_concepts`: For a list of popular company</span>
+<span class="sd">            concepts that can be used with this method. The concepts described</span>
+<span class="sd">            within this member are the most widely available concepts for</span>
+<span class="sd">            SEC filers.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://data.sec.gov/api/xbrl/companyconcept/CIK</span><span class="si">{cik}</span><span class="s2">/</span><span class="si">{taxonomy}</span><span class="s2">/</span><span class="si">{tag}</span><span class="s2">.json&quot;</span>
+
+<div class="viewcode-block" id="CompanyConcept.get"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.CompanyConcept.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">cik</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">taxonomy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;USD&quot;</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all XBRL disclosures for a single company (CIK)</span>
+<span class="sd">        and concept (a taxonomy and tag) in a single dataframe.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tag: Valid tag within the given ``taxonomy``.</span>
+<span class="sd">            cik: Company SEC CIK. Mutually exclusive with ``ticker``.</span>
+<span class="sd">            ticker: Company ticker. Mutually exclusive with ``cik``.</span>
+<span class="sd">            taxonomy: Valid SEC EDGAR taxonomy.</span>
+<span class="sd">                See https://www.sec.gov/info/edgar/edgartaxonomies.shtml for taxonomies.</span>
+<span class="sd">            units: Currency to view results in.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            user_agent: Self-declared bot header. Defaults to the value</span>
+<span class="sd">                found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dataframe with normalized column names.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: If both a ``cik`` and ``ticker`` are provided or</span>
+<span class="sd">                neither are provided.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.api.company_concept.get(</span>
+<span class="sd">            ...     &quot;EarningsPerShareBasic&quot;,</span>
+<span class="sd">            ...     ticker=&quot;AAPL&quot;,</span>
+<span class="sd">            ...     taxonomy=&quot;us-gaap&quot;,</span>
+<span class="sd">            ...     units=&quot;USD/shares&quot;,</span>
+<span class="sd">            ... ).head(5)  # doctest: +SKIP</span>
+<span class="sd">                    start         end    val                  accn    fy  fp ...</span>
+<span class="sd">            0  2006-10-01  2007-09-29   4.04  0001193125-09-214859  2009  FY ...</span>
+<span class="sd">            1  2006-10-01  2007-09-29   4.04  0001193125-10-012091  2009  FY ...</span>
+<span class="sd">            2  2007-09-30  2008-06-28   4.20  0001193125-09-153165  2009  Q3 ...</span>
+<span class="sd">            3  2008-03-30  2008-06-28   1.21  0001193125-09-153165  2009  Q3 ...</span>
+<span class="sd">            4  2007-09-30  2008-09-27   5.48  0001193125-09-214859  2009  FY ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">cik</span><span class="p">)</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">(</span><span class="n">ticker</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide a `cik` or a `ticker`.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ticker</span><span class="p">:</span>
+            <span class="n">cik</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">get_cik</span><span class="p">(</span><span class="n">ticker</span><span class="p">))</span>
+
+        <span class="n">cik</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cik</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cik</span><span class="o">=</span><span class="n">cik</span><span class="p">,</span> <span class="n">taxonomy</span><span class="o">=</span><span class="n">taxonomy</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">)</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;units&quot;</span><span class="p">)</span>
+        <span class="n">results_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">unit</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">units</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>  <span class="c1"># type: ignore</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">unit</span>
+            <span class="n">results_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">results_list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">content</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cik</span>
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">astype</span><span class="p">({</span><span class="s2">&quot;fy&quot;</span><span class="p">:</span> <span class="s2">&quot;Int64&quot;</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="CompanyConcept.get_multiple_original"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.CompanyConcept.get_multiple_original">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_multiple_original</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">concepts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Concept</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">cik</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">form</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return original (not amended) XBRL disclosures for a single company</span>
+<span class="sd">        using a set of company concepts.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            concepts: Company concepts to retrieve.</span>
+<span class="sd">            cik: Company SEC CIK. Mutually exclusive with ``ticker``.</span>
+<span class="sd">            ticker: Company ticker. Mutually exclusive with ``cik``.</span>
+<span class="sd">            form: SEC filing form type to include. ``&quot;10-Q&quot;`` is for quarterly</span>
+<span class="sd">                filing forms and ``&quot;10-K&quot;`` is for annual filing forms. Ignored</span>
+<span class="sd">                if left ``None``.</span>
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            user_agent: Self-declared bot header. Defaults to the value</span>
+<span class="sd">                found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Pivoted dataframe with a tag per column.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.api.company_concept.get_multiple_original(</span>
+<span class="sd">            ...     finagg.sec.api.popular_concepts,</span>
+<span class="sd">            ...     ticker=&quot;AAPL&quot;,</span>
+<span class="sd">            ... ).head(5)  # doctest: +SKIP</span>
+<span class="sd">                 fy  fp     tag         end           val ...</span>
+<span class="sd">            0  2009  Q3  Assets  2009-06-27  4.814000e+10 ...</span>
+<span class="sd">            1  2010  Q1  Assets  2009-12-26  5.392600e+10 ...</span>
+<span class="sd">            2  2010  Q2  Assets  2010-03-27  5.705700e+10 ...</span>
+<span class="sd">            3  2010  Q3  Assets  2010-06-26  6.472500e+10 ...</span>
+<span class="sd">            4  2011  Q1  Assets  2010-12-25  8.674200e+10 ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">concept</span> <span class="ow">in</span> <span class="n">concepts</span><span class="p">:</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="n">concept</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">]</span>
+            <span class="n">taxonomy</span> <span class="o">=</span> <span class="n">concept</span><span class="p">[</span><span class="s2">&quot;taxonomy&quot;</span><span class="p">]</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="n">concept</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">tag</span><span class="p">,</span>
+                <span class="n">cik</span><span class="o">=</span><span class="n">cik</span><span class="p">,</span>
+                <span class="n">ticker</span><span class="o">=</span><span class="n">ticker</span><span class="p">,</span>
+                <span class="n">taxonomy</span><span class="o">=</span><span class="n">taxonomy</span><span class="p">,</span>
+                <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+                <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">filter_original_filings</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;filed&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;filed&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)]</span>
+            <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span></div></div>
+
+
+<div class="viewcode-block" id="CompanyFacts"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.CompanyFacts">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">CompanyFacts</span><span class="p">(</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all XBRL disclosures for a single company.</span>
+
+<span class="sd">    The module variable :data:`finagg.sec.api.company_facts` is an instance of</span>
+<span class="sd">    this API implementation and is the most popular interface for querying this</span>
+<span class="sd">    API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://data.sec.gov/api/xbrl/companyfacts/CIK</span><span class="si">{cik}</span><span class="s2">.json&quot;</span>
+
+<div class="viewcode-block" id="CompanyFacts.download_zip"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.CompanyFacts.download_zip">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_zip</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1_000_000</span><span class="p">,</span>
+        <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZipFile</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download all XBRL disclosures for all companies in a zip file.</span>
+
+<span class="sd">        A progress bar displays the download progress as the download could</span>
+<span class="sd">        take a long time because the zip file is more than 1GB.</span>
+<span class="sd">        The zip file is updated by the SEC at approximately 3am ET nightly.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            chunk_size: Chunk size to stream and write the zip file with.</span>
+<span class="sd">            user_agent: Self-declared bot header. Defaults to the value</span>
+<span class="sd">                found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A zip file object representing the downloaded zip file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span>
+            <span class="s2">&quot;https://www.sec.gov/Archives/edgar/daily-index/xbrl/companyfacts.zip&quot;</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">root_path</span> <span class="o">/</span> <span class="s2">&quot;findata&quot;</span> <span class="o">/</span> <span class="s2">&quot;companyfacts.zip&quot;</span>
+        <span class="n">pb</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="n">total</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content-length&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+            <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Downloading companyfacts.zip to </span><span class="si">{</span><span class="n">dst</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;iB&quot;</span><span class="p">,</span>
+            <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">):</span>
+                <span class="n">pb</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">))</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+        <span class="n">pb</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CompanyFacts.get"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.CompanyFacts.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">cik</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return all XBRL disclosures for a single company (CIK).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cik: Company SEC CIK. Mutually exclusive with `ticker`.</span>
+<span class="sd">            ticker: Company ticker. Mutually exclusive with `cik`.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            user_agent: Self-declared bot header. Defaults to the value</span>
+<span class="sd">                found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dataframe with normalized column names.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: If both a ``cik`` and ``ticker`` are provided or</span>
+<span class="sd">                neither are provided.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.api.company_facts.get(ticker=&quot;AAPL&quot;).head(5)  # doctest: +SKIP</span>
+<span class="sd">                      end         val                  accn    fy  fp    form ...</span>
+<span class="sd">            0  2009-06-27  8.9582e+08  0001193125-09-153165  2009  Q3    10-Q ...</span>
+<span class="sd">            1  2009-10-16  9.0068e+08  0001193125-09-214859  2009  FY    10-K ...</span>
+<span class="sd">            2  2009-10-16  9.0068e+08  0001193125-10-012091  2009  FY  10-K/A ...</span>
+<span class="sd">            3  2010-01-15  9.0679e+08  0001193125-10-012085  2010  Q1    10-Q ...</span>
+<span class="sd">            4  2010-04-09  9.0994e+08  0001193125-10-088957  2010  Q2    10-Q ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">cik</span><span class="p">)</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">(</span><span class="n">ticker</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide a `cik` or a `ticker`.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ticker</span><span class="p">:</span>
+            <span class="n">cik</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">get_cik</span><span class="p">(</span><span class="n">ticker</span><span class="p">))</span>
+
+        <span class="n">cik</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cik</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cik</span><span class="o">=</span><span class="n">cik</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">)</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">_parse_company_facts</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cik</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">astype</span><span class="p">({</span><span class="s2">&quot;fy&quot;</span><span class="p">:</span> <span class="s2">&quot;Int64&quot;</span><span class="p">})</span></div></div>
+
+
+<div class="viewcode-block" id="Exchanges"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.Exchanges">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Exchanges</span><span class="p">(</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SEC-registered ticker info with exchange data.</span>
+
+<span class="sd">    This API implementation is very similar to :class:`Tickers`. It returns</span>
+<span class="sd">    all the same data in addition to the exchanges that each company is on.</span>
+
+<span class="sd">    The module variable :data:`finagg.sec.api.exchanges` is an instance of this</span>
+<span class="sd">    API implementation and is the most popular interface for querying this</span>
+<span class="sd">    API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://www.sec.gov/files/company_tickers_exchange.json&quot;</span>
+
+<div class="viewcode-block" id="Exchanges.get"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.Exchanges.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a dataframe containing all SEC-registered ticker</span>
+<span class="sd">        info.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            user_agent: Self-declared SEC bot header. Defaults to the value</span>
+<span class="sd">                found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing company names, their SEC CIKs, and their</span>
+<span class="sd">            ticker symbols.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.api.exchanges.get().head(5)  # doctest: +SKIP</span>
+<span class="sd">                   cik            name ticker exchange</span>
+<span class="sd">            0   320193      Apple Inc.   AAPL   Nasdaq</span>
+<span class="sd">            1   789019  MICROSOFT CORP   MSFT   Nasdaq</span>
+<span class="sd">            2  1652044   Alphabet Inc.  GOOGL   Nasdaq</span>
+<span class="sd">            3  1018724  AMAZON COM INC   AMZN   Nasdaq</span>
+<span class="sd">            4  1045810     NVIDIA CORP   NVDA   Nasdaq</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">)</span>
+        <span class="n">content</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;fields&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cik_str&quot;</span><span class="p">:</span> <span class="s2">&quot;cik&quot;</span><span class="p">})</span></div></div>
+
+
+<div class="viewcode-block" id="Frames"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.Frames">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Frames</span><span class="p">(</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all company filings for one particular fact that most closely</span>
+<span class="sd">    matches the requested calendrical period.</span>
+
+<span class="sd">    The module variable :data:`finagg.sec.api.frames` is an instance of</span>
+<span class="sd">    this API implementation and is the most popular interface for querying this</span>
+<span class="sd">    API.</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        :data:`popular_frames`: For a list of popular company frames</span>
+<span class="sd">            that can be used with this method. The frames described</span>
+<span class="sd">            within this member are the most widely available frames for</span>
+<span class="sd">            SEC filers.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;https://data.sec.gov/api/xbrl&quot;</span>
+        <span class="s2">&quot;/frames&quot;</span>
+        <span class="s2">&quot;/</span><span class="si">{taxonomy}</span><span class="s2">/</span><span class="si">{tag}</span><span class="s2">/</span><span class="si">{units}</span><span class="s2">/CY</span><span class="si">{year}{quarter}</span><span class="s2">.json&quot;</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="Frames.get"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.Frames.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">year</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="n">quarter</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">instant</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">taxonomy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;USD&quot;</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get one fact for each reporting entity that most closely fits</span>
+<span class="sd">        the calendrical period requested.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tag: Valid tag within the given ``taxonomy``.</span>
+<span class="sd">            year: Year to retrieve.</span>
+<span class="sd">            quarter: Quarter to retrieve data for. Most data is only provided</span>
+<span class="sd">                at a quarterly rate, so this should be provided for most cases.</span>
+<span class="sd">            instant: Whether to get instantaneous data for the frame (data that</span>
+<span class="sd">                most closely matches a frame&#39;s year and quarter without a</span>
+<span class="sd">                time buffer). This flag should be enabled for most cases. See</span>
+<span class="sd">                :data:`popular_frames` for which tags should be ``instant``.</span>
+<span class="sd">            taxonomy: Valid SEC EDGAR taxonomy.</span>
+<span class="sd">                See https://www.sec.gov/info/edgar/edgartaxonomies for taxonomies.</span>
+<span class="sd">            units: Units to view results in.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            user_agent: Self-declared bot header. Defaults to the value</span>
+<span class="sd">                found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dataframe with slightly improved column names.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.api.frames.get(</span>
+<span class="sd">            ...     &quot;EarningsPerShareBasic&quot;,</span>
+<span class="sd">            ...     2020,</span>
+<span class="sd">            ...     quarter=3,</span>
+<span class="sd">            ...     instant=False,</span>
+<span class="sd">            ...     taxonomy=&quot;us-gaap&quot;,</span>
+<span class="sd">            ...     units=&quot;USD-per-shares&quot;,</span>
+<span class="sd">            ... ).head(5)  # doctest: +SKIP</span>
+<span class="sd">                               accn   cik                      entityName    loc ...</span>
+<span class="sd">            0  0001104659-21-118843  1750                       AAR CORP.  US-IL ...</span>
+<span class="sd">            1  0001104659-21-133629  1800             ABBOTT LABORATORIES  US-IL ...</span>
+<span class="sd">            2  0001264931-20-000235  1961                     WORLDS INC.  US-MA ...</span>
+<span class="sd">            3  0001564590-21-055818  2098                ACME UNITED CORP  US-CT ...</span>
+<span class="sd">            4  0000002178-22-000033  2178  ADAMS RESOURCES &amp; ENERGY, INC.  US-TX ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">quarter</span><span class="p">:</span>
+            <span class="n">quarter</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Q</span><span class="si">{</span><span class="n">quarter</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">instant</span><span class="p">:</span>
+                <span class="n">quarter</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">quarter</span><span class="si">}</span><span class="s2">I&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">quarter</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;-per-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">taxonomy</span><span class="o">=</span><span class="n">taxonomy</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="n">year</span><span class="p">,</span> <span class="n">quarter</span><span class="o">=</span><span class="n">quarter</span>
+        <span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">)</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">content</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">return</span> <span class="n">df</span></div></div>
+
+
+<div class="viewcode-block" id="Submissions"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.Submissions">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Submissions</span><span class="p">(</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a company&#39;s metadata and all its recent SEC filings.</span>
+
+<span class="sd">    Not all the metadata typically found with the submissions API is supported</span>
+<span class="sd">    by this API. Only common company metadata (e.g., company name, industry</span>
+<span class="sd">    code, fiscal year end date, etc.) is returned by this implementation.</span>
+
+<span class="sd">    The module variable :data:`finagg.sec.api.submissions` is an instance of</span>
+<span class="sd">    this API implementation and is the most popular interface for querying this</span>
+<span class="sd">    API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://data.sec.gov/submissions/CIK</span><span class="si">{cik}</span><span class="s2">.json&quot;</span>
+
+<div class="viewcode-block" id="Submissions.download_zip"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.Submissions.download_zip">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_zip</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1_000_000</span><span class="p">,</span>
+        <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZipFile</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download all SEC filings for all companies in a zip file.</span>
+
+<span class="sd">        A progress bar displays the download progress as the download could</span>
+<span class="sd">        take a long time because the zip file is more than 1GB.</span>
+<span class="sd">        The zip file is updated by the SEC at approximately 3am ET nightly.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            chunk_size: Chunk size to stream and write the zip file with.</span>
+<span class="sd">            user_agent: Self-declared bot header. Defaults to the value</span>
+<span class="sd">                found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A zip file object representing the downloaded zip file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span>
+            <span class="s2">&quot;https://www.sec.gov/Archives/edgar/daily-index/bulkdata/submissions.zip&quot;</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">root_path</span> <span class="o">/</span> <span class="s2">&quot;findata&quot;</span> <span class="o">/</span> <span class="s2">&quot;submissions.zip&quot;</span>
+        <span class="n">pb</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="n">total</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content-length&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+            <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Downloading submissions.zip to </span><span class="si">{</span><span class="n">dst</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;iB&quot;</span><span class="p">,</span>
+            <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">):</span>
+                <span class="n">pb</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">))</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+        <span class="n">pb</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Submissions.get"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.Submissions.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">cik</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SubmissionsResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a company&#39;s metadata and all its recent SEC filings.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cik: Company SEC CIK. Mutually exclusive with ``ticker``.</span>
+<span class="sd">            ticker: Company ticker. Mutually exclusive with ``cik``.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            user_agent: Self-declared SEC bot header. Defaults to the value</span>
+<span class="sd">                found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Company metadata and a dataframe with recent SEC filings.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: If both a ``cik`` and ``ticker`` are provided or neither</span>
+<span class="sd">                are provided.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; out = finagg.sec.api.submissions.get(ticker=&quot;AAPL&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; out[&quot;metadata&quot;]  # doctest: +ELLIPSIS</span>
+<span class="sd">            {&#39;cik&#39;: &#39;0000320193&#39;, &#39;entityType&#39;: &#39;operating&#39;, &#39;sic&#39;: &#39;3571&#39;, ...}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">cik</span><span class="p">)</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">(</span><span class="n">ticker</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide a `cik` or a `ticker`.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ticker</span><span class="p">:</span>
+            <span class="n">cik</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">get_cik</span><span class="p">(</span><span class="n">ticker</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">cik</span><span class="p">:</span>
+            <span class="n">ticker</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">get_ticker</span><span class="p">(</span><span class="n">cik</span><span class="p">))</span>
+
+        <span class="n">cik</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cik</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cik</span><span class="o">=</span><span class="n">cik</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">)</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">recent_filings</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filings&quot;</span><span class="p">)[</span><span class="s2">&quot;recent&quot;</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">recent_filings</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cik</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">_parse_submission_metadata</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cik</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;ticker&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">ticker</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="n">metadata</span><span class="p">,</span> <span class="s2">&quot;filings&quot;</span><span class="p">:</span> <span class="n">df</span><span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="Tickers"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.Tickers">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Tickers</span><span class="p">(</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SEC-registered ticker info.</span>
+
+<span class="sd">    This is a broader method in comparison to :meth:`get_ticker_set`.</span>
+<span class="sd">    :meth:`get_ticker_set` will get all the tickers that have popular</span>
+<span class="sd">    fundamentals data available through the SEC EDGAR API for the</span>
+<span class="sd">    previous year, while this method will get all tickers and CIKs</span>
+<span class="sd">    that have ever had data available via the SEC EDGAR API.</span>
+
+<span class="sd">    The module variable :data:`finagg.sec.api.tickers` is an instance of this</span>
+<span class="sd">    API implementation and is the most popular interface for querying this</span>
+<span class="sd">    API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://www.sec.gov/files/company_tickers.json&quot;</span>
+
+<div class="viewcode-block" id="Tickers.get"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.Tickers.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a dataframe containing all SEC-registered ticker</span>
+<span class="sd">        info.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            user_agent: Self-declared SEC bot header. Defaults to the value</span>
+<span class="sd">                found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing company names, their SEC CIKs, and their</span>
+<span class="sd">            ticker symbols.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.api.tickers.get().head(5)  # doctest: +SKIP</span>
+<span class="sd">                   cik ticker                   title</span>
+<span class="sd">            0   320193   AAPL              Apple Inc.</span>
+<span class="sd">            1   789019   MSFT          MICROSOFT CORP</span>
+<span class="sd">            2  1652044  GOOGL           Alphabet Inc.</span>
+<span class="sd">            3  1018724   AMZN          AMAZON COM INC</span>
+<span class="sd">            4  1067983  BRK-B  BERKSHIRE HATHAWAY INC</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">)</span>
+        <span class="n">content</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">items</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">content</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cik_str&quot;</span><span class="p">:</span> <span class="s2">&quot;cik&quot;</span><span class="p">})</span></div></div>
+
+
+<span class="c1"># Mapping of SEC CIK strings to (uppercase) tickers.</span>
+<span class="n">_cik_to_tickers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="c1"># Mapping of (uppercase) tickers to SEC CIK strings.</span>
+<span class="n">_tickers_to_cik</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">company_concept</span> <span class="o">=</span> <span class="n">CompanyConcept</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;The most popular way for accessing the :class:`CompanyConcept` API</span>
+<span class="sd">implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">company_facts</span> <span class="o">=</span> <span class="n">CompanyFacts</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;The most popular way for accessing the :class:`CompanyFacts` API</span>
+<span class="sd">implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">exchanges</span> <span class="o">=</span> <span class="n">Exchanges</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;The most popular way for accessing the :class:`Exchanges` API implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">frames</span> <span class="o">=</span> <span class="n">Frames</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;The most popular way for accessing the :class:`Frames` API implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">submissions</span> <span class="o">=</span> <span class="n">Submissions</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;The most popular way for accessing the :class:`Submissions` API</span>
+<span class="sd">implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">tickers</span> <span class="o">=</span> <span class="n">Tickers</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;The most popular way for accessing the :class:`Tickers` API implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">popular_frames</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Frame</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;Assets&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;USD&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;instant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;AssetsCurrent&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;USD&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;instant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;CommonStockSharesOutstanding&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;shares&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;instant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;EarningsPerShareBasic&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;USD-per-shares&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;instant&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;InventoryNet&quot;</span><span class="p">,</span> <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;USD&quot;</span><span class="p">,</span> <span class="s2">&quot;instant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;Liabilities&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;USD&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;instant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;LiabilitiesCurrent&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;USD&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;instant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;NetIncomeLoss&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;USD&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;instant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;StockholdersEquity&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;USD&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;instant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;Company frames that have high availability and are relatively popular</span>
+<span class="sd">for fundamental analysis. Includes things like earnings per share, current</span>
+<span class="sd">assets, etc.. Frames are in valid format for usage with the :class:`Frames`</span>
+<span class="sd">API implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">popular_concepts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Concept</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_frame_to_concept</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span> <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">popular_frames</span><span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;Company concepts that have high availability and are relatively popular</span>
+<span class="sd">for fundamental analysis. Includes things like earnings per share, current</span>
+<span class="sd">assets, etc.. Concepts contain all the parameters required for usage with the</span>
+<span class="sd">:class:`CompanyConcept` API implementation.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="nd">@ratelimit</span><span class="o">.</span><span class="n">guard</span><span class="p">([</span><span class="n">ratelimit</span><span class="o">.</span><span class="n">RequestLimit</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">))])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get</span><span class="p">(</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">stream</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;SEC EDGAR API request helper.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        url: Complete SEC EDGAR API URL to request from.</span>
+<span class="sd">        stream: Whether to stream the response content (useful for file</span>
+<span class="sd">            downloads).</span>
+<span class="sd">        cache: Whether to cache the response from the given URL.</span>
+<span class="sd">        user_agent: Self-declared SEC bot header. Defaults to the value</span>
+<span class="sd">            found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Successful responses.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        `RuntimeError`: If a user agent is not provided or found in the environment.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">user_agent</span> <span class="o">=</span> <span class="n">user_agent</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SEC_API_USER_AGENT&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">user_agent</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;No SEC API user agent declaration found. &quot;</span>
+            <span class="s2">&quot;Pass your user agent declaration to the API directly, or &quot;</span>
+            <span class="s2">&quot;set the `SEC_API_USER_AGENT` environment variable.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="n">user_agent</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">cache</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">response</span>
+
+
+<div class="viewcode-block" id="compute_financial_ratios"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.compute_financial_ratios">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">compute_financial_ratios</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute financial ratios in-place for a dataframe using XBRL financial</span>
+<span class="sd">    tags.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df: Dataframe with common XBRL financial tags (e.g., &quot;Assets&quot;,</span>
+<span class="sd">            &quot;Liabilities&quot;, etc.).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``df`` but with additional columns that&#39;re normalized financial ratios.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;AssetCoverageRatio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Assets&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;LiabilitiesCurrent&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span>
+        <span class="s2">&quot;Liabilities&quot;</span>
+    <span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;BookRatio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;Assets&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Liabilities&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span>
+        <span class="s2">&quot;CommonStockSharesOutstanding&quot;</span>
+    <span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;DebtEquityRatio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Liabilities&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;StockholdersEquity&quot;</span><span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;QuickRatio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;AssetsCurrent&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;InventoryNet&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span>
+        <span class="s2">&quot;LiabilitiesCurrent&quot;</span>
+    <span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;ReturnOnAssets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;NetIncomeLoss&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Assets&quot;</span><span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;ReturnOnEquity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;NetIncomeLoss&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;StockholdersEquity&quot;</span><span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;WorkingCapitalRatio&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;AssetsCurrent&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;LiabilitiesCurrent&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="filter_original_filings"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.filter_original_filings">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">filter_original_filings</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">form</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all original filing rows as determined by the filing date and</span>
+<span class="sd">    tag for a period.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df: Dataframe without mixed original and amendment rows.</span>
+<span class="sd">        form: Only keep rows with form type ``form``. Most popular choices</span>
+<span class="sd">            include ``&quot;10-K&quot;`` for annual and ``&quot;10-Q&quot;`` for quarterly.</span>
+<span class="sd">            This parameter is ignored if left ``None``.</span>
+<span class="sd">        units: Only keep rows with units ``units`` if not ``None``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dataframe with rows that only correspond to original filings.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Only get a company&#39;s original quarterly earnings-per-share filings.</span>
+
+<span class="sd">        &gt;&gt;&gt; df = finagg.sec.api.company_concept.get(</span>
+<span class="sd">        ...     &quot;EarningsPerShareBasic&quot;,</span>
+<span class="sd">        ...     ticker=&quot;AAPL&quot;,</span>
+<span class="sd">        ...     taxonomy=&quot;us-gaap&quot;,</span>
+<span class="sd">        ...     units=&quot;USD/shares&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; finagg.sec.api.filter_original_filings(</span>
+<span class="sd">        ...     df,</span>
+<span class="sd">        ...     form=&quot;10-Q&quot;,</span>
+<span class="sd">        ...     units=&quot;USD/shares&quot;</span>
+<span class="sd">        ... ).head(5)  # doctest: +SKIP</span>
+<span class="sd">             fy  fp  ...</span>
+<span class="sd">        0  2009  Q3  ...</span>
+<span class="sd">        1  2010  Q1  ...</span>
+<span class="sd">        2  2010  Q2  ...</span>
+<span class="sd">        3  2010  Q3  ...</span>
+<span class="sd">        4  2011  Q1  ...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">])</span>
+    <span class="n">filed</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;filed&quot;</span><span class="p">])</span>
+    <span class="n">filing_delay</span> <span class="o">=</span> <span class="n">filed</span> <span class="o">-</span> <span class="n">end</span>
+    <span class="c1"># Make sure filings occurs within 90 days of the reporting end date.</span>
+    <span class="c1"># Helps ensure each filing is the first filing and not an amendment.</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">filing_delay</span><span class="o">.</span><span class="n">days</span> <span class="o">&lt;=</span> <span class="mi">90</span>
+    <span class="k">if</span> <span class="n">form</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">&amp;=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;form&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">form</span>
+        <span class="c1"># Not all filings contain a start date, but it can be helpful to</span>
+        <span class="c1"># use the start date to ensure the filing corresponds to the time</span>
+        <span class="c1"># period we care about.</span>
+        <span class="k">if</span> <span class="s2">&quot;start&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="p">:</span>
+            <span class="n">start</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">])</span>
+            <span class="n">start_to_end</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
+        <span class="k">match</span> <span class="n">form</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s2">&quot;10-K&quot;</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">&amp;=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;fp&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;FY&quot;</span>
+                <span class="c1"># Make sure the reporting frame is close to a year.</span>
+                <span class="k">if</span> <span class="s2">&quot;start&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="p">:</span>
+                    <span class="n">mask</span> <span class="o">&amp;=</span> <span class="n">start</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span> <span class="o">|</span> <span class="p">((</span><span class="mi">350</span> <span class="o">&lt;=</span> <span class="n">start_to_end</span><span class="o">.</span><span class="n">days</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">start_to_end</span><span class="o">.</span><span class="n">days</span> <span class="o">&lt;=</span> <span class="mi">380</span><span class="p">))</span>  <span class="c1"># type: ignore[no-untyped-call]</span>
+            <span class="k">case</span> <span class="s2">&quot;10-Q&quot;</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">&amp;=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;fp&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Q&quot;</span><span class="p">)</span>
+                <span class="c1"># Make sure the reporting frame is close to a quarter.</span>
+                <span class="k">if</span> <span class="s2">&quot;start&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="p">:</span>
+                    <span class="n">mask</span> <span class="o">&amp;=</span> <span class="n">start</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span> <span class="o">|</span> <span class="p">((</span><span class="mi">75</span> <span class="o">&lt;=</span> <span class="n">start_to_end</span><span class="o">.</span><span class="n">days</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">start_to_end</span><span class="o">.</span><span class="n">days</span> <span class="o">&lt;=</span> <span class="mi">105</span><span class="p">))</span>  <span class="c1"># type: ignore[no-untyped-call]</span>
+    <span class="k">if</span> <span class="n">units</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">&amp;=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">units</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">])</span>
+        <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;tag&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">first</span><span class="p">()</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_cik"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.get_cik">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_cik</span><span class="p">(</span><span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a company&#39;s SEC CIK from its ticker.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ticker: A company&#39;s ticker symbol.</span>
+<span class="sd">        user_agent: Self-declared SEC bot header. Defaults to the value</span>
+<span class="sd">            found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The company&#39;s corresponding SEC CIK.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Get Apple&#39;s SEC CIK from its ticker.</span>
+
+<span class="sd">        &gt;&gt;&gt; finagg.sec.api.get_cik(&quot;AAPL&quot;) == &quot;0000320193&quot;</span>
+<span class="sd">        True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_tickers_to_cik</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">Tickers</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">)</span>
+        <span class="n">content</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">content</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">normalized_cik</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="s2">&quot;cik_str&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">_tickers_to_cik</span><span class="p">[</span><span class="n">items</span><span class="p">[</span><span class="s2">&quot;ticker&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">normalized_cik</span>
+            <span class="n">_cik_to_tickers</span><span class="p">[</span><span class="n">normalized_cik</span><span class="p">]</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="s2">&quot;ticker&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_tickers_to_cik</span><span class="p">[</span><span class="n">ticker</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span></div>
+
+
+<div class="viewcode-block" id="get_ticker"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.get_ticker">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_ticker</span><span class="p">(</span><span class="n">cik</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a company&#39;s ticker from its SEC CIK.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cik: A company&#39;s 10-character SEC CIK.</span>
+<span class="sd">        user_agent: Self-declared SEC bot header. Defaults to the value</span>
+<span class="sd">            found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The company&#39;s corresponding ticker.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Get Apple&#39;s ticker from its SEC CIK.</span>
+
+<span class="sd">        &gt;&gt;&gt; finagg.sec.api.get_ticker(&quot;0000320193&quot;) == &quot;AAPL&quot;</span>
+<span class="sd">        True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_cik_to_tickers</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">Tickers</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">)</span>
+        <span class="n">content</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">content</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">normalized_cik</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="s2">&quot;cik_str&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">_cik_to_tickers</span><span class="p">[</span><span class="n">normalized_cik</span><span class="p">]</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="s2">&quot;ticker&quot;</span><span class="p">]</span>
+            <span class="n">_tickers_to_cik</span><span class="p">[</span><span class="n">items</span><span class="p">[</span><span class="s2">&quot;ticker&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">normalized_cik</span>
+    <span class="n">cik</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cik</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_cik_to_tickers</span><span class="p">[</span><span class="n">cik</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="get_ticker_set"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.get_ticker_set">[docs]</a><span class="nd">@cache</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_ticker_set</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">user_agent</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the set of tickers that published data for popular concepts</span>
+<span class="sd">    during any of the quarters for the previous year.</span>
+
+<span class="sd">    This effectively gets the set of tickers whose data is at least</span>
+<span class="sd">    somewhat available through the SEC EDGAR API.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        user_agent: Self-declared SEC bot header. Defaults to the value</span>
+<span class="sd">            found in the ``SEC_API_USER_AGENT`` environment variable.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Set of tickers whose data is at least somewhat available through</span>
+<span class="sd">        the SEC EDGAR API.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; tickers = finagg.sec.api.get_ticker_set()</span>
+<span class="sd">        &gt;&gt;&gt; &quot;AAPL&quot; in tickers</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; &quot;MSFT&quot; in tickers</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; &quot;GOOG&quot; in tickers</span>
+<span class="sd">        True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">year</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">year</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">tickers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">popular_frames</span><span class="p">:</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">]</span>
+        <span class="n">instant</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="s2">&quot;instant&quot;</span><span class="p">]</span>
+        <span class="n">taxonomy</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="s2">&quot;taxonomy&quot;</span><span class="p">]</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">quarter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">frames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">tag</span><span class="p">,</span>
+                <span class="n">year</span><span class="p">,</span>
+                <span class="n">quarter</span><span class="p">,</span>
+                <span class="n">instant</span><span class="o">=</span><span class="n">instant</span><span class="p">,</span>
+                <span class="n">taxonomy</span><span class="o">=</span><span class="n">taxonomy</span><span class="p">,</span>
+                <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                <span class="n">user_agent</span><span class="o">=</span><span class="n">user_agent</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">cik</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">ticker</span> <span class="o">=</span> <span class="n">get_ticker</span><span class="p">(</span><span class="n">cik</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">tickers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">ticker</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tickers</span></div>
+
+
+<div class="viewcode-block" id="group_and_pivot_filings"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.api.group_and_pivot_filings">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">group_and_pivot_filings</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">form</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for grouping filings into a pivoted dataframe such that each</span>
+<span class="sd">    tag has its own column.</span>
+
+<span class="sd">    Tags are grouped according to fiscal year and fiscal period. The newest</span>
+<span class="sd">    filing date is used when tags have different filing dates for the same</span>
+<span class="sd">    fiscal year and fiscal period. Tags are forward-filled to fill gaps</span>
+<span class="sd">    in filings.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df: &quot;Melted&quot; dataframe where each filing is a row.</span>
+<span class="sd">        form: Type of form to group. ``&quot;10-K&quot;`` sets the index to the fiscal</span>
+<span class="sd">            year and filing date whereas ``&quot;10-Q&quot;`` sets the index to the</span>
+<span class="sd">            fiscal year, fiscal period, and filing date. If not provided,</span>
+<span class="sd">            the form type is chosen by inspecting the first element of the</span>
+<span class="sd">            ``&quot;form&quot;`` column.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A pivoted dataframe where each column is a tag.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Get all XBRL filings from a company, unintelligently select the first</span>
+<span class="sd">        unique filings for each XBRL tag, and then group all filings into</span>
+<span class="sd">        a pivoted table.</span>
+
+<span class="sd">        &gt;&gt;&gt; df = finagg.sec.api.company_facts.get(ticker=&quot;AAPL&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; df = finagg.sec.api.filter_original_filings(df, form=&quot;10-K&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; finagg.sec.api.group_and_pivot_filings(df, form=&quot;10-K&quot;)  # doctest: +SKIP</span>
+<span class="sd">                         AccountsPayableCurrent  AccountsReceivableNetCurrent ...</span>
+<span class="sd">        fy   filed                                                            ...</span>
+<span class="sd">        2009 2009-10-27            5.520000e+09                  2.422000e+09 ...</span>
+<span class="sd">        2010 2010-10-27            5.601000e+09                  3.361000e+09 ...</span>
+<span class="sd">        2011 2011-10-26            1.201500e+10                  5.510000e+09 ...</span>
+<span class="sd">        2012 2012-10-31            1.463200e+10                  5.369000e+09 ...</span>
+<span class="sd">        2013 2013-10-30            2.117500e+10                  1.093000e+10 ...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">form</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;form&quot;</span><span class="p">]</span>
+    <span class="k">match</span> <span class="n">form</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s2">&quot;10-K&quot;</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fp&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;filed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">])[</span><span class="s2">&quot;filed&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">],</span>
+                <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;tag&quot;</span><span class="p">,</span>
+                <span class="n">values</span><span class="o">=</span><span class="s2">&quot;val&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">case</span> <span class="s2">&quot;10-Q&quot;</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;filed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">])[</span><span class="s2">&quot;filed&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">],</span>
+                <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;tag&quot;</span><span class="p">,</span>
+                <span class="n">values</span><span class="o">=</span><span class="s2">&quot;val&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_company_facts</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for parsing company facts.</span>
+
+<span class="sd">    This function is only defined to make parsing company</span>
+<span class="sd">    facts easier and common between parsing from the REST</span>
+<span class="sd">    API responses and the bulk zip file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        content: Company facts JSON data.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dataframe equivalent of the company facts data.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">facts</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;facts&quot;</span><span class="p">)</span>
+    <span class="n">results_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">taxonomy</span><span class="p">,</span> <span class="n">tag_dict</span> <span class="ow">in</span> <span class="n">facts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">tag</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">tag_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">rows</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+                <span class="n">df</span><span class="p">[</span><span class="s2">&quot;taxonomy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">taxonomy</span>
+                <span class="n">df</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag</span>
+                <span class="n">df</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+                <span class="n">df</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span>
+                <span class="n">df</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">col</span>
+                <span class="n">results_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">results_list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">content</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">results</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="n">results</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_submission_metadata</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for parsing submission metadata.</span>
+
+<span class="sd">    This function is only defined to make parsing submission</span>
+<span class="sd">    metadata easier and common between parsing from the REST</span>
+<span class="sd">    API responses and the bulk zip file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        content: Submissions JSON data.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dataframe equivalent of the submissions data.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">content</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">metadata</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">if</span> <span class="s2">&quot;exchanges&quot;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;exchanges&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;exchanges&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">metadata</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

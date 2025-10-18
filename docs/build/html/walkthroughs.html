@@ -1,0 +1,446 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Walkthroughs &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+      <script src="_static/jquery.js"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+      <script src="_static/doctools.js"></script>
+      <script src="_static/sphinx_highlight.js"></script>
+      <script src="_static/clipboard.min.js"></script>
+      <script src="_static/copybutton.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="finagg" href="api/modules.html" />
+    <link rel="prev" title="Conventions" href="conventions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="conventions.html">Conventions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Walkthroughs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-fred-api-subpackages">Using the FRED API Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#searching-for-economic-data">Searching for economic data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#retrieving-economic-data">Retrieving economic data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-economic-data">Installing economic data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-sec-api-subpackages">Using the SEC API Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#retrieving-company-financial-data">Retrieving company financial data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filtering-company-financial-data">Filtering company financial data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-company-financial-data">Installing company financial data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Walkthroughs</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/walkthroughs.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="walkthroughs">
+<h1>Walkthroughs<a class="headerlink" href="#walkthroughs" title="Permalink to this heading"></a></h1>
+<p>This page is a collection of walkthroughs that distinguish the usages of
+API subpackages vs feature subpackages, and a collection of workflows for
+aggregating data for a subset of companies, industries, and economic data
+series (depending on the subpackage being used).</p>
+<p>Although these walkthroughs will provide you with enough information to use
+<strong>finagg</strong> to aggregate data from the implemented APIs, it’s recommended
+you still explore the respective official API documentations to get a good
+understanding of how each API is organized and what data is provided through
+each API.</p>
+<p>These walkthroughs assume your environment contains the necessary environment
+variables to enable using the respective APIs. See the
+<span class="xref std std-doc">configuration docs</span> for more info on configuring your
+environment.</p>
+<section id="using-the-fred-api-subpackages">
+<h2>Using the FRED API Subpackages<a class="headerlink" href="#using-the-fred-api-subpackages" title="Permalink to this heading"></a></h2>
+<section id="searching-for-economic-data">
+<h3>Searching for economic data<a class="headerlink" href="#searching-for-economic-data" title="Permalink to this heading"></a></h3>
+<p>Let’s say we’re interested in finding economic data series corresponding
+to various US treasuries. The FRED series search API is a good place to start.
+The FRED series search API allows us to search through economic data series
+that’re provided by the FRED series observations API (the main API used for
+retrieving economic data). We can search for economic data series using search
+terms/words with <a class="reference internal" href="api/finagg.fred.api.html#finagg.fred.api.Series.search" title="finagg.fred.api.Series.search"><code class="xref py py-attr docutils literal notranslate"><span class="pre">finagg.fred.api.Series.search</span></code></a> (the FRED series
+search API implementation):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">search</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+<span class="gp">... </span>  <span class="s2">&quot;treasury yield&quot;</span><span class="p">,</span>
+<span class="gp">... </span>  <span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;popularity&quot;</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">             id ...                                             title observation_start ...</span>
+<span class="go">0        T10Y2Y ... 10-Year Treasury Constant Maturity Minus 2-Yea...        1976-06-01 ...</span>
+<span class="go">1  BAMLH0A0HYM2 ... ICE BofA US High Yield Index Option-Adjusted S...        1996-12-31 ...</span>
+<span class="go">2        T10Y3M ... 10-Year Treasury Constant Maturity Minus 3-Mon...        1982-01-04 ...</span>
+<span class="go">3         DGS10 ... Market Yield on U.S. Treasury Securities at 10...        1962-01-02 ...</span>
+<span class="go">4        DFII10 ... Market Yield on U.S. Treasury Securities at 10...        2003-01-02 ...</span>
+</pre></div>
+</div>
+<p>Notice we order by popularity using the <code class="docutils literal notranslate"><span class="pre">order_by</span></code> arg to help filter through
+irrelevant economic data series. The returned dataframe provides
+key info for further exploring and aggregating the economic data series:</p>
+<ul class="simple">
+<li><p>the <code class="docutils literal notranslate"><span class="pre">id</span></code> column indicates the economic data series ID corresponding to
+each returned series (IDs are args for other FRED series API methods)</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">title</span></code> column indicates the series name (useful for verifying the
+series are relevant)</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">observation_start</span></code> column indicates the oldest date with data for
+each series (we may want to ignore series that don’t have as much history)</p></li>
+</ul>
+</section>
+<section id="retrieving-economic-data">
+<h3>Retrieving economic data<a class="headerlink" href="#retrieving-economic-data" title="Permalink to this heading"></a></h3>
+<p>Let’s assume we’re only interested in the economic data series corresponding
+to economic series ID <code class="docutils literal notranslate"><span class="pre">&quot;DGS10&quot;</span></code> under the <code class="docutils literal notranslate"><span class="pre">id</span></code> column. We can get the
+economic data series observations through the FRED series observations API
+(implemented by <a class="reference internal" href="api/finagg.fred.api.html#finagg.fred.api.Series.observations" title="finagg.fred.api.Series.observations"><code class="xref py py-attr docutils literal notranslate"><span class="pre">finagg.fred.api.Series.observations</span></code></a>):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">observations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;DGS10&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">output_type</span><span class="o">=</span><span class="mi">1</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">  realtime_start realtime_end        date value series_id</span>
+<span class="go">0     2023-04-01   2023-04-01  1962-01-02  4.06     DGS10</span>
+<span class="go">1     2023-04-01   2023-04-01  1962-01-03  4.03     DGS10</span>
+<span class="go">2     2023-04-01   2023-04-01  1962-01-04  3.99     DGS10</span>
+<span class="go">3     2023-04-01   2023-04-01  1962-01-05  4.02     DGS10</span>
+<span class="go">4     2023-04-01   2023-04-01  1962-01-08  4.03     DGS10</span>
+</pre></div>
+</div>
+<p>It should be noted some trial-and-error can be required to retrieve data using
+the FRED series observations API. Most FRED API methods have <code class="docutils literal notranslate"><span class="pre">realtime_start</span></code>,
+<code class="docutils literal notranslate"><span class="pre">realtime_end</span></code>, and <code class="docutils literal notranslate"><span class="pre">output_type</span></code> parameters that control the reporting
+period for the returned data. The <a class="reference external" href="https://fred.stlouisfed.org/docs/api/fred/">FRED API docs have good explanations and examples</a>
+that clarify the use cases for these parameters. For most FRED API use cases,
+these parameters are usually set to <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">-1</span></code>, and <code class="docutils literal notranslate"><span class="pre">4</span></code>, respectively.
+These values (when used together) effectively retrieve economic data series
+observations as they first occur for their entire history. That is, the
+returned values will be the “truth” values from the perspective of economists
+and analysts at the time the values were originally published. This is usally
+what most people want since we typically want to build models and/or strategies
+based on <em>currently known</em> values rather than <em>future</em> values.</p>
+<p>However, the <code class="docutils literal notranslate"><span class="pre">&quot;DGS10&quot;</span></code> economic data series does not support retrieving
+initial release observations. To successfully retrieve data for the <code class="docutils literal notranslate"><span class="pre">&quot;DGS10&quot;</span></code>
+series (and most treasury yield series), the <code class="docutils literal notranslate"><span class="pre">realtime_start</span></code> and
+<code class="docutils literal notranslate"><span class="pre">realtime_end</span></code> parameters must be today’s date (the default) and the
+<code class="docutils literal notranslate"><span class="pre">output_type</span></code> parameter must be <code class="docutils literal notranslate"><span class="pre">1</span></code> (also the default).</p>
+</section>
+<section id="installing-economic-data">
+<h3>Installing economic data<a class="headerlink" href="#installing-economic-data" title="Permalink to this heading"></a></h3>
+<p>So now we have an economic data series we’re interested in and can retrieve
+observation values for. We can download and store (or install) the economic
+data series observation values in our own SQL table to reduce the number of
+requests to the FRED API (so we don’t get throttled), and to get a slight
+speed boost when performing offline analysis (it’ll be slightly faster to
+get data that’s on our own machine rather than some server).</p>
+<p>Unfortunately, to avoid the complexity of reimplementing the entire FRED API
+when retrieving data from local SQL tables, <strong>finagg</strong>’s installation methods
+only support economic data series that have initial release observation data
+available. Searching for other treasury yield series reveals economic data
+series with similar names and values that support initial releases (e.g.,
+<code class="docutils literal notranslate"><span class="pre">&quot;GS10&quot;</span></code>); we’ll need to use these series in-place of our previously found
+series to use <strong>finagg</strong>’s installation methods.</p>
+<p>Installing a treasury yield economic data series is extremely straightforward
+with the <a class="reference internal" href="api/finagg.fred.feat.html#module-finagg.fred.feat" title="finagg.fred.feat"><code class="xref py py-mod docutils literal notranslate"><span class="pre">finagg.fred.feat</span></code></a> subpackage and <a class="reference internal" href="api/finagg.fred.feat.html#finagg.fred.feat.series" title="finagg.fred.feat.series"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.fred.feat.series</span></code></a>
+member. We can also verify the series is installed correctly using the
+<a class="reference internal" href="api/finagg.fred.feat.html#finagg.fred.feat.Series.get_id_set" title="finagg.fred.feat.Series.get_id_set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.fred.feat.Series.get_id_set()</span></code></a> method.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">install</span><span class="p">({</span><span class="s2">&quot;GS10&quot;</span><span class="p">})</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">id_set</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">get_id_set</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;GS10&quot;</span> <span class="ow">in</span> <span class="n">id_set</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>We can then retrieve the original, raw economic data series we installed using
+the <a class="reference internal" href="api/finagg.fred.feat.html#finagg.fred.feat.Series.from_raw" title="finagg.fred.feat.Series.from_raw"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.fred.feat.Series.from_raw()</span></code></a> method.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">from_raw</span><span class="p">(</span><span class="s2">&quot;GS10&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            value</span>
+<span class="go">date</span>
+<span class="go">1996-12-01   6.30</span>
+<span class="go">1997-01-01   6.58</span>
+<span class="go">1997-02-01   6.42</span>
+<span class="go">1997-03-01   6.69</span>
+<span class="go">1997-04-01   6.89</span>
+</pre></div>
+</div>
+<p>All of these steps aren’t exactly obvious when using <strong>finagg</strong> for the first time.
+However, <strong>finagg</strong>’s purpose is to streamline popular financial data
+aggregation, so obviously there are some shortcuts when it comes to popular
+economic data series. That’s where <a class="reference internal" href="api/finagg.fred.feat.html#finagg.fred.feat.economic" title="finagg.fred.feat.economic"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.fred.feat.economic</span></code></a> comes
+in for the FRED API subpackage. <a class="reference internal" href="api/finagg.fred.feat.html#finagg.fred.feat.economic" title="finagg.fred.feat.economic"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.fred.feat.economic</span></code></a> assumes
+a fixed set of popular economic series IDs that also support initial release
+observations for all its methods. For example, the
+<a class="reference internal" href="api/finagg.fred.feat.html#finagg.fred.feat.Economic.install" title="finagg.fred.feat.Economic.install"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.fred.feat.Economic.install()</span></code></a> method doesn’t allow
+specification of economic data series IDs.
+<a class="reference internal" href="api/finagg.fred.feat.html#finagg.fred.feat.Economic.install" title="finagg.fred.feat.Economic.install"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.fred.feat.Economic.install()</span></code></a> will, by default, only
+install a handful of economic data series.</p>
+<p>It’s important to note that once an economic data series is supported by
+<a class="reference internal" href="api/finagg.fred.feat.html#finagg.fred.feat.economic" title="finagg.fred.feat.economic"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.fred.feat.economic</span></code></a>, it will never be removed. However,
+additional economic data series may be added as a default depending on popularity.</p>
+<p>This restriction comes with the benefit of simplifying our download-then-retrieve
+workflow. Repeating the download-then-retrieve workflow we used for the treasury
+FRED economic data series but with <a class="reference internal" href="api/finagg.fred.feat.html#finagg.fred.feat.economic" title="finagg.fred.feat.economic"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.fred.feat.economic</span></code></a> looks
+like the following:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">from_refined</span><span class="p">()[</span><span class="s2">&quot;FEDFUNDS&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">date</span>
+<span class="go">2014-10-06    0.09</span>
+<span class="go">2014-10-08    0.09</span>
+<span class="go">2014-10-13    0.09</span>
+<span class="go">2014-10-15    0.09</span>
+<span class="go">2014-10-20    0.09</span>
+<span class="go">Name: FEDFUNDS, dtype: float64</span>
+</pre></div>
+</div>
+<p>Lastly, it’s useful to mention that any download/installation step in the
+common download-then-retrieve workflow for raw or refined data
+with <strong>finagg</strong>’s Python interface can probably be replicated using
+<strong>finagg</strong>’s CLI. For example, the following:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">install</span><span class="p">({</span><span class="s2">&quot;GS10&quot;</span><span class="p">})</span>  
+</pre></div>
+</div>
+<p>is equivalent to:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">finagg fred install -r series -sid GS10</span>
+</pre></div>
+</div>
+<p>Similarly, the following:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">install</span><span class="p">()</span>  
+</pre></div>
+</div>
+<p>is equivalent to:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">finagg fred install --raw series --refined economic -ss economic</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="using-the-sec-api-subpackages">
+<h2>Using the SEC API Subpackages<a class="headerlink" href="#using-the-sec-api-subpackages" title="Permalink to this heading"></a></h2>
+<section id="retrieving-company-financial-data">
+<h3>Retrieving company financial data<a class="headerlink" href="#retrieving-company-financial-data" title="Permalink to this heading"></a></h3>
+<p>Let’s say we’re interested in a specific company. The SEC EDGAR API is a good
+place to start accessing a company’s financials. However, not all companies
+have all their financial data accessible through the SEC EDGAR API. The best
+way to start out and see what financials are available for a particular
+company is to look at a company’s facts through
+<a class="reference internal" href="api/finagg.sec.html#finagg.sec.api.company_facts" title="finagg.sec.api.company_facts"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.company_facts</span></code></a>.</p>
+<p>Let’s assume we’re interested in Microsoft. We can access all the financial
+publications associated with Microsoft by simply passing Microsoft’s ticker,
+MSFT, to the company facts API implementation. We can look at the columns
+to get a good understanding of the API implementation and the returned
+dataframe:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">company_facts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;MSFT&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>  
+<span class="go">[&#39;end&#39;, &#39;value&#39;, ..., &#39;fy&#39;, &#39;fp&#39;, &#39;form&#39;, &#39;filed&#39;, ..., &#39;tag&#39;, ..., &#39;units&#39;, ...]</span>
+</pre></div>
+</div>
+<p>The main columns that most use cases care about are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fy</span></code>, <code class="docutils literal notranslate"><span class="pre">fp</span></code>, and <code class="docutils literal notranslate"><span class="pre">filed</span></code>; these are the fiscal year, fiscal period
+(i.e., quarter), and filing date, respectively for each row of financial data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">form</span></code> is the type of SEC form the row was submitted with (e.g., 10-Q,
+10-K, etc.)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tag</span></code> is the ID of the financial (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;EarningsPerShareBasic&quot;</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">value</span></code> is the financial’s actual value</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">units</span></code> is the financial’s unit (e.g., USD/shares)</p></li>
+</ul>
+<p>The company’s financials can be further filtered from the company facts
+dataframe directly, or a specific financial can be accessed with the
+<a class="reference internal" href="api/finagg.sec.html#finagg.sec.api.company_concept" title="finagg.sec.api.company_concept"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.company_concept</span></code></a> API implementation. For example,
+we can access all of Microsoft’s earnings per share financial publications
+with the following:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">company_concept</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;EarningsPerShareBasic&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;MSFT&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;USD/shares&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">        start         end  value                  accn    fy  fp  form       filed ...</span>
+<span class="go">0  2007-07-01  2007-09-30   0.46  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...</span>
+<span class="go">1  2007-10-01  2007-12-31   0.50  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...</span>
+<span class="go">2  2008-01-01  2008-03-31   0.47  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...</span>
+<span class="go">3  2007-07-01  2008-06-30   1.90  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...</span>
+<span class="go">4  2008-04-01  2008-06-30   0.46  0001193125-10-171791  2010  FY  10-K  2010-07-30 ...</span>
+</pre></div>
+</div>
+</section>
+<section id="filtering-company-financial-data">
+<h3>Filtering company financial data<a class="headerlink" href="#filtering-company-financial-data" title="Permalink to this heading"></a></h3>
+<p>However, the SEC EDGAR company concept API implementation returns all the
+earnings per share publications for Microsoft, including amendments. We may
+not necessarily care about amendments because we may be building strategies
+or models that use <em>current</em> data and not <em>future</em> data. Fortunately, <strong>finagg</strong>
+provides <a class="reference internal" href="api/finagg.sec.html#finagg.sec.api.filter_original_filings" title="finagg.sec.api.filter_original_filings"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.sec.api.filter_original_filings()</span></code></a> to further select
+original financial publication data from specific forms:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">filter_original_filings</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s2">&quot;10-Q&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">     fy  fp                    tag       start         end  value ...</span>
+<span class="go">0  2010  Q1  EarningsPerShareBasic  2008-07-01  2008-09-30   0.48 ...</span>
+<span class="go">1  2010  Q2  EarningsPerShareBasic  2008-07-01  2008-12-31   0.95 ...</span>
+<span class="go">2  2010  Q3  EarningsPerShareBasic  2008-07-01  2009-03-31   1.29 ...</span>
+<span class="go">3  2011  Q1  EarningsPerShareBasic  2009-07-01  2009-09-30   0.40 ...</span>
+<span class="go">4  2011  Q2  EarningsPerShareBasic  2009-07-01  2009-12-31   1.15 ...</span>
+</pre></div>
+</div>
+<p>Unfortunately, the SEC EDGAR API is still relatively new and a lot of the
+financial data publications are unaudited, so not all financials are available
+for all companies through the SEC EDGAR API. I.e., a workflow for retrieving
+Microsoft’s financial data may not work for retrieving another company’s
+financial data.</p>
+<p>It requires some trial-and-error to find a set of tags that
+are popular and available for the majority of companies. In addition, the
+workflow for exploring these tags and filtering forms can be cumbersome.
+However, <strong>finagg</strong> provides <a class="reference internal" href="api/finagg.sec.html#finagg.sec.api.popular_concepts" title="finagg.sec.api.popular_concepts"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.popular_concepts</span></code></a> for listing
+company concepts (combinations of financial data tags and other parameters)
+that’re popular and widely available for companies.</p>
+</section>
+<section id="installing-company-financial-data">
+<h3>Installing company financial data<a class="headerlink" href="#installing-company-financial-data" title="Permalink to this heading"></a></h3>
+<p>It’s extremely straightforward to filter and install widely popular and available
+quarterly financial data for a set of companies using the <a class="reference internal" href="api/finagg.sec.feat.html#module-finagg.sec.feat" title="finagg.sec.feat"><code class="xref py py-mod docutils literal notranslate"><span class="pre">finagg.sec.feat</span></code></a>
+subpackage and <a class="reference internal" href="api/finagg.sec.feat.html#finagg.sec.feat.quarterly" title="finagg.sec.feat.quarterly"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.feat.quarterly</span></code></a> member. The
+<a class="reference internal" href="api/finagg.sec.feat.html#finagg.sec.feat.quarterly" title="finagg.sec.feat.quarterly"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.feat.quarterly</span></code></a> member also goes a step further by somewhat
+normalizing the installed financial data (e.g., total asset value is converted
+to percent change of total asset value on a quarter-over-quarter basis), making
+the process for aggregating company financial data and comparing company
+financial data painless.</p>
+<p>We can give this streamlined process a try with Microsoft again, and we can
+verify Microsoft’s financial data is successfully installed using the
+<a class="reference internal" href="api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.get_ticker_set" title="finagg.sec.feat.Quarterly.get_ticker_set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.sec.feat.Quarterly.get_ticker_set()</span></code></a> method.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">install</span><span class="p">({</span><span class="s2">&quot;MSFT&quot;</span><span class="p">})</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ticker_set</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">get_ticker_set</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;MSFT&quot;</span> <span class="ow">in</span> <span class="n">ticker_set</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>We can then retrieve Microsoft’s quarterly financial data using the
+<a class="reference internal" href="api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.from_refined" title="finagg.sec.feat.Quarterly.from_refined"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.sec.feat.Quarterly.from_refined()</span></code></a> method.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span><span class="s2">&quot;MSFT&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">                    LOG_CHANGE(Assets)  LOG_CHANGE(AssetsCurrent) ...</span>
+<span class="go">fy   fp filed                                                     ...</span>
+<span class="go">2010 Q1 2010-01-25            0.182629                  -0.023676 ...</span>
+<span class="go">     Q2 2010-04-21            0.000000                   0.000000 ...</span>
+<span class="go">     Q3 2010-07-21            0.000000                   0.000000 ...</span>
+<span class="go">2011 Q1 2011-01-19            0.459174                   0.278241 ...</span>
+<span class="go">     Q2 2011-04-21            0.000000                   0.000000 ...</span>
+</pre></div>
+</div>
+<p>On top of this simplification, <a class="reference internal" href="api/finagg.sec.feat.html#finagg.sec.feat.quarterly" title="finagg.sec.feat.quarterly"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.feat.quarterly</span></code></a> provides
+another method and convenience for normalizing quarterly financial data.
+<a class="reference internal" href="api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.normalized" title="finagg.sec.feat.Quarterly.normalized"><code class="xref py py-attr docutils literal notranslate"><span class="pre">finagg.sec.feat.Quarterly.normalized</span></code></a> normalizes
+quarterly financial data using quarterly financial data from all the other
+companies within the target company’s industry. For example, Lowe’s’
+financial data would be used to normalize Home Depot’s financial data such
+that all columns have zero mean and unit variance.
+<a class="reference internal" href="api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.normalized" title="finagg.sec.feat.Quarterly.normalized"><code class="xref py py-attr docutils literal notranslate"><span class="pre">finagg.sec.feat.Quarterly.normalized</span></code></a> also has
+similar workflow to <a class="reference internal" href="api/finagg.sec.feat.html#finagg.sec.feat.quarterly" title="finagg.sec.feat.quarterly"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.feat.quarterly</span></code></a>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">install</span><span class="p">({</span><span class="s2">&quot;MSFT&quot;</span><span class="p">})</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">normalized</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span><span class="s2">&quot;MSFT&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">                    NORM(LOG_CHANGE(Assets))  NORM(LOG_CHANGE(AssetsCurrent)) ...</span>
+<span class="go">fy   fp filed                                                                 ...</span>
+<span class="go">2010 Q2 2010-04-21                  0.000000                         0.000000 ...</span>
+<span class="go">     Q3 2010-07-21                  0.000000                         0.000000 ...</span>
+<span class="go">2011 Q1 2011-01-19                  0.978816                         0.074032 ...</span>
+<span class="go">     Q2 2011-04-21                  0.000000                         0.000000 ...</span>
+<span class="go">     Q3 2011-07-20                 -0.353553                        -0.353553 ...</span>
+</pre></div>
+</div>
+<p>Lastly, it’s useful to mention that any download/installation step in the
+common download-then-retrieve workflow for financial data with <strong>finagg</strong>’s
+Python interface can probably be replicated using <strong>finagg</strong>’s CLI. For
+example, the following:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">install</span><span class="p">({</span><span class="s2">&quot;MSFT&quot;</span><span class="p">})</span>  
+</pre></div>
+</div>
+<p>is equivalent to:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">finagg sec install --raw submissions --raw tags --refined quarterly -t MSFT</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="conventions.html" class="btn btn-neutral float-left" title="Conventions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api/modules.html" class="btn btn-neutral float-right" title="finagg" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

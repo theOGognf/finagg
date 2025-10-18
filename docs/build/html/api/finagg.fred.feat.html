@@ -1,0 +1,445 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.fred.feat package &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
+      <script src="../_static/jquery.js"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+      <script src="../_static/doctools.js"></script>
+      <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/clipboard.min.js"></script>
+      <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="finagg.sec package" href="finagg.sec.html" />
+    <link rel="prev" title="finagg.fred.api package" href="finagg.fred.api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="finagg.html">finagg package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="finagg.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="finagg.bea.html">finagg.bea package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="finagg.fred.html">finagg.fred package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.html">finagg.sec package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.config">finagg.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.ratelimit">finagg.ratelimit module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.testing">finagg.testing module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.utils">finagg.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">finagg</a></li>
+          <li class="breadcrumb-item"><a href="finagg.html">finagg package</a></li>
+          <li class="breadcrumb-item"><a href="finagg.fred.html">finagg.fred package</a></li>
+      <li class="breadcrumb-item active">finagg.fred.feat package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/finagg.fred.feat.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="finagg-fred-feat-package">
+<h1>finagg.fred.feat package<a class="headerlink" href="#finagg-fred-feat-package" title="Permalink to this heading"></a></h1>
+<section id="module-finagg.fred.feat">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-finagg.fred.feat" title="Permalink to this heading"></a></h2>
+<p>Features from FRED sources.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.fred.feat.economic">
+<span class="sig-prename descclassname"><span class="pre">finagg.fred.feat.</span></span><span class="sig-name descname"><span class="pre">economic</span></span><a class="headerlink" href="#finagg.fred.feat.economic" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing <a class="reference internal" href="#finagg.fred.feat.Economic" title="finagg.fred.feat.Economic"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.fred.feat.Economic</span></code></a>.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.fred.feat.series">
+<span class="sig-prename descclassname"><span class="pre">finagg.fred.feat.</span></span><span class="sig-name descname"><span class="pre">series</span></span><a class="headerlink" href="#finagg.fred.feat.series" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing <a class="reference internal" href="#finagg.fred.feat.Series" title="finagg.fred.feat.Series"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.fred.feat.Series</span></code></a>.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.fred.feat.Economic">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.fred.feat.</span></span><span class="sig-name descname"><span class="pre">Economic</span></span><a class="reference internal" href="../_modules/finagg/fred/feat/_refined.html#Economic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fred.feat.Economic" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Methods for gathering economic data series from FRED sources.</p>
+<p>The module variable <a class="reference internal" href="#finagg.fred.feat.economic" title="finagg.fred.feat.economic"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.fred.feat.economic</span></code></a> is an instance of
+this feature set implementation and is the most popular interface for
+calling feature methods.</p>
+<p class="rubric">Examples</p>
+<p>It doesn’t matter which data source you use to gather features.
+They all return equivalent dataframes.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df1</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">from_api</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df2</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">from_raw</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df3</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">from_refined</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">df3</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fred.feat.Economic.from_api">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/fred/feat/_refined.html#Economic.from_api"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fred.feat.Economic.from_api" title="Permalink to this definition"></a></dt>
+<dd><p>Get economic features directly from the FRED API.</p>
+<p>Not all data series are published at the same rate or
+time. Missing rows for less-frequent economic series
+are forward filled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – The start date of the observation period. Defaults to the
+first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period. Defaults to the
+last recorded date.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Economic data series dataframe with each series
+as a separate column. Sorted by date.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">from_api</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            CIVPART  LOG_CHANGE(CPIAUCNS)  LOG_CHANGE(CSUSHPINSA)  FEDFUNDS ...</span>
+<span class="go">date                                                                        ...</span>
+<span class="go">2014-10-06     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-08     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-13     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-15     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-20     62.8                   0.0                     0.0      0.09 ...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fred.feat.Economic.from_raw">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/fred/feat/_refined.html#Economic.from_raw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fred.feat.Economic.from_raw" title="Permalink to this definition"></a></dt>
+<dd><p>Get economic features from local FRED SQL tables.</p>
+<p>Not all data series are published at the same rate or
+time. Missing rows for less-frequent economic series
+are forward filled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – The start date of the observation period. Defaults to the
+first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period. Defaults to the
+last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Economic data series dataframe with each series
+as a separate column. Sorted by date.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NoResultFound</strong> – If there are no rows in the raw SQL table.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">from_raw</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            CIVPART  LOG_CHANGE(CPIAUCNS)  LOG_CHANGE(CSUSHPINSA)  FEDFUNDS ...</span>
+<span class="go">date                                                                        ...</span>
+<span class="go">2014-10-06     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-08     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-13     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-15     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-20     62.8                   0.0                     0.0      0.09 ...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fred.feat.Economic.from_refined">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_refined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/fred/feat/_refined.html#Economic.from_refined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fred.feat.Economic.from_refined" title="Permalink to this definition"></a></dt>
+<dd><p>Get features from the feature-dedicated local SQL tables.</p>
+<p>This is the preferred method for accessing features for
+offline analysis (assuming data in the local SQL tables
+is current).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – The start date of the observation period. Defaults to the
+first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period. Defaults to the
+last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Economic data series dataframe with each series
+as a separate column. Sorted by date.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NoResultFound</strong> – If there are no rows in the refined SQL table.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">from_refined</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            CIVPART  LOG_CHANGE(CPIAUCNS)  LOG_CHANGE(CSUSHPINSA)  FEDFUNDS ...</span>
+<span class="go">date                                                                        ...</span>
+<span class="go">2014-10-06     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-08     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-13     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-15     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="go">2014-10-20     62.8                   0.0                     0.0      0.09 ...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fred.feat.Economic.install">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recreate_tables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/finagg/fred/feat/_refined.html#Economic.install"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fred.feat.Economic.install" title="Permalink to this definition"></a></dt>
+<dd><p>Install economic data by pulling data from the raw SQL tables,
+transforming them into economic features, and then writing to the
+refined economic data SQL table.</p>
+<p>Tables associated with this method are created if they don’t already
+exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+<li><p><strong>recreate_tables</strong> – Whether to drop and recreate tables, wiping all
+previously installed data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of rows written to the feature’s SQL table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fred.feat.Economic.to_refined">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_refined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/finagg/fred/feat/_refined.html#Economic.to_refined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fred.feat.Economic.to_refined" title="Permalink to this definition"></a></dt>
+<dd><p>Write the dataframe to the feature store.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – Dataframe to store completely as rows in a local SQL
+table.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of rows written to the SQL table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.fred.feat.Series">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.fred.feat.</span></span><span class="sig-name descname"><span class="pre">Series</span></span><a class="reference internal" href="../_modules/finagg/fred/feat/_raw.html#Series"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fred.feat.Series" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Get a single economic series as-is from raw FRED data.</p>
+<p>The module variable <a class="reference internal" href="#finagg.fred.feat.series" title="finagg.fred.feat.series"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.fred.feat.series</span></code></a> is an instance of
+this feature set implementation and is the most popular interface for
+calling feature methods.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fred.feat.Series.from_raw">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">series_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/fred/feat/_raw.html#Series.from_raw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fred.feat.Series.from_raw" title="Permalink to this definition"></a></dt>
+<dd><p>Get a single economic data series as-is from raw FRED data.</p>
+<p>This is the preferred method for accessing raw FRED data without
+using the FRED API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>series_id</strong> – Economic data series ID.</p></li>
+<li><p><strong>start</strong> – The start date of the observation period. Defaults to the
+first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period. Defaults to the
+last recorded date.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dataframe containing the economic data series values
+across the specified period.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NoResultFound</strong> – If there are no rows for <code class="docutils literal notranslate"><span class="pre">series_id</span></code> in the
+    raw SQL table.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">from_raw</span><span class="p">(</span><span class="s2">&quot;CPIAUCNS&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">            value</span>
+<span class="go">date</span>
+<span class="go">1949-03-01  169.5</span>
+<span class="go">1949-04-01  169.7</span>
+<span class="go">1949-05-01  169.2</span>
+<span class="go">1949-06-01  169.6</span>
+<span class="go">1949-07-01  168.5</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fred.feat.Series.get_id_set">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_id_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/fred/feat/_raw.html#Series.get_id_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fred.feat.Series.get_id_set" title="Permalink to this definition"></a></dt>
+<dd><p>Get all unique economic series IDs in the raw SQL tables that have at least
+<code class="docutils literal notranslate"><span class="pre">lb</span></code> rows.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lb</strong> – Lower bound number of rows that a series must have for its ID
+to be included in the set returned by this method.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;FEDFUNDS&quot;</span> <span class="ow">in</span> <span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">feat</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">get_id_set</span><span class="p">()</span>  
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fred.feat.Series.install">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">series_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recreate_tables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/finagg/fred/feat/_raw.html#Series.install"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fred.feat.Series.install" title="Permalink to this definition"></a></dt>
+<dd><p>Install data associated with by pulling data from the FRED API and
+then writing the data to the raw series SQL table.</p>
+<p>Tables associated with this method are created if they don’t already
+exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>series_ids</strong> – Set of series to install features for. Defaults to all
+the series from <a class="reference internal" href="#finagg.fred.feat.Series.get_id_set" title="finagg.fred.feat.Series.get_id_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">finagg.fred.feat.Series.get_id_set</span></code></a>.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+<li><p><strong>recreate_tables</strong> – Whether to drop and recreate tables, wiping all
+previously installed data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of rows written to the feature’s SQL table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.fred.feat.Series.to_raw">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../_modules/finagg/fred/feat/_raw.html#Series.to_raw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.fred.feat.Series.to_raw" title="Permalink to this definition"></a></dt>
+<dd><p>Write the given dataframe to the raw feature table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – Dataframe to store as rows in a local SQL table</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Number of rows written to the SQL table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="finagg.fred.api.html" class="btn btn-neutral float-left" title="finagg.fred.api package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="finagg.sec.html" class="btn btn-neutral float-right" title="finagg.sec package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

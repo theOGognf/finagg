@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CLI &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+      <script src="_static/jquery.js"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+      <script src="_static/doctools.js"></script>
+      <script src="_static/sphinx_highlight.js"></script>
+      <script src="_static/clipboard.min.js"></script>
+      <script src="_static/copybutton.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Release Notes" href="release_notes.html" />
+    <link rel="prev" title="finagg.sec.feat package" href="api/finagg.sec.feat.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CLI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general">General</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bea">BEA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fred">FRED</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sec">SEC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">CLI</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cli.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="cli">
+<h1>CLI<a class="headerlink" href="#cli" title="Permalink to this heading"></a></h1>
+<p><strong>finagg</strong>’s command-line interface (CLI). A selection of tools for aggregating
+popular data and features from each of the supported APIs.</p>
+<section id="general">
+<h2>General<a class="headerlink" href="#general" title="Permalink to this heading"></a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: finagg install [OPTIONS]
+
+  Set API keys/user agents, drop and recreate tables, and install the
+  recommended datasets into the SQL database.
+
+Options:
+  -s, --skip [bea|fred|sec]     Subpackage installations to skip. Useful to
+                                avoid reinstalling data that you don&#39;t want to
+                                when using the general install command.
+  -sid, --series TEXT           FRED economic series whose data is attempted
+                                to be downloaded and inserted into the SQL
+                                tables. Multiple series can be specified by
+                                providing multiple `series` options, by
+                                separating series with a comma (e.g.,
+                                `GDP,FEDFUNDS`), or by providing IDs in a CSV
+                                file by specifying a file path (e.g.,
+                                `fred_series.txt`). The CSV file can be
+                                formatted such that there&#39;s one string per
+                                line or multiple strings per line (delimited
+                                by a comma). The strings specified by this
+                                option are combined with the strings specified
+                                by the `series-set` option.
+  -ss, --series-set [economic]  Set of FRED economic series whose data is
+                                attempted to be downloaded and inserted into
+                                the SQL tables. &#39;economic&#39; indicates the
+                                recommended and most popular series (e.g.,
+                                consumer price index, gross domestic product,
+                                etc.).
+  -t, --ticker TEXT             Ticker whose data is attempted to be
+                                downloaded and inserted into the SQL tables.
+                                Multiple tickers can be specified by providing
+                                multiple `ticker` options, by separating
+                                tickers with a comma (e.g., `AAPL,MSFT,NVDA`),
+                                or by providing tickers in a CSV file by
+                                specifying a file path (e.g.,
+                                `bank_tickers.txt`). The CSV file can be
+                                formatted such that there&#39;s one ticker per
+                                line or multiple tickers per line (delimited
+                                by a comma). The tickers specified by this
+                                option are combined with the tickers specified
+                                by the `ticker-set` option.
+  -ts, --ticker-set [sec]       Set of tickers whose data is attempted to be
+                                downloaded and inserted into the SQL tables.
+                                &#39;sec&#39; indicates all the tickers that have data
+                                available through the SEC API (which is
+                                approximately all publicly-traded US
+                                companies).
+  -z, --from-zip                Whether to install raw data from bulk data zip
+                                files that&#39;re compiled by the SEC nightly.
+                                Installing all SEC data with this option can
+                                take upwards of 1.5 hours to complete.
+  -n, --processes INTEGER       Number of background processes to run in
+                                parallel when installing data. Note, not all
+                                tables support installations with
+                                multiprocessing.
+  -r, --recreate-tables         Whether to reset the tables associated with
+                                the install options by dropping and recreating
+                                them.
+  -v, --verbose                 Sets the log level to DEBUG to show
+                                installation errors for each ticker.
+  --help                        Show this message and exit.
+</pre></div>
+</div>
+</section>
+<section id="bea">
+<h2>BEA<a class="headerlink" href="#bea" title="Permalink to this heading"></a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: finagg bea install [OPTIONS]
+
+  Set the BEA API key.
+
+Options:
+  --help  Show this message and exit.
+</pre></div>
+</div>
+</section>
+<section id="fred">
+<h2>FRED<a class="headerlink" href="#fred" title="Permalink to this heading"></a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: finagg fred install [OPTIONS]
+
+  Set the FRED API key, drop and recreate tables, and install the recommended
+  tables into the SQL database.
+
+Options:
+  --raw [series]                Raw tables to install. `series` indicates raw
+                                FRED economic series observations/measurements
+                                (e.g., consumer price index, gross domestic
+                                product, etc.). At least `series` must be
+                                specified to enable installing refined data
+                                using the `refined` flag.
+  --refined [economic]          Refined tables to install. This requires raw
+                                data to be installed beforehand using the
+                                `--raw` flag or for the `--raw` flag to be set
+                                when this option is provided.
+  -a, --all                     Whether to install all defined tables
+                                (including all refined tables).
+  -sid, --series TEXT           FRED economic series whose data is attempted
+                                to be downloaded and inserted into the SQL
+                                tables. Multiple series can be specified by
+                                providing multiple `series` options, by
+                                separating series with a comma (e.g.,
+                                `GDP,FEDFUNDS`), or by providing IDs in a CSV
+                                file by specifying a file path (e.g.,
+                                `fred_series.txt`). The CSV file can be
+                                formatted such that there&#39;s one string per
+                                line or multiple strings per line (delimited
+                                by a comma). The strings specified by this
+                                option are combined with the strings specified
+                                by the `series-set` option.
+  -ss, --series-set [economic]  Set of FRED economic series whose data is
+                                attempted to be downloaded and inserted into
+                                the SQL tables. &#39;economic&#39; indicates the
+                                recommended and most popular series (e.g.,
+                                consumer price index, gross domestic product,
+                                etc.).
+  -r, --recreate-tables         Whether to reset the tables associated with
+                                the install options by dropping and recreating
+                                them.
+  -v, --verbose                 Sets the log level to DEBUG to show
+                                installation errors for each series.
+  --help                        Show this message and exit.
+</pre></div>
+</div>
+</section>
+<section id="sec">
+<h2>SEC<a class="headerlink" href="#sec" title="Permalink to this heading"></a></h2>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: finagg sec install [OPTIONS]
+
+  Set the SEC API key, drop and recreate tables, and install the recommended
+  tables into the SQL database.
+
+Options:
+  --raw [submissions|tags]        Raw tables to install. `submissions`
+                                  indicates company metadata (e.g., company
+                                  name, industry code, etc.) while `tags`
+                                  indicates SEC EDGAR tags (e.g., earnings-
+                                  per-share, current assets, etc.).Both
+                                  `submissions` and `tags` must be specified
+                                  to enable installing refined data using the
+                                  `refined` flag.
+  --refined [annual|annual.normalized|quarterly|quarterly.normalized]
+                                  Refined tables to install. This requires raw
+                                  SEC data to be installed beforehand using
+                                  the `--raw` flag or for the `--raw` flag to
+                                  be set when this option is provided.
+  -a, --all                       Whether to install all defined tables
+                                  (including all refined tables).
+  -t, --ticker TEXT               Ticker whose data is attempted to be
+                                  downloaded and inserted into the SQL tables.
+                                  Multiple tickers can be specified by
+                                  providing multiple `ticker` options, by
+                                  separating tickers with a comma (e.g.,
+                                  `AAPL,MSFT,NVDA`), or by providing tickers
+                                  in a CSV file by specifying a file path
+                                  (e.g., `bank_tickers.txt`). The CSV file can
+                                  be formatted such that there&#39;s one ticker
+                                  per line or multiple tickers per line
+                                  (delimited by a comma). The tickers
+                                  specified by this option are combined with
+                                  the tickers specified by the `ticker-set`
+                                  option.
+  -ts, --ticker-set [sec]         Set of tickers whose data is attempted to be
+                                  downloaded and inserted into the SQL tables.
+                                  &#39;sec&#39; indicates all the tickers that have
+                                  data available through the SEC API (which is
+                                  approximately all publicly-traded US
+                                  companies).
+  -z, --from-zip                  Whether to install raw data from bulk data
+                                  zip files that&#39;re compiled by the SEC
+                                  nightly. Installing all SEC data with this
+                                  option can take upwards of 1.5 hours to
+                                  complete.
+  -n, --processes INTEGER         Number of background processes to run in
+                                  parallel when installing data. Note, not all
+                                  tables support installations with
+                                  multiprocessing.
+  -r, --recreate-tables           Whether to reset the tables associated with
+                                  the install options by dropping and
+                                  recreating them.
+  -v, --verbose                   Sets the log level to DEBUG to show
+                                  installation errors for each ticker.
+  --help                          Show this message and exit.
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="api/finagg.sec.feat.html" class="btn btn-neutral float-left" title="finagg.sec.feat package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="release_notes.html" class="btn btn-neutral float-right" title="Release Notes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

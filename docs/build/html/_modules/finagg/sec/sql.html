@@ -1,0 +1,958 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.sec.sql &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+
+  
+      <script src="../../../_static/jquery.js"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+      <script src="../../../_static/doctools.js"></script>
+      <script src="../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../_static/clipboard.min.js"></script>
+      <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.sec.sql</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.sec.sql</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;SEC SQLAlchemy interfaces.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">Engine</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">MetaData</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;The metadata associated with all SQL tables defined in this module.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">submissions</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span>
+    <span class="s2">&quot;sec.raw.submissions&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">,</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;cik&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Unique SEC ID.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;ticker&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Company ticker.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;entityType&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Type of company standing (e.g., operating).&quot;</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;sic&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Industry code.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;sicDescription&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Industry code description.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Company name.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;exchanges&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Comma-separated exchanges the company is found on.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;ein&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Entity identification number.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Entity description (often empty/null).&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;SEC entity category.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;fiscalYearEnd&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;The company&#39;s last day of the fiscal year (MMDD).&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;SQL table for storing raw data as managed by</span>
+<span class="sd">:data:`finagg.sec.feat.submissions` (an alias for</span>
+<span class="sd">:class:`finagg.sec.feat.Submissions`).</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">tags</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span>
+    <span class="s2">&quot;sec.raw.tags&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">,</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;cik&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">,</span> <span class="n">ondelete</span><span class="o">=</span><span class="s2">&quot;CASCADE&quot;</span><span class="p">),</span>
+        <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Unique SEC ID.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;accn&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Unique submission/access number.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;taxonomy&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;XBRL taxonomy the submission&#39;s tag belongs to.&quot;</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;tag&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;XBRL submission tag (e.g., NetIncomeLoss).&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;form&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Submission form type (e.g., 10-Q).&quot;</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Unit of measurements for tag value (e.g., USD or shares).&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Fiscal year the submission is for.&quot;</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;fp&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Fiscal period the submission is for (e.g., Q1 or FY).&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;start&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;When the tag&#39;s value&#39;s measurements started.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;end&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;When the tag&#39;s value&#39;s measurements ended.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;filed&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;When the submission was actually filed.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;ccp&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Often a concatenation of `fy` and `fp`.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;label&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;More human readable version of `tag`.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Long description of `tag` and `label`.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;entityName&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Company name.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Tag value with units `units`.&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;SQL table for storing raw data as managed by :data:`finagg.sec.feat.tags`</span>
+<span class="sd">(an alias for :class:`finagg.sec.feat.Tags`).</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">annual</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span>
+    <span class="s2">&quot;sec.refined.annual&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">,</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;cik&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">,</span> <span class="n">ondelete</span><span class="o">=</span><span class="s2">&quot;CASCADE&quot;</span><span class="p">),</span>
+        <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Unique company ticker.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;filed&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Filing date.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Fiscal year the value is for.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(Assets)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s total assets between years.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(AssetsCurrent)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s current assets between years.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(CommonStockSharesOutstanding)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s stock shares outstanding between years.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(InventoryNet)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s inventory between years.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(Liabilities)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s total liabilities between years.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(LiabilitiesCurrent)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s current liabilities between years.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(StockholdersEquity)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s stockholder&#39;s equity between years.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;AssetCoverageRatio&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Total assets minus short term liabilities over total liabilities.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;BookRatio&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Total assets minus total liabilities over outstanding shares.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;DebtEquityRatio&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Total liabilities over stock holder&#39;s equity.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;EarningsPerShareBasic&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Earnings per share.&quot;</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;QuickRatio&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Current assets minus inventory over current liabilities.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;ReturnOnAssets&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Net income/loss over total assets.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;ReturnOnEquity&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Net income/loss over stockholder&#39;s equity.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;WorkingCapitalRatio&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Current assets over current liabilities.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;SQL table for storing refined data as managed by :data:`finagg.sec.feat.annual`</span>
+<span class="sd">(an alias for :class:`finagg.sec.feat.Annual`).</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">normalized_annual</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span>
+    <span class="s2">&quot;sec.refined.annual.normalized&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">,</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;cik&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">,</span> <span class="n">ondelete</span><span class="o">=</span><span class="s2">&quot;CASCADE&quot;</span><span class="p">),</span>
+        <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Unique company ticker.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;filed&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Filing date.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Fiscal year the value is for.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(Assets))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s total assets between years &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(AssetsCurrent))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s current assets between years &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(CommonStockSharesOutstanding))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s stock shares outstanding between years &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(InventoryNet))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s inventory between years &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(Liabilities))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s total liabilities between years &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(LiabilitiesCurrent))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s current liabilities between years &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(StockholdersEquity))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s stockholder&#39;s equity between &quot;</span>
+            <span class="s2">&quot;years normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(AssetCoverageRatio)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Total assets minus short term liabilities over total liabilities &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(BookRatio)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Total assets minus total liabilities over outstanding shares &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(DebtEquityRatio)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Total liabilities over stock holder&#39;s equity normalized against &quot;</span>
+            <span class="s2">&quot;the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(EarningsPerShareBasic)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Earnings per share normalized against the company&#39;s industry.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(QuickRatio)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Current assets minus inventory over current liabilities normalized &quot;</span>
+            <span class="s2">&quot;against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(ReturnOnAssets)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Net income/loss over total assets normalized against the company&#39;s&quot;</span>
+            <span class="s2">&quot; industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(ReturnOnEquity)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Net income/loss over stockholder&#39;s equity normalized against the company&#39;s&quot;</span>
+            <span class="s2">&quot; industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(WorkingCapitalRatio)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Current assets over current liabilities normalized against the company&#39;s&quot;</span>
+            <span class="s2">&quot; industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;SQL table for storing refined data as managed by</span>
+<span class="sd">:attr:`finagg.sec.feat.Annual.normalized` (an alias for</span>
+<span class="sd">:class:`finagg.sec.feat.NormalizedAnnual`).</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">quarterly</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span>
+    <span class="s2">&quot;sec.refined.quarterly&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">,</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;cik&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">,</span> <span class="n">ondelete</span><span class="o">=</span><span class="s2">&quot;CASCADE&quot;</span><span class="p">),</span>
+        <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Unique company ticker.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;filed&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Filing date.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Fiscal year the value is for.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;fp&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Fiscal period the value is for (e.g., Q1 or FY).&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(Assets)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s total assets between quarters.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(AssetsCurrent)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s current assets between quarters.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(CommonStockSharesOutstanding)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s stock shares outstanding between&quot;</span>
+            <span class="s2">&quot; quarters.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(InventoryNet)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s inventory between quarters.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(Liabilities)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s total liabilities between quarters.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(LiabilitiesCurrent)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s current liabilities between quarters.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;LOG_CHANGE(StockholdersEquity)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Logarithmic change in a company&#39;s stockholder&#39;s equity between quarters.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;AssetCoverageRatio&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Total assets minus short term liabilities over total liabilities.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;BookRatio&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Total assets minus total liabilities over outstanding shares.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;DebtEquityRatio&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Total liabilities over stock holder&#39;s equity.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;EarningsPerShareBasic&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Earnings per share.&quot;</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;QuickRatio&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Current assets minus inventory over current liabilities.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;ReturnOnAssets&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Net income/loss over total assets.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;ReturnOnEquity&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Net income/loss over stockholder&#39;s equity.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;WorkingCapitalRatio&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Current assets over current liabilities.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;SQL table for storing refined data as managed by</span>
+<span class="sd">:data:`finagg.sec.feat.quarterly` (an alias for</span>
+<span class="sd">:class:`finagg.sec.feat.Quarterly`).</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">normalized_quarterly</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span>
+    <span class="s2">&quot;sec.refined.quarterly.normalized&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">,</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;cik&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">,</span> <span class="n">ondelete</span><span class="o">=</span><span class="s2">&quot;CASCADE&quot;</span><span class="p">),</span>
+        <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Unique company ticker.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;filed&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Filing date.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Fiscal year the value is for.&quot;</span><span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;fp&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">String</span><span class="p">,</span>
+        <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Fiscal period the value is for (e.g., Q1 or FY).&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(Assets))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s total assets between quarters &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(AssetsCurrent))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s current assets between quarters &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(CommonStockSharesOutstanding))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s stock shares outstanding between&quot;</span>
+            <span class="s2">&quot; quarters normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(InventoryNet))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s inventory between quarters &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(Liabilities))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s total liabilities between quarters &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(LiabilitiesCurrent))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s current liabilities between quarters &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(LOG_CHANGE(StockholdersEquity))&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Logarithmic change in a company&#39;s stockholder&#39;s equity between &quot;</span>
+            <span class="s2">&quot;quarters normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(AssetCoverageRatio)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Total assets minus short term liabilities over total liabilities &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(BookRatio)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Total assets minus total liabilities over outstanding shares &quot;</span>
+            <span class="s2">&quot;normalized against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(DebtEquityRatio)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Total liabilities over stock holder&#39;s equity normalized against &quot;</span>
+            <span class="s2">&quot;the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(EarningsPerShareBasic)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Earnings per share normalized against the company&#39;s industry.&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(QuickRatio)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Current assets minus inventory over current liabilities normalized &quot;</span>
+            <span class="s2">&quot;against the company&#39;s industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(ReturnOnAssets)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Net income/loss over total assets normalized against the company&#39;s&quot;</span>
+            <span class="s2">&quot; industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(ReturnOnEquity)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Net income/loss over stockholder&#39;s equity normalized against the company&#39;s&quot;</span>
+            <span class="s2">&quot; industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;NORM(WorkingCapitalRatio)&quot;</span><span class="p">,</span>
+        <span class="n">sa</span><span class="o">.</span><span class="n">Float</span><span class="p">,</span>
+        <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Current assets over current liabilities normalized against the company&#39;s&quot;</span>
+            <span class="s2">&quot; industry.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;SQL table for storing refined data as managed by</span>
+<span class="sd">:attr:`finagg.sec.feat.Quarterly.normalized` (an alias for</span>
+<span class="sd">:class:`finagg.sec.feat.NormalizedQuarterly`).</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="get_cik"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.sql.get_cik">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_cik</span><span class="p">(</span><span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use raw SQL data to find a company&#39;s SEC CIK from its ticker symbol.</span>
+
+<span class="sd">    This is the preferred method for getting a company&#39;s SEC CIK if raw SQL</span>
+<span class="sd">    data is installed. This method is a convenience over</span>
+<span class="sd">    :meth:`finagg.sec.api.get_cik` for repeatedly getting company SEC</span>
+<span class="sd">    CIKs without having to query the SEC EDGAR API. Use</span>
+<span class="sd">    :meth:`finagg.sec.api.get_cik` if you want to get a company&#39;s ticker</span>
+<span class="sd">    symbol without installing or accessing locally installed raw SQL data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ticker: A company&#39;s ticker symbol.</span>
+<span class="sd">        engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">            at :data:`finagg.config.engine`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The company&#39;s corresponding SEC CIK.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Get Apple&#39;s SEC CIK from its ticker.</span>
+
+<span class="sd">        &gt;&gt;&gt; finagg.sec.sql.get_cik(&quot;AAPL&quot;) == &quot;0000320193&quot;</span>
+<span class="sd">        True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">cik</span><span class="p">,)</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span> <span class="o">==</span> <span class="n">ticker</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">cik</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_metadata"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.sql.get_metadata">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_metadata</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span> <span class="n">cik</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ticker</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a company&#39;s metadata (its SEC CIK, ticker, name, and industry</span>
+<span class="sd">    code) from its SEC CIK or its ticker symbol.</span>
+
+<span class="sd">    A convenient method for getting a company&#39;s metadata using raw SQL</span>
+<span class="sd">    data. This method is a convenience over</span>
+<span class="sd">    :data:`finagg.sec.api.submissions` for repeatedly getting company</span>
+<span class="sd">    metadata without having to query the SEC EDGAR API. Use</span>
+<span class="sd">    :data:`finagg.sec.api.submissions` if you want to get a company&#39;s</span>
+<span class="sd">    metadata without installing or accessing locally installed raw SQL data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cik: Company SEC CIK. Mutually exclusive with ``ticker``.</span>
+<span class="sd">        ticker: Company ticker. Mutually exclusive with ``cik``.</span>
+<span class="sd">        engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">            at :data:`finagg.config.engine`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A company&#39;s metadata as a dictionary.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; finagg.sec.sql.get_metadata(ticker=&quot;MSFT&quot;)</span>
+<span class="sd">        {&#39;cik&#39;: &#39;0000789019&#39;, &#39;ticker&#39;: &#39;MSFT&#39;, &#39;name&#39;: &#39;microsoft corp&#39;, &#39;sic&#39;: &#39;7372&#39;}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">cik</span><span class="p">)</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">(</span><span class="n">ticker</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide a `cik` or a `ticker`.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ticker</span><span class="p">:</span>
+        <span class="n">cik</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">get_cik</span><span class="p">(</span><span class="n">ticker</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">))</span>
+
+    <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                <span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">,</span>
+                <span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">,</span>
+                <span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">sic</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">cik</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">row</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="get_ticker"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.sql.get_ticker">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_ticker</span><span class="p">(</span><span class="n">cik</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use raw SQL data to find a company&#39;s ticker from its SEC CIK.</span>
+
+<span class="sd">    This is the preferred method for getting a company&#39;s ticker if raw SQL</span>
+<span class="sd">    data is installed. This method is a convenience over</span>
+<span class="sd">    :meth:`finagg.sec.api.get_ticker` for repeatedly getting company tickers</span>
+<span class="sd">    without having to query the SEC EDGAR API. Use</span>
+<span class="sd">    :meth:`finagg.sec.api.get_ticker` if you want to get a company&#39;s</span>
+<span class="sd">    ticker symbol without installing or accessing locally installed raw</span>
+<span class="sd">    SQL data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cik: A company&#39;s SEC CIK.</span>
+<span class="sd">        engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">            at :data:`finagg.config.engine`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The company&#39;s corresponding ticker symbol.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Get Apple&#39;s ticker from its SEC CIK.</span>
+
+<span class="sd">        &gt;&gt;&gt; finagg.sec.sql.get_ticker(&quot;0000320193&quot;) == &quot;AAPL&quot;</span>
+<span class="sd">        True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">ticker</span><span class="p">,)</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">cik</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">ticker</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_tickers_in_industry"><a class="viewcode-back" href="../../../api/finagg.sec.html#finagg.sec.sql.get_tickers_in_industry">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_tickers_in_industry</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">ticker</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">code</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a set of tickers that all share the same industry using raw SQL data.</span>
+
+<span class="sd">    This method is convenient for finding tickers within the same</span>
+<span class="sd">    industry so they can be compared. A related and common pattern is to use</span>
+<span class="sd">    :attr:`finagg.sec.feat.Quarterly.normalized` to get industry-normalized</span>
+<span class="sd">    features for a particular company. Similar to other methods in this</span>
+<span class="sd">    submodule, this will only return tickers that have raw SQL data associated</span>
+<span class="sd">    with them.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ticker: Company ticker. Lookup the industry associated</span>
+<span class="sd">            with this company. Mutually exclusive with ``code``.</span>
+<span class="sd">        code: Industry SIC code to use for industry lookup.</span>
+<span class="sd">            Mutually exclusive with ``ticker``.</span>
+<span class="sd">        level: Industry level to find tickers within.</span>
+<span class="sd">            The industry used according to ``ticker`` or ``code``</span>
+<span class="sd">            is subsampled according to this value. Options include:</span>
+
+<span class="sd">                - 2 = major group (e.g., furniture and fixtures)</span>
+<span class="sd">                - 3 = industry group (e.g., office furnitures)</span>
+<span class="sd">                - 4 = industry (e.g., wood office furniture)</span>
+
+<span class="sd">        engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">            at :data:`finagg.config.engine`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A set of tickers that all share the same industry as denoted by</span>
+<span class="sd">        another ticker (using the ``ticker`` arg) or an industry SIC code</span>
+<span class="sd">        (using the ``code`` arg).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; &quot;ETSY&quot; in finagg.sec.sql.get_tickers_in_industry(ticker=&quot;MSFT&quot;)</span>
+<span class="sd">        True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ticker</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">sic</span><span class="p">,)</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">sic</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span> <span class="o">==</span> <span class="n">ticker</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sic</span><span class="p">)[:</span><span class="n">level</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">code</span><span class="p">:</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="p">)[:</span><span class="n">level</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide a `ticker` or `code`.&quot;</span><span class="p">)</span>
+
+        <span class="n">tickers</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                    <span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">sic</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">scalars</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">tickers</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

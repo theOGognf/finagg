@@ -1,0 +1,1112 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.sec.feat._refined.quarterly &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/custom.css" />
+
+  
+      <script src="../../../../../_static/jquery.js"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+      <script src="../../../../../_static/doctools.js"></script>
+      <script src="../../../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../../../_static/clipboard.min.js"></script>
+      <script src="../../../../../_static/copybutton.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.sec.feat._refined.quarterly</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.sec.feat._refined.quarterly</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Quarterly features from SEC sources.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">Engine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.exc</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoResultFound</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">....</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">...</span><span class="w"> </span><span class="kn">import</span> <span class="n">api</span><span class="p">,</span> <span class="n">sql</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raw</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> | </span><span class="si">%(levelname)s</span><span class="s2"> | </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span>
+<span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="IndustryQuarterly"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.IndustryQuarterly">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">IndustryQuarterly</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Methods for gathering industry-averaged quarterly data from SEC</span>
+<span class="sd">    features.</span>
+
+<span class="sd">    The class variable :attr:`finagg.sec.feat.Quarterly.industry` is an</span>
+<span class="sd">    instance of this feature set implementation and is the most popular</span>
+<span class="sd">    interface for calling feature methods.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        You can aggregate this feature set using a ticker or an industry code</span>
+<span class="sd">        directly.</span>
+
+<span class="sd">        &gt;&gt;&gt; df1 = finagg.sec.feat.quarterly.industry.from_refined(ticker=&quot;MSFT&quot;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df2 = finagg.sec.feat.quarterly.industry.from_refined(code=73).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="IndustryQuarterly.from_refined"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.IndustryQuarterly.from_refined">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_refined</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">code</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get quarterly features from the feature store,</span>
+<span class="sd">        aggregated for an entire industry.</span>
+
+<span class="sd">        The industry can be chosen according to a company or</span>
+<span class="sd">        by an industry code directly. If a company is provided,</span>
+<span class="sd">        then the first ``level`` digits of the company&#39;s SIC code</span>
+<span class="sd">        is used for the industry code.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker. Lookup the industry associated</span>
+<span class="sd">                with this company. Mutually exclusive with ``code``.</span>
+<span class="sd">            code: Industry SIC code to use for industry lookup.</span>
+<span class="sd">                Mutually exclusive with ``ticker``.</span>
+<span class="sd">            level: Industry level to aggregate features at.</span>
+<span class="sd">                The industry used according to ``ticker`` or ``code``</span>
+<span class="sd">                is subsampled according to this value. Options include:</span>
+
+<span class="sd">                    - 2 = major group (e.g., furniture and fixtures)</span>
+<span class="sd">                    - 3 = industry group (e.g., office furnitures)</span>
+<span class="sd">                    - 4 = industry (e.g., wood office furniture)</span>
+
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Quarterly data dataframe with each tag as a</span>
+<span class="sd">            separate column. Sorted by filing date.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `ValueError`: If neither a ``ticker`` nor ``code`` are provided.</span>
+<span class="sd">            `NoResultFound`: If there are no rows for ``ticker`` or ``code``</span>
+<span class="sd">                in the refined SQL table.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; df = finagg.sec.feat.quarterly.industry.from_refined(ticker=&quot;AAPL&quot;).head(5)</span>
+<span class="sd">            &gt;&gt;&gt; df[&quot;mean&quot;]  # doctest: +SKIP</span>
+<span class="sd">            name                AssetCoverageRatio  DebtEquityRatio  EarningsPerShareBasic ...</span>
+<span class="sd">            fy   fp filed                                                                  ...</span>
+<span class="sd">            2010 Q1 2010-04-29            1.718796         0.956111               0.865000 ...</span>
+<span class="sd">                 Q2 2010-07-30            1.753165         0.874013               0.380000 ...</span>
+<span class="sd">                 Q3 2010-11-04            1.830832         0.842663               1.062857 ...</span>
+<span class="sd">            2011 Q1 2011-05-05            2.164743         0.757230               1.022500 ...</span>
+<span class="sd">                 Q2 2011-08-08            2.222168         0.718292               2.016667 ...</span>
+<span class="sd">            &gt;&gt;&gt; df[&quot;std&quot;]  # doctest: +SKIP</span>
+<span class="sd">            name                AssetCoverageRatio  DebtEquityRatio  EarningsPerShareBasic ...</span>
+<span class="sd">            fy   fp filed                                                                  ...</span>
+<span class="sd">            2010 Q1 2010-04-29            0.394667         0.327296               1.139079 ...</span>
+<span class="sd">                 Q2 2010-07-30            0.310804         0.285554               2.954901 ...</span>
+<span class="sd">                 Q3 2010-11-04            0.351052         0.273552               3.075227 ...</span>
+<span class="sd">            2011 Q1 2011-05-05            1.166501         0.311317               1.137287 ...</span>
+<span class="sd">                 Q2 2011-08-08            1.104677         0.313766               2.075428 ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ticker</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">sic</span><span class="p">,)</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">sic</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span> <span class="o">==</span> <span class="n">ticker</span>
+                    <span class="p">)</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sic</span><span class="p">)[:</span><span class="n">level</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">code</span><span class="p">:</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="p">)[:</span><span class="n">level</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide a `ticker` or `code`.&quot;</span><span class="p">)</span>
+
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
+                    <span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                        <span class="o">&amp;</span> <span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">sic</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">code</span><span class="p">)),</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span> <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No industry quarterly rows found for industry </span><span class="si">{</span><span class="n">code</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">])</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">value_name</span><span class="o">=</span><span class="s2">&quot;val&quot;</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">])</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;filed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">])[</span><span class="s2">&quot;filed&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>  <span class="c1"># type: ignore[return-value]</span>
+            <span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;std&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">)[</span><span class="s2">&quot;val&quot;</span><span class="p">]</span>
+            <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="NormalizedQuarterly"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NormalizedQuarterly</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Quarterly features from SEC EDGAR data normalized according to industry</span>
+<span class="sd">    averages and standard deviations.</span>
+
+<span class="sd">    The class variable :data:`finagg.sec.feat.Quarterly.normalized` is an</span>
+<span class="sd">    instance of this feature set implementation and is the most popular</span>
+<span class="sd">    interface for calling feature methods.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        It doesn&#39;t matter which data source you use to gather features.</span>
+<span class="sd">        They both return equivalent dataframes.</span>
+
+<span class="sd">        &gt;&gt;&gt; df1 = finagg.sec.feat.quarterly.normalized.from_other_refined(&quot;AAPL&quot;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df2 = finagg.sec.feat.quarterly.normalized.from_refined(&quot;AAPL&quot;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NormalizedQuarterly.from_other_refined"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.from_other_refined">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_other_refined</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get features from other feature SQL tables.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker.</span>
+<span class="sd">            level: Industry level to aggregate relative features at.</span>
+<span class="sd">                The industry used according to ``ticker`` is subsampled</span>
+<span class="sd">                according to this value. Options include:</span>
+
+<span class="sd">                    - 2 = major group (e.g., furniture and fixtures)</span>
+<span class="sd">                    - 3 = industry group (e.g., office furnitures)</span>
+<span class="sd">                    - 4 = industry (e.g., wood office furniture)</span>
+
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Relative quarterly data dataframe with each tag as a</span>
+<span class="sd">            separate column. Sorted by filing date.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.feat.quarterly.normalized.from_other_refined(&quot;AAPL&quot;).head(5)  # doctest: +SKIP</span>
+<span class="sd">                                NORM(LOG_CHANGE(Assets))  NORM(LOG_CHANGE(AssetsCurrent))  NORM(LOG_CHANGE(CommonStockSharesOutstanding)) ...</span>
+<span class="sd">            fy   fp filed                                                                                                                 ...</span>
+<span class="sd">            2010 Q2 2010-04-21                  0.000000                         0.000000                                        0.000000 ...</span>
+<span class="sd">                 Q3 2010-07-21                  0.000000                         0.000000                                        0.000000 ...</span>
+<span class="sd">            2011 Q1 2011-01-19                  0.978816                         0.074032                                        0.407282 ...</span>
+<span class="sd">                 Q2 2011-04-21                  0.000000                         0.000000                                        0.000000 ...</span>
+<span class="sd">                 Q3 2011-07-20                 -0.353553                        -0.353553                                        0.051602 ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="n">company_df</span> <span class="o">=</span> <span class="n">Quarterly</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span>
+            <span class="n">ticker</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">([</span><span class="s2">&quot;filed&quot;</span><span class="p">])</span>
+        <span class="n">filed</span> <span class="o">=</span> <span class="n">company_df</span><span class="p">[</span><span class="s2">&quot;filed&quot;</span><span class="p">]</span>
+        <span class="n">industry_df</span> <span class="o">=</span> <span class="n">IndustryQuarterly</span><span class="o">.</span><span class="n">from_refined</span><span class="p">(</span>
+            <span class="n">ticker</span><span class="o">=</span><span class="n">ticker</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">([</span><span class="s2">&quot;filed&quot;</span><span class="p">])</span>
+        <span class="n">company_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">company_df</span> <span class="o">-</span> <span class="n">industry_df</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">industry_df</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">]</span>
+        <span class="n">company_df</span><span class="p">[</span><span class="s2">&quot;filed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filed</span>
+        <span class="n">func_cols</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_func_cols</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="p">)</span>
+        <span class="n">company_df</span><span class="p">[</span><span class="n">func_cols</span><span class="p">]</span> <span class="o">=</span> <span class="n">company_df</span><span class="p">[</span><span class="n">func_cols</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">company_df</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">company_df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;NORM(</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">company_df</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">company_df</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="s2">&quot;filed&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">company_df</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">resolve_col_order</span><span class="p">(</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="p">,</span> <span class="n">company_df</span><span class="p">,</span> <span class="n">extra_ignore</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;filed&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">company_df</span></div>
+
+<div class="viewcode-block" id="NormalizedQuarterly.from_refined"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.from_refined">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_refined</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get features from the features SQL table.</span>
+
+<span class="sd">        This is the preferred method for accessing features for</span>
+<span class="sd">        offline analysis (assuming data in the local SQL table</span>
+<span class="sd">        is current).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker.</span>
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Quarterly data dataframe with each tag as a</span>
+<span class="sd">            separate column. Sorted by filing date.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `NoResultFound`: If there are no rows for ``ticker`` in the</span>
+<span class="sd">                refined SQL table.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.feat.quarterly.normalized.from_refined(&quot;AAPL&quot;).head(5)  # doctest: +SKIP</span>
+<span class="sd">                                NORM(LOG_CHANGE(Assets))  NORM(LOG_CHANGE(AssetsCurrent))  NORM(LOG_CHANGE(CommonStockSharesOutstanding)) ...</span>
+<span class="sd">            fy   fp filed                                                                                                                 ...</span>
+<span class="sd">            2010 Q2 2010-04-21                  0.000000                         0.000000                                        0.000000 ...</span>
+<span class="sd">                 Q3 2010-07-21                  0.000000                         0.000000                                        0.000000 ...</span>
+<span class="sd">            2011 Q1 2011-01-19                  0.978816                         0.074032                                        0.407282 ...</span>
+<span class="sd">                 Q2 2011-04-21                  0.000000                         0.000000                                        0.000000 ...</span>
+<span class="sd">                 Q3 2011-07-20                 -0.353553                        -0.353553                                        0.051602 ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
+                    <span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                        <span class="o">&amp;</span> <span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span> <span class="o">==</span> <span class="n">ticker</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No industry-normalized quarterly rows found for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="NormalizedQuarterly.get_candidate_ticker_set"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.get_candidate_ticker_set">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_candidate_ticker_set</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">lb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all unique tickers in the quarterly SQL table that MAY BE</span>
+<span class="sd">        ELIGIBLE to be in the feature&#39;s SQL table.</span>
+
+<span class="sd">        This is just an alias for :meth:`finagg.sec.feat.Quarterly.get_ticker_set`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lb: Minimum number of rows required to include a ticker in the</span>
+<span class="sd">                returned set.</span>
+<span class="sd">            start: The start date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the first recorded date.</span>
+<span class="sd">            end: The end date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            All unique tickers that may be valid for creating</span>
+<span class="sd">            industry-normalized quarterly features that also have at least</span>
+<span class="sd">            ``lb`` rows for each tag used for constructing the features.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; &quot;AAPL&quot; in finagg.sec.feat.quarterly.normalized.get_candidate_ticker_set()  # doctest: +SKIP</span>
+<span class="sd">            True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Quarterly</span><span class="o">.</span><span class="n">get_ticker_set</span><span class="p">(</span><span class="n">lb</span><span class="o">=</span><span class="n">lb</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NormalizedQuarterly.get_ticker_set"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.get_ticker_set">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_ticker_set</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">lb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all unique tickers in the feature&#39;s SQL table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lb: Minimum number of rows required to include a ticker in the</span>
+<span class="sd">                returned set.</span>
+<span class="sd">            start: The start date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the first recorded date.</span>
+<span class="sd">            end: The end date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            All unique tickers that contain all the columns for creating</span>
+<span class="sd">            industry-normalized quarterly features that also have at least</span>
+<span class="sd">            ``lb`` rows.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; &quot;AAPL&quot; in finagg.sec.feat.quarterly.normalized.get_ticker_set()  # doctest: +SKIP</span>
+<span class="sd">            True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">tickers</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">having</span><span class="p">(</span><span class="n">sa</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">lb</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">scalars</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">tickers</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NormalizedQuarterly.get_tickers_sorted_by"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.get_tickers_sorted_by">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tickers_sorted_by</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">column</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">ascending</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">year</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">quarter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all tickers in the feature&#39;s SQL table sorted by a particular</span>
+<span class="sd">        column.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            column: Feature column to sort by.</span>
+<span class="sd">            ascending: Whether to return results in ascending order according</span>
+<span class="sd">                to the values in ``column``.</span>
+<span class="sd">            year: Year to select from. Defaults to the most recent year that</span>
+<span class="sd">                has data available.</span>
+<span class="sd">            quarter: Quarter to select from. Defaults to the most recent quarter</span>
+<span class="sd">                that has data available.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tickers sorted by a feature column for a particular year and quarter.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; ts = finagg.sec.feat.quarterly.normalized.get_tickers_sorted_by(</span>
+<span class="sd">            ...         &quot;NORM(EarningsPerShareBasic)&quot;,</span>
+<span class="sd">            ...         year=2020,</span>
+<span class="sd">            ...         quarter=3</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; &quot;AMD&quot; == ts[0]  # doctest: +SKIP</span>
+<span class="sd">            True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">year</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">max_year</span><span class="p">,)</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">sa</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">fy</span><span class="p">))</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+                <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_year</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">quarter</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">max_quarter</span><span class="p">,)</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">sa</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">fp</span><span class="p">))</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+                <span class="n">fp</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">max_quarter</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fp</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Q</span><span class="si">{</span><span class="n">quarter</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="n">tickers</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">fy</span> <span class="o">==</span> <span class="n">year</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">fp</span> <span class="o">==</span> <span class="n">fp</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">column</span><span class="p">])</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">scalars</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ascending</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">tickers</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">tickers</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NormalizedQuarterly.install"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.install">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">install</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">tickers</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">processes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">recreate_tables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Install data associated with ``tickers`` by pulling data from the</span>
+<span class="sd">        quarterly SQL tables, transforming them into normalized features, and</span>
+<span class="sd">        then writing to the refined quarterly normalized SQL table.</span>
+
+<span class="sd">        Tables associated with this method are created if they don&#39;t already</span>
+<span class="sd">        exist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tickers: Set of tickers to install features for. Defaults to all</span>
+<span class="sd">                the candidate tickers from</span>
+<span class="sd">                :meth:`NormalizedQuarterly.get_candidate_ticker_set`.</span>
+<span class="sd">            processes: Number of background processes to run in parallel</span>
+<span class="sd">                when processing ``tickers``.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+<span class="sd">            recreate_tables: Whether to drop and recreate tables, wiping all</span>
+<span class="sd">                previously installed data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the feature&#39;s SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tickers</span> <span class="o">=</span> <span class="n">tickers</span> <span class="ow">or</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_candidate_ticker_set</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tickers</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Skipping finagg.sec.feat.quarterly.normalized installation because no&quot;</span>
+                <span class="s2">&quot; tickers were provided or no tickers were found with prerequisite data&quot;</span>
+                <span class="s2">&quot; (i.e., finagg.sec.feat.quarterly data)&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="n">recreate_tables</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">name</span>
+        <span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">checkfirst</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">_install</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">from_other_refined</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">to_refined</span><span class="p">,</span>
+            <span class="n">logger</span><span class="p">,</span>
+            <span class="nb">list</span><span class="p">(</span><span class="n">tickers</span><span class="p">),</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Installing refined SEC industry-normalized quarterly data&quot;</span><span class="p">,</span>
+            <span class="n">processes</span><span class="o">=</span><span class="n">processes</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="NormalizedQuarterly.to_refined"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.to_refined">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_refined</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the dataframe to the feature store for ``ticker``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker.</span>
+<span class="sd">            df: Dataframe to store completely as rows in a local SQL</span>
+<span class="sd">                table.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">])</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sql</span><span class="o">.</span><span class="n">get_cik</span><span class="p">(</span><span class="n">ticker</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">normalized_quarterly</span><span class="o">.</span><span class="n">insert</span><span class="p">(),</span> <span class="n">df</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">))</span>  <span class="c1"># type: ignore[arg-type]</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Quarterly"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.Quarterly">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Quarterly</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Methods for gathering quarterly features from SEC EDGAR data.</span>
+
+<span class="sd">    The module variable :data:`finagg.sec.feat.quarterly` is an instance of</span>
+<span class="sd">    this feature set implementation and is the most popular interface for</span>
+<span class="sd">    calling feature methods.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        It doesn&#39;t matter which data source you use to gather features.</span>
+<span class="sd">        They all return equivalent dataframes.</span>
+
+<span class="sd">        &gt;&gt;&gt; df1 = finagg.sec.feat.quarterly.from_api(&quot;AAPL&quot;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df2 = finagg.sec.feat.quarterly.from_raw(&quot;AAPL&quot;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df3 = finagg.sec.feat.quarterly.from_refined(&quot;AAPL&quot;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)</span>
+<span class="sd">        &gt;&gt;&gt; pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">industry</span> <span class="o">=</span> <span class="n">IndustryQuarterly</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Quarterly features aggregated for an entire industry.</span>
+<span class="sd">    The most popular way for accessing the :class:`IndustryQuarterly`</span>
+<span class="sd">    feature set.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">normalized</span> <span class="o">=</span> <span class="n">NormalizedQuarterly</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A company&#39;s quarterly features normalized by its industry.</span>
+<span class="sd">    The most popular way for accessing the :class:`NormalizedQuarterly`</span>
+<span class="sd">    feature set.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize quarterly features columns.&quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">compute_financial_ratios</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">replace</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">resolve_func_cols</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">resolve_col_order</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">extra_ignore</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;filed&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Quarterly.from_api"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.from_api">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_api</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get quarterly features directly from the SEC API.</span>
+
+<span class="sd">        Not all data series are published at the same rate or</span>
+<span class="sd">        time. Missing rows for less-frequent quarterly publications</span>
+<span class="sd">        are forward filled.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker.</span>
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Quarterly data dataframe with each tag as a</span>
+<span class="sd">            separate column. Sorted by filing date.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.feat.quarterly.from_api(&quot;AAPL&quot;).head(5)  # doctest: +SKIP</span>
+<span class="sd">                                LOG_CHANGE(Assets)  LOG_CHANGE(AssetsCurrent)  LOG_CHANGE(CommonStockSharesOutstanding) ...</span>
+<span class="sd">            fy   fp filed                                                                                               ...</span>
+<span class="sd">            2010 Q1 2010-01-25            0.182629                  -0.023676                                  0.012840 ...</span>
+<span class="sd">                 Q2 2010-04-21            0.000000                   0.000000                                  0.000000 ...</span>
+<span class="sd">                 Q3 2010-07-21            0.000000                   0.000000                                  0.000000 ...</span>
+<span class="sd">            2011 Q1 2011-01-19            0.459174                   0.278241                                  0.017805 ...</span>
+<span class="sd">                 Q2 2011-04-21            0.000000                   0.000000                                  0.000000 ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">company_concept</span><span class="o">.</span><span class="n">get_multiple_original</span><span class="p">(</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">popular_concepts</span><span class="p">,</span> <span class="n">ticker</span><span class="o">=</span><span class="n">ticker</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s2">&quot;10-Q&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">({</span><span class="s2">&quot;fy&quot;</span><span class="p">:</span> <span class="s2">&quot;int64&quot;</span><span class="p">})</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">group_and_pivot_filings</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s2">&quot;10-Q&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_normalize</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Quarterly.from_raw"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.from_raw">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_raw</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get quarterly features from a local SEC SQL table.</span>
+
+<span class="sd">        Not all data series are published at the same rate or</span>
+<span class="sd">        time. Missing rows for less-frequent quarterly publications</span>
+<span class="sd">        are forward filled.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker.</span>
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Quarterly data dataframe with each tag as a</span>
+<span class="sd">            separate column. Sorted by filing date.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.feat.quarterly.from_raw(&quot;AAPL&quot;).head(5)  # doctest: +SKIP</span>
+<span class="sd">                                LOG_CHANGE(Assets)  LOG_CHANGE(AssetsCurrent)  LOG_CHANGE(CommonStockSharesOutstanding) ...</span>
+<span class="sd">            fy   fp filed                                                                                               ...</span>
+<span class="sd">            2010 Q1 2010-01-25            0.182629                  -0.023676                                  0.012840 ...</span>
+<span class="sd">                 Q2 2010-04-21            0.000000                   0.000000                                  0.000000 ...</span>
+<span class="sd">                 Q3 2010-07-21            0.000000                   0.000000                                  0.000000 ...</span>
+<span class="sd">            2011 Q1 2011-01-19            0.459174                   0.278241                                  0.017805 ...</span>
+<span class="sd">                 Q2 2011-04-21            0.000000                   0.000000                                  0.000000 ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">_raw</span><span class="o">.</span><span class="n">Tags</span><span class="o">.</span><span class="n">group_and_pivot_from_raw</span><span class="p">(</span>
+            <span class="n">ticker</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">concept</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">concept</span> <span class="ow">in</span> <span class="n">api</span><span class="o">.</span><span class="n">popular_concepts</span><span class="p">],</span>
+            <span class="n">form</span><span class="o">=</span><span class="s2">&quot;10-Q&quot;</span><span class="p">,</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+            <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+            <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_normalize</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Quarterly.from_refined"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.from_refined">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_refined</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get features from the refined SQL table.</span>
+
+<span class="sd">        This is the preferred method for accessing features for</span>
+<span class="sd">        offline analysis (assuming data in the local SQL table</span>
+<span class="sd">        is current).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker.</span>
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Quarterly data dataframe with each tag as a</span>
+<span class="sd">            separate column. Sorted by filing date.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `NoResultFound`: If there are no rows for ``ticker`` in the</span>
+<span class="sd">                refined SQL table.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.feat.quarterly.from_refined(&quot;AAPL&quot;).head(5)  # doctest: +SKIP</span>
+<span class="sd">                                LOG_CHANGE(Assets)  LOG_CHANGE(AssetsCurrent)  LOG_CHANGE(CommonStockSharesOutstanding) ...</span>
+<span class="sd">            fy   fp filed                                                                                               ...</span>
+<span class="sd">            2010 Q1 2010-01-25            0.182629                  -0.023676                                  0.012840 ...</span>
+<span class="sd">                 Q2 2010-04-21            0.000000                   0.000000                                  0.000000 ...</span>
+<span class="sd">                 Q3 2010-07-21            0.000000                   0.000000                                  0.000000 ...</span>
+<span class="sd">            2011 Q1 2011-01-19            0.459174                   0.278241                                  0.017805 ...</span>
+<span class="sd">                 Q2 2011-04-21            0.000000                   0.000000                                  0.000000 ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
+                    <span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                        <span class="o">&amp;</span> <span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span> <span class="o">==</span> <span class="n">ticker</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No quarterly rows found for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="Quarterly.get_candidate_ticker_set"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.get_candidate_ticker_set">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_candidate_ticker_set</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">lb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all unique tickers in the raw SQL table that MAY BE ELIGIBLE</span>
+<span class="sd">        to be in the feature&#39;s SQL table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lb: Minimum number of rows required to include a ticker in the</span>
+<span class="sd">                returned set.</span>
+<span class="sd">            start: The start date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the first recorded date.</span>
+<span class="sd">            end: The end date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            All unique tickers that may be valid for creating quarterly features</span>
+<span class="sd">            that also have at least ``lb`` rows for each tag used for</span>
+<span class="sd">            constructing the features.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; &quot;AAPL&quot; in finagg.sec.feat.quarterly.get_candidate_ticker_set()  # doctest: +SKIP</span>
+<span class="sd">            True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">tickers</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">,</span>
+                        <span class="o">*</span><span class="p">[</span>
+                            <span class="n">sa</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                                <span class="n">sa</span><span class="o">.</span><span class="n">case</span><span class="p">(</span>
+                                    <span class="p">{</span><span class="n">concept</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">]:</span> <span class="mi">1</span><span class="p">},</span> <span class="n">value</span><span class="o">=</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">else_</span><span class="o">=</span><span class="mi">0</span>
+                                <span class="p">)</span>
+                            <span class="p">)</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">concept</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">])</span>
+                            <span class="k">for</span> <span class="n">concept</span> <span class="ow">in</span> <span class="n">api</span><span class="o">.</span><span class="n">popular_concepts</span>
+                        <span class="p">],</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="p">,</span> <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">form</span> <span class="o">==</span> <span class="s2">&quot;10-Q&quot;</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">having</span><span class="p">(</span>
+                        <span class="o">*</span><span class="p">[</span>
+                            <span class="n">sa</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">concept</span><span class="p">[</span><span class="s1">&#39;tag&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &gt;= </span><span class="si">{</span><span class="n">lb</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">concept</span> <span class="ow">in</span> <span class="n">api</span><span class="o">.</span><span class="n">popular_concepts</span>
+                        <span class="p">]</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">scalars</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">tickers</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Quarterly.get_ticker_set"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.get_ticker_set">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_ticker_set</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">lb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all unique tickers in the feature&#39;s SQL table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lb: Minimum number of rows required to include a ticker in the</span>
+<span class="sd">                returned set.</span>
+<span class="sd">            start: The start date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the first recorded date.</span>
+<span class="sd">            end: The end date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            All unique tickers that contain all the columns for creating</span>
+<span class="sd">            quarterly features that also have at least ``lb`` rows.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; &quot;AAPL&quot; in finagg.sec.feat.quarterly.get_ticker_set()</span>
+<span class="sd">            True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">tickers</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="p">,</span> <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">having</span><span class="p">(</span><span class="n">sa</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">lb</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">scalars</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">tickers</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Quarterly.install"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.install">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">install</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">tickers</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">processes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">recreate_tables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Install data associated with ``tickers`` by pulling data from the</span>
+<span class="sd">        raw SQL tables, transforming them into quarterly features, and then</span>
+<span class="sd">        writing to the refined quarterly SQL table.</span>
+
+<span class="sd">        Tables associated with this method are created if they don&#39;t already</span>
+<span class="sd">        exist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tickers: Set of tickers to install features for. Defaults to all</span>
+<span class="sd">                the candidate tickers from</span>
+<span class="sd">                :meth:`Quarterly.get_candidate_ticker_set`.</span>
+<span class="sd">            processes: Number of background processes to run in parallel</span>
+<span class="sd">                when processing ``tickers``.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+<span class="sd">            recreate_tables: Whether to drop and recreate tables, wiping all</span>
+<span class="sd">                previously installed data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the feature&#39;s SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tickers</span> <span class="o">=</span> <span class="n">tickers</span> <span class="ow">or</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_candidate_ticker_set</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tickers</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Skipping finagg.sec.feat.quarterly installation because no tickers&quot;</span>
+                <span class="s2">&quot; were provided or no tickers were found with prerequisite data (i.e.,&quot;</span>
+                <span class="s2">&quot; finagg.sec.feat.submissions and finagg.sec.feat.tags data)&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="n">recreate_tables</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">checkfirst</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">_install</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">from_raw</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">to_refined</span><span class="p">,</span>
+            <span class="n">logger</span><span class="p">,</span>
+            <span class="nb">list</span><span class="p">(</span><span class="n">tickers</span><span class="p">),</span>
+            <span class="n">engine</span><span class="p">,</span>
+            <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Installing refined SEC quarterly data&quot;</span><span class="p">,</span>
+            <span class="n">processes</span><span class="o">=</span><span class="n">processes</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Quarterly.to_refined"><a class="viewcode-back" href="../../../../../api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.to_refined">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_refined</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the given dataframe to the refined feature table</span>
+<span class="sd">        while using the ticker ``ticker``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker.</span>
+<span class="sd">            df: Dataframe to store as rows in a local SQL table</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">])</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sql</span><span class="o">.</span><span class="n">get_cik</span><span class="p">(</span><span class="n">ticker</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">quarterly</span><span class="o">.</span><span class="n">insert</span><span class="p">(),</span> <span class="n">df</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">))</span>  <span class="c1"># type: ignore[arg-type]</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

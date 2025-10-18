@@ -1,0 +1,484 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.utils &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+
+  
+      <script src="../../_static/jquery.js"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+      <script src="../../_static/doctools.js"></script>
+      <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/clipboard.min.js"></script>
+      <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Generic utils used by subpackages.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_key</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+
+<div class="viewcode-block" id="expand_csv"><a class="viewcode-back" href="../../api/finagg.html#finagg.utils.expand_csv">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">expand_csv</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Expand the given list of strings into a set of strings, where each value</span>
+<span class="sd">    in the list of strings could be:</span>
+
+<span class="sd">        1. Comma-separated values</span>
+<span class="sd">        2. A path that points to a CSV file containing values</span>
+<span class="sd">        3. A regular ol&#39; string</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        values: List of strings denoting comma-separated values,</span>
+<span class="sd">            or CSV files containing comma-separated values.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A set of all strings found within the given list.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; ts = finagg.utils.expand_csv([&quot;AAPL,MSFT&quot;])</span>
+<span class="sd">        &gt;&gt;&gt; &quot;AAPL&quot; in ts</span>
+<span class="sd">        True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">values</span><span class="p">]</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">vstring</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="n">vlist</span> <span class="o">=</span> <span class="n">vstring</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vlist</span><span class="p">:</span>
+            <span class="n">csv_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">csv_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">csv_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+                        <span class="n">out</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="get_func_cols"><a class="viewcode-back" href="../../api/finagg.html#finagg.utils.get_func_cols">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_func_cols</span><span class="p">(</span><span class="n">table</span><span class="p">:</span> <span class="n">sa</span><span class="o">.</span><span class="n">Table</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the column names in ``table`` that have the format</span>
+<span class="sd">    ``FUNC(arg0, arg1, ...)``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        table: SQLAlchemy table or dataframe.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of functional-style column names in ``table``. Returns</span>
+<span class="sd">        an empty list if none are found.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        `TypeError`: If the given object is not a SQLAlchemy</span>
+<span class="sd">            table or dataframe.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">match</span> <span class="n">table</span><span class="p">:</span>
+        <span class="k">case</span> <span class="n">sa</span><span class="o">.</span><span class="n">Table</span><span class="p">():</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">case</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">():</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not supported&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cols</span> <span class="k">if</span> <span class="n">parse_func_call</span><span class="p">(</span><span class="n">col</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="parse_func_call"><a class="viewcode-back" href="../../api/finagg.html#finagg.utils.parse_func_call">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">parse_func_call</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a function&#39;s name and its arguments&#39; names from a string of format</span>
+<span class="sd">    ``FUNC(arg0, arg1, ...)``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        s: Any string of format ``FUNC(arg0, arg1, ...)``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple containing the parsed function&#39;s name and its arguments&#39; names.</span>
+<span class="sd">        Returns ``None`` if the string doesn&#39;t match the expected format.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; finagg.utils.parse_func_call(&quot;LOG_CHANGE(high, open)&quot;)</span>
+<span class="sd">        (&#39;LOG_CHANGE&#39;, [&#39;high&#39;, &#39;open&#39;])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\w+)\((.*)\)&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">name</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="resolve_col_order"><a class="viewcode-back" href="../../api/finagg.html#finagg.utils.resolve_col_order">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">resolve_col_order</span><span class="p">(</span>
+    <span class="n">table</span><span class="p">:</span> <span class="n">sa</span><span class="o">.</span><span class="n">Table</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">extra_ignore</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reorder the columns in ``df`` to match the order of the columns in</span>
+<span class="sd">    ``table``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        table: SQLAlchemy table that defines the column order. Primary keys</span>
+<span class="sd">            are ignored from the column order as they&#39;re assumed to be used</span>
+<span class="sd">            as part of the index in ``df``.</span>
+<span class="sd">        df: Dataframe to reorder.</span>
+<span class="sd">        extra_ignore: Extra columns to ignore in the reordering. Sometimes</span>
+<span class="sd">            columns aren&#39;t used as primary keys but are used as part of the</span>
+<span class="sd">            index in the dataframe. Those columns should be provided in this</span>
+<span class="sd">            option.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dataframe with columns ordered according to the column order in</span>
+<span class="sd">        ``table``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">extra_ignore</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">extra_ignore</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">ignore_keys</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="o">.</span><span class="n">key</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">primary_key</span><span class="p">}</span>
+    <span class="n">ignore_keys</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extra_ignore</span><span class="p">)</span>
+    <span class="n">column_order</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ignore_keys</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">[</span><span class="n">column_order</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="resolve_func_cols"><a class="viewcode-back" href="../../api/finagg.html#finagg.utils.resolve_func_cols">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">resolve_func_cols</span><span class="p">(</span>
+    <span class="n">table</span><span class="p">:</span> <span class="n">sa</span><span class="o">.</span><span class="n">Table</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">drop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Inspect ``table`` and apply functions to columns that exist in ``table``</span>
+<span class="sd">    and ``df`` according to columns named like ``FUNC(col0, col1, ...)``</span>
+<span class="sd">    within ``table`` such that new columns in ``df`` are the result of the</span>
+<span class="sd">    applied functions and have names matching the function call signatures.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        table: SQLAchemy table that defines a superset of columns that</span>
+<span class="sd">            should exist in ``df``.</span>
+<span class="sd">        df: Dataframe that contains a subset of columns within ``table``</span>
+<span class="sd">            that will be updated with columns defined by ``table`` that</span>
+<span class="sd">            have names like ``FUNC(col0, col1, ...)``.</span>
+<span class="sd">        drop: Whether to drop all other columns on the returned dataframe</span>
+<span class="sd">            except for the columns in ``table``.</span>
+<span class="sd">        inplace: Whether to perform operations in-place and use ``df``</span>
+<span class="sd">            as the output dataframe.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A new dataframe with columns from ``df`` and columns according to</span>
+<span class="sd">        columns named within ``table`` like ``FUNC(col0, col1, ...)`` where</span>
+<span class="sd">        columns ``col0`` and ``col1`` exist in ``df``.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        `ValueError`: If the function parsed from the column name has no</span>
+<span class="sd">            supported and corresponding function.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">df</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">primary_keys</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="o">.</span><span class="n">key</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">primary_key</span><span class="p">}</span>
+    <span class="n">other_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">primary_keys</span><span class="p">]</span>
+    <span class="n">func_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">other_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">func_call</span> <span class="o">:=</span> <span class="n">parse_func_call</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="n">func_keys</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">func_call</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">get</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+            <span class="k">match</span> <span class="n">name</span><span class="p">:</span>
+                <span class="k">case</span> <span class="s2">&quot;LOG_CHANGE&quot;</span><span class="p">:</span>
+                    <span class="n">out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_log_change</span><span class="p">(</span><span class="o">*</span><span class="n">cols</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
+                <span class="k">case</span> <span class="s2">&quot;PCT_CHANGE&quot;</span><span class="p">:</span>
+                    <span class="n">out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">safe_pct_change</span><span class="p">(</span><span class="o">*</span><span class="n">cols</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
+                <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is not supported&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">inplace</span> <span class="ow">and</span> <span class="n">drop</span><span class="p">:</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">other_keys</span><span class="p">)),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">drop</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">other_keys</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="safe_log_change"><a class="viewcode-back" href="../../api/finagg.html#finagg.utils.safe_log_change">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">safe_log_change</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Safely compute log change between two columns.</span>
+
+<span class="sd">    Replaces ``Inf`` values with ``NaN`` and forward-fills.</span>
+<span class="sd">    This function is meant to be used with ``pd.Series.apply``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        series: Series of values.</span>
+<span class="sd">        other: Reference series to compute change against. Defaults to</span>
+<span class="sd">            ``series`` shifted forward one index.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A series representing percent changes of ``col``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">)</span> <span class="o">-</span> <span class="n">other</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">replace</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="safe_pct_change"><a class="viewcode-back" href="../../api/finagg.html#finagg.utils.safe_pct_change">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">safe_pct_change</span><span class="p">(</span><span class="n">series</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Safely compute percent change between two columns.</span>
+
+<span class="sd">    Replaces ``Inf`` values with ``NaN`` and forward-fills.</span>
+<span class="sd">    This function is meant to be used with ``pd.Series.apply``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        series: Series of values.</span>
+<span class="sd">        other: Reference series to compute change against. Defaults to</span>
+<span class="sd">            ``series`` shifted forward one index.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A series representing percent changes of ``col``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">series</span> <span class="o">-</span> <span class="n">other</span><span class="p">)</span> <span class="o">/</span> <span class="n">other</span>
+    <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">replace</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span><span class="o">.</span><span class="n">ffill</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="setenv"><a class="viewcode-back" href="../../api/finagg.html#finagg.utils.setenv">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">setenv</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">exist_ok</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the value of the environment variable ``name`` to ``value``.</span>
+
+<span class="sd">    The environment variable is permanently set in the environment</span>
+<span class="sd">    and in the current process.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name: Environment variable name.</span>
+<span class="sd">        value: Environment variable value.</span>
+<span class="sd">        exist_ok: Whether it&#39;s okay if an environment variable of the</span>
+<span class="sd">            same name already exists. If ``True``, it will be overwritten.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Path to the file the environment variable was written to.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        `RuntimeError`: If ``exist_ok`` is ``False`` and an environment variable</span>
+<span class="sd">            of the same name already exists.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">exist_ok</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;The env variable `</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">` already exists. &quot;</span>
+            <span class="s2">&quot;Set `exist_ok` to `True` to overwrite it.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="n">dotenv</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.env&quot;</span>
+    <span class="n">set_key</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">dotenv</span><span class="p">),</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dotenv</span></div>
+
+
+<span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Today&#39;s date. Used by a number of submodules as the default end date</span>
+<span class="sd">when getting data from APIs or SQL tables.</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_ReadFn</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">sa</span><span class="o">.</span><span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="o">...</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_WriteFn</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">sa</span><span class="o">.</span><span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="o">...</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_InstallWorkerFn</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">sa</span><span class="o">.</span><span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="o">...</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_InstallWorker</span><span class="p">:</span>
+    <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">sa</span><span class="o">.</span><span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">fn</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">_InstallWorkerFn</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">sa</span><span class="o">.</span><span class="n">URL</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">_InstallWorkerFn</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">create_engine</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="kc">None</span> <span class="o">|</span> <span class="ne">Exception</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+        <span class="k">assert</span> <span class="bp">cls</span><span class="o">.</span><span class="n">engine</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">cls</span><span class="o">.</span><span class="n">fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">ticker</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">e</span><span class="p">,</span> <span class="n">ticker</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ticker</span><span class="p">,</span> <span class="n">df</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_install</span><span class="p">(</span>
+    <span class="n">read_fn</span><span class="p">:</span> <span class="n">_ReadFn</span><span class="p">,</span>
+    <span class="n">write_fn</span><span class="p">:</span> <span class="n">_WriteFn</span><span class="p">,</span>
+    <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">,</span>
+    <span class="n">tickers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">engine</span><span class="p">:</span> <span class="n">sa</span><span class="o">.</span><span class="n">Engine</span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">desc</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">processes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for feature installation methods.</span>
+
+<span class="sd">    Useful for reducing code duplication, but this helper</span>
+<span class="sd">    may not exist in the future.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">total_rows</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">with</span> <span class="p">(</span>
+        <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span>
+            <span class="n">processes</span><span class="p">,</span>
+            <span class="n">initializer</span><span class="o">=</span><span class="n">_InstallWorker</span><span class="o">.</span><span class="n">init</span><span class="p">,</span>
+            <span class="n">initargs</span><span class="o">=</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">read_fn</span><span class="p">),</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">,</span>
+        <span class="n">tqdm</span><span class="p">(</span>
+            <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">tickers</span><span class="p">),</span>
+            <span class="n">desc</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span>
+            <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">pb</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="n">tickers</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">processes</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tickers</span><span class="p">),</span> <span class="n">processes</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">exc</span><span class="p">,</span> <span class="n">ticker</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="n">_InstallWorker</span><span class="o">.</span><span class="n">call</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">exc</span><span class="p">)</span>
+                    <span class="n">pb</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ticker</span><span class="p">,</span> <span class="n">df</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">ticker</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">rowcount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">rowcount</span><span class="p">:</span>
+                        <span class="n">write_fn</span><span class="p">(</span><span class="n">ticker</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+                        <span class="n">total_rows</span> <span class="o">+=</span> <span class="n">rowcount</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rowcount</span><span class="si">}</span><span class="s2"> rows inserted for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2"> due to missing data&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">pb</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">total_rows</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

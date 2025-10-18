@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conventions &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+
+  
+      <script src="_static/jquery.js"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+      <script src="_static/doctools.js"></script>
+      <script src="_static/sphinx_highlight.js"></script>
+      <script src="_static/clipboard.min.js"></script>
+      <script src="_static/copybutton.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Walkthroughs" href="walkthroughs.html" />
+    <link rel="prev" title="finagg: Financial Aggregation for Python" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Conventions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#import-conventions">Import Conventions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#package-organization">Package Organization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api-implementations">API Implementations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#almost-everything-is-a-dataframe">Almost Everything is a Dataframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#helper-methods-for-inspecting-available-data">Helper Methods for Inspecting Available Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-organization">Data Organization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-normalization">Data Normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#feature-method-naming">Feature Method Naming</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Conventions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/conventions.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="conventions">
+<h1>Conventions<a class="headerlink" href="#conventions" title="Permalink to this heading"></a></h1>
+<p><strong>finagg</strong> has a number of conventions around package organization,
+data organization, and data normalization. Understanding these conventions
+makes <strong>finagg</strong> a bit more ergonomic. This page covers those conventions.</p>
+<section id="import-conventions">
+<h2>Import Conventions<a class="headerlink" href="#import-conventions" title="Permalink to this heading"></a></h2>
+<p>Following <strong>finagg</strong>’s import conventions guarantees updates to <strong>finagg</strong>
+won’t break your code. Although definitions may shift around during or
+<strong>finagg</strong>’s organization may change slightly, your code won’t be affected
+so long as you follow the import conventions. On top of this benefit,
+<strong>finagg</strong>’s import conventions just simplify <strong>finagg</strong>’s usage.</p>
+<p><strong>finagg</strong> is designed to be imported once at the highest module:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">finagg</span>  
+</pre></div>
+</div>
+<p>Subpackages and submodules are usually accessed through their fully qualified
+names from the top-level module:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">bea</span><span class="o">.</span><span class="n">api</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">fred</span><span class="o">.</span><span class="n">api</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span>  
+</pre></div>
+</div>
+<p>It’s also common for subpackages to be imported using their name as an alias:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">finagg.bea</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bea</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">finagg.fred</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">fred</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">finagg.sec</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sec</span>
+</pre></div>
+</div>
+</section>
+<section id="package-organization">
+<h2>Package Organization<a class="headerlink" href="#package-organization" title="Permalink to this heading"></a></h2>
+<p><strong>finagg</strong> is organized according to API implementations, SQL table
+definitions, and feature definitions. As such, each subpackage has up to
+three submodules within it:</p>
+<ul class="simple">
+<li><p>an <code class="docutils literal notranslate"><span class="pre">api</span></code> module that implements the subpackage’s API (if one exists)</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">sql</span></code> module that defines SQL tables for organizing aggregated data
+along with utility functions for common SQL queries (if there’s enough
+data that deems SQL tables necessary)</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">feat</span></code> module that defines features aggregated from the <code class="docutils literal notranslate"><span class="pre">api</span></code> and
+<code class="docutils literal notranslate"><span class="pre">sql</span></code> submodules (if the data would benefit from special queries or
+normalization)</p></li>
+</ul>
+<p>As an example, the <a class="reference internal" href="api/finagg.sec.html#module-finagg.sec" title="finagg.sec"><code class="xref py py-mod docutils literal notranslate"><span class="pre">finagg.sec</span></code></a> contains all three submodules because
+of the complexity of its API, its data, and its features:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="api/finagg.sec.html#module-finagg.sec.api" title="finagg.sec.api"><code class="xref py py-mod docutils literal notranslate"><span class="pre">finagg.sec.api</span></code></a> for implementing the SEC EDGAR API</p></li>
+<li><p><a class="reference internal" href="api/finagg.sec.html#module-finagg.sec.sql" title="finagg.sec.sql"><code class="xref py py-mod docutils literal notranslate"><span class="pre">finagg.sec.sql</span></code></a> for defining SQL tables around raw SEC EDGAR API data,
+refined SEC EDGAR API data, and helper functions that replicate some SEC
+EDGAR API methods using data from the SQL tables</p></li>
+<li><p><a class="reference internal" href="api/finagg.sec.feat.html#module-finagg.sec.feat" title="finagg.sec.feat"><code class="xref py py-mod docutils literal notranslate"><span class="pre">finagg.sec.feat</span></code></a> for defining features and helper methods for
+constructing those features</p></li>
+</ul>
+</section>
+<section id="api-implementations">
+<h2>API Implementations<a class="headerlink" href="#api-implementations" title="Permalink to this heading"></a></h2>
+<p>APIs are implemented as singleton class instances within <code class="docutils literal notranslate"><span class="pre">api</span></code> submodules
+Each singleton has a <code class="docutils literal notranslate"><span class="pre">get</span></code> method for accessing data from API endpoints.
+Some API implementations include class attributes that define API metadata
+(such as URLs or endpoint names), while other API implementations include
+helper methods for navigating the APIs. The design of each API implementation
+is based on the reference API that’s being implemented.</p>
+<p>As an example, the BEA API, implemented by <a class="reference internal" href="api/finagg.bea.html#module-finagg.bea.api" title="finagg.bea.api"><code class="xref py py-mod docutils literal notranslate"><span class="pre">finagg.bea.api</span></code></a>, contains
+a singleton <a class="reference internal" href="api/finagg.bea.html#finagg.bea.api.gdp_by_industry" title="finagg.bea.api.gdp_by_industry"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.bea.api.gdp_by_industry</span></code></a> with an attribute
+<a class="reference internal" href="api/finagg.bea.html#finagg.bea.api.API.name" title="finagg.bea.api.API.name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">name</span></code></a> that describes the BEA API database
+that the singleton refers to. In addition, the singleton has methods
+<a class="reference internal" href="api/finagg.bea.html#finagg.bea.api.API.get_parameter_list" title="finagg.bea.api.API.get_parameter_list"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_parameter_list()</span></code></a> and
+<a class="reference internal" href="api/finagg.bea.html#finagg.bea.api.API.get_parameter_values" title="finagg.bea.api.API.get_parameter_values"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_parameter_values()</span></code></a>
+for getting API parameters and API parameter value options, respectively,
+while <a class="reference internal" href="api/finagg.bea.html#finagg.bea.api.GDPByIndustry.get" title="finagg.bea.api.GDPByIndustry.get"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get()</span></code></a> is the actual method for
+retrieving data from the API is implemented by.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">bea</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">gdp_by_industry</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;GdpByIndustry&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">bea</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">gdp_by_industry</span><span class="o">.</span><span class="n">get_parameter_list</span><span class="p">()</span>  
+<span class="go">  ParameterName ParameterDataType                               ParameterDescription ...</span>
+<span class="go">0     Frequency            string                            A - Annual, Q-Quarterly ...</span>
+<span class="go">1      Industry            string       List of industries to retrieve (ALL for All) ...</span>
+<span class="go">2       TableID           integer  The unique GDP by Industry table identifier (A... ...</span>
+<span class="go">3          Year           integer  List of year(s) of data to retrieve (ALL for All) ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">bea</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">gdp_by_industry</span><span class="o">.</span><span class="n">get_parameter_values</span><span class="p">(</span><span class="s2">&quot;TableID&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">  Key                                               Desc</span>
+<span class="go">0   1                    Value Added by Industry (A) (Q)</span>
+<span class="go">1   5  Value added by Industry as a Percentage of Gro...</span>
+<span class="go">2   6          Components of Value Added by Industry (A)</span>
+<span class="go">3   7  Components of Value Added by Industry as a Per...</span>
+<span class="go">4   8  Chain-Type Quantity Indexes for Value Added by...</span>
+</pre></div>
+</div>
+<p>Other implemented APIs, such as the SEC EDGAR API implemented by
+<a class="reference internal" href="api/finagg.sec.html#module-finagg.sec.api" title="finagg.sec.api"><code class="xref py py-mod docutils literal notranslate"><span class="pre">finagg.sec.api</span></code></a>, don’t have as many helper methods and are barebone
+implementations.</p>
+</section>
+<section id="almost-everything-is-a-dataframe">
+<h2>Almost Everything is a Dataframe<a class="headerlink" href="#almost-everything-is-a-dataframe" title="Permalink to this heading"></a></h2>
+<p>Dataframes are just too convenient to not use as the fundamental type within
+<strong>finagg</strong>. Almost all objects returned by APIs and features are dataframes.</p>
+</section>
+<section id="helper-methods-for-inspecting-available-data">
+<h2>Helper Methods for Inspecting Available Data<a class="headerlink" href="#helper-methods-for-inspecting-available-data" title="Permalink to this heading"></a></h2>
+<p>Most submodules and singletons contain helper methods for getting sets of
+IDs available through other methods. These methods are useful for verifying
+if data has been installed properly or for selecting a subset of data for
+further refinement. Examples of these methods include:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="api/finagg.fred.feat.html#finagg.fred.feat.Series.get_id_set" title="finagg.fred.feat.Series.get_id_set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.fred.feat.Series.get_id_set()</span></code></a> returns installed economic data
+series IDs</p></li>
+<li><p><a class="reference internal" href="api/finagg.sec.html#finagg.sec.api.get_ticker_set" title="finagg.sec.api.get_ticker_set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.sec.api.get_ticker_set()</span></code></a> returns all the tickers that have
+at least <em>some</em> data available through the SEC EDGAR API</p></li>
+<li><p><a class="reference internal" href="api/finagg.sec.feat.html#finagg.sec.feat.Quarterly.get_ticker_set" title="finagg.sec.feat.Quarterly.get_ticker_set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.sec.feat.Quarterly.get_ticker_set()</span></code></a> returns all the tickers
+that have quarterly features available</p></li>
+</ul>
+</section>
+<section id="data-organization">
+<h2>Data Organization<a class="headerlink" href="#data-organization" title="Permalink to this heading"></a></h2>
+<p>There are only a handful of conventions regarding data organization:</p>
+<ul class="simple">
+<li><p>Data returned by API implementations that’re used by features typically have
+their own SQL table definitions. This is convenient for querying API data
+offline and for customizing features without having to repeatedly get data
+from APIs.</p></li>
+<li><p>Classes within <code class="docutils literal notranslate"><span class="pre">feat</span></code> submodules and SQL tables within <code class="docutils literal notranslate"><span class="pre">sql</span></code> submodules are
+named similarly to indicate their relationship.</p></li>
+<li><p>Unaltered data from APIs are typically referred to as “raw” data while
+features are referred to as “refined” data. Refined data SQL tables typically
+have foreign key constraints on raw data SQL tables such that refined rows
+are deleted when raw rows are deleted with the same primary key.</p></li>
+</ul>
+</section>
+<section id="data-normalization">
+<h2>Data Normalization<a class="headerlink" href="#data-normalization" title="Permalink to this heading"></a></h2>
+<p>Data returned by API implementations is not normalized or standardized
+beyond type casting and column renaming. However, data returned by feature
+implementations is normalized depending on the nature of the data. The general
+rules implemented for data normalization are as follows:</p>
+<ul class="simple">
+<li><p>Data whose scale drifts over time or is not easily normalizable through
+other means (e.g., gross domestic product, compony stock price, etc.) is
+converted to log changes. Since the log change of the first sample
+in a series cannot be computed and is NaN, it is dropped from the series.</p></li>
+<li><p>Data gaps and/or NaNs are forward-filled with the previous non-NaN value.
+If the series being forward-filled is a log change series then gaps
+and/or NaNs are replaced with zeros instead (indicating that no change
+occurs).</p></li>
+<li><p>Inf values are replaced with NaNs and forward-filled with the same logic
+as the previous bullet.</p></li>
+<li><p>Dataframe indices are always based on some time unit. When an index has
+multiple levels (e.g., features returned by
+<a class="reference internal" href="api/finagg.sec.feat.html#finagg.sec.feat.quarterly" title="finagg.sec.feat.quarterly"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.feat.quarterly</span></code></a>), the levels are ordered from least
+granular to most granular (e.g., year -&gt; quarter -&gt; date). Indices
+are always sorted.</p></li>
+</ul>
+</section>
+<section id="feature-method-naming">
+<h2>Feature Method Naming<a class="headerlink" href="#feature-method-naming" title="Permalink to this heading"></a></h2>
+<p>Features are aggregations or collections of raw and/or refined data that’re
+ready for ingestion by another process. Features can be aggregated from
+APIs, local SQL tables, or combinations of both. Features generally can be
+aggregated by more than one method, and a method’s name determines where the
+feature is aggregated from. The feature’s aggregation source(s) implies
+properties associated with instantiating and maintaining the feature. For
+example, if a feature is aggregated directly from an API, then that implies
+the feature is likely not being stored locally, saving a bit of disk space.</p>
+<p>Feature aggregation methods are named according to where the features are
+being aggregated from to clarify the implications associated with the
+methods:</p>
+<ul class="simple">
+<li><p>A <code class="docutils literal notranslate"><span class="pre">from_api</span></code> method implies the feature is aggregated directly from
+API calls. It’s best to reserve <code class="docutils literal notranslate"><span class="pre">from_api</span></code> for experimentation.</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">from_raw</span></code> method implies the feature is aggregated from local raw
+SQL tables. No extra storage space is being used to store the completely
+refined features; only already-stored raw data is being used to aggregate the
+features.</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">from_refined</span></code> method implies the feature is aggregated from local
+refined SQL tables. This is likely the fastest method for accessing
+a feature, but at the cost of additional disk usage. Disk usage can be
+significant and adds up quickly depending on the number of time series
+being stored.</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">from_other_refined</span></code> method implies the feature is aggregated from
+local refined SQL tables outside of the feature’s subpackage. This is
+likely preferrable over <code class="docutils literal notranslate"><span class="pre">from_refined</span></code> when it’s available as it uses
+significantly less storage with little loss in speed.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="finagg: Financial Aggregation for Python" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="walkthroughs.html" class="btn btn-neutral float-right" title="Walkthroughs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

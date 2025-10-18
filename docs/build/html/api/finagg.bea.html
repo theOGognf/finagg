@@ -1,0 +1,468 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.bea package &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
+      <script src="../_static/jquery.js"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+      <script src="../_static/doctools.js"></script>
+      <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/clipboard.min.js"></script>
+      <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="finagg.fred package" href="finagg.fred.html" />
+    <link rel="prev" title="finagg package" href="finagg.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="finagg.html">finagg package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="finagg.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">finagg.bea package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.html">finagg.fred package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.html">finagg.sec package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.config">finagg.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.ratelimit">finagg.ratelimit module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.testing">finagg.testing module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.utils">finagg.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">finagg</a></li>
+          <li class="breadcrumb-item"><a href="finagg.html">finagg package</a></li>
+      <li class="breadcrumb-item active">finagg.bea package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/finagg.bea.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="finagg-bea-package">
+<h1>finagg.bea package<a class="headerlink" href="#finagg-bea-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-finagg.bea.api">
+<span id="finagg-bea-api-module"></span><h2>finagg.bea.api module<a class="headerlink" href="#module-finagg.bea.api" title="Permalink to this heading"></a></h2>
+<p>An implementation of the Bureau of Economic Analysis (BEA) API.</p>
+<p>The BEA API provides methods for retrieving a subset of economic
+statistical data as published by the BEA along with metadata that
+describes that economic statistical data.</p>
+<p>A BEA API key is required to use this API. You can register for
+a BEA API key at the <a class="reference external" href="https://apps.bea.gov/api/signup/">BEA API signup page</a>. You can pass your
+BEA API key directly to the implemented API getters, or you
+can set the <code class="docutils literal notranslate"><span class="pre">BEA_API_KEY</span></code> environment variable to have the
+BEA API key be passed to the implemented API getters for you.</p>
+<p>Alternatively, running <code class="docutils literal notranslate"><span class="pre">finagg</span> <span class="pre">bea</span> <span class="pre">install</span></code> (or the broader
+<code class="docutils literal notranslate"><span class="pre">finagg</span> <span class="pre">install</span></code>) will  prompt you where to aquire a BEA API
+key and will automatically store it in an <code class="docutils literal notranslate"><span class="pre">.env</span></code> file in
+your current working directory. The environment variables set
+in that <code class="docutils literal notranslate"><span class="pre">.env</span></code> file will be loaded into your shell upon
+using <code class="docutils literal notranslate"><span class="pre">finagg</span></code> (whether that be through the Python interface
+or through the CLI tools).</p>
+<p>See the official <a class="reference external" href="https://apps.bea.gov/api/_pdf/bea_web_service_api_user_guide.pdf">BEA API user guide</a> for more info on the BEA API.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This was the first API implementation in this project, but has since
+lost priority in favor of the FRED API as the FRED API provides
+data that’s found through the BEA API in addition to a plethora
+of other data. This BEA API implementation is still maintained
+and supported, but other features such as data installation are not
+and will never be supported.</p>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.bea.api.API">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">API</span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#API"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.API" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/abc.html#abc.ABC" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
+<p>Interface for BEA Dataset APIs.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.bea.api.API.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#finagg.bea.api.API.name" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.bea.api.API.get">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#API.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.API.get" title="Permalink to this definition"></a></dt>
+<dd><p>Main dataset API method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.bea.api.API.get_parameter_list">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_parameter_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#API.get_parameter_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.API.get_parameter_list" title="Permalink to this definition"></a></dt>
+<dd><p>Return the list of parameters associated with the dataset API.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.bea.api.API.get_parameter_values">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_parameter_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#API.get_parameter_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.API.get_parameter_values" title="Permalink to this definition"></a></dt>
+<dd><p>Return all possible parameter values associated with the dataset API.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.bea.api.FixedAssets">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">FixedAssets</span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#FixedAssets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.FixedAssets" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.bea.api.API" title="finagg.bea.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>US fixed assets (assets for long-term use).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.bea.api.FixedAssets.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'FixedAssets'</span></em><a class="headerlink" href="#finagg.bea.api.FixedAssets.name" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.bea.api.FixedAssets.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Sequence" title="(in Python v3.10)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Sequence" title="(in Python v3.10)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#FixedAssets.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.FixedAssets.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get US fixed assets by asset and year.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_id</strong> – IDs associated with assets of concern.
+Use <a class="reference internal" href="#finagg.bea.api.API.get_parameter_values" title="finagg.bea.api.API.get_parameter_values"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_parameter_values()</span></code></a> to see
+possible values.</p></li>
+<li><p><strong>year</strong> – Years to return.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dataframe with normalized column names and true dtypes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.bea.api.GDPByIndustry">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">GDPByIndustry</span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#GDPByIndustry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.GDPByIndustry" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.bea.api.API" title="finagg.bea.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>GDP (a single summary statistic) for each industry.</p>
+<p>The module variable <a class="reference internal" href="#finagg.bea.api.gdp_by_industry" title="finagg.bea.api.gdp_by_industry"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.bea.api.gdp_by_industry</span></code></a> is an instance
+of this API implementation and is the most popular interface for querying
+this API.</p>
+<p>Data provided by this API is considered coarse/high-level.
+See <a class="reference internal" href="#finagg.bea.api.InputOutput" title="finagg.bea.api.InputOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">InputOutput</span></code></a> for more granular/low-level industry data.</p>
+<p class="rubric">Examples</p>
+<p>List the GDP by industry API parameters.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">bea</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">gdp_by_industry</span><span class="o">.</span><span class="n">get_parameter_list</span><span class="p">()</span>  
+<span class="go">  ParameterName ParameterDataType                               ParameterDescription ... AllValue</span>
+<span class="go">0     Frequency            string                            A - Annual, Q-Quarterly ...      ALL</span>
+<span class="go">1      Industry            string       List of industries to retrieve (ALL for All) ...      ALL</span>
+<span class="go">2       TableID           integer  The unique GDP by Industry table identifier (A... ...      ALL</span>
+<span class="go">3          Year           integer  List of year(s) of data to retrieve (ALL for All) ...      ALL</span>
+</pre></div>
+</div>
+<p>List possible GDP by industry tables we can query.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">bea</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">gdp_by_industry</span><span class="o">.</span><span class="n">get_parameter_values</span><span class="p">(</span><span class="s2">&quot;TableID&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">  Key                                               Desc</span>
+<span class="go">0   1                    Value Added by Industry (A) (Q)</span>
+<span class="go">1   5  Value added by Industry as a Percentage of Gro...</span>
+<span class="go">2   6          Components of Value Added by Industry (A)</span>
+<span class="go">3   7  Components of Value Added by Industry as a Per...</span>
+<span class="go">4   8  Chain-Type Quantity Indexes for Value Added by...</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.bea.api.GDPByIndustry.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GdpByIndustry'</span></em><a class="headerlink" href="#finagg.bea.api.GDPByIndustry.name" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.bea.api.GDPByIndustry.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Sequence" title="(in Python v3.10)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Literal" title="(in Python v3.10)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'A'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'Q'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'A,Q'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Q'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Sequence" title="(in Python v3.10)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">industry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Sequence" title="(in Python v3.10)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#GDPByIndustry.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.GDPByIndustry.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get GDP by industry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_id</strong> – IDs associated with GDP value type. Use
+<a class="reference internal" href="#finagg.bea.api.API.get_parameter_values" title="finagg.bea.api.API.get_parameter_values"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_parameter_values()</span></code></a> to see
+possible values. <cite>“ALL”</cite> indicates retrieve all GDP value
+measurement type tables.</p></li>
+<li><p><strong>freq</strong> – Data frequency to return. <cite>“Q”</cite> for quarterly, <cite>“A”</cite> for
+annually, and <cite>“A,Q”</cite> for both annually and quarterly.</p></li>
+<li><p><strong>year</strong> – Years to return. <cite>“ALL”</cite> indicates retrieve data for all
+available years.</p></li>
+<li><p><strong>industry</strong> – IDs associated with industries. Use
+<a class="reference internal" href="#finagg.bea.api.API.get_parameter_values" title="finagg.bea.api.API.get_parameter_values"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_parameter_values()</span></code></a> to see
+possible values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dataframe with GDP by industry, separated by year and/or quarter.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Get the GDP value added by an industry for a specific year.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">bea</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">gdp_by_industry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">table_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="mi">2020</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">   TableID Frequency  Year Quarter Industry                          IndustrYDescription   DataValue</span>
+<span class="go">0        1         A  2020    2020       11  Agriculture, forestry, fishing, and hunting  164.399994</span>
+<span class="go">1        1         A  2020    2020    111CA                                        Farms  120.500000</span>
+<span class="go">2        1         A  2020    2020    113FF    Forestry, fishing, and related activities   43.900002</span>
+<span class="go">3        1         A  2020    2020       21                                       Mining  202.800003</span>
+<span class="go">4        1         A  2020    2020      211                       Oil and gas extraction  104.000000</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.bea.api.InputOutput">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">InputOutput</span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#InputOutput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.InputOutput" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.bea.api.API" title="finagg.bea.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>Specific input-output statistics for each industry.</p>
+<p>Data provided by this API is considered granular/low-level.
+See <a class="reference internal" href="#finagg.bea.api.GDPByIndustry" title="finagg.bea.api.GDPByIndustry"><code class="xref py py-class docutils literal notranslate"><span class="pre">GDPByIndustry</span></code></a> for more coarse/high-level industry data.</p>
+<dl class="simple">
+<dt>Data is provided for different “rows” and “columns” where:</dt><dd><ul class="simple">
+<li><p>a row is an industry and</p></li>
+<li><p>a column is a statistic associated with that industry</p></li>
+</ul>
+</dd>
+</dl>
+<p>Columns are divided by column codes. Each industry of similar
+type has the same set of column codes that provide input-output
+statistics for that industry.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.bea.api.InputOutput.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'InputOutput'</span></em><a class="headerlink" href="#finagg.bea.api.InputOutput.name" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.bea.api.InputOutput.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Sequence" title="(in Python v3.10)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Sequence" title="(in Python v3.10)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#InputOutput.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.InputOutput.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get input-output statistics by industry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_id</strong> – IDs associated with input-output stats. Use
+<a class="reference internal" href="#finagg.bea.api.API.get_parameter_values" title="finagg.bea.api.API.get_parameter_values"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_parameter_values()</span></code></a> to see
+possible values. <cite>“ALL”</cite> indicates retrieve all tables for
+all types of input-output statistics by industry.</p></li>
+<li><p><strong>year</strong> – Years to return. <cite>“ALL”</cite> indicates retrieve data for all
+available years.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dataframe organized by table row and column codes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.bea.api.NIPA">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">NIPA</span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#NIPA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.NIPA" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.bea.api.API" title="finagg.bea.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>National income and product accounts.</p>
+<p>Details high-level US economic details in several
+metrics.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.bea.api.NIPA.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NIPA'</span></em><a class="headerlink" href="#finagg.bea.api.NIPA.name" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.bea.api.NIPA.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Sequence" title="(in Python v3.10)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Literal" title="(in Python v3.10)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'A'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'Q'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'A,Q'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Q'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Sequence" title="(in Python v3.10)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ALL'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#NIPA.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.NIPA.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get US income and product accounts by metric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_id</strong> – IDs associated with metric of concern.
+Use <a class="reference internal" href="#finagg.bea.api.API.get_parameter_values" title="finagg.bea.api.API.get_parameter_values"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_parameter_values()</span></code></a> to see
+possible values.</p></li>
+<li><p><strong>freq</strong> – Data frequency to return. <cite>“Q”</cite> for quarterly, <cite>“A”</cite> for annually.</p></li>
+<li><p><strong>year</strong> – Years to return.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dataframe with normalized column names and true dtypes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.bea.api.fixed_assets">
+<span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">fixed_assets</span></span><a class="headerlink" href="#finagg.bea.api.fixed_assets" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.bea.api.FixedAssets" title="finagg.bea.api.FixedAssets"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.bea.api.FixedAssets</span></code></a>
+API implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.bea.api.gdp_by_industry">
+<span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">gdp_by_industry</span></span><a class="headerlink" href="#finagg.bea.api.gdp_by_industry" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.bea.api.GDPByIndustry" title="finagg.bea.api.GDPByIndustry"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.bea.api.GDPByIndustry</span></code></a>
+API implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.bea.api.input_output">
+<span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">input_output</span></span><a class="headerlink" href="#finagg.bea.api.input_output" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.bea.api.InputOutput" title="finagg.bea.api.InputOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.bea.api.InputOutput</span></code></a>
+API implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.bea.api.nipa">
+<span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">nipa</span></span><a class="headerlink" href="#finagg.bea.api.nipa" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.bea.api.NIPA" title="finagg.bea.api.NIPA"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.bea.api.NIPA</span></code></a>
+API implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.bea.api.url">
+<span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://apps.bea.gov/api/data'</span></em><a class="headerlink" href="#finagg.bea.api.url" title="Permalink to this definition"></a></dt>
+<dd><p>The BEA API endpoint URL. All API requests are made to this URL.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.bea.api.get_dataset_list">
+<span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">get_dataset_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/bea/api.html#get_dataset_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.get_dataset_list" title="Permalink to this definition"></a></dt>
+<dd><p>Return a list of datasets provided by the BEA API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dataframe describing the datasets available through the BEA API.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">bea</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_dataset_list</span><span class="p">()</span>  
+<span class="go">                DatasetName                    DatasetDescription</span>
+<span class="go">0                      NIPA                  Standard NIPA tables</span>
+<span class="go">1        NIUnderlyingDetail  Standard NI underlying detail tables</span>
+<span class="go">2                       MNE             Multinational Enterprises</span>
+<span class="go">3               FixedAssets          Standard Fixed Assets tables</span>
+<span class="go">4                       ITA   International Transactions Accounts</span>
+<span class="go">5                       IIP     International Investment Position</span>
+<span class="go">6               InputOutput                     Input-Output Data</span>
+<span class="go">7             IntlServTrade          International Services Trade</span>
+<span class="go">8             GDPbyIndustry                       GDP by Industry</span>
+<span class="go">9                  Regional                    Regional data sets</span>
+<span class="go">10  UnderlyingGDPbyIndustry            Underlying GDP by Industry</span>
+<span class="go">11       APIDatasetMetaData     Metadata about other API datasets</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="finagg.bea.api.BEAAPIError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.bea.api.</span></span><span class="sig-name descname"><span class="pre">BEAAPIError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/finagg/bea/api.html#BEAAPIError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.bea.api.BEAAPIError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RequestException</span></code></p>
+<p>An error raised in response to BEA API request errors.</p>
+</dd></dl>
+
+</section>
+<section id="module-finagg.bea">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-finagg.bea" title="Permalink to this heading"></a></h2>
+<p>BEA top-level interface.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="finagg.html" class="btn btn-neutral float-left" title="finagg package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="finagg.fred.html" class="btn btn-neutral float-right" title="finagg.fred package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

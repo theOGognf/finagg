@@ -1,0 +1,1224 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.sec package &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
+      <script src="../_static/jquery.js"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+      <script src="../_static/doctools.js"></script>
+      <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/clipboard.min.js"></script>
+      <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="finagg.sec.feat package" href="finagg.sec.feat.html" />
+    <link rel="prev" title="finagg.fred.feat package" href="finagg.fred.feat.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="finagg.html">finagg package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="finagg.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="finagg.bea.html">finagg.bea package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.html">finagg.fred package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">finagg.sec package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.config">finagg.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.ratelimit">finagg.ratelimit module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.testing">finagg.testing module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.utils">finagg.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">finagg</a></li>
+          <li class="breadcrumb-item"><a href="finagg.html">finagg package</a></li>
+      <li class="breadcrumb-item active">finagg.sec package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/finagg.sec.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="finagg-sec-package">
+<h1>finagg.sec package<a class="headerlink" href="#finagg-sec-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="finagg.sec.feat.html">finagg.sec.feat package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="finagg.sec.feat.html#module-finagg.sec.feat">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.annual"><code class="docutils literal notranslate"><span class="pre">annual</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.quarterly"><code class="docutils literal notranslate"><span class="pre">quarterly</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.submissions"><code class="docutils literal notranslate"><span class="pre">submissions</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.tags"><code class="docutils literal notranslate"><span class="pre">tags</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual"><code class="docutils literal notranslate"><span class="pre">Annual</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual.industry"><code class="docutils literal notranslate"><span class="pre">Annual.industry</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual.normalized"><code class="docutils literal notranslate"><span class="pre">Annual.normalized</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual.from_api"><code class="docutils literal notranslate"><span class="pre">Annual.from_api()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual.from_raw"><code class="docutils literal notranslate"><span class="pre">Annual.from_raw()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual.from_refined"><code class="docutils literal notranslate"><span class="pre">Annual.from_refined()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual.get_candidate_ticker_set"><code class="docutils literal notranslate"><span class="pre">Annual.get_candidate_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual.get_ticker_set"><code class="docutils literal notranslate"><span class="pre">Annual.get_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual.install"><code class="docutils literal notranslate"><span class="pre">Annual.install()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual.to_refined"><code class="docutils literal notranslate"><span class="pre">Annual.to_refined()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.IndustryAnnual"><code class="docutils literal notranslate"><span class="pre">IndustryAnnual</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.IndustryAnnual.from_refined"><code class="docutils literal notranslate"><span class="pre">IndustryAnnual.from_refined()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedAnnual"><code class="docutils literal notranslate"><span class="pre">NormalizedAnnual</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedAnnual.from_other_refined"><code class="docutils literal notranslate"><span class="pre">NormalizedAnnual.from_other_refined()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedAnnual.from_refined"><code class="docutils literal notranslate"><span class="pre">NormalizedAnnual.from_refined()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedAnnual.get_candidate_ticker_set"><code class="docutils literal notranslate"><span class="pre">NormalizedAnnual.get_candidate_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedAnnual.get_ticker_set"><code class="docutils literal notranslate"><span class="pre">NormalizedAnnual.get_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedAnnual.get_tickers_sorted_by"><code class="docutils literal notranslate"><span class="pre">NormalizedAnnual.get_tickers_sorted_by()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedAnnual.install"><code class="docutils literal notranslate"><span class="pre">NormalizedAnnual.install()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedAnnual.to_refined"><code class="docutils literal notranslate"><span class="pre">NormalizedAnnual.to_refined()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly"><code class="docutils literal notranslate"><span class="pre">Quarterly</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.industry"><code class="docutils literal notranslate"><span class="pre">Quarterly.industry</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.normalized"><code class="docutils literal notranslate"><span class="pre">Quarterly.normalized</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.from_api"><code class="docutils literal notranslate"><span class="pre">Quarterly.from_api()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.from_raw"><code class="docutils literal notranslate"><span class="pre">Quarterly.from_raw()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.from_refined"><code class="docutils literal notranslate"><span class="pre">Quarterly.from_refined()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.get_candidate_ticker_set"><code class="docutils literal notranslate"><span class="pre">Quarterly.get_candidate_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.get_ticker_set"><code class="docutils literal notranslate"><span class="pre">Quarterly.get_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.install"><code class="docutils literal notranslate"><span class="pre">Quarterly.install()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.to_refined"><code class="docutils literal notranslate"><span class="pre">Quarterly.to_refined()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.IndustryQuarterly"><code class="docutils literal notranslate"><span class="pre">IndustryQuarterly</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.IndustryQuarterly.from_refined"><code class="docutils literal notranslate"><span class="pre">IndustryQuarterly.from_refined()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly"><code class="docutils literal notranslate"><span class="pre">NormalizedQuarterly</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.from_other_refined"><code class="docutils literal notranslate"><span class="pre">NormalizedQuarterly.from_other_refined()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.from_refined"><code class="docutils literal notranslate"><span class="pre">NormalizedQuarterly.from_refined()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.get_candidate_ticker_set"><code class="docutils literal notranslate"><span class="pre">NormalizedQuarterly.get_candidate_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.get_ticker_set"><code class="docutils literal notranslate"><span class="pre">NormalizedQuarterly.get_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.get_tickers_sorted_by"><code class="docutils literal notranslate"><span class="pre">NormalizedQuarterly.get_tickers_sorted_by()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.install"><code class="docutils literal notranslate"><span class="pre">NormalizedQuarterly.install()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly.to_refined"><code class="docutils literal notranslate"><span class="pre">NormalizedQuarterly.to_refined()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Submissions"><code class="docutils literal notranslate"><span class="pre">Submissions</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Submissions.from_raw"><code class="docutils literal notranslate"><span class="pre">Submissions.from_raw()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Submissions.get_ticker_set"><code class="docutils literal notranslate"><span class="pre">Submissions.get_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Submissions.install"><code class="docutils literal notranslate"><span class="pre">Submissions.install()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Submissions.install_from_zip"><code class="docutils literal notranslate"><span class="pre">Submissions.install_from_zip()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Submissions.to_raw"><code class="docutils literal notranslate"><span class="pre">Submissions.to_raw()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Tags"><code class="docutils literal notranslate"><span class="pre">Tags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Tags.from_raw"><code class="docutils literal notranslate"><span class="pre">Tags.from_raw()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Tags.get_ticker_set"><code class="docutils literal notranslate"><span class="pre">Tags.get_ticker_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Tags.group_and_pivot_from_raw"><code class="docutils literal notranslate"><span class="pre">Tags.group_and_pivot_from_raw()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Tags.install"><code class="docutils literal notranslate"><span class="pre">Tags.install()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Tags.install_from_zip"><code class="docutils literal notranslate"><span class="pre">Tags.install_from_zip()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Tags.to_raw"><code class="docutils literal notranslate"><span class="pre">Tags.to_raw()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-finagg.sec.api">
+<span id="finagg-sec-api-module"></span><h2>finagg.sec.api module<a class="headerlink" href="#module-finagg.sec.api" title="Permalink to this heading"></a></h2>
+<p>An implementation of the Securities and Exchange Commission’s (SEC) EDGAR API.</p>
+<p>The SEC EDGAR API provides methods for retrieving XBRL data (e.g., earnings
+per share) from financial statements and SEC filing submission histories
+(e.g., 10-Q/10-K forms). The SEC EDGAR API is one of the few APIs that
+provides historical and current company financial data for free.</p>
+<p>An SEC EDGAR API user agent declaration is required to use this API.
+The user agent should be of format <code class="docutils literal notranslate"><span class="pre">FIRST_NAME</span> <span class="pre">LAST_NAME</span> <span class="pre">E_MAIL</span></code>. You
+can pass your user agent directly to the implemented API getters, or you
+can set the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable to have the user agent
+be passed to the implemented API getters for you.</p>
+<p>Alternatively, running <code class="docutils literal notranslate"><span class="pre">finagg</span> <span class="pre">sec</span> <span class="pre">install</span></code> (or the broader
+<code class="docutils literal notranslate"><span class="pre">finagg</span> <span class="pre">install</span></code>) will prompt you to enter an SEC EDGAR API user agent
+and will automatically store it in an <code class="docutils literal notranslate"><span class="pre">.env</span></code> file in your current working
+directory. The environment variables set in that <code class="docutils literal notranslate"><span class="pre">.env</span></code> file will be loaded
+into your shell upon using <code class="docutils literal notranslate"><span class="pre">finagg</span></code> (whether that be through the Python
+interface or through the CLI tools).</p>
+<p>See the official <a class="reference external" href="https://www.sec.gov/edgar/sec-api-documentation">SEC EDGAR API docs</a> for more info on the SEC API.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.sec.api.Concept">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">Concept</span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#Concept"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.Concept" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.TypedDict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<p>A collection of XBRL tag (data field), SEC EDGAR taxonomy that
+tag is in, and units for that tag.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.Concept.tag">
+<span class="sig-name descname"><span class="pre">tag</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></em><a class="headerlink" href="#finagg.sec.api.Concept.tag" title="Permalink to this definition"></a></dt>
+<dd><p>Valid tag within the given <cite>taxonomy</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.Concept.taxonomy">
+<span class="sig-name descname"><span class="pre">taxonomy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></em><a class="headerlink" href="#finagg.sec.api.Concept.taxonomy" title="Permalink to this definition"></a></dt>
+<dd><p>Valid SEC EDGAR taxonomy.
+See <a class="reference external" href="https://www.sec.gov/info/edgar/edgartaxonomies.shtml">https://www.sec.gov/info/edgar/edgartaxonomies.shtml</a> for taxonomies.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.Concept.units">
+<span class="sig-name descname"><span class="pre">units</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></em><a class="headerlink" href="#finagg.sec.api.Concept.units" title="Permalink to this definition"></a></dt>
+<dd><p>Currency the concept is in.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.sec.api.Frame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">Frame</span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#Frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.Frame" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+<p>A frame is just a <a class="reference internal" href="#finagg.sec.api.Concept" title="finagg.sec.api.Concept"><code class="xref py py-class docutils literal notranslate"><span class="pre">Concept</span></code></a> with a flag indicating if it supports
+“instantaneous” frame data.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.Frame.instant">
+<span class="sig-name descname"><span class="pre">instant</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></em><a class="headerlink" href="#finagg.sec.api.Frame.instant" title="Permalink to this definition"></a></dt>
+<dd><p>Whether to retrieve “instant” calendrical results.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.Frame.tag">
+<span class="sig-name descname"><span class="pre">tag</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></em><a class="headerlink" href="#finagg.sec.api.Frame.tag" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.Frame.taxonomy">
+<span class="sig-name descname"><span class="pre">taxonomy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></em><a class="headerlink" href="#finagg.sec.api.Frame.taxonomy" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.Frame.units">
+<span class="sig-name descname"><span class="pre">units</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></em><a class="headerlink" href="#finagg.sec.api.Frame.units" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.sec.api.SubmissionsResult">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">SubmissionsResult</span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#SubmissionsResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.SubmissionsResult" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.TypedDict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.SubmissionsResult.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#dict" title="(in Python v3.10)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#finagg.sec.api.SubmissionsResult.metadata" title="Permalink to this definition"></a></dt>
+<dd><p>Company metadata.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.SubmissionsResult.filings">
+<span class="sig-name descname"><span class="pre">filings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></em><a class="headerlink" href="#finagg.sec.api.SubmissionsResult.filings" title="Permalink to this definition"></a></dt>
+<dd><p>Most recent company filings.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.sec.api.API">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">API</span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#API"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.API" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.10/library/abc.html#abc.ABC" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
+<p>Abstract SEC EDGAR API.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.API.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#finagg.sec.api.API.url" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.sec.api.API.get">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#finagg.sec.api.SubmissionsResult" title="finagg.sec.api.SubmissionsResult"><span class="pre">SubmissionsResult</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#API.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.API.get" title="Permalink to this definition"></a></dt>
+<dd><p>Main API getter method.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.sec.api.CompanyConcept">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">CompanyConcept</span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#CompanyConcept"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.CompanyConcept" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.sec.api.API" title="finagg.sec.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>Get all XBRL disclosures for a single company and concept (a taxonomy
+and tag) in a single dataframe.</p>
+<p>The module variable <a class="reference internal" href="#finagg.sec.api.company_concept" title="finagg.sec.api.company_concept"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.company_concept</span></code></a> is an instance of
+this API implementation and is the most popular interface for querying this
+API.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#finagg.sec.api.popular_concepts" title="finagg.sec.api.popular_concepts"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.popular_concepts</span></code></a>: For a list of popular company</dt><dd><p>concepts that can be used with this method. The concepts described
+within this member are the most widely available concepts for
+SEC filers.</p>
+</dd>
+</dl>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.CompanyConcept.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://data.sec.gov/api/xbrl/companyconcept/CIK{cik}/{taxonomy}/{tag}.json'</span></em><a class="headerlink" href="#finagg.sec.api.CompanyConcept.url" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.sec.api.CompanyConcept.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cik</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taxonomy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'us-gaap'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'USD'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#CompanyConcept.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.CompanyConcept.get" title="Permalink to this definition"></a></dt>
+<dd><p>Return all XBRL disclosures for a single company (CIK)
+and concept (a taxonomy and tag) in a single dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tag</strong> – Valid tag within the given <code class="docutils literal notranslate"><span class="pre">taxonomy</span></code>.</p></li>
+<li><p><strong>cik</strong> – Company SEC CIK. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">ticker</span></code>.</p></li>
+<li><p><strong>ticker</strong> – Company ticker. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">cik</span></code>.</p></li>
+<li><p><strong>taxonomy</strong> – Valid SEC EDGAR taxonomy.
+See <a class="reference external" href="https://www.sec.gov/info/edgar/edgartaxonomies.shtml">https://www.sec.gov/info/edgar/edgartaxonomies.shtml</a> for taxonomies.</p></li>
+<li><p><strong>units</strong> – Currency to view results in.</p></li>
+<li><p><strong>cache</strong> – Whether to cache the response from the API.</p></li>
+<li><p><strong>user_agent</strong> – Self-declared bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dataframe with normalized column names.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/exceptions.html#ValueError" title="(in Python v3.10)"><strong>ValueError</strong></a> – If both a <code class="docutils literal notranslate"><span class="pre">cik</span></code> and <code class="docutils literal notranslate"><span class="pre">ticker</span></code> are provided or
+    neither are provided.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">company_concept</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;EarningsPerShareBasic&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;AAPL&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">taxonomy</span><span class="o">=</span><span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;USD/shares&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">        start         end    val                  accn    fy  fp ...</span>
+<span class="go">0  2006-10-01  2007-09-29   4.04  0001193125-09-214859  2009  FY ...</span>
+<span class="go">1  2006-10-01  2007-09-29   4.04  0001193125-10-012091  2009  FY ...</span>
+<span class="go">2  2007-09-30  2008-06-28   4.20  0001193125-09-153165  2009  Q3 ...</span>
+<span class="go">3  2008-03-30  2008-06-28   1.21  0001193125-09-153165  2009  Q3 ...</span>
+<span class="go">4  2007-09-30  2008-09-27   5.48  0001193125-09-214859  2009  FY ...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.sec.api.CompanyConcept.get_multiple_original">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_multiple_original</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">concepts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#list" title="(in Python v3.10)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#finagg.sec.api.Concept" title="finagg.sec.api.Concept"><span class="pre">finagg.sec.api.Concept</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cik</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#CompanyConcept.get_multiple_original"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.CompanyConcept.get_multiple_original" title="Permalink to this definition"></a></dt>
+<dd><p>Return original (not amended) XBRL disclosures for a single company
+using a set of company concepts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>concepts</strong> – Company concepts to retrieve.</p></li>
+<li><p><strong>cik</strong> – Company SEC CIK. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">ticker</span></code>.</p></li>
+<li><p><strong>ticker</strong> – Company ticker. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">cik</span></code>.</p></li>
+<li><p><strong>form</strong> – SEC filing form type to include. <code class="docutils literal notranslate"><span class="pre">&quot;10-Q&quot;</span></code> is for quarterly
+filing forms and <code class="docutils literal notranslate"><span class="pre">&quot;10-K&quot;</span></code> is for annual filing forms. Ignored
+if left <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>start</strong> – The start date of the observation period. Defaults to the
+first recorded date.</p></li>
+<li><p><strong>end</strong> – The end date of the observation period. Defaults to the
+last recorded date.</p></li>
+<li><p><strong>cache</strong> – Whether to cache the response from the API.</p></li>
+<li><p><strong>user_agent</strong> – Self-declared bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pivoted dataframe with a tag per column.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">company_concept</span><span class="o">.</span><span class="n">get_multiple_original</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">popular_concepts</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;AAPL&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">     fy  fp     tag         end           val ...</span>
+<span class="go">0  2009  Q3  Assets  2009-06-27  4.814000e+10 ...</span>
+<span class="go">1  2010  Q1  Assets  2009-12-26  5.392600e+10 ...</span>
+<span class="go">2  2010  Q2  Assets  2010-03-27  5.705700e+10 ...</span>
+<span class="go">3  2010  Q3  Assets  2010-06-26  6.472500e+10 ...</span>
+<span class="go">4  2011  Q1  Assets  2010-12-25  8.674200e+10 ...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.sec.api.CompanyFacts">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">CompanyFacts</span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#CompanyFacts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.CompanyFacts" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.sec.api.API" title="finagg.sec.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>Get all XBRL disclosures for a single company.</p>
+<p>The module variable <a class="reference internal" href="#finagg.sec.api.company_facts" title="finagg.sec.api.company_facts"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.company_facts</span></code></a> is an instance of
+this API implementation and is the most popular interface for querying this
+API.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.CompanyFacts.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json'</span></em><a class="headerlink" href="#finagg.sec.api.CompanyFacts.url" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.sec.api.CompanyFacts.download_zip">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">download_zip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/zipfile.html#zipfile.ZipFile" title="(in Python v3.10)"><span class="pre">ZipFile</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#CompanyFacts.download_zip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.CompanyFacts.download_zip" title="Permalink to this definition"></a></dt>
+<dd><p>Download all XBRL disclosures for all companies in a zip file.</p>
+<p>A progress bar displays the download progress as the download could
+take a long time because the zip file is more than 1GB.
+The zip file is updated by the SEC at approximately 3am ET nightly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chunk_size</strong> – Chunk size to stream and write the zip file with.</p></li>
+<li><p><strong>user_agent</strong> – Self-declared bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A zip file object representing the downloaded zip file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.sec.api.CompanyFacts.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cik</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#CompanyFacts.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.CompanyFacts.get" title="Permalink to this definition"></a></dt>
+<dd><p>Return all XBRL disclosures for a single company (CIK).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cik</strong> – Company SEC CIK. Mutually exclusive with <cite>ticker</cite>.</p></li>
+<li><p><strong>ticker</strong> – Company ticker. Mutually exclusive with <cite>cik</cite>.</p></li>
+<li><p><strong>cache</strong> – Whether to cache the response from the API.</p></li>
+<li><p><strong>user_agent</strong> – Self-declared bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dataframe with normalized column names.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/exceptions.html#ValueError" title="(in Python v3.10)"><strong>ValueError</strong></a> – If both a <code class="docutils literal notranslate"><span class="pre">cik</span></code> and <code class="docutils literal notranslate"><span class="pre">ticker</span></code> are provided or
+    neither are provided.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">company_facts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">          end         val                  accn    fy  fp    form ...</span>
+<span class="go">0  2009-06-27  8.9582e+08  0001193125-09-153165  2009  Q3    10-Q ...</span>
+<span class="go">1  2009-10-16  9.0068e+08  0001193125-09-214859  2009  FY    10-K ...</span>
+<span class="go">2  2009-10-16  9.0068e+08  0001193125-10-012091  2009  FY  10-K/A ...</span>
+<span class="go">3  2010-01-15  9.0679e+08  0001193125-10-012085  2010  Q1    10-Q ...</span>
+<span class="go">4  2010-04-09  9.0994e+08  0001193125-10-088957  2010  Q2    10-Q ...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.sec.api.Exchanges">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">Exchanges</span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#Exchanges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.Exchanges" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.sec.api.API" title="finagg.sec.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>SEC-registered ticker info with exchange data.</p>
+<p>This API implementation is very similar to <a class="reference internal" href="#finagg.sec.api.Tickers" title="finagg.sec.api.Tickers"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tickers</span></code></a>. It returns
+all the same data in addition to the exchanges that each company is on.</p>
+<p>The module variable <a class="reference internal" href="#finagg.sec.api.exchanges" title="finagg.sec.api.exchanges"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.exchanges</span></code></a> is an instance of this
+API implementation and is the most popular interface for querying this
+API.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.Exchanges.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://www.sec.gov/files/company_tickers_exchange.json'</span></em><a class="headerlink" href="#finagg.sec.api.Exchanges.url" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.sec.api.Exchanges.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#Exchanges.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.Exchanges.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get a dataframe containing all SEC-registered ticker
+info.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cache</strong> – Whether to cache the response from the API.</p></li>
+<li><p><strong>user_agent</strong> – Self-declared SEC bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dataframe containing company names, their SEC CIKs, and their
+ticker symbols.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">exchanges</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">       cik            name ticker exchange</span>
+<span class="go">0   320193      Apple Inc.   AAPL   Nasdaq</span>
+<span class="go">1   789019  MICROSOFT CORP   MSFT   Nasdaq</span>
+<span class="go">2  1652044   Alphabet Inc.  GOOGL   Nasdaq</span>
+<span class="go">3  1018724  AMAZON COM INC   AMZN   Nasdaq</span>
+<span class="go">4  1045810     NVIDIA CORP   NVDA   Nasdaq</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.sec.api.Frames">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">Frames</span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#Frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.Frames" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.sec.api.API" title="finagg.sec.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>Get all company filings for one particular fact that most closely
+matches the requested calendrical period.</p>
+<p>The module variable <a class="reference internal" href="#finagg.sec.api.frames" title="finagg.sec.api.frames"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.frames</span></code></a> is an instance of
+this API implementation and is the most popular interface for querying this
+API.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#finagg.sec.api.popular_frames" title="finagg.sec.api.popular_frames"><code class="xref py py-data docutils literal notranslate"><span class="pre">popular_frames</span></code></a>: For a list of popular company frames</dt><dd><p>that can be used with this method. The frames described
+within this member are the most widely available frames for
+SEC filers.</p>
+</dd>
+</dl>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.Frames.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://data.sec.gov/api/xbrl/frames/{taxonomy}/{tag}/{units}/CY{year}{quarter}.json'</span></em><a class="headerlink" href="#finagg.sec.api.Frames.url" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.sec.api.Frames.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quarter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instant</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taxonomy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'us-gaap'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'USD'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#Frames.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.Frames.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get one fact for each reporting entity that most closely fits
+the calendrical period requested.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tag</strong> – Valid tag within the given <code class="docutils literal notranslate"><span class="pre">taxonomy</span></code>.</p></li>
+<li><p><strong>year</strong> – Year to retrieve.</p></li>
+<li><p><strong>quarter</strong> – Quarter to retrieve data for. Most data is only provided
+at a quarterly rate, so this should be provided for most cases.</p></li>
+<li><p><strong>instant</strong> – Whether to get instantaneous data for the frame (data that
+most closely matches a frame’s year and quarter without a
+time buffer). This flag should be enabled for most cases. See
+<a class="reference internal" href="#finagg.sec.api.popular_frames" title="finagg.sec.api.popular_frames"><code class="xref py py-data docutils literal notranslate"><span class="pre">popular_frames</span></code></a> for which tags should be <code class="docutils literal notranslate"><span class="pre">instant</span></code>.</p></li>
+<li><p><strong>taxonomy</strong> – Valid SEC EDGAR taxonomy.
+See <a class="reference external" href="https://www.sec.gov/info/edgar/edgartaxonomies">https://www.sec.gov/info/edgar/edgartaxonomies</a> for taxonomies.</p></li>
+<li><p><strong>units</strong> – Units to view results in.</p></li>
+<li><p><strong>cache</strong> – Whether to cache the response from the API.</p></li>
+<li><p><strong>user_agent</strong> – Self-declared bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dataframe with slightly improved column names.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">frames</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;EarningsPerShareBasic&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="mi">2020</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">quarter</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">instant</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">taxonomy</span><span class="o">=</span><span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;USD-per-shares&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">                   accn   cik                      entityName    loc ...</span>
+<span class="go">0  0001104659-21-118843  1750                       AAR CORP.  US-IL ...</span>
+<span class="go">1  0001104659-21-133629  1800             ABBOTT LABORATORIES  US-IL ...</span>
+<span class="go">2  0001264931-20-000235  1961                     WORLDS INC.  US-MA ...</span>
+<span class="go">3  0001564590-21-055818  2098                ACME UNITED CORP  US-CT ...</span>
+<span class="go">4  0000002178-22-000033  2178  ADAMS RESOURCES &amp; ENERGY, INC.  US-TX ...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.sec.api.Submissions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">Submissions</span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#Submissions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.Submissions" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.sec.api.API" title="finagg.sec.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>Get a company’s metadata and all its recent SEC filings.</p>
+<p>Not all the metadata typically found with the submissions API is supported
+by this API. Only common company metadata (e.g., company name, industry
+code, fiscal year end date, etc.) is returned by this implementation.</p>
+<p>The module variable <a class="reference internal" href="#finagg.sec.api.submissions" title="finagg.sec.api.submissions"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.submissions</span></code></a> is an instance of
+this API implementation and is the most popular interface for querying this
+API.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.Submissions.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://data.sec.gov/submissions/CIK{cik}.json'</span></em><a class="headerlink" href="#finagg.sec.api.Submissions.url" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.sec.api.Submissions.download_zip">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">download_zip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/zipfile.html#zipfile.ZipFile" title="(in Python v3.10)"><span class="pre">ZipFile</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#Submissions.download_zip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.Submissions.download_zip" title="Permalink to this definition"></a></dt>
+<dd><p>Download all SEC filings for all companies in a zip file.</p>
+<p>A progress bar displays the download progress as the download could
+take a long time because the zip file is more than 1GB.
+The zip file is updated by the SEC at approximately 3am ET nightly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chunk_size</strong> – Chunk size to stream and write the zip file with.</p></li>
+<li><p><strong>user_agent</strong> – Self-declared bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A zip file object representing the downloaded zip file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.sec.api.Submissions.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cik</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#finagg.sec.api.SubmissionsResult" title="finagg.sec.api.SubmissionsResult"><span class="pre">SubmissionsResult</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#Submissions.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.Submissions.get" title="Permalink to this definition"></a></dt>
+<dd><p>Return a company’s metadata and all its recent SEC filings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cik</strong> – Company SEC CIK. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">ticker</span></code>.</p></li>
+<li><p><strong>ticker</strong> – Company ticker. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">cik</span></code>.</p></li>
+<li><p><strong>cache</strong> – Whether to cache the response from the API.</p></li>
+<li><p><strong>user_agent</strong> – Self-declared SEC bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Company metadata and a dataframe with recent SEC filings.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.10/library/exceptions.html#ValueError" title="(in Python v3.10)"><strong>ValueError</strong></a> – If both a <code class="docutils literal notranslate"><span class="pre">cik</span></code> and <code class="docutils literal notranslate"><span class="pre">ticker</span></code> are provided or neither
+    are provided.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span>  
+<span class="go">{&#39;cik&#39;: &#39;0000320193&#39;, &#39;entityType&#39;: &#39;operating&#39;, &#39;sic&#39;: &#39;3571&#39;, ...}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="finagg.sec.api.Tickers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">Tickers</span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#Tickers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.Tickers" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#finagg.sec.api.API" title="finagg.sec.api.API"><code class="xref py py-class docutils literal notranslate"><span class="pre">API</span></code></a></p>
+<p>SEC-registered ticker info.</p>
+<p>This is a broader method in comparison to <a class="reference internal" href="#finagg.sec.api.get_ticker_set" title="finagg.sec.api.get_ticker_set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_ticker_set()</span></code></a>.
+<a class="reference internal" href="#finagg.sec.api.get_ticker_set" title="finagg.sec.api.get_ticker_set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_ticker_set()</span></code></a> will get all the tickers that have popular
+fundamentals data available through the SEC EDGAR API for the
+previous year, while this method will get all tickers and CIKs
+that have ever had data available via the SEC EDGAR API.</p>
+<p>The module variable <a class="reference internal" href="#finagg.sec.api.tickers" title="finagg.sec.api.tickers"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.tickers</span></code></a> is an instance of this
+API implementation and is the most popular interface for querying this
+API.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="finagg.sec.api.Tickers.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.ClassVar" title="(in Python v3.10)"><span class="pre">ClassVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://www.sec.gov/files/company_tickers.json'</span></em><a class="headerlink" href="#finagg.sec.api.Tickers.url" title="Permalink to this definition"></a></dt>
+<dd><p>Request API URL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="finagg.sec.api.Tickers.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#Tickers.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.Tickers.get" title="Permalink to this definition"></a></dt>
+<dd><p>Get a dataframe containing all SEC-registered ticker
+info.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cache</strong> – Whether to cache the response from the API.</p></li>
+<li><p><strong>user_agent</strong> – Self-declared SEC bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dataframe containing company names, their SEC CIKs, and their
+ticker symbols.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">tickers</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">       cik ticker                   title</span>
+<span class="go">0   320193   AAPL              Apple Inc.</span>
+<span class="go">1   789019   MSFT          MICROSOFT CORP</span>
+<span class="go">2  1652044  GOOGL           Alphabet Inc.</span>
+<span class="go">3  1018724   AMZN          AMAZON COM INC</span>
+<span class="go">4  1067983  BRK-B  BERKSHIRE HATHAWAY INC</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.api.company_concept">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">company_concept</span></span><a class="headerlink" href="#finagg.sec.api.company_concept" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.sec.api.CompanyConcept" title="finagg.sec.api.CompanyConcept"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompanyConcept</span></code></a> API
+implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.api.company_facts">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">company_facts</span></span><a class="headerlink" href="#finagg.sec.api.company_facts" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.sec.api.CompanyFacts" title="finagg.sec.api.CompanyFacts"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompanyFacts</span></code></a> API
+implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.api.exchanges">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">exchanges</span></span><a class="headerlink" href="#finagg.sec.api.exchanges" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.sec.api.Exchanges" title="finagg.sec.api.Exchanges"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exchanges</span></code></a> API implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.api.frames">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">frames</span></span><a class="headerlink" href="#finagg.sec.api.frames" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.sec.api.Frames" title="finagg.sec.api.Frames"><code class="xref py py-class docutils literal notranslate"><span class="pre">Frames</span></code></a> API implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.api.submissions">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">submissions</span></span><a class="headerlink" href="#finagg.sec.api.submissions" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.sec.api.Submissions" title="finagg.sec.api.Submissions"><code class="xref py py-class docutils literal notranslate"><span class="pre">Submissions</span></code></a> API
+implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.api.tickers">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">tickers</span></span><a class="headerlink" href="#finagg.sec.api.tickers" title="Permalink to this definition"></a></dt>
+<dd><p>The most popular way for accessing the <a class="reference internal" href="#finagg.sec.api.Tickers" title="finagg.sec.api.Tickers"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tickers</span></code></a> API implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.api.popular_frames">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">popular_frames</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#list" title="(in Python v3.10)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#finagg.sec.api.Frame" title="finagg.sec.api.Frame"><span class="pre">finagg.sec.api.Frame</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#finagg.sec.api.popular_frames" title="Permalink to this definition"></a></dt>
+<dd><p>Company frames that have high availability and are relatively popular
+for fundamental analysis. Includes things like earnings per share, current
+assets, etc.. Frames are in valid format for usage with the <a class="reference internal" href="#finagg.sec.api.Frames" title="finagg.sec.api.Frames"><code class="xref py py-class docutils literal notranslate"><span class="pre">Frames</span></code></a>
+API implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.api.popular_concepts">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">popular_concepts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#list" title="(in Python v3.10)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#finagg.sec.api.Concept" title="finagg.sec.api.Concept"><span class="pre">finagg.sec.api.Concept</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#finagg.sec.api.popular_concepts" title="Permalink to this definition"></a></dt>
+<dd><p>Company concepts that have high availability and are relatively popular
+for fundamental analysis. Includes things like earnings per share, current
+assets, etc.. Concepts contain all the parameters required for usage with the
+<a class="reference internal" href="#finagg.sec.api.CompanyConcept" title="finagg.sec.api.CompanyConcept"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompanyConcept</span></code></a> API implementation.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.sec.api.compute_financial_ratios">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">compute_financial_ratios</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#compute_financial_ratios"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.compute_financial_ratios" title="Permalink to this definition"></a></dt>
+<dd><p>Compute financial ratios in-place for a dataframe using XBRL financial
+tags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> – Dataframe with common XBRL financial tags (e.g., “Assets”,
+“Liabilities”, etc.).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">df</span></code> but with additional columns that’re normalized financial ratios.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.sec.api.filter_original_filings">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">filter_original_filings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#filter_original_filings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.filter_original_filings" title="Permalink to this definition"></a></dt>
+<dd><p>Get all original filing rows as determined by the filing date and
+tag for a period.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – Dataframe without mixed original and amendment rows.</p></li>
+<li><p><strong>form</strong> – Only keep rows with form type <code class="docutils literal notranslate"><span class="pre">form</span></code>. Most popular choices
+include <code class="docutils literal notranslate"><span class="pre">&quot;10-K&quot;</span></code> for annual and <code class="docutils literal notranslate"><span class="pre">&quot;10-Q&quot;</span></code> for quarterly.
+This parameter is ignored if left <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>units</strong> – Only keep rows with units <code class="docutils literal notranslate"><span class="pre">units</span></code> if not <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dataframe with rows that only correspond to original filings.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Only get a company’s original quarterly earnings-per-share filings.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">company_concept</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;EarningsPerShareBasic&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;AAPL&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">taxonomy</span><span class="o">=</span><span class="s2">&quot;us-gaap&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;USD/shares&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">filter_original_filings</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">df</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">form</span><span class="o">=</span><span class="s2">&quot;10-Q&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;USD/shares&quot;</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  
+<span class="go">     fy  fp  ...</span>
+<span class="go">0  2009  Q3  ...</span>
+<span class="go">1  2010  Q1  ...</span>
+<span class="go">2  2010  Q2  ...</span>
+<span class="go">3  2010  Q3  ...</span>
+<span class="go">4  2011  Q1  ...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.sec.api.get_cik">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">get_cik</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#get_cik"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.get_cik" title="Permalink to this definition"></a></dt>
+<dd><p>Return a company’s SEC CIK from its ticker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – A company’s ticker symbol.</p></li>
+<li><p><strong>user_agent</strong> – Self-declared SEC bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The company’s corresponding SEC CIK.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Get Apple’s SEC CIK from its ticker.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_cik</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;0000320193&quot;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.sec.api.get_ticker">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">get_ticker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cik</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#get_ticker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.get_ticker" title="Permalink to this definition"></a></dt>
+<dd><p>Return a company’s ticker from its SEC CIK.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cik</strong> – A company’s 10-character SEC CIK.</p></li>
+<li><p><strong>user_agent</strong> – Self-declared SEC bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The company’s corresponding ticker.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Get Apple’s ticker from its SEC CIK.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_ticker</span><span class="p">(</span><span class="s2">&quot;0000320193&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;AAPL&quot;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.sec.api.get_ticker_set">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">get_ticker_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_agent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#get_ticker_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.get_ticker_set" title="Permalink to this definition"></a></dt>
+<dd><p>Get the set of tickers that published data for popular concepts
+during any of the quarters for the previous year.</p>
+<p>This effectively gets the set of tickers whose data is at least
+somewhat available through the SEC EDGAR API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>user_agent</strong> – Self-declared SEC bot header. Defaults to the value
+found in the <code class="docutils literal notranslate"><span class="pre">SEC_API_USER_AGENT</span></code> environment variable.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Set of tickers whose data is at least somewhat available through
+the SEC EDGAR API.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tickers</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">get_ticker_set</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;AAPL&quot;</span> <span class="ow">in</span> <span class="n">tickers</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;MSFT&quot;</span> <span class="ow">in</span> <span class="n">tickers</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;GOOG&quot;</span> <span class="ow">in</span> <span class="n">tickers</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.sec.api.group_and_pivot_filings">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.api.</span></span><span class="sig-name descname"><span class="pre">group_and_pivot_filings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.3)"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/api.html#group_and_pivot_filings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.api.group_and_pivot_filings" title="Permalink to this definition"></a></dt>
+<dd><p>Helper for grouping filings into a pivoted dataframe such that each
+tag has its own column.</p>
+<p>Tags are grouped according to fiscal year and fiscal period. The newest
+filing date is used when tags have different filing dates for the same
+fiscal year and fiscal period. Tags are forward-filled to fill gaps
+in filings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – “Melted” dataframe where each filing is a row.</p></li>
+<li><p><strong>form</strong> – Type of form to group. <code class="docutils literal notranslate"><span class="pre">&quot;10-K&quot;</span></code> sets the index to the fiscal
+year and filing date whereas <code class="docutils literal notranslate"><span class="pre">&quot;10-Q&quot;</span></code> sets the index to the
+fiscal year, fiscal period, and filing date. If not provided,
+the form type is chosen by inspecting the first element of the
+<code class="docutils literal notranslate"><span class="pre">&quot;form&quot;</span></code> column.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A pivoted dataframe where each column is a tag.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Get all XBRL filings from a company, unintelligently select the first
+unique filings for each XBRL tag, and then group all filings into
+a pivoted table.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">company_facts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">filter_original_filings</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s2">&quot;10-K&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">group_and_pivot_filings</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s2">&quot;10-K&quot;</span><span class="p">)</span>  
+<span class="go">                 AccountsPayableCurrent  AccountsReceivableNetCurrent ...</span>
+<span class="go">fy   filed                                                            ...</span>
+<span class="go">2009 2009-10-27            5.520000e+09                  2.422000e+09 ...</span>
+<span class="go">2010 2010-10-27            5.601000e+09                  3.361000e+09 ...</span>
+<span class="go">2011 2011-10-26            1.201500e+10                  5.510000e+09 ...</span>
+<span class="go">2012 2012-10-31            1.463200e+10                  5.369000e+09 ...</span>
+<span class="go">2013 2013-10-30            2.117500e+10                  1.093000e+10 ...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-finagg.sec.sql">
+<span id="finagg-sec-sql-module"></span><h2>finagg.sec.sql module<a class="headerlink" href="#module-finagg.sec.sql" title="Permalink to this heading"></a></h2>
+<p>SEC SQLAlchemy interfaces.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.sql.metadata">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.sql.</span></span><span class="sig-name descname"><span class="pre">metadata</span></span><a class="headerlink" href="#finagg.sec.sql.metadata" title="Permalink to this definition"></a></dt>
+<dd><p>The metadata associated with all SQL tables defined in this module.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.sql.submissions">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.sql.</span></span><span class="sig-name descname"><span class="pre">submissions</span></span><a class="headerlink" href="#finagg.sec.sql.submissions" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing raw data as managed by
+<a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.submissions" title="finagg.sec.feat.submissions"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.feat.submissions</span></code></a> (an alias for
+<a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Submissions" title="finagg.sec.feat.Submissions"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.sec.feat.Submissions</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.sql.tags">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.sql.</span></span><span class="sig-name descname"><span class="pre">tags</span></span><a class="headerlink" href="#finagg.sec.sql.tags" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing raw data as managed by <a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.tags" title="finagg.sec.feat.tags"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.feat.tags</span></code></a>
+(an alias for <a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Tags" title="finagg.sec.feat.Tags"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.sec.feat.Tags</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.sql.annual">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.sql.</span></span><span class="sig-name descname"><span class="pre">annual</span></span><a class="headerlink" href="#finagg.sec.sql.annual" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing refined data as managed by <a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.annual" title="finagg.sec.feat.annual"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.feat.annual</span></code></a>
+(an alias for <a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual" title="finagg.sec.feat.Annual"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.sec.feat.Annual</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.sql.normalized_annual">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.sql.</span></span><span class="sig-name descname"><span class="pre">normalized_annual</span></span><a class="headerlink" href="#finagg.sec.sql.normalized_annual" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing refined data as managed by
+<a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Annual.normalized" title="finagg.sec.feat.Annual.normalized"><code class="xref py py-attr docutils literal notranslate"><span class="pre">finagg.sec.feat.Annual.normalized</span></code></a> (an alias for
+<a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedAnnual" title="finagg.sec.feat.NormalizedAnnual"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.sec.feat.NormalizedAnnual</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.sql.quarterly">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.sql.</span></span><span class="sig-name descname"><span class="pre">quarterly</span></span><a class="headerlink" href="#finagg.sec.sql.quarterly" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing refined data as managed by
+<a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.quarterly" title="finagg.sec.feat.quarterly"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.feat.quarterly</span></code></a> (an alias for
+<a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly" title="finagg.sec.feat.Quarterly"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.sec.feat.Quarterly</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.sec.sql.normalized_quarterly">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.sql.</span></span><span class="sig-name descname"><span class="pre">normalized_quarterly</span></span><a class="headerlink" href="#finagg.sec.sql.normalized_quarterly" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing refined data as managed by
+<a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.normalized" title="finagg.sec.feat.Quarterly.normalized"><code class="xref py py-attr docutils literal notranslate"><span class="pre">finagg.sec.feat.Quarterly.normalized</span></code></a> (an alias for
+<a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.NormalizedQuarterly" title="finagg.sec.feat.NormalizedQuarterly"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.sec.feat.NormalizedQuarterly</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.sec.sql.get_cik">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.sql.</span></span><span class="sig-name descname"><span class="pre">get_cik</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/sql.html#get_cik"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.sql.get_cik" title="Permalink to this definition"></a></dt>
+<dd><p>Use raw SQL data to find a company’s SEC CIK from its ticker symbol.</p>
+<p>This is the preferred method for getting a company’s SEC CIK if raw SQL
+data is installed. This method is a convenience over
+<a class="reference internal" href="#finagg.sec.api.get_cik" title="finagg.sec.api.get_cik"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.sec.api.get_cik()</span></code></a> for repeatedly getting company SEC
+CIKs without having to query the SEC EDGAR API. Use
+<a class="reference internal" href="#finagg.sec.api.get_cik" title="finagg.sec.api.get_cik"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.sec.api.get_cik()</span></code></a> if you want to get a company’s ticker
+symbol without installing or accessing locally installed raw SQL data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – A company’s ticker symbol.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The company’s corresponding SEC CIK.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Get Apple’s SEC CIK from its ticker.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">get_cik</span><span class="p">(</span><span class="s2">&quot;AAPL&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;0000320193&quot;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.sec.sql.get_metadata">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.sql.</span></span><span class="sig-name descname"><span class="pre">get_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cik</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#dict" title="(in Python v3.10)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/sec/sql.html#get_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.sql.get_metadata" title="Permalink to this definition"></a></dt>
+<dd><p>Return a company’s metadata (its SEC CIK, ticker, name, and industry
+code) from its SEC CIK or its ticker symbol.</p>
+<p>A convenient method for getting a company’s metadata using raw SQL
+data. This method is a convenience over
+<a class="reference internal" href="#finagg.sec.api.submissions" title="finagg.sec.api.submissions"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.submissions</span></code></a> for repeatedly getting company
+metadata without having to query the SEC EDGAR API. Use
+<a class="reference internal" href="#finagg.sec.api.submissions" title="finagg.sec.api.submissions"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.sec.api.submissions</span></code></a> if you want to get a company’s
+metadata without installing or accessing locally installed raw SQL data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cik</strong> – Company SEC CIK. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">ticker</span></code>.</p></li>
+<li><p><strong>ticker</strong> – Company ticker. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">cik</span></code>.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A company’s metadata as a dictionary.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">(</span><span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;MSFT&quot;</span><span class="p">)</span>
+<span class="go">{&#39;cik&#39;: &#39;0000789019&#39;, &#39;ticker&#39;: &#39;MSFT&#39;, &#39;name&#39;: &#39;microsoft corp&#39;, &#39;sic&#39;: &#39;7372&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.sec.sql.get_ticker">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.sql.</span></span><span class="sig-name descname"><span class="pre">get_ticker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cik</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/finagg/sec/sql.html#get_ticker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.sql.get_ticker" title="Permalink to this definition"></a></dt>
+<dd><p>Use raw SQL data to find a company’s ticker from its SEC CIK.</p>
+<p>This is the preferred method for getting a company’s ticker if raw SQL
+data is installed. This method is a convenience over
+<a class="reference internal" href="#finagg.sec.api.get_ticker" title="finagg.sec.api.get_ticker"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.sec.api.get_ticker()</span></code></a> for repeatedly getting company tickers
+without having to query the SEC EDGAR API. Use
+<a class="reference internal" href="#finagg.sec.api.get_ticker" title="finagg.sec.api.get_ticker"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finagg.sec.api.get_ticker()</span></code></a> if you want to get a company’s
+ticker symbol without installing or accessing locally installed raw
+SQL data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cik</strong> – A company’s SEC CIK.</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The company’s corresponding ticker symbol.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Get Apple’s ticker from its SEC CIK.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">get_ticker</span><span class="p">(</span><span class="s2">&quot;0000320193&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;AAPL&quot;</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="finagg.sec.sql.get_tickers_in_industry">
+<span class="sig-prename descclassname"><span class="pre">finagg.sec.sql.</span></span><span class="sig-name descname"><span class="pre">get_tickers_in_industry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ticker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/typing.html#typing.Literal" title="(in Python v3.10)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">3</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.10/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.sqlalchemy.org/en/20/core/connections.html#sqlalchemy.engine.Engine" title="(in SQLAlchemy v2.0)"><span class="pre">Engine</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#set" title="(in Python v3.10)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.10/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/finagg/sec/sql.html#get_tickers_in_industry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#finagg.sec.sql.get_tickers_in_industry" title="Permalink to this definition"></a></dt>
+<dd><p>Get a set of tickers that all share the same industry using raw SQL data.</p>
+<p>This method is convenient for finding tickers within the same
+industry so they can be compared. A related and common pattern is to use
+<a class="reference internal" href="finagg.sec.feat.html#finagg.sec.feat.Quarterly.normalized" title="finagg.sec.feat.Quarterly.normalized"><code class="xref py py-attr docutils literal notranslate"><span class="pre">finagg.sec.feat.Quarterly.normalized</span></code></a> to get industry-normalized
+features for a particular company. Similar to other methods in this
+submodule, this will only return tickers that have raw SQL data associated
+with them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ticker</strong> – Company ticker. Lookup the industry associated
+with this company. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">code</span></code>.</p></li>
+<li><p><strong>code</strong> – Industry SIC code to use for industry lookup.
+Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">ticker</span></code>.</p></li>
+<li><p><strong>level</strong> – <p>Industry level to find tickers within.
+The industry used according to <code class="docutils literal notranslate"><span class="pre">ticker</span></code> or <code class="docutils literal notranslate"><span class="pre">code</span></code>
+is subsampled according to this value. Options include:</p>
+<blockquote>
+<div><ul>
+<li><p>2 = major group (e.g., furniture and fixtures)</p></li>
+<li><p>3 = industry group (e.g., office furnitures)</p></li>
+<li><p>4 = industry (e.g., wood office furniture)</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>engine</strong> – Feature store database engine. Defaults to the engine
+at <a class="reference internal" href="finagg.html#finagg.config.engine" title="finagg.config.engine"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.config.engine</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A set of tickers that all share the same industry as denoted by
+another ticker (using the <code class="docutils literal notranslate"><span class="pre">ticker</span></code> arg) or an industry SIC code
+(using the <code class="docutils literal notranslate"><span class="pre">code</span></code> arg).</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;ETSY&quot;</span> <span class="ow">in</span> <span class="n">finagg</span><span class="o">.</span><span class="n">sec</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">get_tickers_in_industry</span><span class="p">(</span><span class="n">ticker</span><span class="o">=</span><span class="s2">&quot;MSFT&quot;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-finagg.sec">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-finagg.sec" title="Permalink to this heading"></a></h2>
+<p>Top-level SEC interface.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="finagg.fred.feat.html" class="btn btn-neutral float-left" title="finagg.fred.feat package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="finagg.sec.feat.html" class="btn btn-neutral float-right" title="finagg.sec.feat package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

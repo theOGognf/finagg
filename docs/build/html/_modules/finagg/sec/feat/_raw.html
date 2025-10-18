@@ -1,0 +1,805 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.sec.feat._raw &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css" />
+
+  
+      <script src="../../../../_static/jquery.js"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+      <script src="../../../../_static/doctools.js"></script>
+      <script src="../../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../../_static/clipboard.min.js"></script>
+      <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.sec.feat._raw</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.sec.feat._raw</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Raw features from SEC sources.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zipfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZipFile</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">Engine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.exc</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoResultFound</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">...</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">api</span><span class="p">,</span> <span class="n">sql</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> | </span><span class="si">%(levelname)s</span><span class="s2"> | </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span>
+<span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Submissions"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Submissions">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Submissions</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a single company&#39;s metadata as-is from raw SEC data.</span>
+
+<span class="sd">    The module variable :data:`finagg.sec.feat.submissions` is an instance of</span>
+<span class="sd">    this feature set implementation and is the most popular interface for</span>
+<span class="sd">    calling feature methods.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Submissions.from_raw"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Submissions.from_raw">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_raw</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a single company&#39;s metadata as-is from raw SEC data.</span>
+
+<span class="sd">        The metadata provided for each company varies and each company&#39;s</span>
+<span class="sd">        metadata may be incomplete. Only their SEC CIK and SIC industry</span>
+<span class="sd">        code are guaranteed to be provided.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing the company&#39;s metadata.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `NoResultFound`: If there are no rows for ``ticker`` in the raw</span>
+<span class="sd">                SQL table.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.feat.submissions.from_raw(&quot;AAPL&quot;)  # doctest: +SKIP</span>
+<span class="sd">                      cik ticker  entityType   sic  sicDescription ...</span>
+<span class="sd">            0  0000320193   AAPL        None  3571            None ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">select</span><span class="p">()</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span> <span class="o">==</span> <span class="n">ticker</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No rows found for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="Submissions.get_ticker_set"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Submissions.get_ticker_set">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_ticker_set</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all unique ticker symbols in the raw SQL submissions table.</span>
+
+<span class="sd">        This method is convenient for accessing the tickers that have raw SQL data</span>
+<span class="sd">        associated with them so the data associated with those tickers can be</span>
+<span class="sd">        further refined. A common pattern is to use this method and other</span>
+<span class="sd">        ``get_ticker_set`` methods (such as those found in :mod:`finagg.sec.feat`)</span>
+<span class="sd">        to determine which tickers are missing data from other tables or features.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; &quot;AAPL&quot; in finagg.sec.feat.submissions.get_ticker_set()  # doctest: +SKIP</span>
+<span class="sd">            True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">tickers</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">))</span><span class="o">.</span><span class="n">scalars</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">tickers</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Submissions.install"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Submissions.install">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">install</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">tickers</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">recreate_tables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Install data associated with ``tickers`` by pulling data from the</span>
+<span class="sd">        API, and then writing the data to the raw submissions SQL table.</span>
+
+<span class="sd">        Tables associated with this method are created if they don&#39;t already</span>
+<span class="sd">        exist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tickers: Set of tickers to install features for.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+<span class="sd">            recreate_tables: Whether to drop and recreate tables, wiping all</span>
+<span class="sd">                previously installed data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the feature&#39;s SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="n">recreate_tables</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">checkfirst</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+        <span class="n">total_rows</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="n">tickers</span><span class="p">,</span>
+            <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Installing raw SEC submissions data&quot;</span><span class="p">,</span>
+            <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">metadata</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ticker</span><span class="o">=</span><span class="n">ticker</span><span class="p">)[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">rowcount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">rowcount</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">to_raw</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+                    <span class="n">total_rows</span> <span class="o">+=</span> <span class="n">rowcount</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rowcount</span><span class="si">}</span><span class="s2"> rows inserted for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2"> due to missing submissions&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_rows</span></div>
+
+<div class="viewcode-block" id="Submissions.install_from_zip"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Submissions.install_from_zip">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">install_from_zip</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">tickers</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">recreate_tables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Install all submissions data by downloading the bulk</span>
+<span class="sd">        submissions zip file from the API, and then writing the data to the</span>
+<span class="sd">        raw submissions SQL table.</span>
+
+<span class="sd">        Tables associated with this method are created if they don&#39;t already</span>
+<span class="sd">        exist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tickers: Set of tickers to install features for.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+<span class="sd">            recreate_tables: Whether to drop and recreate tables, wiping all</span>
+<span class="sd">                previously installed data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the feature&#39;s SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="n">recreate_tables</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">checkfirst</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+        <span class="n">submissions_zipfile_path</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">root_path</span> <span class="o">/</span> <span class="s2">&quot;findata&quot;</span> <span class="o">/</span> <span class="s2">&quot;submissions.zip&quot;</span>
+        <span class="k">if</span> <span class="n">recreate_tables</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">submissions_zipfile_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">zipfile</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">download_zip</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">zipfile</span> <span class="o">=</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">submissions_zipfile_path</span><span class="p">)</span>
+
+        <span class="c1"># Filter by guaranteeing a ticker is actually present in</span>
+        <span class="c1"># the set of tickers provided.</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">namelist</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ticker</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_ticker</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="o">-</span><span class="mi">5</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tickers</span><span class="p">:</span>
+                <span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="n">total_rows</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="n">files</span><span class="p">,</span>
+            <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Installing raw SEC submissions data&quot;</span><span class="p">,</span>
+            <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cik</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
+                <span class="n">ticker</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_ticker</span><span class="p">(</span><span class="n">cik</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="n">content</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">metadata</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">_parse_submission_metadata</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cik</span>
+                <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;ticker&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ticker</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">to_raw</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+                <span class="n">total_rows</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inserted row for </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_rows</span></div>
+
+<div class="viewcode-block" id="Submissions.to_raw"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Submissions.to_raw">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the given dataframe to the raw feature table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            df: Dataframe to store as rows in a local SQL table</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">insert</span><span class="p">(),</span> <span class="n">df</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">))</span>  <span class="c1"># type: ignore[arg-type]</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Tags"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Tags">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Tags</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a single company concept tag as-is from raw SEC data.</span>
+
+<span class="sd">    The module variable :data:`finagg.sec.feat.tags` is an instance of</span>
+<span class="sd">    this feature set implementation and is the most popular interface for</span>
+<span class="sd">    calling feature methods.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_install_from_zip_worker</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A nasty function to make it easier for processing files within</span>
+<span class="sd">        the company facts zip file using multiprocessing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            args: Tuple of the zip filename and the company facts filename</span>
+<span class="sd">                within the zip that&#39;s being processed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe of the company&#39;s facts (empty if any error occurs during</span>
+<span class="sd">            processing).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">zip_filename</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="n">zipfile</span> <span class="o">=</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">zip_filename</span><span class="p">)</span>
+        <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cik</span> <span class="o">=</span> <span class="n">filename</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">_parse_company_facts</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;cik&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cik</span>
+        <span class="k">for</span> <span class="n">concept</span> <span class="ow">in</span> <span class="n">api</span><span class="o">.</span><span class="n">popular_concepts</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">tag</span> <span class="o">=</span> <span class="n">concept</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">]</span>
+                <span class="n">taxonomy</span> <span class="o">=</span> <span class="n">concept</span><span class="p">[</span><span class="s2">&quot;taxonomy&quot;</span><span class="p">]</span>
+                <span class="n">units</span> <span class="o">=</span> <span class="n">concept</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
+                <span class="n">df_tag</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">tag</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;taxonomy&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">taxonomy</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">form</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;10-K&quot;</span><span class="p">,</span> <span class="s2">&quot;10-Q&quot;</span><span class="p">):</span>
+                    <span class="n">df_unique</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">filter_original_filings</span><span class="p">(</span>
+                        <span class="n">df_tag</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_unique</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+                        <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df_unique</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">dfs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Tags.from_raw"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Tags.from_raw">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_raw</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">form</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;10-Q&quot;</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a single company concept tag as-is from raw SEC data.</span>
+
+<span class="sd">        This is the preferred method for accessing raw SEC data without</span>
+<span class="sd">        using the SEC API.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker.</span>
+<span class="sd">            tag: Company concept tag to retreive.</span>
+<span class="sd">            form: SEC filing form to retrieve rows for. Options include:</span>
+
+<span class="sd">                - &quot;10-Q&quot; = quarterly filings</span>
+<span class="sd">                - &quot;10-K&quot; = annual filings</span>
+
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing the company concept tag values</span>
+<span class="sd">            across the specified period.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `NoResultFound`: If there are no rows for ``ticker`` and ``tag``</span>
+<span class="sd">                in the raw SQL table.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.feat.tags.from_raw(&quot;AAPL&quot;, &quot;EarningsPerShareBasic&quot;).head(5)  # doctest: +SKIP</span>
+<span class="sd">                                     units    val</span>
+<span class="sd">            fy   fp filed</span>
+<span class="sd">            2009 Q3 2009-07-22  USD/shares   4.20</span>
+<span class="sd">            2010 Q1 2010-01-25  USD/shares   2.54</span>
+<span class="sd">                 Q2 2010-04-21  USD/shares   4.35</span>
+<span class="sd">                 Q3 2010-07-21  USD/shares   6.40</span>
+<span class="sd">            2011 Q1 2011-01-19  USD/shares   3.74</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">fy</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">fp</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">val</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                        <span class="o">&amp;</span> <span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span> <span class="o">==</span> <span class="n">ticker</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">form</span> <span class="o">==</span> <span class="n">form</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">tag</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2"> rows found for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;fy&quot;</span><span class="p">,</span> <span class="s2">&quot;fp&quot;</span><span class="p">,</span> <span class="s2">&quot;filed&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Tags.get_ticker_set"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Tags.get_ticker_set">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_ticker_set</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">lb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all unique ticker symbols in the raw SQL tables that have at least</span>
+<span class="sd">        ``lb`` rows.</span>
+
+<span class="sd">        This method is convenient for accessing the tickers that have raw SQL data</span>
+<span class="sd">        associated with them so the data associated with those tickers can be</span>
+<span class="sd">        further refined. A common pattern is to use this method and other</span>
+<span class="sd">        ``get_ticker_set`` methods (such as those found in :mod:`finagg.sec.feat`)</span>
+<span class="sd">        to determine which tickers are missing data from other tables or features.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lb: Lower bound number of rows that a company must have for its ticker</span>
+<span class="sd">                to be included in the set returned by this method.</span>
+<span class="sd">            start: The start date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the first recorded date.</span>
+<span class="sd">            end: The end date of the observation period to include when</span>
+<span class="sd">                searching for tickers. Defaults to the last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; &quot;AAPL&quot; in finagg.sec.feat.tags.get_ticker_set()  # doctest: +SKIP</span>
+<span class="sd">            True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">tickers</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="p">,</span> <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">having</span><span class="p">(</span><span class="n">sa</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">lb</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">.</span><span class="n">scalars</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">tickers</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Tags.group_and_pivot_from_raw"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Tags.group_and_pivot_from_raw">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">group_and_pivot_from_raw</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">ticker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">form</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;10-Q&quot;</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get one or more company concept tags from raw SEC data.</span>
+
+<span class="sd">        Joins all the tags into one table, pivoting the columns such that</span>
+<span class="sd">        each tag is in its own column. Tags are forward-filled to fill</span>
+<span class="sd">        gaps.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ticker: Company ticker.</span>
+<span class="sd">            tags: Company concept tags to retreive.</span>
+<span class="sd">            form: SEC filing form to retrieve rows for. Options include:</span>
+
+<span class="sd">                - &quot;10-Q&quot; = quarterly filings</span>
+<span class="sd">                - &quot;10-K&quot; = annual filings</span>
+
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing the company concept tag values</span>
+<span class="sd">            across the specified period.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `NoResultFound`: If there are no rows for ``ticker`` or any of</span>
+<span class="sd">                the tags in ``tags`` for ``ticker`` in the raw SQL table.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.sec.feat.tags.group_and_pivot_from_raw(</span>
+<span class="sd">            ...     &quot;AAPL&quot;,</span>
+<span class="sd">            ...     [&quot;Assets&quot;, &quot;EarningsPerShareBasic&quot;],</span>
+<span class="sd">            ...     form=&quot;10-Q&quot;</span>
+<span class="sd">            ... ).head(5)  # doctest: +SKIP</span>
+<span class="sd">                                      Assets  EarningsPerShareBasic</span>
+<span class="sd">            fy   fp filed</span>
+<span class="sd">            2009 Q3 2009-07-22  3.957200e+10                   4.20</span>
+<span class="sd">            2010 Q1 2010-01-25  4.750100e+10                   2.54</span>
+<span class="sd">                 Q2 2010-04-21  4.750100e+10                   4.35</span>
+<span class="sd">                 Q3 2010-07-21  4.750100e+10                   6.40</span>
+<span class="sd">            2011 Q1 2011-01-19  7.518300e+10                   3.74</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
+                    <span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span> <span class="o">==</span> <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">cik</span><span class="p">)</span>
+                        <span class="o">&amp;</span> <span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">submissions</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">ticker</span> <span class="o">==</span> <span class="n">ticker</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">tags</span><span class="p">),</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">form</span> <span class="o">==</span> <span class="n">form</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">filed</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No rows found for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">group_and_pivot_filings</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tag</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2"> rows found for </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="Tags.install"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Tags.install">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">install</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">tickers</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">recreate_tables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Install data associated with ``tickers`` by pulling data from the</span>
+<span class="sd">        API, and then writing the data to the raw tags SQL table.</span>
+
+<span class="sd">        Tables associated with this method are created if they don&#39;t already</span>
+<span class="sd">        exist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tickers: Set of tickers to install features for. Defaults to all</span>
+<span class="sd">                the tickers from :meth:`Submissions.get_ticker_set`.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+<span class="sd">            recreate_tables: Whether to drop and recreate tables, wiping all</span>
+<span class="sd">                previously installed data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the feature&#39;s SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tickers</span> <span class="o">=</span> <span class="n">tickers</span> <span class="ow">or</span> <span class="n">Submissions</span><span class="o">.</span><span class="n">get_ticker_set</span><span class="p">()</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="n">recreate_tables</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">checkfirst</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+        <span class="n">total_rows</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="n">tickers</span><span class="p">,</span>
+            <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Installing raw SEC tags data&quot;</span><span class="p">,</span>
+            <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">for</span> <span class="n">concept</span> <span class="ow">in</span> <span class="n">api</span><span class="o">.</span><span class="n">popular_concepts</span><span class="p">:</span>
+                <span class="n">tag</span> <span class="o">=</span> <span class="n">concept</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">]</span>
+                <span class="n">taxonomy</span> <span class="o">=</span> <span class="n">concept</span><span class="p">[</span><span class="s2">&quot;taxonomy&quot;</span><span class="p">]</span>
+                <span class="n">units</span> <span class="o">=</span> <span class="n">concept</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">df</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">company_concept</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                        <span class="n">tag</span><span class="p">,</span>
+                        <span class="n">ticker</span><span class="o">=</span><span class="n">ticker</span><span class="p">,</span>
+                        <span class="n">taxonomy</span><span class="o">=</span><span class="n">taxonomy</span><span class="p">,</span>
+                        <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">form</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;10-K&quot;</span><span class="p">,</span> <span class="s2">&quot;10-Q&quot;</span><span class="p">):</span>
+                        <span class="n">df_unique</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">filter_original_filings</span><span class="p">(</span>
+                            <span class="n">df</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span>
+                        <span class="p">)</span>
+                        <span class="n">rowcount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_unique</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">rowcount</span><span class="p">:</span>
+                            <span class="bp">cls</span><span class="o">.</span><span class="n">to_raw</span><span class="p">(</span><span class="n">df_unique</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+                            <span class="n">total_rows</span> <span class="o">+=</span> <span class="n">rowcount</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rowcount</span><span class="si">}</span><span class="s2"> rows inserted for&quot;</span>
+                                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">form</span><span class="si">}</span><span class="s2"> filings&quot;</span>
+                            <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2"> due to missing </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">form</span><span class="si">}</span><span class="s2"> filings&quot;</span>
+                            <span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">ticker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_rows</span></div>
+
+<div class="viewcode-block" id="Tags.install_from_zip"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Tags.install_from_zip">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">install_from_zip</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">tickers</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">processes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">recreate_tables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Install all popular tags data by downloading the bulk company</span>
+<span class="sd">        facts zip file from the API, and then writing the data to the</span>
+<span class="sd">        raw tags SQL table.</span>
+
+<span class="sd">        Tables associated with this method are created if they don&#39;t already</span>
+<span class="sd">        exist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tickers: Set of tickers to install features for. Defaults to all</span>
+<span class="sd">                the tickers from :meth:`Submissions.get_ticker_set`.</span>
+<span class="sd">            processes: Number of background processes to use when installing</span>
+<span class="sd">                data.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+<span class="sd">            recreate_tables: Whether to drop and recreate tables, wiping all</span>
+<span class="sd">                previously installed data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the feature&#39;s SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="n">recreate_tables</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">checkfirst</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+        <span class="n">company_facts_zipfile_path</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">root_path</span> <span class="o">/</span> <span class="s2">&quot;findata&quot;</span> <span class="o">/</span> <span class="s2">&quot;companyfacts.zip&quot;</span>
+        <span class="k">if</span> <span class="n">recreate_tables</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">company_facts_zipfile_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">zipfile</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">company_facts</span><span class="o">.</span><span class="n">download_zip</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">zipfile</span> <span class="o">=</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">company_facts_zipfile_path</span><span class="p">)</span>
+
+        <span class="c1"># Filter by guaranteeing a ticker is actually present in</span>
+        <span class="c1"># the set of tickers provided.</span>
+        <span class="n">tickers</span> <span class="o">=</span> <span class="n">tickers</span> <span class="ow">or</span> <span class="n">Submissions</span><span class="o">.</span><span class="n">get_ticker_set</span><span class="p">()</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">namelist</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ticker</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_ticker</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="o">-</span><span class="mi">5</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">ticker</span> <span class="ow">in</span> <span class="n">tickers</span><span class="p">:</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">zipfile</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+
+        <span class="n">total_rows</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+                <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_install_from_zip_worker</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span>  <span class="c1"># type: ignore[arg-type]</span>
+                <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">),</span>
+                <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Installing raw SEC tags data&quot;</span><span class="p">,</span>
+                <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">leave</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">rowcount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">rowcount</span><span class="p">:</span>
+                        <span class="bp">cls</span><span class="o">.</span><span class="n">to_raw</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+                        <span class="n">total_rows</span> <span class="o">+=</span> <span class="n">rowcount</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rowcount</span><span class="si">}</span><span class="s2"> rows inserted for </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2"> due to missing filings&quot;</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_rows</span></div>
+
+<div class="viewcode-block" id="Tags.to_raw"><a class="viewcode-back" href="../../../../api/finagg.sec.feat.html#finagg.sec.feat.Tags.to_raw">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_raw</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the given dataframe to the raw feature table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            df: Dataframe to store as rows in a local SQL table</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">insert</span><span class="p">(),</span> <span class="n">df</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">))</span>  <span class="c1"># type: ignore[arg-type]</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
