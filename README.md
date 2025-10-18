@@ -31,8 +31,7 @@ pip install ./finagg/
 ```
 
 Optionally install the recommended datasets (economic data, company
-financials, stock histories, etc.) from 3rd party APIs into a local SQL
-database.
+financials, etc.) from 3rd party APIs into a local SQL database.
 
 ```console
 finagg install -ss economic -ts sec -z -r
