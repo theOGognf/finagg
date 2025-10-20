@@ -1,6 +1,6 @@
 """SEC SQLAlchemy interfaces."""
 
-from typing import Any, Literal
+from typing import Literal
 
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
@@ -764,55 +764,6 @@ def get_cik(ticker: str, /, *, engine: None | Engine = None) -> str:
             sa.select(entities.c.cik).where(entities.c.ticker == ticker)
         ).one()
     return str(cik)
-
-
-def get_metadata(
-    *, cik: None | str = None, ticker: None | str = None, engine: None | Engine = None
-) -> dict[str, Any]:
-    """Return a company's metadata (its SEC CIK, ticker, name, and industry
-    code) from its SEC CIK or its ticker symbol.
-
-    A convenient method for getting a company's metadata using raw SQL
-    data. This method is a convenience over
-    :data:`finagg.sec.api.submissions` for repeatedly getting company
-    metadata without having to query the SEC EDGAR API. Use
-    :data:`finagg.sec.api.submissions` if you want to get a company's
-    metadata without installing or accessing locally installed raw SQL data.
-
-    Args:
-        cik: Company SEC CIK. Mutually exclusive with ``ticker``.
-        ticker: Company ticker. Mutually exclusive with ``cik``.
-        engine: Feature store database engine. Defaults to the engine
-            at :data:`finagg.config.engine`.
-
-    Returns:
-        A company's metadata as a dictionary.
-
-    Examples:
-        >>> finagg.sec.sql.get_metadata(ticker="MSFT")
-        {'cik': '0000789019', 'ticker': 'MSFT', 'name': 'microsoft corp', 'sic': '7372'}
-
-    """
-    engine = engine or config.engine
-    if not sa.inspect(engine).has_table(entities.name):
-        entities.create(engine)
-
-    if bool(cik) == bool(ticker):
-        raise ValueError("Must provide a `cik` or a `ticker`.")
-
-    if ticker:
-        cik = str(get_cik(ticker, engine=engine))
-
-    with engine.begin() as conn:
-        row = conn.execute(
-            sa.select(
-                entities.c.cik,
-                entities.c.ticker,
-                entities.c.name,
-                entities.c.sic,
-            ).where(entities.c.cik == cik)
-        ).one()
-    return row._asdict()
 
 
 def get_ticker(cik: str, /, *, engine: None | Engine = None) -> str:

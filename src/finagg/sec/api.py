@@ -405,18 +405,19 @@ class Exchanges(API):
 
         Examples:
             >>> finagg.sec.api.exchanges.get().head(5)  # doctest: +SKIP
-                   cik            name ticker exchange
-            0   320193      Apple Inc.   AAPL   Nasdaq
-            1   789019  MICROSOFT CORP   MSFT   Nasdaq
-            2  1652044   Alphabet Inc.  GOOGL   Nasdaq
-            3  1018724  AMAZON COM INC   AMZN   Nasdaq
-            4  1045810     NVIDIA CORP   NVDA   Nasdaq
+                      cik            name ticker exchange
+            0  0001045810     NVIDIA CORP   NVDA   Nasdaq
+            1  0000789019  MICROSOFT CORP   MSFT   Nasdaq
+            2  0000320193      Apple Inc.   AAPL   Nasdaq
+            3  0001652044   Alphabet Inc.  GOOGL   Nasdaq
+            4  0001018724  AMAZON COM INC   AMZN   Nasdaq
 
         """
         response = _get(cls.url, cache=cache, user_agent=user_agent)
         content: dict[str, list[str]] = response.json()
         df = pd.DataFrame(content["data"], columns=content["fields"])
-        return df.rename(columns={"cik_str": "cik"})
+        df["cik"] = df["cik"].astype(str).str.zfill(10)
+        return df
 
 
 class Frames(API):
@@ -660,17 +661,18 @@ class Tickers(API):
 
         Examples:
             >>> finagg.sec.api.tickers.get().head(5)  # doctest: +SKIP
-                   cik ticker                   title
-            0   320193   AAPL              Apple Inc.
-            1   789019   MSFT          MICROSOFT CORP
-            2  1652044  GOOGL           Alphabet Inc.
-            3  1018724   AMZN          AMAZON COM INC
-            4  1067983  BRK-B  BERKSHIRE HATHAWAY INC
+                      cik ticker           title
+            0  0001045810   NVDA     NVIDIA CORP
+            1  0000789019   MSFT  MICROSOFT CORP
+            2  0000320193   AAPL      Apple Inc.
+            3  0001652044  GOOGL   Alphabet Inc.
+            4  0001018724   AMZN  AMAZON COM INC
 
         """
         response = _get(cls.url, cache=cache, user_agent=user_agent)
         content: dict[str, dict[str, str]] = response.json()
         df = pd.DataFrame([items for _, items in content.items()])
+        df["cik_str"] = df["cik_str"].astype(str).str.zfill(10)
         return df.rename(columns={"cik_str": "cik"})
 
 

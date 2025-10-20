@@ -18,13 +18,6 @@ def test_get_cik(engine: Engine) -> None:
     assert finagg.sec.sql.get_cik("AAPL", engine=engine) == "0000320193"
 
 
-def test_get_metadata(engine: Engine) -> None:
-    finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
-    assert (
-        finagg.sec.sql.get_metadata(ticker="AAPL", engine=engine)["cik"] == "0000320193"
-    )
-
-
 def test_get_ticker(engine: Engine) -> None:
     finagg.sec.feat.submissions.install({"AAPL"}, engine=engine)
     assert finagg.sec.sql.get_ticker("0000320193", engine=engine) == "AAPL"
