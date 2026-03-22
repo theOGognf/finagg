@@ -1,13 +1,36 @@
 Release Notes
 =============
 
+2.0.0
+-----
+
+Bug Fixes
+^^^^^^^^^
+
+- SEC API CIK strings properly zfilled to standard length.
+
+Compatibility Notes
+^^^^^^^^^^^^^^^^^^^
+
+- Remove ``finagg.fundam``.
+- Remove ``finagg.indices``.
+- Remove ``finagg.yfinance``.
+- Remove unused utilities.
+- SEC Submissions API ``"metadata"`` field renamed to  ``"entity"``.
+- SEC ``Submissions`` SQL table split into ``Entities`` and ``Filings`` tables.
+
+New Features
+^^^^^^^^^^^^
+
+N/A
+
 1.0.3
 -----
 
 Bug Fixes
 ^^^^^^^^^
 
-- Fix NASDAQ 100 ticker symbol column name
+- Fix NASDAQ 100 ticker symbol column name.
 
 Compatibility Notes
 ^^^^^^^^^^^^^^^^^^^

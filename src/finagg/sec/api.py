@@ -917,12 +917,16 @@ def filter_original_filings(
                 mask &= df["fp"] == "FY"
                 # Make sure the reporting frame is close to a year.
                 if "start" in df:
-                    mask &= start.isna() | ((350 <= start_to_end.days) & (start_to_end.days <= 380))  # type: ignore[no-untyped-call]
+                    mask &= start.isna() | (
+                        (350 <= start_to_end.days) & (start_to_end.days <= 380)
+                    )
             case "10-Q":
                 mask &= df["fp"].str.startswith("Q")
                 # Make sure the reporting frame is close to a quarter.
                 if "start" in df:
-                    mask &= start.isna() | ((75 <= start_to_end.days) & (start_to_end.days <= 105))  # type: ignore[no-untyped-call]
+                    mask &= start.isna() | (
+                        (75 <= start_to_end.days) & (start_to_end.days <= 105)
+                    )
     if units:
         mask &= df["units"] == units
     df = df[mask]
