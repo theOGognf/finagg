@@ -1,0 +1,417 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.ratelimit &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+
+  
+      <script src="../../_static/jquery.js"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+      <script src="../../_static/doctools.js"></script>
+      <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/clipboard.min.js"></script>
+      <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.ratelimit</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.ratelimit</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Customizable rate-limiting for requests-style getters.</span>
+
+<span class="sd">The definitions within this submodule are used throughout :mod:`finagg` for</span>
+<span class="sd">respecting 3rd party API rate limits to avoid server-side throttling.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">update_wrapper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">ParamSpec</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+<span class="n">_P</span> <span class="o">=</span> <span class="n">ParamSpec</span><span class="p">(</span><span class="s2">&quot;_P&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_RateLimitData</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience container for rate limit data.&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Timestamp associated with the data.</span>
+    <span class="n">ts</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="c1">#: Response&#39;s contribution to a rate limit threshold.</span>
+    <span class="n">quantity</span><span class="p">:</span> <span class="nb">float</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_RunningTotals</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Track running totals associated with exceeding rate limits.&quot;&quot;&quot;</span>
+
+    <span class="c1">#: Total limit contribution of all responses within a window towards</span>
+    <span class="c1">#: a rate limit threshold.</span>
+    <span class="n">quantity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1">#: Max wait time needed until another request can be made without</span>
+    <span class="c1">#: exceeding a rate limit.</span>
+    <span class="n">wait</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+
+<div class="viewcode-block" id="RateLimit"><a class="viewcode-back" href="../../api/finagg.html#finagg.ratelimit.RateLimit">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RateLimit</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface for defining a rate limit for an external API getter.</span>
+
+<span class="sd">    You can create a custom rate-limiter by inheriting from this class</span>
+<span class="sd">    and implementing a custom :meth:`eval` method.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        limit: Max limit within ``period`` (e.g., max number of</span>
+<span class="sd">            requests, errors, size in memory, etc.).</span>
+<span class="sd">        period: Time interval for evaluating ``limit``.</span>
+<span class="sd">        buffer: Reduce ``limit`` by this fraction. Adds a bit of</span>
+<span class="sd">            leeway to ensure ``limit`` is not reached. Useful for</span>
+<span class="sd">            enforcing response size limits.</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        :meth:`guard`: For the intended usage of getting a</span>
+<span class="sd">            :class:`RateLimitGuard` instance.</span>
+<span class="sd">        :class:`RequestLimit`: For an example of a request</span>
+<span class="sd">            rate limiter.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: Deque of responses containing limits from ``eval`` and</span>
+    <span class="c1">#: the timesteps they were observed.</span>
+    <span class="n">_rate_limit_datas</span><span class="p">:</span> <span class="n">deque</span><span class="p">[</span><span class="n">_RateLimitData</span><span class="p">]</span>
+
+    <span class="c1">#: Running total contributions to ``limit`` within ``period``</span>
+    <span class="c1">#: and the total wait time.</span>
+    <span class="n">_running_totals</span><span class="p">:</span> <span class="n">_RunningTotals</span>
+
+    <span class="c1">#: Max quantity allowed within ``period``. The quantity type being limited</span>
+    <span class="c1">#: is dependent on what&#39;s returned by :meth:`eval`.</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="c1">#: Time interval for evaluating ``limit`` (in seconds).</span>
+    <span class="n">period</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">timedelta</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">buffer</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limit</span> <span class="o">=</span> <span class="n">limit</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">buffer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">period</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">)</span> <span class="k">else</span> <span class="n">period</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rate_limit_datas</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span> <span class="o">=</span> <span class="n">_RunningTotals</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the most recent response timestamp as a result of calling</span>
+<span class="sd">        the underlying getter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rate_limit_datas</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ts</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rate_limit_datas</span>
+            <span class="k">else</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the rate limit&#39;s running ``total`` and ``responses``</span>
+<span class="sd">        collection.</span>
+
+<span class="sd">        This method calls :meth:`eval` and uses its return value to</span>
+<span class="sd">        update the client-side throttling wait time (if there is any) to</span>
+<span class="sd">        avoid exceeding server-side API limits.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            response: Request response (possibly cached).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Estimated time to wait to avoid being throttled.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get the timestamp and timedelta associated with this response.</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ts</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ts</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># Get the limit contribution value and wait time from the response.</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="n">v</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s2">&quot;wait&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">[</span><span class="s2">&quot;wait&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">quantity</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span>
+        <span class="n">wait</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;wait&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Create the new rate limit data.</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="n">_RateLimitData</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">quantity</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rate_limit_datas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+
+        <span class="c1"># Update running totals for estimating wait times.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span><span class="o">.</span><span class="n">quantity</span> <span class="o">+=</span> <span class="n">quantity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span><span class="o">.</span><span class="n">wait</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span><span class="o">.</span><span class="n">wait</span> <span class="o">-</span> <span class="n">dt</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span><span class="o">.</span><span class="n">wait</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span><span class="o">.</span><span class="n">wait</span><span class="p">,</span> <span class="n">wait</span><span class="p">)</span>
+
+        <span class="c1"># Remove timed-out responses and remove their contributions</span>
+        <span class="c1"># to the total limit.</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rate_limit_datas</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rate_limit_datas</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ts</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rate_limit_datas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
+            <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span>
+        <span class="p">):</span>
+            <span class="n">old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rate_limit_datas</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span><span class="o">.</span><span class="n">quantity</span> <span class="o">-=</span> <span class="n">old</span><span class="o">.</span><span class="n">quantity</span>
+
+        <span class="c1"># Update total wait time according to the max limit.</span>
+        <span class="n">tmp_limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span><span class="o">.</span><span class="n">quantity</span>
+        <span class="n">tmp_wait</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span><span class="o">.</span><span class="n">quantity</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rate_limit_datas</span><span class="p">:</span>
+                <span class="n">tmp_wait</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ts</span> <span class="o">-</span> <span class="n">r</span><span class="o">.</span><span class="n">ts</span><span class="p">)</span>
+                <span class="n">tmp_limit</span> <span class="o">-=</span> <span class="n">r</span><span class="o">.</span><span class="n">quantity</span>
+                <span class="k">if</span> <span class="n">tmp_limit</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span><span class="o">.</span><span class="n">wait</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span><span class="o">.</span><span class="n">wait</span><span class="p">,</span> <span class="n">tmp_wait</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running_totals</span><span class="o">.</span><span class="n">wait</span>
+
+<div class="viewcode-block" id="RateLimit.eval"><a class="viewcode-back" href="../../api/finagg.html#finagg.ratelimit.RateLimit.eval">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate a response and determine how much it contributes</span>
+<span class="sd">        to the max limit imposed by this instance.</span>
+
+<span class="sd">        This is the main method that should be overwritten by subclasses</span>
+<span class="sd">        to create custom rate-limiters. This method is called with each</span>
+<span class="sd">        requests&#39;s response to determine how much that request/response</span>
+<span class="sd">        contributes to the rate-limiting.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            response: Request response (possibly cached).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A number indicating the request/response&#39;s contribution</span>
+<span class="sd">            to the rate limit OR a dictionary containing:</span>
+
+<span class="sd">                - &quot;limit&quot;: a number indicating the request/response&#39;s</span>
+<span class="sd">                  contribution to the rate limit</span>
+<span class="sd">                - &quot;wait&quot;: time to wait before a new request can be made</span>
+
+<span class="sd">        &quot;&quot;&quot;</span></div></div>
+
+
+<div class="viewcode-block" id="RequestLimit"><a class="viewcode-back" href="../../api/finagg.html#finagg.ratelimit.RequestLimit">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RequestLimit</span><span class="p">(</span><span class="n">RateLimit</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Limit the number of requests made by the underlying getter.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RequestLimit.eval"><a class="viewcode-back" href="../../api/finagg.html#finagg.ratelimit.RequestLimit.eval">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">&quot;from_cache&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">response</span><span class="o">.</span><span class="n">from_cache</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ErrorLimit"><a class="viewcode-back" href="../../api/finagg.html#finagg.ratelimit.ErrorLimit">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ErrorLimit</span><span class="p">(</span><span class="n">RateLimit</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Limit the number of errors occurred when using the underlying getter.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ErrorLimit.eval"><a class="viewcode-back" href="../../api/finagg.html#finagg.ratelimit.ErrorLimit.eval">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">&quot;from_cache&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">response</span><span class="o">.</span><span class="n">from_cache</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SizeLimit"><a class="viewcode-back" href="../../api/finagg.html#finagg.ratelimit.SizeLimit">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SizeLimit</span><span class="p">(</span><span class="n">RateLimit</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Limit the size of responses when using the underlying getter.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SizeLimit.eval"><a class="viewcode-back" href="../../api/finagg.html#finagg.ratelimit.SizeLimit.eval">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">&quot;from_cache&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">response</span><span class="o">.</span><span class="n">from_cache</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="RateLimitGuard"><a class="viewcode-back" href="../../api/finagg.html#finagg.ratelimit.RateLimitGuard">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RateLimitGuard</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_P</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wraps requests-like getters to introduce blocking functionality</span>
+<span class="sd">    when requests are getting close to violating call limits.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        f: Requests-style getter that&#39;s wrapped and rate-limited.</span>
+<span class="sd">        limits: Limits to apply to the requests-style getter.</span>
+<span class="sd">        warn: Whether to print a message to stdout whenever client-side</span>
+<span class="sd">            throttling is occurring to respect ``limits``.</span>
+
+<span class="sd">    .. seealso::</span>
+<span class="sd">        :meth:`guard`: For the intended usage of getting a</span>
+<span class="sd">            :class:`RateLimitGuard` instance.</span>
+<span class="sd">        :class:`RequestLimit`: For an example of a request</span>
+<span class="sd">            rate limiter.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: ``requests``-like getter that returns a response.</span>
+    <span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">_P</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">]</span>
+
+    <span class="c1">#: Limits to apply to requests/responses.</span>
+    <span class="n">limits</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">RateLimit</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+    <span class="c1">#: Whether to print a warning when requests are being temporarily blocked</span>
+    <span class="c1">#: to respect imposed rate limits.</span>
+    <span class="n">warn</span><span class="p">:</span> <span class="nb">bool</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">_P</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">],</span>
+        <span class="n">limits</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">RateLimit</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">warn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limits</span> <span class="o">=</span> <span class="n">limits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warn</span> <span class="o">=</span> <span class="n">warn</span>
+        <span class="n">update_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">_P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">_P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Call the underlying getter and sleep the wait required to</span>
+<span class="sd">        satisfy the guard&#39;s limits.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: Args passed to the underlying getter.</span>
+<span class="sd">            **kwargs: Kwargs passed to the underlying getter.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The received response.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">wait</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">limit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">limits</span><span class="p">:</span>
+            <span class="n">tmp_wait</span> <span class="o">=</span> <span class="n">limit</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+            <span class="n">wait</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">wait</span><span class="p">,</span> <span class="n">tmp_wait</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wait</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warn</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Throttling requests to </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">wait</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> (s)&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">r</span></div>
+
+
+<div class="viewcode-block" id="guard"><a class="viewcode-back" href="../../api/finagg.html#finagg.ratelimit.guard">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">guard</span><span class="p">(</span>
+    <span class="n">limits</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">RateLimit</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">warn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Callable</span><span class="p">[</span><span class="n">_P</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">],],</span> <span class="n">RateLimitGuard</span><span class="p">[</span><span class="n">_P</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply ``limits`` to a requests-style getter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        limits: Rate limits to apply to the requests-style getter.</span>
+<span class="sd">        warn: Whether to print a message when client-side throttling is</span>
+<span class="sd">            occurring.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A decorator that wraps the original requests-style getter in a</span>
+<span class="sd">        :class:`RateLimitGuard` to avoid exceeding ``limits``.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Limit 5 requests to Google per second.</span>
+
+<span class="sd">        &gt;&gt;&gt; import requests</span>
+<span class="sd">        &gt;&gt;&gt; from datetime import timedelta</span>
+<span class="sd">        &gt;&gt;&gt; from finagg.ratelimit import RequestLimit, guard</span>
+<span class="sd">        &gt;&gt;&gt; @guard([RequestLimit(5, timedelta(seconds=1))])</span>
+<span class="sd">        ... def get() -&gt; requests.Response:</span>
+<span class="sd">        ...     return requests.get(&quot;https://google.com&quot;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">_P</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RateLimitGuard</span><span class="p">[</span><span class="n">_P</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">RateLimitGuard</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">limits</span><span class="p">),</span> <span class="n">warn</span><span class="o">=</span><span class="n">warn</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">decorator</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

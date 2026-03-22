@@ -1,0 +1,397 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.fred package &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
+      <script src="../_static/jquery.js"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+      <script src="../_static/doctools.js"></script>
+      <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/clipboard.min.js"></script>
+      <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="finagg.fred.api package" href="finagg.fred.api.html" />
+    <link rel="prev" title="finagg.bea package" href="finagg.bea.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="finagg.html">finagg package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="finagg.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="finagg.bea.html">finagg.bea package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">finagg.fred package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.sec.html">finagg.sec package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.config">finagg.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.ratelimit">finagg.ratelimit module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.testing">finagg.testing module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg.utils">finagg.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.html#module-finagg">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">finagg</a></li>
+          <li class="breadcrumb-item"><a href="finagg.html">finagg package</a></li>
+      <li class="breadcrumb-item active">finagg.fred package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/finagg.fred.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="finagg-fred-package">
+<h1>finagg.fred package<a class="headerlink" href="#finagg-fred-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="finagg.fred.api.html">finagg.fred.api package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="finagg.fred.api.html#module-finagg.fred.api">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.category"><code class="docutils literal notranslate"><span class="pre">category</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.related_tags"><code class="docutils literal notranslate"><span class="pre">related_tags</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.release"><code class="docutils literal notranslate"><span class="pre">release</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.releases"><code class="docutils literal notranslate"><span class="pre">releases</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.series"><code class="docutils literal notranslate"><span class="pre">series</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.source"><code class="docutils literal notranslate"><span class="pre">source</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.sources"><code class="docutils literal notranslate"><span class="pre">sources</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.tags"><code class="docutils literal notranslate"><span class="pre">tags</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.API"><code class="docutils literal notranslate"><span class="pre">API</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.API.url"><code class="docutils literal notranslate"><span class="pre">API.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.API.get"><code class="docutils literal notranslate"><span class="pre">API.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Category"><code class="docutils literal notranslate"><span class="pre">Category</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Category.children"><code class="docutils literal notranslate"><span class="pre">Category.children</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Category.related"><code class="docutils literal notranslate"><span class="pre">Category.related</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Category.related_tags"><code class="docutils literal notranslate"><span class="pre">Category.related_tags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Category.series"><code class="docutils literal notranslate"><span class="pre">Category.series</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Category.tags"><code class="docutils literal notranslate"><span class="pre">Category.tags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Category.url"><code class="docutils literal notranslate"><span class="pre">Category.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Category.get"><code class="docutils literal notranslate"><span class="pre">Category.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryChildren"><code class="docutils literal notranslate"><span class="pre">CategoryChildren</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryChildren.url"><code class="docutils literal notranslate"><span class="pre">CategoryChildren.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryChildren.get"><code class="docutils literal notranslate"><span class="pre">CategoryChildren.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryRelated"><code class="docutils literal notranslate"><span class="pre">CategoryRelated</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryRelated.url"><code class="docutils literal notranslate"><span class="pre">CategoryRelated.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryRelated.get"><code class="docutils literal notranslate"><span class="pre">CategoryRelated.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryRelatedTags"><code class="docutils literal notranslate"><span class="pre">CategoryRelatedTags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryRelatedTags.url"><code class="docutils literal notranslate"><span class="pre">CategoryRelatedTags.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryRelatedTags.get"><code class="docutils literal notranslate"><span class="pre">CategoryRelatedTags.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategorySeries"><code class="docutils literal notranslate"><span class="pre">CategorySeries</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategorySeries.url"><code class="docutils literal notranslate"><span class="pre">CategorySeries.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategorySeries.get"><code class="docutils literal notranslate"><span class="pre">CategorySeries.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryTags"><code class="docutils literal notranslate"><span class="pre">CategoryTags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryTags.url"><code class="docutils literal notranslate"><span class="pre">CategoryTags.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.CategoryTags.get"><code class="docutils literal notranslate"><span class="pre">CategoryTags.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.RelatedTags"><code class="docutils literal notranslate"><span class="pre">RelatedTags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.RelatedTags.url"><code class="docutils literal notranslate"><span class="pre">RelatedTags.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.RelatedTags.get"><code class="docutils literal notranslate"><span class="pre">RelatedTags.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Release"><code class="docutils literal notranslate"><span class="pre">Release</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Release.dates"><code class="docutils literal notranslate"><span class="pre">Release.dates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Release.related_tags"><code class="docutils literal notranslate"><span class="pre">Release.related_tags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Release.series"><code class="docutils literal notranslate"><span class="pre">Release.series</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Release.sources"><code class="docutils literal notranslate"><span class="pre">Release.sources</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Release.tables"><code class="docutils literal notranslate"><span class="pre">Release.tables</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Release.tags"><code class="docutils literal notranslate"><span class="pre">Release.tags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Release.url"><code class="docutils literal notranslate"><span class="pre">Release.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Release.get"><code class="docutils literal notranslate"><span class="pre">Release.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseDates"><code class="docutils literal notranslate"><span class="pre">ReleaseDates</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseDates.url"><code class="docutils literal notranslate"><span class="pre">ReleaseDates.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseDates.get"><code class="docutils literal notranslate"><span class="pre">ReleaseDates.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseRelatedTags"><code class="docutils literal notranslate"><span class="pre">ReleaseRelatedTags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseRelatedTags.url"><code class="docutils literal notranslate"><span class="pre">ReleaseRelatedTags.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseRelatedTags.get"><code class="docutils literal notranslate"><span class="pre">ReleaseRelatedTags.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Releases"><code class="docutils literal notranslate"><span class="pre">Releases</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Releases.dates"><code class="docutils literal notranslate"><span class="pre">Releases.dates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Releases.url"><code class="docutils literal notranslate"><span class="pre">Releases.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Releases.get"><code class="docutils literal notranslate"><span class="pre">Releases.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleasesDates"><code class="docutils literal notranslate"><span class="pre">ReleasesDates</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleasesDates.url"><code class="docutils literal notranslate"><span class="pre">ReleasesDates.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleasesDates.get"><code class="docutils literal notranslate"><span class="pre">ReleasesDates.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseSeries"><code class="docutils literal notranslate"><span class="pre">ReleaseSeries</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseSeries.url"><code class="docutils literal notranslate"><span class="pre">ReleaseSeries.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseSeries.get"><code class="docutils literal notranslate"><span class="pre">ReleaseSeries.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseSources"><code class="docutils literal notranslate"><span class="pre">ReleaseSources</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseSources.url"><code class="docutils literal notranslate"><span class="pre">ReleaseSources.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseSources.get"><code class="docutils literal notranslate"><span class="pre">ReleaseSources.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseTables"><code class="docutils literal notranslate"><span class="pre">ReleaseTables</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseTables.url"><code class="docutils literal notranslate"><span class="pre">ReleaseTables.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseTables.get"><code class="docutils literal notranslate"><span class="pre">ReleaseTables.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseTags"><code class="docutils literal notranslate"><span class="pre">ReleaseTags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseTags.url"><code class="docutils literal notranslate"><span class="pre">ReleaseTags.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.ReleaseTags.get"><code class="docutils literal notranslate"><span class="pre">ReleaseTags.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Series"><code class="docutils literal notranslate"><span class="pre">Series</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Series.categories"><code class="docutils literal notranslate"><span class="pre">Series.categories</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Series.observations"><code class="docutils literal notranslate"><span class="pre">Series.observations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Series.release"><code class="docutils literal notranslate"><span class="pre">Series.release</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Series.search"><code class="docutils literal notranslate"><span class="pre">Series.search</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Series.tags"><code class="docutils literal notranslate"><span class="pre">Series.tags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Series.updates"><code class="docutils literal notranslate"><span class="pre">Series.updates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Series.url"><code class="docutils literal notranslate"><span class="pre">Series.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Series.vintage_dates"><code class="docutils literal notranslate"><span class="pre">Series.vintage_dates</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Series.get"><code class="docutils literal notranslate"><span class="pre">Series.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesCategories"><code class="docutils literal notranslate"><span class="pre">SeriesCategories</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesCategories.url"><code class="docutils literal notranslate"><span class="pre">SeriesCategories.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesCategories.get"><code class="docutils literal notranslate"><span class="pre">SeriesCategories.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesObservations"><code class="docutils literal notranslate"><span class="pre">SeriesObservations</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesObservations.url"><code class="docutils literal notranslate"><span class="pre">SeriesObservations.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesObservations.get"><code class="docutils literal notranslate"><span class="pre">SeriesObservations.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesObservations.get_original_observations"><code class="docutils literal notranslate"><span class="pre">SeriesObservations.get_original_observations()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesRelease"><code class="docutils literal notranslate"><span class="pre">SeriesRelease</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesRelease.url"><code class="docutils literal notranslate"><span class="pre">SeriesRelease.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesRelease.get"><code class="docutils literal notranslate"><span class="pre">SeriesRelease.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesSearch"><code class="docutils literal notranslate"><span class="pre">SeriesSearch</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesSearch.related_tags"><code class="docutils literal notranslate"><span class="pre">SeriesSearch.related_tags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesSearch.tags"><code class="docutils literal notranslate"><span class="pre">SeriesSearch.tags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesSearch.url"><code class="docutils literal notranslate"><span class="pre">SeriesSearch.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesSearch.get"><code class="docutils literal notranslate"><span class="pre">SeriesSearch.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesSearchRelatedTags"><code class="docutils literal notranslate"><span class="pre">SeriesSearchRelatedTags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesSearchRelatedTags.url"><code class="docutils literal notranslate"><span class="pre">SeriesSearchRelatedTags.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesSearchRelatedTags.get"><code class="docutils literal notranslate"><span class="pre">SeriesSearchRelatedTags.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesSearchTags"><code class="docutils literal notranslate"><span class="pre">SeriesSearchTags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesSearchTags.url"><code class="docutils literal notranslate"><span class="pre">SeriesSearchTags.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesSearchTags.get"><code class="docutils literal notranslate"><span class="pre">SeriesSearchTags.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesTags"><code class="docutils literal notranslate"><span class="pre">SeriesTags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesTags.url"><code class="docutils literal notranslate"><span class="pre">SeriesTags.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesTags.get"><code class="docutils literal notranslate"><span class="pre">SeriesTags.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesUpdates"><code class="docutils literal notranslate"><span class="pre">SeriesUpdates</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesUpdates.url"><code class="docutils literal notranslate"><span class="pre">SeriesUpdates.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesUpdates.get"><code class="docutils literal notranslate"><span class="pre">SeriesUpdates.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesVintageDates"><code class="docutils literal notranslate"><span class="pre">SeriesVintageDates</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesVintageDates.url"><code class="docutils literal notranslate"><span class="pre">SeriesVintageDates.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SeriesVintageDates.get"><code class="docutils literal notranslate"><span class="pre">SeriesVintageDates.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Source"><code class="docutils literal notranslate"><span class="pre">Source</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Source.releases"><code class="docutils literal notranslate"><span class="pre">Source.releases</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Source.url"><code class="docutils literal notranslate"><span class="pre">Source.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Source.get"><code class="docutils literal notranslate"><span class="pre">Source.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SourceReleases"><code class="docutils literal notranslate"><span class="pre">SourceReleases</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SourceReleases.url"><code class="docutils literal notranslate"><span class="pre">SourceReleases.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.SourceReleases.get"><code class="docutils literal notranslate"><span class="pre">SourceReleases.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Sources"><code class="docutils literal notranslate"><span class="pre">Sources</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Sources.url"><code class="docutils literal notranslate"><span class="pre">Sources.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Sources.get"><code class="docutils literal notranslate"><span class="pre">Sources.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Tags"><code class="docutils literal notranslate"><span class="pre">Tags</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Tags.series"><code class="docutils literal notranslate"><span class="pre">Tags.series</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Tags.url"><code class="docutils literal notranslate"><span class="pre">Tags.url</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.api.html#finagg.fred.api.Tags.get"><code class="docutils literal notranslate"><span class="pre">Tags.get()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="finagg.fred.feat.html">finagg.fred.feat package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="finagg.fred.feat.html#module-finagg.fred.feat">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.economic"><code class="docutils literal notranslate"><span class="pre">economic</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.series"><code class="docutils literal notranslate"><span class="pre">series</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Economic"><code class="docutils literal notranslate"><span class="pre">Economic</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Economic.from_api"><code class="docutils literal notranslate"><span class="pre">Economic.from_api()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Economic.from_raw"><code class="docutils literal notranslate"><span class="pre">Economic.from_raw()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Economic.from_refined"><code class="docutils literal notranslate"><span class="pre">Economic.from_refined()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Economic.install"><code class="docutils literal notranslate"><span class="pre">Economic.install()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Economic.to_refined"><code class="docutils literal notranslate"><span class="pre">Economic.to_refined()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Series"><code class="docutils literal notranslate"><span class="pre">Series</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Series.from_raw"><code class="docutils literal notranslate"><span class="pre">Series.from_raw()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Series.get_id_set"><code class="docutils literal notranslate"><span class="pre">Series.get_id_set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Series.install"><code class="docutils literal notranslate"><span class="pre">Series.install()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Series.to_raw"><code class="docutils literal notranslate"><span class="pre">Series.to_raw()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-finagg.fred.sql">
+<span id="finagg-fred-sql-module"></span><h2>finagg.fred.sql module<a class="headerlink" href="#module-finagg.fred.sql" title="Permalink to this heading"></a></h2>
+<p>FRED SQLAlchemy interfaces.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.fred.sql.metadata">
+<span class="sig-prename descclassname"><span class="pre">finagg.fred.sql.</span></span><span class="sig-name descname"><span class="pre">metadata</span></span><a class="headerlink" href="#finagg.fred.sql.metadata" title="Permalink to this definition"></a></dt>
+<dd><p>The metadata associated with all SQL tables defined in this module.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.fred.sql.series">
+<span class="sig-prename descclassname"><span class="pre">finagg.fred.sql.</span></span><span class="sig-name descname"><span class="pre">series</span></span><a class="headerlink" href="#finagg.fred.sql.series" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing raw data as managed by
+<a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.series" title="finagg.fred.feat.series"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.fred.feat.series</span></code></a> (an alias for
+<a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Series" title="finagg.fred.feat.Series"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.fred.feat.Series</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="finagg.fred.sql.economic">
+<span class="sig-prename descclassname"><span class="pre">finagg.fred.sql.</span></span><span class="sig-name descname"><span class="pre">economic</span></span><a class="headerlink" href="#finagg.fred.sql.economic" title="Permalink to this definition"></a></dt>
+<dd><p>SQL table for storing refined data as managed by <a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.economic" title="finagg.fred.feat.economic"><code class="xref py py-data docutils literal notranslate"><span class="pre">finagg.fred.feat.economic</span></code></a>
+(an alias for <a class="reference internal" href="finagg.fred.feat.html#finagg.fred.feat.Economic" title="finagg.fred.feat.Economic"><code class="xref py py-class docutils literal notranslate"><span class="pre">finagg.fred.feat.Economic</span></code></a>).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-finagg.fred">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-finagg.fred" title="Permalink to this heading"></a></h2>
+<p>Top-level FRED interface.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="finagg.bea.html" class="btn btn-neutral float-left" title="finagg.bea package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="finagg.fred.api.html" class="btn btn-neutral float-right" title="finagg.fred.api package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

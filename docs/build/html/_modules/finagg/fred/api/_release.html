@@ -1,0 +1,853 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.fred.api._release &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css" />
+
+  
+      <script src="../../../../_static/jquery.js"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+      <script src="../../../../_static/doctools.js"></script>
+      <script src="../../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../../_static/clipboard.min.js"></script>
+      <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.fred.api._release</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.fred.api._release</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The &quot;fred/release&quot; and &quot;fred/releases&quot; API.</span>
+
+<span class="sd">See the official FRED API docs for more info:</span>
+
+<span class="sd">    https://fred.stlouisfed.org/docs/api/fred/</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_api</span>
+
+
+<div class="viewcode-block" id="ReleasesDates"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleasesDates">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ReleasesDates</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all release dates of FRED economic data.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Releases.dates` is an instance</span>
+<span class="sd">    of this API implementation and is the most popular interface for calling</span>
+<span class="sd">    this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/releases/dates&quot;</span>
+
+<div class="viewcode-block" id="ReleasesDates.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleasesDates.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;release_date&quot;</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;desc&quot;</span><span class="p">,</span>
+        <span class="n">include_release_dates_with_no_data</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all release dates of economic data.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/releases_dates.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            order_by: Variable to order results by. Options include:</span>
+
+<span class="sd">                - &quot;release_date&quot;</span>
+<span class="sd">                - &quot;release_id&quot;</span>
+<span class="sd">                - &quot;release_name&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or</span>
+<span class="sd">                descending (&quot;desc&quot;) order.</span>
+<span class="sd">            include_release_dates_with_no_data: Whether to return release</span>
+<span class="sd">                dates that don&#39;t contain any data.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing data on release dates for all</span>
+<span class="sd">            releases of economic data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;release_dates&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">include_release_dates_with_no_data</span><span class="o">=</span><span class="n">include_release_dates_with_no_data</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Releases"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.Releases">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Releases</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all releases of economic data.&quot;&quot;&quot;</span>
+
+    <span class="n">dates</span> <span class="o">=</span> <span class="n">ReleasesDates</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;releases/dates&quot; FRED API. Get dates for releases of economic data.</span>
+<span class="sd">    The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.ReleasesDates` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/releases&quot;</span>
+
+<div class="viewcode-block" id="Releases.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.Releases.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all releases of economic data.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/releases.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            order_by: Variable to order results by. Options include:</span>
+
+<span class="sd">                - &quot;release_id&quot;</span>
+<span class="sd">                - &quot;name&quot;</span>
+<span class="sd">                - &quot;press_release&quot;</span>
+<span class="sd">                - &quot;realtime_start&quot;</span>
+<span class="sd">                - &quot;realtime_end&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or</span>
+<span class="sd">                descending (&quot;desc&quot;) order.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing data on all releases of economic</span>
+<span class="sd">            data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;releases&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ReleaseDates"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseDates">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ReleaseDates</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get dates associated with an economic release.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Release.dates` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/release/dates&quot;</span>
+
+<div class="viewcode-block" id="ReleaseDates.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseDates.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">release_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_release_dates_with_no_data</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get data on release dates for a particular release of economic data.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/release_dates.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            release_id: The ID for a release.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or</span>
+<span class="sd">                descending (&quot;desc&quot;) order.</span>
+<span class="sd">            include_release_dates_with_no_data: Whether to return release</span>
+<span class="sd">                dates that don&#39;t contain any data.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing data for an economic data release&#39;s release dates.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;release_dates&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">release_id</span><span class="o">=</span><span class="n">release_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">include_release_dates_with_no_data</span><span class="o">=</span><span class="n">include_release_dates_with_no_data</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ReleaseSeries"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseSeries">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ReleaseSeries</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get series associated with an economic release.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Release.series` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/release/series&quot;</span>
+
+<div class="viewcode-block" id="ReleaseSeries.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseSeries.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">release_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">filter_variable</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">filter_value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get data on the series related to a release of economic data.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/release_series.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            release_id: The ID for a release.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            order_by: Variable to order results by. Options include:</span>
+
+<span class="sd">                - &quot;series_id&quot;</span>
+<span class="sd">                - &quot;title&quot;</span>
+<span class="sd">                - &quot;units&quot;</span>
+<span class="sd">                - &quot;frequency&quot;</span>
+<span class="sd">                - &quot;seasonal_adjustment&quot;</span>
+<span class="sd">                - &quot;realtime_start&quot;</span>
+<span class="sd">                - &quot;realtime_end&quot;</span>
+<span class="sd">                - &quot;last_updated&quot;</span>
+<span class="sd">                - &quot;observation_start&quot;</span>
+<span class="sd">                - &quot;observation_end&quot;</span>
+<span class="sd">                - &quot;popularity&quot;</span>
+<span class="sd">                - &quot;group_popularity&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or</span>
+<span class="sd">                descending (&quot;desc&quot;) order.</span>
+<span class="sd">            filter_variable: The attribute (or column) to filter results by.</span>
+<span class="sd">                Options include:</span>
+
+<span class="sd">                - &quot;frequency&quot;</span>
+<span class="sd">                - &quot;units&quot;</span>
+<span class="sd">                - &quot;seasonal_adjustment&quot;</span>
+
+<span class="sd">            filter_value: The value of `filter_variable` to filter results</span>
+<span class="sd">                by.</span>
+<span class="sd">            tag_names: Find tags related to these tags.</span>
+<span class="sd">            exclude_tag_names: Exclude tags related to these tags.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing series data for a release.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;seriess&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">release_id</span><span class="o">=</span><span class="n">release_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">filter_variable</span><span class="o">=</span><span class="n">filter_variable</span><span class="p">,</span>
+            <span class="n">filter_value</span><span class="o">=</span><span class="n">filter_value</span><span class="p">,</span>
+            <span class="n">tag_names</span><span class="o">=</span><span class="n">tag_names</span><span class="p">,</span>
+            <span class="n">exclude_tag_names</span><span class="o">=</span><span class="n">exclude_tag_names</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ReleaseSources"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseSources">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ReleaseSources</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get sources associated with an economic release.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Release.sources` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/release/sources&quot;</span>
+
+<div class="viewcode-block" id="ReleaseSources.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseSources.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">release_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get sources related to an economic release.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/release_sources.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            release_id: The ID for a release.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing sources related to an economic release.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_api</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">release_id</span><span class="o">=</span><span class="n">release_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;sources&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ReleaseTags"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseTags">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ReleaseTags</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get tags for an economic release.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Release.tags` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/release/tags&quot;</span>
+
+<div class="viewcode-block" id="ReleaseTags.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseTags.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">release_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_group_id</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">search_text</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get tags for an economic release.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/release_tags.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            release_id: The ID for a release.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            tag_names: Filtering of tag names to include in the results.</span>
+<span class="sd">            tag_group_id: A tag group ID to filter tags by. Options include:</span>
+
+<span class="sd">                - &quot;freq&quot; = frequency</span>
+<span class="sd">                - &quot;gen&quot; = general or concept</span>
+<span class="sd">                - &quot;geo&quot; = geography</span>
+<span class="sd">                - &quot;geot&quot; = geography type</span>
+<span class="sd">                - &quot;rls&quot; = release</span>
+<span class="sd">                - &quot;seas&quot; = seasonal adjustment</span>
+<span class="sd">                - &quot;src&quot; = source</span>
+
+<span class="sd">            search_text: The words to find matching tags with.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            order_by: Variable to order results by. Options include:</span>
+
+<span class="sd">                - &quot;series_count&quot;</span>
+<span class="sd">                - &quot;popularity&quot;</span>
+<span class="sd">                - &quot;created&quot;</span>
+<span class="sd">                - &quot;name&quot;</span>
+<span class="sd">                - &quot;group_id&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or</span>
+<span class="sd">                descending (&quot;desc&quot;) order.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing data for an economic release&#39;s tags</span>
+<span class="sd">            according to the given parameters.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">release_id</span><span class="o">=</span><span class="n">release_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">tag_names</span><span class="o">=</span><span class="n">tag_names</span><span class="p">,</span>
+            <span class="n">tag_group_id</span><span class="o">=</span><span class="n">tag_group_id</span><span class="p">,</span>
+            <span class="n">search_text</span><span class="o">=</span><span class="n">search_text</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ReleaseRelatedTags"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseRelatedTags">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ReleaseRelatedTags</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get tags related to an economic release.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Release.related_tags` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/release/related_tags&quot;</span>
+
+<div class="viewcode-block" id="ReleaseRelatedTags.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseRelatedTags.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">release_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_group_id</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">search_text</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get data for tags related to an economic release.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/release_related_tags.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            release_id: The ID for a release.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            tag_names: Find tags related to these tags.</span>
+<span class="sd">            exclude_tag_names: Exclude tags related to these tags.</span>
+<span class="sd">            tag_group_id: A tag group ID to filter tags by. Options include:</span>
+
+<span class="sd">                - &quot;freq&quot; = frequency</span>
+<span class="sd">                - &quot;gen&quot; = general or concept</span>
+<span class="sd">                - &quot;geo&quot; = geography</span>
+<span class="sd">                - &quot;geot&quot; = geography type</span>
+<span class="sd">                - &quot;rls&quot; = release</span>
+<span class="sd">                - &quot;seas&quot; = seasonal adjustment</span>
+<span class="sd">                - &quot;src&quot; = source</span>
+
+<span class="sd">            search_text: The words to find matching tags with.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            order_by: Variable to order results by. Options include:</span>
+
+<span class="sd">                - &quot;series_count&quot;</span>
+<span class="sd">                - &quot;popularity&quot;</span>
+<span class="sd">                - &quot;created&quot;</span>
+<span class="sd">                - &quot;name&quot;</span>
+<span class="sd">                - &quot;group_id&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or</span>
+<span class="sd">                descending (&quot;desc&quot;) order.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing data for tags related to an economic</span>
+<span class="sd">            release according to the given parameters.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">release_id</span><span class="o">=</span><span class="n">release_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">tag_names</span><span class="o">=</span><span class="n">tag_names</span><span class="p">,</span>
+            <span class="n">exclude_tag_names</span><span class="o">=</span><span class="n">exclude_tag_names</span><span class="p">,</span>
+            <span class="n">tag_group_id</span><span class="o">=</span><span class="n">tag_group_id</span><span class="p">,</span>
+            <span class="n">search_text</span><span class="o">=</span><span class="n">search_text</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ReleaseTables"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseTables">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ReleaseTables</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get tables associated with an economic release.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Release.tables` is an instance of</span>
+<span class="sd">    this API implementation and is the most popular interface for calling this</span>
+<span class="sd">    API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/release/tables&quot;</span>
+
+<div class="viewcode-block" id="ReleaseTables.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.ReleaseTables.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">release_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">element_id</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">include_observation_values</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">observation_date</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get release tables for a given economic release.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/release_tables.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            release_id: The ID for a release.</span>
+<span class="sd">            element_id: The release table element you&#39;d like to retrieve.</span>
+<span class="sd">            include_observation_values: A flag indicating whether observations</span>
+<span class="sd">                need to be returned.</span>
+<span class="sd">            observation_date: The observation date to be included with the</span>
+<span class="sd">                returned release table.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe of release tables for a given economic release.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_api</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">release_id</span><span class="o">=</span><span class="n">release_id</span><span class="p">,</span>
+            <span class="n">element_id</span><span class="o">=</span><span class="n">element_id</span><span class="p">,</span>
+            <span class="n">include_observation_values</span><span class="o">=</span><span class="n">include_observation_values</span><span class="p">,</span>
+            <span class="n">observation_date</span><span class="o">=</span><span class="n">observation_date</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;tables&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Release"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.Release">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Release</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get data on an economic release.</span>
+
+<span class="sd">    The class variable :data:`finagg.fred.api.release` is an instance of this</span>
+<span class="sd">    API implementation and is the most popular interface for calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dates</span> <span class="o">=</span> <span class="n">ReleaseDates</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;release/dates&quot; FRED API. Get economic release dates.</span>
+<span class="sd">    The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.ReleaseDates` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">related_tags</span> <span class="o">=</span> <span class="n">ReleaseRelatedTags</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;release/related_tags&quot; FRED API. Get tags related to an economic release.</span>
+<span class="sd">    The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.ReleaseRelatedTags` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">series</span> <span class="o">=</span> <span class="n">ReleaseSeries</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;release/series&quot; FRED API. Get the series of an economic release.</span>
+<span class="sd">    The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.ReleaseSeries` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">sources</span> <span class="o">=</span> <span class="n">ReleaseSources</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;release/sources&quot; FRED API. Get the sources for an economic release.</span>
+<span class="sd">    The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.ReleaseSources` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">tables</span> <span class="o">=</span> <span class="n">ReleaseTables</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;release/tables&quot; FRED API. Get the tables of an economic release.</span>
+<span class="sd">    The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.ReleaseTables` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">tags</span> <span class="o">=</span> <span class="n">ReleaseTags</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;release/tags&quot; FRED API. Get tags of an economic release.</span>
+<span class="sd">    The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.ReleaseTags` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/release&quot;</span>
+
+<div class="viewcode-block" id="Release.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.Release.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">release_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get overview data of an economic release.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/release.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            release_id: The ID for a release.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing high-level info on an economic release.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_api</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">release_id</span><span class="o">=</span><span class="n">release_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;releases&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

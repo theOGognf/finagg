@@ -1,0 +1,394 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.fred.feat._refined &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css" />
+
+  
+      <script src="../../../../_static/jquery.js"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+      <script src="../../../../_static/doctools.js"></script>
+      <script src="../../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../../_static/clipboard.min.js"></script>
+      <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.fred.feat._refined</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.fred.feat._refined</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Refined FRED features (features aggregated from raw tables).&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">Engine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy.exc</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoResultFound</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">...</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span><span class="p">,</span> <span class="n">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">api</span><span class="p">,</span> <span class="n">sql</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> | </span><span class="si">%(levelname)s</span><span class="s2"> | </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span>
+<span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Economic"><a class="viewcode-back" href="../../../../api/finagg.fred.feat.html#finagg.fred.feat.Economic">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Economic</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Methods for gathering economic data series from FRED sources.</span>
+
+<span class="sd">    The module variable :data:`finagg.fred.feat.economic` is an instance of</span>
+<span class="sd">    this feature set implementation and is the most popular interface for</span>
+<span class="sd">    calling feature methods.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        It doesn&#39;t matter which data source you use to gather features.</span>
+<span class="sd">        They all return equivalent dataframes.</span>
+
+<span class="sd">        &gt;&gt;&gt; df1 = finagg.fred.feat.economic.from_api().head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df2 = finagg.fred.feat.economic.from_raw().head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df3 = finagg.fred.feat.economic.from_refined().head(5)</span>
+<span class="sd">        &gt;&gt;&gt; pd.testing.assert_frame_equal(df1, df2, rtol=1e-4)</span>
+<span class="sd">        &gt;&gt;&gt; pd.testing.assert_frame_equal(df1, df3, rtol=1e-4)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize economic features columns.&quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;series_id&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">ffill</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">resolve_func_cols</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">resolve_col_order</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Economic.from_api"><a class="viewcode-back" href="../../../../api/finagg.fred.feat.html#finagg.fred.feat.Economic.from_api">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_api</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get economic features directly from the FRED API.</span>
+
+<span class="sd">        Not all data series are published at the same rate or</span>
+<span class="sd">        time. Missing rows for less-frequent economic series</span>
+<span class="sd">        are forward filled.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Economic data series dataframe with each series</span>
+<span class="sd">            as a separate column. Sorted by date.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.feat.economic.from_api().head(5)  # doctest: +SKIP</span>
+<span class="sd">                        CIVPART  LOG_CHANGE(CPIAUCNS)  LOG_CHANGE(CSUSHPINSA)  FEDFUNDS ...</span>
+<span class="sd">            date                                                                        ...</span>
+<span class="sd">            2014-10-06     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-08     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-13     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-15     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-20     62.8                   0.0                     0.0      0.09 ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">series_id</span> <span class="ow">in</span> <span class="n">api</span><span class="o">.</span><span class="n">popular_series</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">observations</span><span class="o">.</span><span class="n">get_original_observations</span><span class="p">(</span>
+                <span class="n">series_id</span><span class="p">,</span>
+                <span class="n">observation_start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                <span class="n">observation_end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_normalize</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Economic.from_raw"><a class="viewcode-back" href="../../../../api/finagg.fred.feat.html#finagg.fred.feat.Economic.from_raw">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_raw</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get economic features from local FRED SQL tables.</span>
+
+<span class="sd">        Not all data series are published at the same rate or</span>
+<span class="sd">        time. Missing rows for less-frequent economic series</span>
+<span class="sd">        are forward filled.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Economic data series dataframe with each series</span>
+<span class="sd">            as a separate column. Sorted by date.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `NoResultFound`: If there are no rows in the raw SQL table.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.feat.economic.from_raw().head(5)  # doctest: +SKIP</span>
+<span class="sd">                        CIVPART  LOG_CHANGE(CPIAUCNS)  LOG_CHANGE(CSUSHPINSA)  FEDFUNDS ...</span>
+<span class="sd">            date                                                                        ...</span>
+<span class="sd">            2014-10-06     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-08     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-13     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-15     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-20     62.8                   0.0                     0.0      0.09 ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sql</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">select</span><span class="p">()</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">series_id</span><span class="o">.</span><span class="n">in_</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">popular_series</span><span class="p">),</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">date</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">date</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No economic rows found.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_normalize</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Economic.from_refined"><a class="viewcode-back" href="../../../../api/finagg.fred.feat.html#finagg.fred.feat.Economic.from_refined">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_refined</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get features from the feature-dedicated local SQL tables.</span>
+
+<span class="sd">        This is the preferred method for accessing features for</span>
+<span class="sd">        offline analysis (assuming data in the local SQL tables</span>
+<span class="sd">        is current).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            start: The start date of the observation period. Defaults to the</span>
+<span class="sd">                first recorded date.</span>
+<span class="sd">            end: The end date of the observation period. Defaults to the</span>
+<span class="sd">                last recorded date.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Economic data series dataframe with each series</span>
+<span class="sd">            as a separate column. Sorted by date.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            `NoResultFound`: If there are no rows in the refined SQL table.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.feat.economic.from_refined().head(5)  # doctest: +SKIP</span>
+<span class="sd">                        CIVPART  LOG_CHANGE(CPIAUCNS)  LOG_CHANGE(CSUSHPINSA)  FEDFUNDS ...</span>
+<span class="sd">            date                                                                        ...</span>
+<span class="sd">            2014-10-06     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-08     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-13     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-15     62.8                   0.0                     0.0      0.09 ...</span>
+<span class="sd">            2014-10-20     62.8                   0.0                     0.0      0.09 ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">start</span> <span class="ow">or</span> <span class="s2">&quot;1776-07-04&quot;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">end</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">today</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">select</span><span class="p">()</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">date</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">,</span> <span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">date</span> <span class="o">&lt;=</span> <span class="n">end</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">NoResultFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No economic rows found.&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="Economic.install"><a class="viewcode-back" href="../../../../api/finagg.fred.feat.html#finagg.fred.feat.Economic.install">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">install</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">recreate_tables</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Install economic data by pulling data from the raw SQL tables,</span>
+<span class="sd">        transforming them into economic features, and then writing to the</span>
+<span class="sd">        refined economic data SQL table.</span>
+
+<span class="sd">        Tables associated with this method are created if they don&#39;t already</span>
+<span class="sd">        exist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+<span class="sd">            recreate_tables: Whether to drop and recreate tables, wiping all</span>
+<span class="sd">                previously installed data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the feature&#39;s SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="n">recreate_tables</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">checkfirst</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+        <span class="n">total_rows</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_raw</span><span class="p">(</span><span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+            <span class="n">rowcount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rowcount</span><span class="p">:</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">to_refined</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+                <span class="n">total_rows</span> <span class="o">+=</span> <span class="n">rowcount</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rowcount</span><span class="si">}</span><span class="s2"> economic feature rows inserted&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Skipping economic features due to missing data&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping economic features&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_rows</span></div>
+
+<div class="viewcode-block" id="Economic.to_refined"><a class="viewcode-back" href="../../../../api/finagg.fred.feat.html#finagg.fred.feat.Economic.to_refined">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_refined</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">engine</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Engine</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the dataframe to the feature store.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            df: Dataframe to store completely as rows in a local SQL</span>
+<span class="sd">                table.</span>
+<span class="sd">            engine: Feature store database engine. Defaults to the engine</span>
+<span class="sd">                at :data:`finagg.config.engine`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of rows written to the SQL table.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">engine</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">engine</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">engine</span><span class="o">.</span><span class="n">begin</span><span class="p">()</span> <span class="k">as</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="o">.</span><span class="n">economic</span><span class="o">.</span><span class="n">insert</span><span class="p">(),</span> <span class="n">df</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s2">&quot;records&quot;</span><span class="p">))</span>  <span class="c1"># type: ignore[arg-type]</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

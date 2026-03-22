@@ -1,0 +1,1254 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.fred.api._series &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css" />
+
+  
+      <script src="../../../../_static/jquery.js"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+      <script src="../../../../_static/doctools.js"></script>
+      <script src="../../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../../_static/clipboard.min.js"></script>
+      <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.fred.api._series</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.fred.api._series</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The &quot;fred/series&quot; API.</span>
+
+<span class="sd">This is by far the most popular FRED API implementation.</span>
+<span class="sd">Useful for examining historical or projected economic data.</span>
+<span class="sd">The API comes with builtin methods for filtering data based</span>
+<span class="sd">on publication date or frequency. See the docs of each</span>
+<span class="sd">method for more details.</span>
+
+<span class="sd">See the official FRED API docs for more info:</span>
+
+<span class="sd">    https://fred.stlouisfed.org/docs/api/fred/</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">requests</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPError</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_api</span>
+
+
+<div class="viewcode-block" id="SeriesCategories"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesCategories">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SeriesCategories</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the categories for an economic data series.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Series.categories` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/series/categories&quot;</span>
+
+<div class="viewcode-block" id="SeriesCategories.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesCategories.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">series_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the categories for an economic data series.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/series_categories.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series_id: The ID for a series.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing data on categories for the economic data series.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.api.series.categories.get(&quot;CPIAUCNS&quot;)  # doctest: +SKIP</span>
+<span class="sd">               id                                  name  parent_id</span>
+<span class="sd">            0   9  Consumer Price Indexes (CPI and PCE)      32455</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_api</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">series_id</span><span class="o">=</span><span class="n">series_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;categories&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SeriesObservations"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesObservations">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SeriesObservations</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the observations or data values for an economic data series.</span>
+
+<span class="sd">    This is by far the most popular FRED API method. The class variable</span>
+<span class="sd">    :attr:`finagg.fred.api.Series.observations` is an instance of this</span>
+<span class="sd">    API implementation and is the most popular interface for calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/series/observations&quot;</span>
+
+<div class="viewcode-block" id="SeriesObservations.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesObservations.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">series_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">observation_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">observation_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lin&quot;</span><span class="p">,</span>
+        <span class="n">frequency</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">aggregation_method</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;avg&quot;</span><span class="p">,</span>
+        <span class="n">output_type</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">vintage_dates</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the observations or data values for an economic data series.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/series_observations.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series_id: The ID for a series.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date. ``0`` indicates since</span>
+<span class="sd">                the beginning of time.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date. ``-1`` indicates to present day.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or</span>
+<span class="sd">                descending (&quot;desc&quot;) order.</span>
+<span class="sd">            observation_start: The start date of the observation period.</span>
+<span class="sd">            observation_end: The end date of the observation period.</span>
+<span class="sd">            units: Units to return the series values in. Options include:</span>
+
+<span class="sd">                - &quot;lin&quot; = levels (no unit transformation)</span>
+<span class="sd">                - &quot;chg&quot; = change</span>
+<span class="sd">                - &quot;ch1&quot; = change from a year ago</span>
+<span class="sd">                - &quot;pch&quot; = percent change</span>
+<span class="sd">                - &quot;pc1&quot; = percent change from a year ago</span>
+<span class="sd">                - &quot;pca&quot; = compounded annual rate of change</span>
+<span class="sd">                - &quot;cch&quot; = continuously compounded rate of change</span>
+<span class="sd">                - &quot;cca&quot; = continuously compounded annual rate of change</span>
+<span class="sd">                - &quot;log&quot; = natural log</span>
+
+<span class="sd">            frequency: An optional parameter that indicates a lower frequency to</span>
+<span class="sd">                aggregate values to. Frequency options without period descriptions</span>
+<span class="sd">                include:</span>
+
+<span class="sd">                    - &quot;d&quot; = daily</span>
+<span class="sd">                    - &quot;w&quot; = weekly</span>
+<span class="sd">                    - &quot;bw&quot; = biweekly</span>
+<span class="sd">                    - &quot;m&quot; = monthly</span>
+<span class="sd">                    - &quot;q&quot; = quarterly</span>
+<span class="sd">                    - &quot;sa&quot; = semiannual</span>
+<span class="sd">                    - &quot;a&quot; = annual</span>
+
+<span class="sd">                Frequency options with period descriptions include:</span>
+
+<span class="sd">                    - &quot;wef&quot; = weekly, ending Friday</span>
+<span class="sd">                    - &quot;weth&quot; = weekly, ending Thursday</span>
+<span class="sd">                    - &quot;wetu&quot; = weekly, ending Wednesday</span>
+<span class="sd">                    - &quot;wem&quot; = weekly, ending Monday</span>
+<span class="sd">                    - &quot;wesu&quot; = weekly, ending Sunday</span>
+<span class="sd">                    - &quot;wesa&quot; = weekly, ending Saturday</span>
+<span class="sd">                    - &quot;bwew&quot; = weekly, ending Wednesday</span>
+<span class="sd">                    - &quot;bwem&quot; = weekly, Monday</span>
+
+<span class="sd">            aggregation_method: A key that indicates the aggregation method used</span>
+<span class="sd">                for frequency aggregation. Options include:</span>
+
+<span class="sd">                    - &quot;avg&quot; = average</span>
+<span class="sd">                    - &quot;sum&quot; = sum</span>
+<span class="sd">                    - &quot;eop&quot; = end of period</span>
+
+<span class="sd">            output_type: An integer indicating the type of observations to include.</span>
+<span class="sd">                Options include:</span>
+
+<span class="sd">                    - 1 = observations by realtime period</span>
+<span class="sd">                    - 2 = all observations by vintage dates</span>
+<span class="sd">                    - 3 = new and revised observations only</span>
+<span class="sd">                    - 4 = initial release observations only</span>
+
+<span class="sd">            vintage_dates: Vintage dates used to download data as it existed on these</span>
+<span class="sd">                specified dates in history. Vintage dates can be specified instead of</span>
+<span class="sd">                realtime periods.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing economic data series observations/values according to</span>
+<span class="sd">            the given parameters.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.api.series.observations.get(</span>
+<span class="sd">            ...     &quot;CPIAUCNS&quot;,</span>
+<span class="sd">            ...     realtime_start=0,</span>
+<span class="sd">            ...     realtime_end=-1,</span>
+<span class="sd">            ...     output_type=4</span>
+<span class="sd">            ... ).head(5)  # doctest: +SKIP</span>
+<span class="sd">              realtime_start realtime_end        date  value series_id</span>
+<span class="sd">            0     1949-04-22   1953-02-26  1949-03-01  169.5  CPIAUCNS</span>
+<span class="sd">            1     1949-05-23   1953-02-26  1949-04-01  169.7  CPIAUCNS</span>
+<span class="sd">            2     1949-06-24   1953-02-26  1949-05-01  169.2  CPIAUCNS</span>
+<span class="sd">            3     1949-07-22   1953-02-26  1949-06-01  169.6  CPIAUCNS</span>
+<span class="sd">            4     1949-08-26   1953-02-26  1949-07-01  168.5  CPIAUCNS</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;observations&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">series_id</span><span class="o">=</span><span class="n">series_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">observation_start</span><span class="o">=</span><span class="n">observation_start</span><span class="p">,</span>
+            <span class="n">observation_end</span><span class="o">=</span><span class="n">observation_end</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">,</span>
+            <span class="n">aggregation_method</span><span class="o">=</span><span class="n">aggregation_method</span><span class="p">,</span>
+            <span class="n">output_type</span><span class="o">=</span><span class="n">output_type</span><span class="p">,</span>
+            <span class="n">vintage_dates</span><span class="o">=</span><span class="n">vintage_dates</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;series_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">series_id</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="SeriesObservations.get_original_observations"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesObservations.get_original_observations">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_original_observations</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">series_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">observation_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">observation_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lin&quot;</span><span class="p">,</span>
+        <span class="n">frequency</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">aggregation_method</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;avg&quot;</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get only the initial releases/observations for an</span>
+<span class="sd">        economic data series.</span>
+
+<span class="sd">        Similar to :meth:`SeriesObservations.get`, but tries to get initial</span>
+<span class="sd">        releases/observations only.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series_id: The ID for a series.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or</span>
+<span class="sd">                descending (&quot;desc&quot;) order.</span>
+<span class="sd">            observation_start: The start date of the observation period.</span>
+<span class="sd">            observation_end: The end date of the observation period.</span>
+<span class="sd">            units: Units to return the series values in. Options include:</span>
+
+<span class="sd">                - &quot;lin&quot; = levels (no unit transformation)</span>
+<span class="sd">                - &quot;chg&quot; = change</span>
+<span class="sd">                - &quot;ch1&quot; = change from a year ago</span>
+<span class="sd">                - &quot;pch&quot; = percent change</span>
+<span class="sd">                - &quot;pc1&quot; = percent change from a year ago</span>
+<span class="sd">                - &quot;pca&quot; = compounded annual rate of change</span>
+<span class="sd">                - &quot;cch&quot; = continuously compounded rate of change</span>
+<span class="sd">                - &quot;cca&quot; = continuously compounded annual rate of change</span>
+<span class="sd">                - &quot;log&quot; = natural log</span>
+
+<span class="sd">            frequency: An optional parameter that indicates a lower frequency to</span>
+<span class="sd">                aggregate values to. Frequency options without period descriptions</span>
+<span class="sd">                include:</span>
+
+<span class="sd">                    - &quot;d&quot; = daily</span>
+<span class="sd">                    - &quot;w&quot; = weekly</span>
+<span class="sd">                    - &quot;bw&quot; = biweekly</span>
+<span class="sd">                    - &quot;m&quot; = monthly</span>
+<span class="sd">                    - &quot;q&quot; = quarterly</span>
+<span class="sd">                    - &quot;sa&quot; = semiannual</span>
+<span class="sd">                    - &quot;a&quot; = annual</span>
+
+<span class="sd">                Frequency options with period descriptions include:</span>
+
+<span class="sd">                    - &quot;wef&quot; = weekly, ending Friday</span>
+<span class="sd">                    - &quot;weth&quot; = weekly, ending Thursday</span>
+<span class="sd">                    - &quot;wetu&quot; = weekly, ending Wednesday</span>
+<span class="sd">                    - &quot;wem&quot; = weekly, ending Monday</span>
+<span class="sd">                    - &quot;wesu&quot; = weekly, ending Sunday</span>
+<span class="sd">                    - &quot;wesa&quot; = weekly, ending Saturday</span>
+<span class="sd">                    - &quot;bwew&quot; = weekly, ending Wednesday</span>
+<span class="sd">                    - &quot;bwem&quot; = weekly, Monday</span>
+
+<span class="sd">            aggregation_method: A key that indicates the aggregation method used</span>
+<span class="sd">                for frequency aggregation. Options include:</span>
+
+<span class="sd">                    - &quot;avg&quot; = average</span>
+<span class="sd">                    - &quot;sum&quot; = sum</span>
+<span class="sd">                    - &quot;eop&quot; = end of period</span>
+
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing economic data series observations/values according to</span>
+<span class="sd">            the given parameters.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.api.series.observations.get_original_observations(</span>
+<span class="sd">            ...     &quot;CPIAUCNS&quot;,</span>
+<span class="sd">            ... ).head(5)  # doctest: +SKIP</span>
+<span class="sd">              realtime_start realtime_end        date  value series_id</span>
+<span class="sd">            0     1949-04-22   1953-02-26  1949-03-01  169.5  CPIAUCNS</span>
+<span class="sd">            1     1949-05-23   1953-02-26  1949-04-01  169.7  CPIAUCNS</span>
+<span class="sd">            2     1949-06-24   1953-02-26  1949-05-01  169.2  CPIAUCNS</span>
+<span class="sd">            3     1949-07-22   1953-02-26  1949-06-01  169.6  CPIAUCNS</span>
+<span class="sd">            4     1949-08-26   1953-02-26  1949-07-01  168.5  CPIAUCNS</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">series_id</span><span class="p">,</span>
+                <span class="n">realtime_start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">realtime_end</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+                <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+                <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+                <span class="n">observation_start</span><span class="o">=</span><span class="n">observation_start</span><span class="p">,</span>
+                <span class="n">observation_end</span><span class="o">=</span><span class="n">observation_end</span><span class="p">,</span>
+                <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                <span class="n">frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">,</span>
+                <span class="n">aggregation_method</span><span class="o">=</span><span class="n">aggregation_method</span><span class="p">,</span>
+                <span class="n">output_type</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+                <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+                <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">HTTPError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">series_id</span><span class="p">,</span>
+                <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+                <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+                <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+                <span class="n">observation_start</span><span class="o">=</span><span class="n">observation_start</span><span class="p">,</span>
+                <span class="n">observation_end</span><span class="o">=</span><span class="n">observation_end</span><span class="p">,</span>
+                <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                <span class="n">frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">,</span>
+                <span class="n">aggregation_method</span><span class="o">=</span><span class="n">aggregation_method</span><span class="p">,</span>
+                <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+                <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+                <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+            <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SeriesRelease"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesRelease">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SeriesRelease</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the latest release for an economic data seris.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Series.release` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/series/release&quot;</span>
+
+<div class="viewcode-block" id="SeriesRelease.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesRelease.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">series_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the release for an economic data series.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/series_release.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series_id: The ID for a series.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing data on a release for an economic data series.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_api</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">series_id</span><span class="o">=</span><span class="n">series_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;releases&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SeriesSearchRelatedTags"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesSearchRelatedTags">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SeriesSearchRelatedTags</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search for series tags related to a series&#39;s tags.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.SeriesSearch.related_tags` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/series/search/related_tags&quot;</span>
+
+<div class="viewcode-block" id="SeriesSearchRelatedTags.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesSearchRelatedTags.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">series_search_text</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_group_id</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_search_text</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the related tags for a series search.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/series_search_tags.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series_search_text: The words to match against economic data series.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            tag_names: Tag names to only include in the response.</span>
+<span class="sd">            exclude_tag_names: Tag names that series match none of.</span>
+<span class="sd">            tag_group_id: A tag group ID to filter tags by type. Options include:</span>
+
+<span class="sd">                - &quot;freq&quot; = frequency</span>
+<span class="sd">                - &quot;gen&quot; = general or concept</span>
+<span class="sd">                - &quot;geo&quot; = geography</span>
+<span class="sd">                - &quot;geot&quot; = geography type</span>
+<span class="sd">                - &quot;rls&quot; = release</span>
+<span class="sd">                - &quot;seas&quot; = seasonal adjustment</span>
+<span class="sd">                - &quot;src&quot; = source</span>
+
+<span class="sd">            tag_search_text: The words to find matching tags with.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            order_by: Order results by values of the specified attribute.</span>
+<span class="sd">                Options include:</span>
+
+<span class="sd">                    - &quot;series_count&quot;</span>
+<span class="sd">                    - &quot;popularity&quot;</span>
+<span class="sd">                    - &quot;created&quot;</span>
+<span class="sd">                    - &quot;name&quot;</span>
+<span class="sd">                    - &quot;group_id&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or descending (&quot;desc&quot;)</span>
+<span class="sd">                order for the attribute values specified by `order_by`.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing related FRED tags for a series search.</span>
+<span class="sd">            The dataframe can have results optionally filtered by the FRED</span>
+<span class="sd">            servers according to the method&#39;s args.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.api.series.search.related_tags.get(&quot;price index&quot;, tag_names=&quot;price&quot;, limit=5)  # doctest: +SKIP</span>
+<span class="sd">                                            name group_id                    notes                 created ...</span>
+<span class="sd">            0                                nsa     seas  Not Seasonally Adjusted  2012-02-27 10:18:19-06 ...</span>
+<span class="sd">            1                            indexes      gen                           2012-02-27 10:18:19-06 ...</span>
+<span class="sd">            2                        price index      gen                           2012-02-27 10:18:19-06 ...</span>
+<span class="sd">            3                            monthly     freq                           2012-02-27 10:18:19-06 ...</span>
+<span class="sd">            4  public domain: citation requested       cc                     None  2018-12-17 23:33:13-06 ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">series_search_text</span><span class="o">=</span><span class="n">series_search_text</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">tag_names</span><span class="o">=</span><span class="n">tag_names</span><span class="p">,</span>
+            <span class="n">exclude_tag_names</span><span class="o">=</span><span class="n">exclude_tag_names</span><span class="p">,</span>
+            <span class="n">tag_group_id</span><span class="o">=</span><span class="n">tag_group_id</span><span class="p">,</span>
+            <span class="n">tag_search_text</span><span class="o">=</span><span class="n">tag_search_text</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SeriesSearchTags"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesSearchTags">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SeriesSearchTags</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get FRED series tags.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.SeriesSearch.tags` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/series/search/tags&quot;</span>
+
+<div class="viewcode-block" id="SeriesSearchTags.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesSearchTags.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">series_search_text</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_group_id</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_search_text</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the tags for a series search.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/series_search_tags.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series_search_text: The words to match against economic data series.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            tag_names: Tag names to only include in the response.</span>
+<span class="sd">            tag_group_id: A tag group ID to filter tags by type. Options include:</span>
+
+<span class="sd">                - &quot;freq&quot; = frequency</span>
+<span class="sd">                - &quot;gen&quot; = general or concept</span>
+<span class="sd">                - &quot;geo&quot; = geography</span>
+<span class="sd">                - &quot;geot&quot; = geography type</span>
+<span class="sd">                - &quot;rls&quot; = release</span>
+<span class="sd">                - &quot;seas&quot; = seasonal adjustment</span>
+<span class="sd">                - &quot;src&quot; = source</span>
+
+<span class="sd">            tag_search_text: The words to find matching tags with.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            order_by: Order results by values of the specified attribute.</span>
+<span class="sd">                Options include:</span>
+
+<span class="sd">                    - &quot;series_count&quot;</span>
+<span class="sd">                    - &quot;popularity&quot;</span>
+<span class="sd">                    - &quot;created&quot;</span>
+<span class="sd">                    - &quot;name&quot;</span>
+<span class="sd">                    - &quot;group_id&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or descending (&quot;desc&quot;)</span>
+<span class="sd">                order for the attribute values specified by `order_by`.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing FRED tags for a series search.</span>
+<span class="sd">            The dataframe can have results optionally filtered by the FRED</span>
+<span class="sd">            servers according to the method&#39;s args.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.api.series.search.tags.get(&quot;price index&quot;, limit=5)  # doctest: +SKIP</span>
+<span class="sd">                                            name group_id                    notes ...</span>
+<span class="sd">            0                                nsa     seas  Not Seasonally Adjusted ...</span>
+<span class="sd">            1                              price      gen                          ...</span>
+<span class="sd">            2                            indexes      gen                          ...</span>
+<span class="sd">            3                        price index      gen                          ...</span>
+<span class="sd">            4  public domain: citation requested       cc                     None ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">series_search_text</span><span class="o">=</span><span class="n">series_search_text</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">tag_names</span><span class="o">=</span><span class="n">tag_names</span><span class="p">,</span>
+            <span class="n">tag_group_id</span><span class="o">=</span><span class="n">tag_group_id</span><span class="p">,</span>
+            <span class="n">tag_search_text</span><span class="o">=</span><span class="n">tag_search_text</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SeriesSearch"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesSearch">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SeriesSearch</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get economic data series that match search text.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Series.search` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">related_tags</span> <span class="o">=</span> <span class="n">SeriesSearchRelatedTags</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;series/search/related_tags&quot; FRED API. Get the related tags for a</span>
+<span class="sd">    series search. The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.SeriesSearchRelatedTags` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">tags</span> <span class="o">=</span> <span class="n">SeriesSearchTags</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;series/search/tags&quot; FRED API. Get the tags for a series search.</span>
+<span class="sd">    The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.SeriesSearchTags` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/series/search&quot;</span>
+
+<div class="viewcode-block" id="SeriesSearch.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesSearch.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">search_text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">search_type</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;full_text&quot;</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">filter_variable</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">filter_value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get economic data series that match search text.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/series_search.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            search_text: The words to match against economic data series.</span>
+<span class="sd">            search_type: Determines the type of search to perform. Options include:</span>
+
+<span class="sd">                - &quot;full_text&quot; = search series attributes, units, frequency,</span>
+<span class="sd">                  and tags by parsing words into stems.</span>
+<span class="sd">                - &quot;series_id&quot; = performs a substring search on series IDs.</span>
+
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            order_by: Order results by values of the specified attribute.</span>
+<span class="sd">                Options include:</span>
+
+<span class="sd">                    - &quot;search_rank&quot;</span>
+<span class="sd">                    - &quot;series_id&quot;</span>
+<span class="sd">                    - &quot;title&quot;</span>
+<span class="sd">                    - &quot;units&quot;</span>
+<span class="sd">                    - &quot;frequency&quot;</span>
+<span class="sd">                    - &quot;seasonal_adjustment&quot;</span>
+<span class="sd">                    - &quot;realtime_start&quot;</span>
+<span class="sd">                    - &quot;realtime_end&quot;</span>
+<span class="sd">                    - &quot;last_updated&quot;</span>
+<span class="sd">                    - &quot;observation_start&quot;</span>
+<span class="sd">                    - &quot;observation_end&quot;</span>
+<span class="sd">                    - &quot;popularity&quot;</span>
+<span class="sd">                    - &quot;group_popularity&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or descending (&quot;desc&quot;)</span>
+<span class="sd">                order for the attribute values specified by `order_by`.</span>
+<span class="sd">            filter_variable: The attribute to filter results by. Options include:</span>
+
+<span class="sd">                - &quot;frequency&quot;</span>
+<span class="sd">                - &quot;units&quot;</span>
+<span class="sd">                - &quot;seasonal_adjustment&quot;</span>
+
+<span class="sd">            filter_value: The value of the `filter_variable` attribute to filter</span>
+<span class="sd">                results by.</span>
+<span class="sd">            tag_names: List of tag names that series match all of.</span>
+<span class="sd">            exclude_tag_names: List of tag names that series match none of.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing data on series matching the search.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.api.series.search.get(&quot;price index&quot;, limit=5)  # doctest: +SKIP</span>
+<span class="sd">                        id realtime_start realtime_end                                              title ...</span>
+<span class="sd">            0     CPIAUCSL     2023-03-16   2023-03-16  Consumer Price Index for All Urban Consumers: ... ...</span>
+<span class="sd">            1     CPIAUCNS     2023-03-16   2023-03-16  Consumer Price Index for All Urban Consumers: ... ...</span>
+<span class="sd">            2  CUUS0000SA0     2023-03-16   2023-03-16  Consumer Price Index for All Urban Consumers: ... ...</span>
+<span class="sd">            3   CSUSHPINSA     2023-03-16   2023-03-16    S&amp;P/Case-Shiller U.S. National Home Price Index ...</span>
+<span class="sd">            4    CSUSHPISA     2023-03-16   2023-03-16    S&amp;P/Case-Shiller U.S. National Home Price Index ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;seriess&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">search_text</span><span class="o">=</span><span class="n">search_text</span><span class="p">,</span>
+            <span class="n">search_type</span><span class="o">=</span><span class="n">search_type</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">filter_variable</span><span class="o">=</span><span class="n">filter_variable</span><span class="p">,</span>
+            <span class="n">filter_value</span><span class="o">=</span><span class="n">filter_value</span><span class="p">,</span>
+            <span class="n">tag_names</span><span class="o">=</span><span class="n">tag_names</span><span class="p">,</span>
+            <span class="n">exclude_tag_names</span><span class="o">=</span><span class="n">exclude_tag_names</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SeriesTags"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesTags">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SeriesTags</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get FRED tags for an economic data series.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Series.tags` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/series/tags&quot;</span>
+
+<div class="viewcode-block" id="SeriesTags.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesTags.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">series_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the FRED tags for a series.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/series_tags.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series_id: The ID for a series.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            order_by: Order results by values of the specified attribute.</span>
+<span class="sd">                Options include:</span>
+
+<span class="sd">                    - &quot;series_count&quot;</span>
+<span class="sd">                    - &quot;popularity&quot;</span>
+<span class="sd">                    - &quot;created&quot;</span>
+<span class="sd">                    - &quot;name&quot;</span>
+<span class="sd">                    - &quot;group_id&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or descending (&quot;desc&quot;)</span>
+<span class="sd">                order for the attribute values specified by `order_by`.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing data on FRED tags for series.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.api.series.tags.get(&quot;CPIAUCNS&quot;).head(5)  # doctest: +SKIP</span>
+<span class="sd">                                            name group_id                     notes ...</span>
+<span class="sd">            0                                nsa     seas   Not Seasonally Adjusted ...</span>
+<span class="sd">            1                                usa      geo  United States of America ...</span>
+<span class="sd">            2  public domain: citation requested       cc                      None ...</span>
+<span class="sd">            3                             nation     geot                           ...</span>
+<span class="sd">            4                            monthly     freq                           ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_api</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">series_id</span><span class="o">=</span><span class="n">series_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;tags&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SeriesUpdates"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesUpdates">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SeriesUpdates</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get data on when economic data series where updated on the FRED server.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Series.updates` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/series/updates&quot;</span>
+
+<div class="viewcode-block" id="SeriesUpdates.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesUpdates.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">filter_value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">start_time</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">end_time</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get economic data series sorted by when observations</span>
+<span class="sd">        were updated on the FRED server.</span>
+
+<span class="sd">        Results are limited to series updated within the last two</span>
+<span class="sd">        weeks.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/series_updates.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            filter_value: Limit results by geographic type of economic data</span>
+<span class="sd">                series. Options include:</span>
+
+<span class="sd">                    - &quot;macro&quot; = limit results to macroeconomic data series</span>
+<span class="sd">                    - &quot;regional&quot; = limit results to series for parts of the US</span>
+<span class="sd">                    - &quot;all&quot; = does not filter results</span>
+
+<span class="sd">            start_time: Start time for limiting results for a time range.</span>
+<span class="sd">                Can filter down to minutes. Expects format &quot;YYYMMDDHhmm&quot;.</span>
+<span class="sd">            end_time: Start time for limiting results for a time range.</span>
+<span class="sd">                Can filter down to minutes. Expects format &quot;YYYMMDDHhmm&quot;.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing info on recently updated economic</span>
+<span class="sd">            data series.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;seriess&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">filter_value</span><span class="o">=</span><span class="n">filter_value</span><span class="p">,</span>
+            <span class="n">start_time</span><span class="o">=</span><span class="n">start_time</span><span class="p">,</span>
+            <span class="n">end_time</span><span class="o">=</span><span class="n">end_time</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SeriesVintageDates"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesVintageDates">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SeriesVintageDates</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get FRED series revision dates.</span>
+
+<span class="sd">    The class variable :attr:`finagg.fred.api.Series.vintage_dates` is an</span>
+<span class="sd">    instance of this API implementation and is the most popular interface for</span>
+<span class="sd">    calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/series/vintage_dates&quot;</span>
+
+<div class="viewcode-block" id="SeriesVintageDates.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.SeriesVintageDates.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">series_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the dates in history when a series&#39; data values were revised</span>
+<span class="sd">        or new data values were released.</span>
+
+<span class="sd">        Vintage dates are the release dates for a series excluding release dates</span>
+<span class="sd">        when the data for the series did not change.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/series_vintagedates.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series_id: The ID for a series.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or descending (&quot;desc&quot;)</span>
+<span class="sd">                vintage date order.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing dates on vintage release dates for a series.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;seriess&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">series_id</span><span class="o">=</span><span class="n">series_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Series"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.Series">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Series</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get an economic data series.</span>
+
+<span class="sd">    The class variable :data:`finagg.fred.api.series` is an instance of this</span>
+<span class="sd">    API implementation and is the most popular interface for calling this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">categories</span> <span class="o">=</span> <span class="n">SeriesCategories</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;series/categories&quot; FRED API. Get the categories for an economic</span>
+<span class="sd">    data series. The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.SeriesCategories` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">observations</span> <span class="o">=</span> <span class="n">SeriesObservations</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;series/observations&quot; FRED API. Get the observations or</span>
+<span class="sd">    data values for an economic data series. The most popular way</span>
+<span class="sd">    for accessing the :class:`finagg.fred.api.SeriesObservations` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">release</span> <span class="o">=</span> <span class="n">SeriesRelease</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;series/release&quot; FRED API. Get the release for an economic data series.</span>
+<span class="sd">    The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.SeriesRelease` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">search</span> <span class="o">=</span> <span class="n">SeriesSearch</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;series/search&quot; FRED API. Get economic data series that match search</span>
+<span class="sd">    text. The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.SeriesSearch` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">tags</span> <span class="o">=</span> <span class="n">SeriesTags</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;series/tags&quot; FRED API. Get FRED tags for a series.</span>
+<span class="sd">    The most popular way for accessing the :class:`finagg.fred.api.SeriesTags`</span>
+<span class="sd">    API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">updates</span> <span class="o">=</span> <span class="n">SeriesUpdates</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;series/updates&quot; FRED API. Get economic data series sorted by</span>
+<span class="sd">    when observations were updated on the FRED server. The most popular</span>
+<span class="sd">    way for accessing the :class:`finagg.fred.api.SeriesUpdates` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/series&quot;</span>
+
+    <span class="n">vintage_dates</span> <span class="o">=</span> <span class="n">SeriesVintageDates</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;series/vintage_dates&quot; FRED API. Get the dates in history when a</span>
+<span class="sd">    a series&#39; data values were revised or new data values were released.</span>
+<span class="sd">    The most popular way for accessing the</span>
+<span class="sd">    :class:`finagg.fred.api.SeriesVintageDates` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Series.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.Series.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">series_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get an economic data series.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/series.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            series_id: The ID for a series.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing info on an economic data series.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.api.series.get(&quot;CPIAUCNS&quot;, realtime_start=0, realtime_end=-1).head(5)  # doctest: +SKIP</span>
+<span class="sd">                     id realtime_start realtime_end                                              title ...</span>
+<span class="sd">            0  CPIAUCNS     1949-03-24   1953-02-26  Consumer Price Index for Urban Wage Earners an... ...</span>
+<span class="sd">            1  CPIAUCNS     1953-02-27   1962-02-27  Consumer Price Index for Urban Wage Earners an... ...</span>
+<span class="sd">            2  CPIAUCNS     1962-02-28   1971-02-18  Consumer Price Index for Urban Wage Earners an... ...</span>
+<span class="sd">            3  CPIAUCNS     1971-02-19   1978-02-26  Consumer Price Index for Urban Wage Earners an... ...</span>
+<span class="sd">            4  CPIAUCNS     1978-02-27   1988-02-25  Consumer Price Index for All Urban Consumers: ... ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_api</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">series_id</span><span class="o">=</span><span class="n">series_id</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;seriess&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+
+
+<span class="n">popular_series</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;CIVPART&quot;</span><span class="p">,</span>  <span class="c1"># Labor force participation rate</span>
+    <span class="s2">&quot;CPIAUCNS&quot;</span><span class="p">,</span>  <span class="c1"># Consumer price index</span>
+    <span class="s2">&quot;CSUSHPINSA&quot;</span><span class="p">,</span>  <span class="c1"># S&amp;P/Case-Shiller national home price index</span>
+    <span class="s2">&quot;DJIA&quot;</span><span class="p">,</span>  <span class="c1"># Dow Jones Industrial Average index</span>
+    <span class="s2">&quot;FEDFUNDS&quot;</span><span class="p">,</span>  <span class="c1"># Federal funds interest rate</span>
+    <span class="s2">&quot;GDP&quot;</span><span class="p">,</span>  <span class="c1"># Gross domestic product</span>
+    <span class="s2">&quot;GDPC1&quot;</span><span class="p">,</span>  <span class="c1"># Real gross domestic product</span>
+    <span class="s2">&quot;GS10&quot;</span><span class="p">,</span>  <span class="c1"># 10-Year treasury yield</span>
+    <span class="s2">&quot;M2&quot;</span><span class="p">,</span>  <span class="c1"># Money stock measures (i.e., savings and related balances)</span>
+    <span class="s2">&quot;MICH&quot;</span><span class="p">,</span>  <span class="c1"># University of Michigan: inflation expectation</span>
+    <span class="s2">&quot;NASDAQ100&quot;</span><span class="p">,</span>  <span class="c1"># Nasdaq 100 index</span>
+    <span class="s2">&quot;NASDAQCOM&quot;</span><span class="p">,</span>  <span class="c1"># Nasdaq Composite index</span>
+    <span class="s2">&quot;PSAVERT&quot;</span><span class="p">,</span>  <span class="c1"># Personal savings rate</span>
+    <span class="s2">&quot;SP500&quot;</span><span class="p">,</span>  <span class="c1"># S&amp;P 500 index</span>
+    <span class="s2">&quot;UMCSENT&quot;</span><span class="p">,</span>  <span class="c1"># University of Michigan: consumer sentiment</span>
+    <span class="s2">&quot;UNRATE&quot;</span><span class="p">,</span>  <span class="c1"># Unemployment rate</span>
+    <span class="s2">&quot;WALCL&quot;</span><span class="p">,</span>  <span class="c1"># US assets, total assets (less eliminations from consolidation)</span>
+<span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;Economic data series that are relatively popular for economic analysis.</span>
+<span class="sd">Includes things like gross domestic product, unemployment rate, etc..</span>
+
+<span class="sd">:meta hide-value:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,426 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>finagg.fred.api._tags &mdash; finagg  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css" />
+
+  
+      <script src="../../../../_static/jquery.js"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+      <script src="../../../../_static/doctools.js"></script>
+      <script src="../../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../../_static/clipboard.min.js"></script>
+      <script src="../../../../_static/copybutton.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            finagg
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../conventions.html">Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../walkthroughs.html">Walkthroughs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../release_notes.html">Release Notes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">finagg</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">finagg.fred.api._tags</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for finagg.fred.api._tags</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The &quot;fred/tags&quot; APIs.</span>
+
+<span class="sd">See the official FRED API docs for more info:</span>
+
+<span class="sd">    https://fred.stlouisfed.org/docs/api/fred/</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_api</span>
+
+
+<div class="viewcode-block" id="RelatedTags"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.RelatedTags">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RelatedTags</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get FRED tags related to other FRED tags.</span>
+
+<span class="sd">    The module variable :data:`related_tags` is an instance of this API</span>
+<span class="sd">    implementation and is the most popular interface for calling</span>
+<span class="sd">    this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/related_tags&quot;</span>
+
+<div class="viewcode-block" id="RelatedTags.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.RelatedTags.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_group_id</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">search_text</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get data for tags related to an economic release.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/related_tags.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            tag_names: Find tags related to these tags.</span>
+<span class="sd">            exclude_tag_names: Exclude tags related to these tags.</span>
+<span class="sd">            tag_group_id: A tag group ID to filter tags by. Options include:</span>
+
+<span class="sd">                - &quot;freq&quot; = frequency</span>
+<span class="sd">                - &quot;gen&quot; = general or concept</span>
+<span class="sd">                - &quot;geo&quot; = geography</span>
+<span class="sd">                - &quot;geot&quot; = geography type</span>
+<span class="sd">                - &quot;rls&quot; = release</span>
+<span class="sd">                - &quot;seas&quot; = seasonal adjustment</span>
+<span class="sd">                - &quot;src&quot; = source</span>
+
+<span class="sd">            search_text: The words to find matching tags with.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            order_by: Variable to order results by. Options include:</span>
+
+<span class="sd">                - &quot;series_count&quot;</span>
+<span class="sd">                - &quot;popularity&quot;</span>
+<span class="sd">                - &quot;created&quot;</span>
+<span class="sd">                - &quot;name&quot;</span>
+<span class="sd">                - &quot;group_id&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or</span>
+<span class="sd">                descending (&quot;desc&quot;) order.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing data for related FRED tags.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.api.related_tags.get(tag_names=&quot;bea&quot;, limit=5)  # doctest: +SKIP</span>
+<span class="sd">                                            name group_id                     notes                 created  popularity  series_count</span>
+<span class="sd">            0  public domain: citation requested       cc                      None  2018-12-17 23:33:13-06          99         78680</span>
+<span class="sd">            1                                usa      geo  United States of America  2012-02-27 10:18:19-06         100         78434</span>
+<span class="sd">            2                                nsa     seas   Not Seasonally Adjusted  2012-02-27 10:18:19-06          99         67720</span>
+<span class="sd">            3                             annual     freq                            2012-02-27 10:18:19-06          88         66478</span>
+<span class="sd">            4                                gdp      gen    Gross Domestic Product  2012-02-27 10:18:19-06          81         60040</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">tag_names</span><span class="o">=</span><span class="n">tag_names</span><span class="p">,</span>
+            <span class="n">exclude_tag_names</span><span class="o">=</span><span class="n">exclude_tag_names</span><span class="p">,</span>
+            <span class="n">tag_group_id</span><span class="o">=</span><span class="n">tag_group_id</span><span class="p">,</span>
+            <span class="n">search_text</span><span class="o">=</span><span class="n">search_text</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Series</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get FRED series related to FRED tags.</span>
+
+<span class="sd">    The class variable :data:`finagg.fred.api.tags.series` is an instance</span>
+<span class="sd">    of this API implementation and is the most popular interface for calling</span>
+<span class="sd">    this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/tags/series&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the economic data series matching tags.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/tags_series.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tag_names: Find series that match these tags.</span>
+<span class="sd">            exclude_tag_names: Exclude series that match none of these tags.</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            order_by: Variable to order results by. Options include:</span>
+
+<span class="sd">                - &quot;series_id&quot;</span>
+<span class="sd">                - &quot;title&quot;</span>
+<span class="sd">                - &quot;units&quot;</span>
+<span class="sd">                - &quot;frequency&quot;</span>
+<span class="sd">                - &quot;seasonal_adjustment&quot;</span>
+<span class="sd">                - &quot;realtime_start&quot;</span>
+<span class="sd">                - &quot;realtime_end&quot;</span>
+<span class="sd">                - &quot;last_updated&quot;</span>
+<span class="sd">                - &quot;observation_start&quot;</span>
+<span class="sd">                - &quot;observation_end&quot;</span>
+<span class="sd">                - &quot;popularity&quot;</span>
+<span class="sd">                - &quot;group_popularity&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or</span>
+<span class="sd">                descending (&quot;desc&quot;) order.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing series data for related tags.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.api.tags.series.get(tag_names=&quot;bea&quot;, limit=5)  # doctest: +SKIP</span>
+<span class="sd">                            id realtime_start realtime_end                                             title ...</span>
+<span class="sd">            0  A001RD3A086NBEA     2023-03-15   2023-03-15  Gross national product (implicit price deflator) ...</span>
+<span class="sd">            1  A001RG3A086NBEA     2023-03-15   2023-03-15   Gross national product (chain-type price index) ...</span>
+<span class="sd">            2  A001RI1A225NBEA     2023-03-15   2023-03-15   Gross National Product: Implicit Price Deflator ...</span>
+<span class="sd">            3  A001RI1Q225SBEA     2023-03-15   2023-03-15   Gross National Product: Implicit Price Deflator ...</span>
+<span class="sd">            4  A001RL1A225NBEA     2023-03-15   2023-03-15                       Real Gross National Product ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;seriess&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">tag_names</span><span class="o">=</span><span class="n">tag_names</span><span class="p">,</span>
+            <span class="n">exclude_tag_names</span><span class="o">=</span><span class="n">exclude_tag_names</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<div class="viewcode-block" id="Tags"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.Tags">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Tags</span><span class="p">(</span><span class="n">_api</span><span class="o">.</span><span class="n">API</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get FRED tags.</span>
+
+<span class="sd">    The module variable :data:`tags` is an instance of this API</span>
+<span class="sd">    implementation and is the most popular interface for calling</span>
+<span class="sd">    this API.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">series</span> <span class="o">=</span> <span class="n">Series</span><span class="p">()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;&quot;tags/series&quot; FRED API. Get the series for a FRED tag.</span>
+<span class="sd">    The most popular way for accessing the :class:`Series` API.</span>
+
+<span class="sd">    :meta hide-value:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://api.stlouisfed.org/fred/tags&quot;</span>
+
+<div class="viewcode-block" id="Tags.get"><a class="viewcode-back" href="../../../../api/finagg.fred.api.html#finagg.fred.api.Tags.get">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">realtime_start</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realtime_end</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_names</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tag_group_id</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">search_text</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sort_order</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">paginate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">api_key</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the FRED tags for a series.</span>
+
+<span class="sd">        See the related FRED API documentation at:</span>
+
+<span class="sd">            https://fred.stlouisfed.org/docs/api/fred/tags.html</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            realtime_start: Start date for fetching results</span>
+<span class="sd">                according to their publication date.</span>
+<span class="sd">            realtime_end: End date for fetching results according</span>
+<span class="sd">                to their publication date.</span>
+<span class="sd">            tag_names: Filtering of tag names to include in the results.</span>
+<span class="sd">            tag_group_id: A tag group ID to filter tags by. Options include:</span>
+
+<span class="sd">                - &quot;freq&quot; = frequency</span>
+<span class="sd">                - &quot;gen&quot; = general or concept</span>
+<span class="sd">                - &quot;geo&quot; = geography</span>
+<span class="sd">                - &quot;geot&quot; = geography type</span>
+<span class="sd">                - &quot;rls&quot; = release</span>
+<span class="sd">                - &quot;seas&quot; = seasonal adjustment</span>
+<span class="sd">                - &quot;src&quot; = source</span>
+<span class="sd">                - &quot;cc&quot; = citation and copyright</span>
+
+<span class="sd">            search_text: The words to find matching tags with.</span>
+<span class="sd">            limit: Maximum number of results to return.</span>
+<span class="sd">            offset: Result start offset.</span>
+<span class="sd">            order_by: Variable to order results by. Options include:</span>
+
+<span class="sd">                - &quot;series_count&quot;</span>
+<span class="sd">                - &quot;popularity&quot;</span>
+<span class="sd">                - &quot;created&quot;</span>
+<span class="sd">                - &quot;name&quot;</span>
+<span class="sd">                - &quot;group_id&quot;</span>
+
+<span class="sd">            sort_order: Sort results in ascending (&quot;asc&quot;) or</span>
+<span class="sd">                descending (&quot;desc&quot;) order.</span>
+<span class="sd">            paginate: Whether to manage `offset` automatically, making multiple</span>
+<span class="sd">                API calls until all results are returned.</span>
+<span class="sd">            cache: Whether to cache the response from the API.</span>
+<span class="sd">            api_key: Your FRED API key. Defaults to the ``FRED_API_KEY``</span>
+<span class="sd">                environment variable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dataframe containing data for all FRED economic data tags.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; finagg.fred.api.tags.get(tag_group_id=&quot;src&quot;, limit=5)  # doctest: +SKIP</span>
+<span class="sd">                      name group_id                        notes                 created  popularity  series_count</span>
+<span class="sd">            0       census      src                       Census  2012-02-27 10:18:19-06          79        237692</span>
+<span class="sd">            1          bls      src   Bureau of Labor Statistics  2012-02-27 10:18:19-06          89        175376</span>
+<span class="sd">            2  realtor.com      src                               2020-03-24 11:15:04-05          66         90632</span>
+<span class="sd">            3          bea      src  Bureau of Economic Analysis  2012-02-27 10:18:19-06          78         78842</span>
+<span class="sd">            4      frb stl      src                St. Louis Fed  2012-02-27 10:18:19-06          68         78442</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_api</span><span class="o">.</span><span class="n">maybe_paginate</span><span class="p">(</span>
+            <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">realtime_start</span><span class="o">=</span><span class="n">realtime_start</span><span class="p">,</span>
+            <span class="n">realtime_end</span><span class="o">=</span><span class="n">realtime_end</span><span class="p">,</span>
+            <span class="n">tag_names</span><span class="o">=</span><span class="n">tag_names</span><span class="p">,</span>
+            <span class="n">tag_group_id</span><span class="o">=</span><span class="n">tag_group_id</span><span class="p">,</span>
+            <span class="n">search_text</span><span class="o">=</span><span class="n">search_text</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">order_by</span><span class="o">=</span><span class="n">order_by</span><span class="p">,</span>
+            <span class="n">sort_order</span><span class="o">=</span><span class="n">sort_order</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span>
+            <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Andrew B.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
