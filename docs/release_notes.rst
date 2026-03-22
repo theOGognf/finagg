@@ -1,6 +1,24 @@
 Release Notes
 =============
 
+1.0.3
+-----
+
+Bug Fixes
+^^^^^^^^^
+
+- Fix NASDAQ 100 ticker symbol column name
+
+Compatibility Notes
+^^^^^^^^^^^^^^^^^^^
+
+N/A
+
+New Features
+^^^^^^^^^^^^
+
+N/A
+
 1.0.2
 -----
 
