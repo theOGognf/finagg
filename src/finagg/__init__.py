@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from . import bea, config, fred, sec, testing, utils
+from . import bea, config, fred, fxmacrodata, sec, testing, utils
 
 try:
     __version__ = version("finagg")

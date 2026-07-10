@@ -1,0 +1,1 @@
+"""FXMacroData API tests."""

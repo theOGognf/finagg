@@ -79,6 +79,14 @@ Get Federal Reserve Economic Data (FRED).
 4     1949-08-26   1953-02-26  1949-07-01  168.5  CPIAUCNS
 ```
 
+Get FXMacroData macro event data.
+
+```pycon
+>>> finagg.fxmacrodata.api.calendar("usd").head(5)
+  indicator release_date ...
+0       cpi   2026-01-01 ...
+```
+
 Get Securities and Exchange Commission (SEC) filings.
 
 ```pycon
@@ -179,6 +187,9 @@ configuring API keys and user agents:
   a free API key from the [BEA API site][3].
 * ``FRED_API_KEY`` is for the Federal Reserve Economic Data API key. You can get
   a free API key from the [FRED API site][8].
+* ``FXMD_API_KEY`` or ``FXMACRODATA_API_KEY`` is for protected FXMacroData API
+  coverage. Public USD catalogue, calendar, and macro announcement examples can
+  be used without an API key.
 * ``SEC_API_USER_AGENT`` is for the Securities and Exchange Commission's API. This
   should be of the format ``FIRST_NAME LAST_NAME E_MAIL``.
 
@@ -216,6 +227,7 @@ You can change some **finagg** behavior with other environment variables:
 
 * The [BEA API][1] and the [BEA API key registration link][2].
 * The [FRED API][6] and the [FRED API key registration link][7].
+* The [FXMacroData API][18] and [FXMacroData documentation][19].
 * The [SEC API][14].
 
 # Related Projects
@@ -277,3 +289,5 @@ degradation on Windows.
 [15]: https://github.com/sec-edgar/sec-edgar
 [16]: https://github.com/jadchaar/sec-edgar-api
 [17]: https://www.sqlalchemy.org/
+[18]: https://api.fxmacrodata.com/openapi.json
+[19]: https://fxmacrodata.com/documentation

@@ -15,6 +15,10 @@ analysis.
   methods for retrieving, searching, and describing economic data from a variety
   of sources. The FRED API is one of the most popular APIs in the finance
   industry.
+* The `FXMacroData API`_. The FXMacroData API provides macroeconomic
+  announcements, release calendars, forecast/consensus rows, FX spot history,
+  COT positioning, commodities, and market-session context for FX and macro
+  research workflows.
 * The Securities and Exchange Commission’s `(SEC) EDGAR API`_. The SEC EDGAR
   API provides methods for retrieving XBRL data (e.g., earnings per share) from
   financial statements and methods for retrieving SEC filing submission
@@ -47,4 +51,5 @@ Alphabetically-ordered index of all package members.
 
 .. _`(BEA) API`: https://apps.bea.gov/api/signup/
 .. _`(FRED) API`: https://fred.stlouisfed.org/docs/api/fred/
+.. _`FXMacroData API`: https://fxmacrodata.com/documentation
 .. _`(SEC) EDGAR API`: https://www.sec.gov/edgar/sec-api-documentation
